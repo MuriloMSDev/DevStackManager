@@ -3,9 +3,9 @@ function Install-GenericTool {
         [string]$ToolDir,
         [string]$Version,
         [string]$ZipUrl,
-        [string]$SubDir,         # Ex: "php-$Version" ou "node-v$Version-win-x64"
-        [string]$ExeName,        # Ex: php.exe
-        [string]$Prefix          # Ex: php
+        [string]$SubDir,
+        [string]$ExeName,
+        [string]$Prefix
     )
     $targetDir = Join-Path $ToolDir $SubDir
     $rollback = $false
@@ -37,7 +37,25 @@ function Download-And-ExtractZip {
         [string]$ExtractTo
     )
     Invoke-WebRequest -Uri $Url -OutFile $ZipPath
-    Expand-Archive $ZipPath -DestinationPath $ExtractTo -Force
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [IO.Compression.ZipFile]::OpenRead($ZipPath)
+    $zipBaseName = [IO.Path]::GetFileNameWithoutExtension($ZipPath)
+    $hasSubDir = $false
+    foreach ($entry in $zip.Entries) {
+        if ($entry.FullName -match "^$zipBaseName/") {
+            $hasSubDir = $true
+            break
+        }
+    }
+    $zip.Dispose()
+
+    if ($hasSubDir) {
+        $dest = [IO.Path]::GetDirectoryName($ZipPath)
+        Expand-Archive $ZipPath -DestinationPath $dest -Force
+    } else {
+        Expand-Archive $ZipPath -DestinationPath $ExtractTo -Force
+    }
     Remove-Item $ZipPath
 }
 
