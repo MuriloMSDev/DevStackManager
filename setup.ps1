@@ -21,125 +21,87 @@ $nginxSitesDir = "configs\nginx\sites"
 . "$PSScriptRoot\path.ps1"
 . "$PSScriptRoot\list.ps1"
 
-if ($Command -eq "list") {
-    if ($Args.Count -eq 0) {
-        Write-Host "Uso: setup.ps1 list <php|nodejs|python>"
-        exit 1
+switch ($Command) {
+    "list" {
+        if ($Args.Count -eq 0) {
+            Write-Host "Uso: setup.ps1 list <php|nodejs|python>"
+            exit 1
+        }
+        switch ($Args[0].ToLower()) {
+            "php"     { List-PHPVersions }
+            "nodejs"  { List-NodeVersions }
+            "node"    { List-NodeVersions }
+            "python"  { List-PythonVersions }
+            default   { Write-Host "Ferramenta desconhecida: $($Args[0])" }
+        }
     }
-    switch ($Args[0].ToLower()) {
-        "php"     { List-PHPVersions }
-        "nodejs"  { List-NodeVersions }
-        "node"    { List-NodeVersions }
-        "python"  { List-PythonVersions }
-        default   { Write-Host "Ferramenta desconhecida: $($Args[0])" }
-    }
-    exit 0
-}
+    "site" {
+        if ($Args.Count -lt 1) {
+            Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>]"
+            exit 1
+        }
+        $Domain = $Args[0]
+        $Root = "/var/www/$Domain"
+        $PhpUpstream = "php-upstream"
 
-if ($Command -eq "site") {
-    if ($Args.Count -lt 1) {
-        Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>]"
-        exit 1
-    }
-    $Domain = $Args[0]
-    $Root = "/var/www/$Domain"
-    $PhpUpstream = "php-upstream"
-
-    for ($i = 1; $i -lt $Args.Count; $i++) {
-        switch ($Args[$i]) {
-            "-root" {
-                $i++; if ($i -lt $Args.Count) { $Root = $Args[$i] }
+        for ($i = 1; $i -lt $Args.Count; $i++) {
+            switch ($Args[$i]) {
+                "-root" {
+                    $i++; if ($i -lt $Args.Count) { $Root = $Args[$i] }
+                }
+                "-php" {
+                    $i++; if ($i -lt $Args.Count) { $PhpUpstream = $Args[$i] }
+                }
             }
-            "-php" {
-                $i++; if ($i -lt $Args.Count) { $PhpUpstream = $Args[$i] }
+        }
+        Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream
+    }
+    "install" {
+        foreach ($component in $Args) {
+            switch -Regex ($component) {
+                "^php-(.+)$"         { Install-PHP ($component -replace "^php-") }
+                "^php$"              { Install-PHP }
+                "^nginx$"            { Install-Nginx }
+                "^mysql-(.+)$"       { Install-MySQL ($component -replace "^mysql-") }
+                "^mysql$"            { Install-MySQL }
+                "^nodejs-(.+)$"      { Install-NodeJS ($component -replace "^nodejs-") }
+                "^(nodejs|node)$"    { Install-NodeJS }
+                "^python-(.+)$"      { Install-Python ($component -replace "^python-") }
+                "^python$"           { Install-Python }
+                "^composer-(.+)$"    { Install-Composer ($component -replace "^composer-") }
+                "^composer$"         { Install-Composer }
+                "^phpmyadmin-(.+)$"  { Install-PhpMyAdmin ($component -replace "^phpmyadmin-") }
+                "^phpmyadmin$"       { Install-PhpMyAdmin }
+                default              { Write-Host "Componente desconhecido: $component" }
             }
         }
+        Add-BinDirsToPath
     }
-    Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream
-    exit 0
-}
-
-if ($Command -eq "install") {
-    foreach ($component in $Args) {
-        if ($component -like "php-*") {
-            $phpVersion = $component -replace "php-"
-            Install-PHP $phpVersion
-        } elseif ($component -eq "php") {
-            Install-PHP
-        } elseif ($component -eq "nginx") {
-            Install-Nginx
-        } elseif ($component -like "mysql-*") {
-            $mysqlVersion = $component -replace "mysql-"
-            Install-MySQL $mysqlVersion
-        } elseif ($component -eq "mysql") {
-            Install-MySQL
-        } elseif ($component -like "nodejs-*") {
-            $nodeVersion = $component -replace "nodejs-"
-            Install-NodeJS $nodeVersion
-        } elseif ($component -eq "nodejs" -or $component -eq "node") {
-            Install-NodeJS
-        } elseif ($component -like "python-*") {
-            $pyVersion = $component -replace "python-"
-            Install-Python $pyVersion
-        } elseif ($component -eq "python") {
-            Install-Python
-        } elseif ($component -like "composer-*") {
-            $composerVersion = $component -replace "composer-"
-            Install-Composer $composerVersion
-        } elseif ($component -eq "composer") {
-            Install-Composer
-        } elseif ($component -like "phpmyadmin-*") {
-            $pmaVersion = $component -replace "phpmyadmin-"
-            Install-PhpMyAdmin $pmaVersion
-        } elseif ($component -eq "phpmyadmin") {
-            Install-PhpMyAdmin
-        } else {
-            Write-Host "Componente desconhecido: $component"
+    "path" {
+        Add-BinDirsToPath
+    }
+    "uninstall" {
+        foreach ($component in $Args) {
+            switch -Regex ($component) {
+                "^php-(.+)$"         { Uninstall-PHP ($component -replace "^php-") }
+                "^php$"              { Uninstall-PHP }
+                "^nginx$"            { Uninstall-Nginx }
+                "^mysql-(.+)$"       { Uninstall-MySQL ($component -replace "^mysql-") }
+                "^mysql$"            { Uninstall-MySQL }
+                "^nodejs-(.+)$"      { Uninstall-NodeJS ($component -replace "^nodejs-") }
+                "^(nodejs|node)$"    { Uninstall-NodeJS }
+                "^python-(.+)$"      { Uninstall-Python ($component -replace "^python-") }
+                "^python$"           { Uninstall-Python }
+                "^composer-(.+)$"    { Uninstall-Composer ($component -replace "^composer-") }
+                "^composer$"         { Uninstall-Composer }
+                "^phpmyadmin-(.+)$"  { Uninstall-PhpMyAdmin ($component -replace "^phpmyadmin-") }
+                "^phpmyadmin$"       { Uninstall-PhpMyAdmin }
+                default              { Write-Host "Componente desconhecido: $component" }
+            }
         }
+        Write-Host "Uninstall finalizado."
     }
-    Add-BinDirsToPath
-} elseif ($Command -eq "path") {
-    Add-BinDirsToPath
-} elseif ($Command -eq "uninstall") {
-    foreach ($component in $Args) {
-        if ($component -like "php-*") {
-            $phpVersion = $component -replace "php-"
-            Uninstall-PHP $phpVersion
-        } elseif ($component -eq "php") {
-            Uninstall-PHP
-        } elseif ($component -eq "nginx") {
-            Uninstall-Nginx
-        } elseif ($component -like "mysql-*") {
-            $mysqlVersion = $component -replace "mysql-"
-            Uninstall-MySQL $mysqlVersion
-        } elseif ($component -eq "mysql") {
-            Uninstall-MySQL
-        } elseif ($component -like "nodejs-*") {
-            $nodeVersion = $component -replace "nodejs-"
-            Uninstall-NodeJS $nodeVersion
-        } elseif ($component -eq "nodejs" -or $component -eq "node") {
-            Uninstall-NodeJS
-        } elseif ($component -like "python-*") {
-            $pyVersion = $component -replace "python-"
-            Uninstall-Python $pyVersion
-        } elseif ($component -eq "python") {
-            Uninstall-Python
-        } elseif ($component -like "composer-*") {
-            $composerVersion = $component -replace "composer-"
-            Uninstall-Composer $composerVersion
-        } elseif ($component -eq "composer") {
-            Uninstall-Composer
-        } elseif ($component -like "phpmyadmin-*") {
-            $pmaVersion = $component -replace "phpmyadmin-"
-            Uninstall-PhpMyAdmin $pmaVersion
-        } elseif ($component -eq "phpmyadmin") {
-            Uninstall-PhpMyAdmin
-        } else {
-            Write-Host "Componente desconhecido: $component"
-        }
+    default {
+        Write-Host "Comando desconhecido: $Command"
     }
-    Write-Host "Uninstall finalizado."
-    exit 0
-} else {
-    Write-Host "Comando desconhecido: $Command"
 }
