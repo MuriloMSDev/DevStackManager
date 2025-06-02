@@ -21,6 +21,21 @@ $nginxSitesDir = "configs\nginx\sites"
 . "$PSScriptRoot\path.ps1"
 . "$PSScriptRoot\list.ps1"
 
+if ($Command -eq "list") {
+    if ($Args.Count -eq 0) {
+        Write-Host "Uso: setup.ps1 list <php|nodejs|python>"
+        exit 1
+    }
+    switch ($Args[0].ToLower()) {
+        "php"     { List-PHPVersions }
+        "nodejs"  { List-NodeVersions }
+        "node"    { List-NodeVersions }
+        "python"  { List-PythonVersions }
+        default   { Write-Host "Ferramenta desconhecida: $($Args[0])" }
+    }
+    exit 0
+}
+
 if ($Command -eq "site") {
     if ($Args.Count -lt 1) {
         Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>]"
