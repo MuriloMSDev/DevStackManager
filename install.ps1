@@ -151,13 +151,14 @@ function Install-PHP {
     }
     $subDir = "php-$version"
     Install-GenericTool -ToolDir $phpDir -Version $version -ZipUrl $phpUrl -SubDir $subDir -ExeName "php.exe" -Prefix "php"
-    $localIniSrc = "configs\php\local.ini"
-    $localIniDst = Join-Path (Join-Path $phpDir $subDir) "local.ini"
-    if (Test-Path $localIniSrc) {
-        Copy-Item $localIniSrc $localIniDst -Force
-        Write-Host "Arquivo local.ini copiado para $($phpDir)\$subDir"
+    Rename-MainExe -Dir (Join-Path $phpDir $subDir) -ExeName "php-cgi.exe" -Version $version -Prefix "php-cgi"
+    $phpIniSrc = "configs\php\php.ini"
+    $phpIniDst = Join-Path (Join-Path $phpDir $subDir) "php.ini"
+    if (Test-Path $phpIniSrc) {
+        Copy-Item $phpIniSrc $phpIniDst -Force
+        Write-Host "Arquivo php.ini copiado para $($phpDir)\$subDir"
     } else {
-        Write-Host "Arquivo configs\php\local.ini não encontrado. Pulei a cópia do local.ini."
+        Write-Host "Arquivo configs\php\php.ini não encontrado. Pulei a cópia do php.ini."
     }
 }
 
