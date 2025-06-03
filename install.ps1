@@ -247,11 +247,26 @@ function Install-PhpMyAdmin {
 function Create-NginxSiteConfig {
     param(
         [string]$Domain,
-        [string]$Root = "/var/www/$Domain",
-        [string]$PhpUpstream = "php-upstream"
+        [string]$Root = "C:\Workspace\$Domain",
+        [string]$PhpUpstream = "127.0.0.1:9000",
+        [string]$nginx
     )
 
-    $confPath = "$nginxSitesDir\$Domain.conf"
+    if (-not $nginx) {
+        $nginx = Get-LatestNginxVersion
+    }
+    $nginxVersionDir = Join-Path $nginxDir "nginx-$nginx"
+    $nginxSitesDirFull = Join-Path $nginxVersionDir $nginxSitesDir
+
+    if (!(Test-Path $nginxVersionDir)) {
+        throw "A versão do Nginx ($nginx) não está instalada em $nginxVersionDir."
+    }
+
+    if (!(Test-Path $nginxSitesDirFull)) {
+        New-Item -ItemType Directory -Force -Path $nginxSitesDirFull | Out-Null
+    }
+
+    $confPath = Join-Path $nginxSitesDirFull "$Domain.conf"
     $serverName = "$Domain.localhost"
 
     $template = @"
@@ -271,16 +286,16 @@ server {
     index index.php index.html index.htm;
 
     location / {
-         try_files \$uri \$uri/ /index.php\$is_args\$args;
+         try_files \`$uri \`$uri/ /index.php`$is_args`$args;
     }
 
     location ~ \.php$ {
-        try_files \$uri /index.php =404;
+        try_files \`$uri /index.php =404;
         fastcgi_pass $PhpUpstream;
         fastcgi_index index.php;
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \`$document_root\`$fastcgi_script_name;
         #fixes timeouts
         fastcgi_read_timeout 600;
         include fastcgi_params;
@@ -296,17 +311,14 @@ server {
     }
 
     location /api {
-        rewrite ^/api/(\w+).*$ /api.php?type=\$1 last;
+        rewrite ^/api/(\w+).*$ /api.php?type=\`$1 last;
     }
 
-    error_log /var/log/nginx/${Domain}_error.log;
-    access_log /var/log/nginx/${Domain}_access.log;
+    error_log logs/"$Domain"_error.log;
+    access_log logs/"$Domain"_access.log;
 }
 "@
 
-    if (!(Test-Path $nginxSitesDir)) {
-        New-Item -ItemType Directory -Force -Path $nginxSitesDir | Out-Null
-    }
     Set-Content -Path $confPath -Value $template
     Write-Host "Arquivo $confPath criado/configurado com sucesso!"
 

@@ -3,18 +3,18 @@ param(
     [ValidateSet("install", "site", "uninstall", "path", "list")]
     [string]$Command,
 
-    [Parameter(Position=1)]
+    [Parameter(Position=1, ValueFromRemainingArguments=$true)]
     [string[]]$Args
 )
 
-$baseDir = "$env:USERPROFILE\devstack"
+$baseDir = "C:\devstack"
 $nginxDir = "$baseDir\nginx"
 $phpDir = "$baseDir\php"
 $mysqlDir = "$baseDir\mysql"
 $nodeDir = "$baseDir\nodejs"
 $pythonDir = "$baseDir\python"
 $composerDir = "$baseDir\composer"
-$nginxSitesDir = "configs\nginx\sites"
+$nginxSitesDir = "conf\sites-enabled"
 
 . "$PSScriptRoot\install.ps1"
 . "$PSScriptRoot\uninstall.ps1"
@@ -37,12 +37,10 @@ switch ($Command) {
     }
     "site" {
         if ($Args.Count -lt 1) {
-            Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>]"
+            Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>] [-nginx <nginx-version>]"
             exit 1
         }
         $Domain = $Args[0]
-        $Root = "/var/www/$Domain"
-        $PhpUpstream = "php-upstream"
 
         for ($i = 1; $i -lt $Args.Count; $i++) {
             switch ($Args[$i]) {
@@ -52,9 +50,12 @@ switch ($Command) {
                 "-php" {
                     $i++; if ($i -lt $Args.Count) { $PhpUpstream = $Args[$i] }
                 }
+                "-nginx" {
+                    $i++; if ($i -lt $Args.Count) { $NginxVersion = $Args[$i] }
+                }
             }
         }
-        Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream
+        Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream -NginxVersion $NginxVersion
     }
     "install" {
         foreach ($component in $Args) {
