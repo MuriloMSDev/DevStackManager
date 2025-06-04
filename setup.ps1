@@ -53,9 +53,12 @@ switch ($Command) {
                 "-nginx" {
                     $i++; if ($i -lt $Args.Count) { $NginxVersion = $Args[$i] }
                 }
+                "-index" {
+                    $i++; if ($i -lt $Args.Count) { $IndexLocation = $Args[$i] }
+                }
             }
         }
-        Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream -NginxVersion $NginxVersion
+        Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream -NginxVersion $NginxVersion -IndexLocation $IndexLocation
     }
     "install" {
         foreach ($component in $Args) {

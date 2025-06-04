@@ -247,27 +247,41 @@ function Install-PhpMyAdmin {
 function Create-NginxSiteConfig {
     param(
         [string]$Domain,
-        [string]$Root = "C:\Workspace\$Domain",
-        [string]$PhpUpstream = "127.0.0.1:9000",
-        [string]$nginx
+        [string]$Root,
+        [string]$PhpUpstream,
+        [string]$NginxVersion,
+        [string]$IndexLocation
     )
 
-    if (-not $nginx) {
-        $nginx = Get-LatestNginxVersion
+    if (-not $NginxVersion) {
+        $NginxVersion = Get-LatestNginxVersion
     }
-    $nginxVersionDir = Join-Path $nginxDir "nginx-$nginx"
+    $nginxVersionDir = Join-Path $nginxDir "nginx-$NginxVersion"
     $nginxSitesDirFull = Join-Path $nginxVersionDir $nginxSitesDir
 
     if (!(Test-Path $nginxVersionDir)) {
-        throw "A versão do Nginx ($nginx) não está instalada em $nginxVersionDir."
+        throw "A versão do Nginx ($NginxVersion) não está instalada em $nginxVersionDir."
     }
 
     if (!(Test-Path $nginxSitesDirFull)) {
         New-Item -ItemType Directory -Force -Path $nginxSitesDirFull | Out-Null
     }
 
+    if (-not $IndexLocation) {
+        $IndexLocation = "webroot"
+    }
+
+    if (-not $PhpUpstream) {
+        $PhpUpstream = "127.0.0.1:9000"
+    }
+
+    if (-not $Root -and Test-Path "C:\Workspace\$Domain") {
+        $Root = "C:\Workspace\$Domain"
+    }
+
     $confPath = Join-Path $nginxSitesDirFull "$Domain.conf"
     $serverName = "$Domain.localhost"
+    $rootPath = Join-Path $Root $IndexLocation
 
     $template = @"
 server {
@@ -282,20 +296,20 @@ server {
     #ssl_certificate_key /etc/nginx/ssl/default.key;
 
     server_name $serverName;
-    root $Root;
+    root $rootPath;
     index index.php index.html index.htm;
 
     location / {
-         try_files \`$uri \`$uri/ /index.php`$is_args`$args;
+         try_files `$uri `$uri/ /index.php`$is_args`$args;
     }
 
     location ~ \.php$ {
-        try_files \`$uri /index.php =404;
+        try_files `$uri /index.php =404;
         fastcgi_pass $PhpUpstream;
         fastcgi_index index.php;
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
-        fastcgi_param SCRIPT_FILENAME \`$document_root\`$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME `$document_root`$fastcgi_script_name;
         #fixes timeouts
         fastcgi_read_timeout 600;
         include fastcgi_params;
@@ -311,11 +325,11 @@ server {
     }
 
     location /api {
-        rewrite ^/api/(\w+).*$ /api.php?type=\`$1 last;
+        rewrite ^/api/(\w+).*$ /api.php?type=`$1 last;
     }
 
-    error_log logs/"$Domain"_error.log;
-    access_log logs/"$Domain"_access.log;
+    error_log logs\${$Domain}_error.log;
+    access_log logs\${$Domain}_access.log;
 }
 "@
 
