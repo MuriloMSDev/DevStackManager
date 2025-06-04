@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true, Position=0)]
-    [ValidateSet("install", "site", "uninstall", "path", "list")]
+    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart")]
     [string]$Command,
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -20,6 +20,7 @@ $nginxSitesDir = "conf\sites-enabled"
 . "$PSScriptRoot\uninstall.ps1"
 . "$PSScriptRoot\path.ps1"
 . "$PSScriptRoot\list.ps1"
+. "$PSScriptRoot\process.ps1"
 
 switch ($Command) {
     "list" {
@@ -104,6 +105,62 @@ switch ($Command) {
             }
         }
         Write-Host "Uninstall finalizado."
+    }
+    "start" {
+        if ($Args.Count -lt 1) {
+            Write-Host "Uso: setup.ps1 start <nginx|php|--all> [<x.x.x>]"
+            exit 1
+        }
+        $target = $Args[0].ToLower()
+        if ($target -eq "--all") {
+            ForEach-Version "nginx" { param($v) & $PSCommandPath start nginx $v }
+            ForEach-Version "php"   { param($v) & $PSCommandPath start php $v }
+            return
+        }
+        if ($Args.Count -lt 2) {
+            Write-Host "Uso: setup.ps1 start <nginx|php> <x.x.x>"
+            exit 1
+        }
+        $version = $Args[1]
+        Start-Component $target $version
+    }
+    "stop" {
+        if ($Args.Count -lt 1) {
+            Write-Host "Uso: setup.ps1 stop <nginx|php|--all> [<x.x.x>]"
+            exit 1
+        }
+        $target = $Args[0].ToLower()
+        if ($target -eq "--all") {
+            ForEach-Version "nginx" { param($v) & $PSCommandPath stop nginx $v }
+            ForEach-Version "php"   { param($v) & $PSCommandPath stop php $v }
+            return
+        }
+        if ($Args.Count -lt 2) {
+            Write-Host "Uso: setup.ps1 stop <nginx|php> <x.x.x>"
+            exit 1
+        }
+        $version = $Args[1]
+        Stop-Component $target $version
+    }
+    "restart" {
+        if ($Args.Count -lt 1) {
+            Write-Host "Uso: setup.ps1 restart <nginx|php|--all> [<x.x.x>]"
+            exit 1
+        }
+        $target = $Args[0].ToLower()
+        if ($target -eq "--all") {
+            ForEach-Version "nginx" { param($v) & $PSCommandPath restart nginx $v }
+            ForEach-Version "php"   { param($v) & $PSCommandPath restart php $v }
+            return
+        }
+        if ($Args.Count -lt 2) {
+            Write-Host "Uso: setup.ps1 restart <nginx|php> <x.x.x>"
+            exit 1
+        }
+        $version = $Args[1]
+        Stop-Component $target $version
+        Start-Sleep -Seconds 1
+        Start-Component $target $version
     }
     default {
         Write-Host "Comando desconhecido: $Command"

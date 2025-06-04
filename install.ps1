@@ -157,6 +157,23 @@ function Install-PHP {
     if (Test-Path $phpIniSrc) {
         Copy-Item $phpIniSrc $phpIniDst -Force
         Write-Host "Arquivo php.ini copiado para $($phpDir)\$subDir"
+        # Gera linhas extension= para todas as DLLs da pasta ext
+        $extDir = Join-Path (Join-Path $phpDir $subDir) "ext"
+        if (Test-Path $extDir) {
+            # Lista de extensões essenciais para CakePHP e Laravel (MySQL)
+            $acceptExt = @(
+                "mbstring", "intl", "pdo", "pdo_mysql", "pdo_pgsql", "openssl", "json", "fileinfo", "curl", "gd", "gd2", "zip", "xml", "xmlrpc"
+            )
+
+            $extensions = Get-ChildItem $extDir -Filter *.dll | ForEach-Object {
+                $name = $_.BaseName -replace '^php_',''
+                if ($acceptExt -contains $name) {
+                    "extension=$name"
+                }
+            }
+            Add-Content -Path $phpIniDst -Value "`n; Extensões essenciais para CakePHP e Laravel:`n$($extensions -join "`n")"
+            Write-Host "Bloco de extensões essenciais adicionado ao php.ini"
+        }
     } else {
         Write-Host "Arquivo configs\php\php.ini não encontrado. Pulei a cópia do php.ini."
     }
@@ -275,7 +292,7 @@ function Create-NginxSiteConfig {
         $PhpUpstream = "127.0.0.1:9000"
     }
 
-    if (-not $Root -and Test-Path "C:\Workspace\$Domain") {
+    if (-not $Root -and (Test-Path "C:\Workspace\$Domain")) {
         $Root = "C:\Workspace\$Domain"
     }
 
@@ -288,12 +305,6 @@ server {
 
     listen 80;
     listen [::]:80;
-
-    # For https
-    #listen 443 ssl;
-    #listen [::]:443 ssl ipv6only=on;
-    #ssl_certificate /etc/nginx/ssl/default.crt;
-    #ssl_certificate_key /etc/nginx/ssl/default.key;
 
     server_name $serverName;
     root $rootPath;
@@ -310,7 +321,6 @@ server {
         fastcgi_buffers 16 16k;
         fastcgi_buffer_size 32k;
         fastcgi_param SCRIPT_FILENAME `$document_root`$fastcgi_script_name;
-        #fixes timeouts
         fastcgi_read_timeout 600;
         include fastcgi_params;
     }
