@@ -509,7 +509,7 @@ switch ($Command) {
         # Exibe as últimas 50 linhas do log principal
         $logFile = Join-Path $baseDir "devstack.log"
         if (Test-Path $logFile) {
-            Write-Host "Últimas 50 linhas de $logFile:"
+            Write-Host "Últimas 50 linhas de $($logFile):"
             Get-Content $logFile -Tail 50
         } else {
             Write-WarningMsg "Arquivo de log não encontrado."
@@ -521,9 +521,9 @@ switch ($Command) {
         $svc = $Args[0]
         try {
             Start-Service -Name $svc
-            Write-Info "Serviço $svc ativado."
+            Write-Info "Serviço $($svc) ativado."
         } catch {
-            Write-ErrorMsg "Erro ao ativar serviço $svc: $_"
+            Write-ErrorMsg "Erro ao ativar serviço $($svc): $_"
         }
     }
     "disable" {
@@ -532,9 +532,9 @@ switch ($Command) {
         $svc = $Args[0]
         try {
             Stop-Service -Name $svc
-            Write-Info "Serviço $svc desativado."
+            Write-Info "Serviço $($svc) desativado."
         } catch {
-            Write-ErrorMsg "Erro ao desativar serviço $svc: $_"
+            Write-ErrorMsg "Erro ao desativar serviço $($svc): $_"
         }
     }
     "config" {
@@ -593,7 +593,7 @@ switch ($Command) {
             exit 1
         }
         & $openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout $key -out $crt -subj "/CN=$domain"
-        Write-Info "Certificado gerado: $crt, $key"
+        Write-Info "Certificado gerado: $($crt), $($key)"
     }
     "db" {
         # Gerenciamento básico de bancos de dados (MySQL, PostgreSQL, MongoDB)
@@ -631,7 +631,7 @@ switch ($Command) {
                     default { Write-Host "Comando db mongo desconhecido." }
                 }
             }
-            default { Write-Host "Banco de dados não suportado: $db" }
+            default { Write-Host "Banco de dados não suportado: $($db)" }
         }
     }
     "service" {
@@ -677,9 +677,9 @@ switch ($Command) {
                 Write-Host ("{0,-12}: NÃO INSTALADO" -f $c.name) -ForegroundColor Red
             }
         }
-        Write-Host "PATH: $env:Path"
-        Write-Host "Usuário: $env:USERNAME"
-        Write-Host "Sistema: $env:OS"
+        Write-Host "PATH: $($env:Path)"
+        Write-Host "Usuário: $($env:USERNAME)"
+        Write-Host "Sistema: $($env:OS)"
     }
     "global" {
         $devstackDir = $PSScriptRoot

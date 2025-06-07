@@ -449,7 +449,7 @@ server {
     Set-Content -Path $confPath -Value $template
     Write-Host "Arquivo $confPath criado/configurado com sucesso!"
 
-    $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
+    $hostsPath = "$($env:SystemRoot)\System32\drivers\etc\hosts"
     $entry = "127.0.0.1`t$serverName"
     $hostsContent = Get-Content $hostsPath -ErrorAction SilentlyContinue
     if ($hostsContent -notcontains $entry) {
