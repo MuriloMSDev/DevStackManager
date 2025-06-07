@@ -154,6 +154,13 @@ function Deps-Check {
     }
 }
 
+function Center-Text($text, $width) {
+    $pad = [Math]::Max(0, $width - $text.Length)
+    $padLeft = [Math]::Floor($pad / 2)
+    $padRight = $pad - $padLeft
+    return (' ' * $padLeft) + $text + (' ' * $padRight)
+}
+
 function Update-Component {
     param([string]$Component)
     switch ($Component) {
@@ -198,52 +205,7 @@ switch ($Command) {
         }
         $firstArg = $Args[0].Trim()
         if ($firstArg -eq '--installed') {
-            if (-not (Test-Path $baseDir)) {
-                Write-WarningMsg "O diretório $baseDir não existe. Nenhuma ferramenta instalada."
-                return
-            }
-            Write-Host "Ferramentas instaladas:"
-            $components = @(
-                @{ name = 'php'; dir = $phpDir },
-                @{ name = 'nginx'; dir = $nginxDir },
-                @{ name = 'mysql'; dir = $mysqlDir },
-                @{ name = 'nodejs'; dir = $nodeDir },
-                @{ name = 'python'; dir = $pythonDir },
-                @{ name = 'composer'; dir = $composerDir },
-                @{ name = 'phpmyadmin'; dir = $pmaDir },
-                @{ name = 'git'; dir = $baseDir; pattern = 'git-*' },
-                @{ name = 'mongodb'; dir = $mongoDir },
-                @{ name = 'redis'; dir = $redisDir },
-                @{ name = 'pgsql'; dir = $pgsqlDir },
-                @{ name = 'mailhog'; dir = $mailhogDir },
-                @{ name = 'elasticsearch'; dir = $elasticDir },
-                @{ name = 'memcached'; dir = $memcachedDir },
-                @{ name = 'docker'; dir = $dockerDir },
-                @{ name = 'yarn'; dir = $yarnDir },
-                @{ name = 'pnpm'; dir = $pnpmDir },
-                @{ name = 'wpcli'; dir = $wpcliDir },
-                @{ name = 'adminer'; dir = $adminerDir },
-                @{ name = 'poetry'; dir = $poetryDir },
-                @{ name = 'ruby'; dir = $rubyDir },
-                @{ name = 'go'; dir = $goDir },
-                @{ name = 'certbot'; dir = $certbotDir }
-            )
-            foreach ($comp in $components) {
-                if (-not (Test-Path $comp.dir)) {
-                    Write-Host ("{0,-12}: (não instalado)" -f $comp.name)
-                    continue
-                }
-                if ($comp.name -eq 'git') {
-                    $versions = Get-ChildItem $comp.dir -Directory | Where-Object { $_.Name -like $comp.pattern } | ForEach-Object { $_.Name }
-                } else {
-                    $versions = Get-ChildItem $comp.dir -Directory -ErrorAction SilentlyContinue | ForEach-Object { $_.Name }
-                }
-                if ($versions -and $versions.Count -gt 0) {
-                    Write-Host ("{0,-12}: {1}" -f $comp.name, ($versions -join ", "))
-                } else {
-                    Write-Host ("{0,-12}: (não instalado)" -f $comp.name)
-                }
-            }
+            List-InstalledVersions
             return
         }
         switch ($firstArg.ToLower()) {
@@ -679,12 +641,6 @@ switch ($Command) {
         $col1 = 15; $col2 = 20
         $header = ('_' * ($col1 + $col2 + 3))
         Write-Host $header
-        function Center-Text($text, $width) {
-            $pad = [Math]::Max(0, $width - $text.Length)
-            $padLeft = [Math]::Floor($pad / 2)
-            $padRight = $pad - $padLeft
-            return (' ' * $padLeft) + $text + (' ' * $padRight)
-        }
         Write-Host ("|{0}|{1}|" -f (Center-Text 'Ferramenta' $col1), (Center-Text 'Status' $col2))
         Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|")
         foreach ($row in $table) {
