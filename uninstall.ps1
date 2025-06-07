@@ -85,8 +85,8 @@ function Uninstall-Python {
 function Uninstall-Composer {
     param($version)
     if ($version) {
-        $composerPhar = "composer-$version.phar"
-        Uninstall-GenericTool -ToolDir $composerDir -SubDir $composerPhar
+        $composerSubDir = "composer-$version"
+        Uninstall-GenericTool -ToolDir $composerDir -SubDir $composerSubDir
     } else {
         Get-ChildItem $composerDir -Directory | ForEach-Object {
             Uninstall-GenericTool -ToolDir $composerDir -SubDir $_.Name
@@ -108,10 +108,38 @@ function Uninstall-PhpMyAdmin {
     param($version)
     if ($version) {
         $pmaSubDir = "phpmyadmin-$version"
-        Uninstall-GenericTool -ToolDir $baseDir -SubDir $pmaSubDir
+        Uninstall-GenericTool -ToolDir $pmaDir -SubDir $pmaSubDir
     } else {
         Get-ChildItem $pmaDir -Directory | ForEach-Object {
             Uninstall-GenericTool -ToolDir $pmaDir -SubDir $_.Name
         }
     }
 }
+
+function Uninstall-Git {
+    param($version)
+    if ($version) {
+        $gitSubDir = "git-$version"
+        Uninstall-GenericTool -ToolDir $baseDir -SubDir $gitSubDir
+    } else {
+        Get-ChildItem $baseDir -Directory | Where-Object { $_.Name -like 'git-*' } | ForEach-Object {
+            Uninstall-GenericTool -ToolDir $baseDir -SubDir $_.Name
+        }
+    }
+}
+
+function Uninstall-MongoDB { param($version) Write-Host '[stub] Desinstalação do MongoDB ainda não implementada.' }
+function Uninstall-Redis { param($version) Write-Host '[stub] Desinstalação do Redis ainda não implementada.' }
+function Uninstall-PgSQL { param($version) Write-Host '[stub] Desinstalação do PostgreSQL ainda não implementada.' }
+function Uninstall-MailHog { param($version) Write-Host '[stub] Desinstalação do MailHog ainda não implementada.' }
+function Uninstall-Elasticsearch { param($version) Write-Host '[stub] Desinstalação do Elasticsearch ainda não implementada.' }
+function Uninstall-Memcached { param($version) Write-Host '[stub] Desinstalação do Memcached ainda não implementada.' }
+function Uninstall-Docker { param($version) Write-Host '[stub] Desinstalação do Docker ainda não implementada.' }
+function Uninstall-Yarn { param($version) Write-Host '[stub] Desinstalação do Yarn ainda não implementada.' }
+function Uninstall-Pnpm { param($version) Write-Host '[stub] Desinstalação do pnpm ainda não implementada.' }
+function Uninstall-WPCLI { param($version) Write-Host '[stub] Desinstalação do WP-CLI ainda não implementada.' }
+function Uninstall-Adminer { param($version) Write-Host '[stub] Desinstalação do Adminer ainda não implementada.' }
+function Uninstall-Poetry { param($version) Write-Host '[stub] Desinstalação do Poetry ainda não implementada.' }
+function Uninstall-Ruby { param($version) Write-Host '[stub] Desinstalação do Ruby ainda não implementada.' }
+function Uninstall-Go { param($version) Write-Host '[stub] Desinstalação do Go ainda não implementada.' }
+function Uninstall-Certbot { param($version) Write-Host '[stub] Desinstalação do Certbot ainda não implementada.' }

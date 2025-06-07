@@ -1,3 +1,7 @@
+function Normalize-Path([string]$path) {
+    return ([System.IO.Path]::GetFullPath($path)).TrimEnd('\')
+}
+
 function Add-BinDirsToPath {
     $pathsToAdd = @()
 
@@ -62,9 +66,17 @@ function Add-BinDirsToPath {
         }
     }
 
+    # Git (Portable)
+    Get-ChildItem $baseDir -Directory | Where-Object { $_.Name -like 'git-*' } | ForEach-Object {
+        $gitBin = Join-Path $_.FullName "cmd"
+        if (Test-Path $gitBin) {
+            $pathsToAdd += $gitBin
+        }
+    }
+
     $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    $currentPathList = $currentPath -split ';'
-    $newPaths = $pathsToAdd | Where-Object { $_ -and ($currentPathList -notcontains $_) }
+    $currentPathList = $currentPath -split ';' | ForEach-Object { Normalize-Path $_ }
+    $newPaths = $pathsToAdd | ForEach-Object { Normalize-Path $_ } | Where-Object { $_ -and ($currentPathList -notcontains $_) }
 
     if ($newPaths.Count -gt 0) {
         $newPathValue = ($currentPathList + $newPaths) -join ';'
@@ -76,4 +88,15 @@ function Add-BinDirsToPath {
     } else {
         Write-Host "Nenhum novo diretório foi adicionado ao PATH."
     }
+}
+
+function Remove-FromPath {
+    param([string[]]$dirsToRemove)
+    $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $currentPathList = $currentPath -split ';' | ForEach-Object { Normalize-Path $_ }
+    $dirsToRemoveNorm = $dirsToRemove | ForEach-Object { Normalize-Path $_ }
+    $newPathList = $currentPathList | Where-Object { $dirsToRemoveNorm -notcontains $_ }
+    $newPathValue = $newPathList -join ';'
+    [Environment]::SetEnvironmentVariable("Path", $newPathValue, "User")
+    $env:PATH = $newPathValue
 }
