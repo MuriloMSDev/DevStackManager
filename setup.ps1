@@ -32,11 +32,11 @@ $goDir = "$baseDir\go"
 $certbotDir = "$baseDir\certbot"
 $nginxSitesDir = "conf\sites-enabled"
 
-. "$PSScriptRoot\install.ps1"
-. "$PSScriptRoot\uninstall.ps1"
-. "$PSScriptRoot\path.ps1"
-. "$PSScriptRoot\list.ps1"
-. "$PSScriptRoot\process.ps1"
+. "$PSScriptRoot\src\install.ps1"
+. "$PSScriptRoot\src\uninstall.ps1"
+. "$PSScriptRoot\src\path.ps1"
+. "$PSScriptRoot\src\list.ps1"
+. "$PSScriptRoot\src\process.ps1"
 
 Set-Variable -Name baseDir -Value $baseDir -Scope Global
 Set-Variable -Name nginxDir -Value $nginxDir -Scope Global
