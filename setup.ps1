@@ -670,16 +670,71 @@ switch ($Command) {
             @{ name = "Go"; path = $goDir },
             @{ name = "Certbot"; path = $certbotDir }
         )
+        # Tabela Status
+        $table = @()
         foreach ($c in $checks) {
-            if (Test-Path $c.path) {
-                Write-Host ("{0,-12}: OK" -f $c.name) -ForegroundColor Green
-            } else {
-                Write-Host ("{0,-12}: NÃO INSTALADO" -f $c.name) -ForegroundColor Red
+            $status = if (Test-Path $c.path) { 'OK' } else { 'NÃO INSTALADO' }
+            $table += [PSCustomObject]@{ Ferramenta = $c.name; Status = $status }
+        }
+        $col1 = 15; $col2 = 20
+        $header = ('_' * ($col1 + $col2 + 3))
+        Write-Host $header
+        function Center-Text($text, $width) {
+            $pad = [Math]::Max(0, $width - $text.Length)
+            $padLeft = [Math]::Floor($pad / 2)
+            $padRight = $pad - $padLeft
+            return (' ' * $padLeft) + $text + (' ' * $padRight)
+        }
+        Write-Host ("|{0}|{1}|" -f (Center-Text 'Ferramenta' $col1), (Center-Text 'Status' $col2))
+        Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|")
+        foreach ($row in $table) {
+            $color = if ($row.Status -eq 'OK') { 'Green' } else { 'Red' }
+            $ferramenta = Center-Text $row.Ferramenta $col1
+            $status = Center-Text $row.Status $col2
+            Write-Host -NoNewline "|"
+            Write-Host -NoNewline $ferramenta -ForegroundColor $color
+            Write-Host -NoNewline "|"
+            Write-Host -NoNewline $status -ForegroundColor $color
+            Write-Host "|"
+        }
+        Write-Host ("¯" * ($col1 + $col2 + 3))
+        # Tabela PATH
+        $pathList = $env:Path -split ';'
+        $maxPathLen = ($pathList | Measure-Object -Property Length -Maximum).Maximum
+        $headerPath = ('_' * ($maxPathLen + 4))
+        Write-Host $headerPath
+        Write-Host ("| {0,-$maxPathLen} |" -f 'PATH')
+        Write-Host ("|" + ('-' * ($maxPathLen + 2)) + "|")
+        foreach ($p in $pathList) {
+            if (![string]::IsNullOrWhiteSpace($p)) {
+                Write-Host ("| {0,-$maxPathLen} |" -f $p) -ForegroundColor DarkGray
             }
         }
-        Write-Host "PATH: $($env:Path)"
-        Write-Host "Usuário: $($env:USERNAME)"
-        Write-Host "Sistema: $($env:OS)"
+        Write-Host ("¯" * ($maxPathLen + 4))
+        # Tabela Usuário
+        $user = $env:USERNAME
+        $userLen = $user.Length
+        $colUser = [Math]::Max(8, $userLen)
+        $headerUser = ('_' * ($colUser + 4))
+        Write-Host $headerUser
+        Write-Host ("| {0,-$colUser} |" -f 'Usuário')
+        Write-Host ("|" + ('-' * ($colUser + 2)) + "|")
+        Write-Host -NoNewline "| "
+        Write-Host -NoNewline ("{0,-$colUser}" -f $user) -ForegroundColor Cyan
+        Write-Host " |"
+        Write-Host ("¯" * ($colUser + 4))
+        # Tabela Sistema
+        $os = $env:OS
+        $osLen = $os.Length
+        $colOS = [Math]::Max(8, $osLen)
+        $headerOS = ('_' * ($colOS + 4))
+        Write-Host $headerOS
+        Write-Host ("| {0,-$colOS} |" -f 'Sistema')
+        Write-Host ("|" + ('-' * ($colOS + 2)) + "|")
+        Write-Host -NoNewline "| "
+        Write-Host -NoNewline ("{0,-$colOS}" -f $os) -ForegroundColor Cyan
+        Write-Host " |"
+        Write-Host ("¯" * ($colOS + 4))
     }
     "global" {
         $devstackDir = $PSScriptRoot
