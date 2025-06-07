@@ -86,12 +86,32 @@ function Status-Component {
         "python" { $pythonDir }
         "composer" { $composerDir }
         "git" { $baseDir }
+        "phpmyadmin" { $pmaDir }
+        "mongodb" { $mongoDir }
+        "redis" { $redisDir }
+        "pgsql" { $pgsqlDir }
+        "mailhog" { $mailhogDir }
+        "elasticsearch" { $elasticDir }
+        "memcached" { $memcachedDir }
+        "docker" { $dockerDir }
+        "yarn" { $yarnDir }
+        "pnpm" { $pnpmDir }
+        "wpcli" { $wpcliDir }
+        "adminer" { $adminerDir }
+        "poetry" { $poetryDir }
+        "ruby" { $rubyDir }
+        "go" { $goDir }
+        "certbot" { $certbotDir }
+        "openssl" { $openSSLDir }
         default { return }
     }
-    if ($Component -eq "git") {
-        $versions = Get-ChildItem $dir -Directory | Where-Object { $_.Name -like 'git-*' } | ForEach-Object { $_.Name }
-    } else {
-        $versions = Get-ChildItem $dir -Directory | ForEach-Object { $_.Name }
+    $versions = @()
+    if (Test-Path $dir) {
+        if ($Component -eq "git") {
+            $versions = Get-ChildItem $dir -Directory | Where-Object { $_.Name -like 'git-*' } | ForEach-Object { $_.Name }
+        } else {
+            $versions = Get-ChildItem $dir -Directory | ForEach-Object { $_.Name }
+        }
     }
     if ($versions.Count -eq 0) {
         Write-WarningMsg "$Component não está instalado."
@@ -111,6 +131,24 @@ function Status-All {
     Status-Component "nodejs"
     Status-Component "python"
     Status-Component "composer"
+    Status-Component "git"
+    Status-Component "phpmyadmin"
+    Status-Component "mongodb"
+    Status-Component "redis"
+    Status-Component "pgsql"
+    Status-Component "mailhog"
+    Status-Component "elasticsearch"
+    Status-Component "memcached"
+    Status-Component "docker"
+    Status-Component "yarn"
+    Status-Component "pnpm"
+    Status-Component "wpcli"
+    Status-Component "adminer"
+    Status-Component "poetry"
+    Status-Component "ruby"
+    Status-Component "go"
+    Status-Component "certbot"
+    Status-Component "openssl"
 }
 
 function Test-All {
@@ -121,7 +159,25 @@ function Test-All {
         @{ name = "mysql"; exe = "mysqld-*.exe"; dir = $mysqlDir; args = "--version" },
         @{ name = "nodejs"; exe = "node-*.exe"; dir = $nodeDir; args = "-v" },
         @{ name = "python"; exe = "python-*.exe"; dir = $pythonDir; args = "--version" },
-        @{ name = "git"; exe = "git.exe"; dir = $baseDir; args = "--version" }
+        @{ name = "git"; exe = "git.exe"; dir = $baseDir; args = "--version" },
+        @{ name = "composer"; exe = "composer-*.exe"; dir = $composerDir; args = "--version" },
+        @{ name = "phpmyadmin"; exe = "index.php"; dir = $pmaDir; args = "" },
+        @{ name = "mongodb"; exe = "mongo.exe"; dir = $mongoDir; args = "--version" },
+        @{ name = "redis"; exe = "redis-server.exe"; dir = $redisDir; args = "--version" },
+        @{ name = "pgsql"; exe = "psql.exe"; dir = $pgsqlDir; args = "--version" },
+        @{ name = "mailhog"; exe = "mailhog.exe"; dir = $mailhogDir; args = "--version" },
+        @{ name = "elasticsearch"; exe = "elasticsearch.exe"; dir = $elasticDir; args = "--version" },
+        @{ name = "memcached"; exe = "memcached.exe"; dir = $memcachedDir; args = "-h" },
+        @{ name = "docker"; exe = "docker.exe"; dir = $dockerDir; args = "--version" },
+        @{ name = "yarn"; exe = "yarn.cmd"; dir = $yarnDir; args = "--version" },
+        @{ name = "pnpm"; exe = "pnpm.exe"; dir = $pnpmDir; args = "--version" },
+        @{ name = "wpcli"; exe = "wp-cli.phar"; dir = $wpcliDir; args = "--version" },
+        @{ name = "adminer"; exe = "adminer-*.php"; dir = $adminerDir; args = "" },
+        @{ name = "poetry"; exe = "poetry.exe"; dir = $poetryDir; args = "--version" },
+        @{ name = "ruby"; exe = "ruby.exe"; dir = $rubyDir; args = "--version" },
+        @{ name = "go"; exe = "go.exe"; dir = $goDir; args = "version" },
+        @{ name = "certbot"; exe = "certbot.exe"; dir = $certbotDir; args = "--version" },
+        @{ name = "openssl"; exe = "openssl.exe"; dir = $openSSLDir; args = "version" }
     )
     foreach ($tool in $tools) {
         if ($tool.name -eq "git") {
@@ -176,6 +232,23 @@ function Update-Component {
         "composer" { Install-Composer }
         "phpmyadmin" { Install-PhpMyAdmin }
         "git" { Install-Git }
+        "phpmyadmin" { Install-PhpMyAdmin }
+        "mongodb" { Install-MongoDB }
+        "redis" { Install-Redis }
+        "pgsql" { Install-Pgsql }
+        "mailhog" { Install-Mailhog }
+        "elasticsearch" { Install-Elastic }
+        "memcached" { Install-Memcached }
+        "docker" { Install-Docker }
+        "yarn" { Install-Yarn }
+        "pnpm" { Install-Pnpm }
+        "wpcli" { Install-Wpcli }
+        "adminer" { Install-Adminer }
+        "poetry" { Install-Poetry }
+        "ruby" { Install-Ruby }
+        "go" { Install-Go }
+        "certbot" { Install-Certbot }
+        "openssl" { Install-OpenSSL }
         default { Write-ErrorMsg "Componente desconhecido: $Component" }
     }
 }
@@ -190,6 +263,24 @@ function Alias-Component {
         "nodejs" { Join-Path $nodeDir "node-v$Version-win-x64\node-$Version.exe" }
         "python" { Join-Path $pythonDir "python-$Version\python-$Version.exe" }
         "git" { Join-Path $baseDir "git-$Version\cmd\git.exe" }
+        "mysql" { Join-Path $mysqlDir "mysql-$Version\bin\mysql.exe" }
+        "phpmyadmin" { Join-Path $pmaDir "phpmyadmin-$Version\index.php" }
+        "mongodb" { Join-Path $mongoDir "mongodb-$Version\bin\mongo.exe" }
+        "redis" { Join-Path $redisDir "redis-$Version\redis-server.exe" }
+        "pgsql" { Join-Path $pgsqlDir "pgsql-$Version\bin\psql.exe" }
+        "mailhog" { Join-Path $mailhogDir "mailhog-$Version\mailhog.exe" }
+        "elasticsearch" { Join-Path $elasticDir "elasticsearch-$Version\bin\elasticsearch.exe" }
+        "memcached" { Join-Path $memcachedDir "memcached-$Version\memcached.exe" }
+        "docker" { Join-Path $dockerDir "docker-$Version\docker.exe" }
+        "yarn" { Join-Path $yarnDir "yarn-v$Version\bin\yarn.cmd" }
+        "pnpm" { Join-Path $pnpmDir "pnpm-v$Version\pnpm.exe" }
+        "wpcli" { Join-Path $wpcliDir "wp-cli-$Version\wp-cli.phar" }
+        "adminer" { Join-Path $adminerDir "adminer-$Version.php" }
+        "poetry" { Join-Path $poetryDir "poetry-$Version\bin\poetry.exe" }
+        "ruby" { Join-Path $rubyDir "ruby-$Version\bin\ruby.exe" }
+        "go" { Join-Path $goDir "go$Version\bin\go.exe" }
+        "certbot" { Join-Path $certbotDir "certbot-$Version\certbot.exe" }
+        "openssl" { Join-Path $openSSLDir "openssl-$Version\bin\openssl.exe" }
         default { $null }
     }
     if ($exe -and (Test-Path $exe)) {
@@ -214,11 +305,32 @@ switch ($Command) {
             return
         }
         switch ($firstArg.ToLower()) {
-            "php"     { List-PHPVersions }
-            "nodejs"  { List-NodeVersions }
-            "node"    { List-NodeVersions }
-            "python"  { List-PythonVersions }
-            default   { Write-Host "Ferramenta desconhecida: $($firstArg)" }
+            "php"           { List-PHPVersions }
+            "nodejs"        { List-NodeVersions }
+            "node"          { List-NodeVersions }
+            "python"        { List-PythonVersions }
+            "composer"      { List-ComposerVersions }
+            "mysql"         { List-MySQLVersions }
+            "nginx"         { List-NginxVersions }
+            "phpmyadmin"    { List-PhpMyAdminVersions }
+            "git"           { List-GitVersions }
+            "mongodb"       { List-MongoDBVersions }
+            "redis"         { List-RedisVersions }
+            "pgsql"         { List-PgsqlVersions }
+            "mailhog"       { List-MailhogVersions }
+            "elasticsearch" { List-ElasticVersions }
+            "memcached"     { List-MemcachedVersions }
+            "docker"        { List-DockerVersions }
+            "yarn"          { List-YarnVersions }
+            "pnpm"          { List-PnpmVersions }
+            "wpcli"         { List-WpcliVersions }
+            "adminer"       { List-AdminerVersions }
+            "poetry"        { List-PoetryVersions }
+            "ruby"          { List-RubyVersions }
+            "go"            { List-GoVersions }
+            "certbot"       { List-CertbotVersions }
+            "openssl"       { List-OpenSSLVersions }
+            default         { Write-Host "Ferramenta desconhecida: $($firstArg)" }
         }
     }
     "site" {
@@ -577,52 +689,7 @@ switch ($Command) {
         Write-Log "Comando executado: doctor $($Args -join ' ')"
         # Diagnóstico do ambiente DevStack
         Write-Host "Diagnóstico do ambiente DevStack:"
-        $checks = @(
-            @{ name = "PHP"; path = $phpDir },
-            @{ name = "Nginx"; path = $nginxDir },
-            @{ name = "MySQL"; path = $mysqlDir },
-            @{ name = "Node.js"; path = $nodeDir },
-            @{ name = "Python"; path = $pythonDir },
-            @{ name = "Composer"; path = $composerDir },
-            @{ name = "Git"; path = $baseDir },
-            @{ name = "MongoDB"; path = $mongoDir },
-            @{ name = "Redis"; path = $redisDir },
-            @{ name = "PgSQL"; path = $pgsqlDir },
-            @{ name = "MailHog"; path = $mailhogDir },
-            @{ name = "Elasticsearch"; path = $elasticDir },
-            @{ name = "Memcached"; path = $memcachedDir },
-            @{ name = "Docker"; path = $dockerDir },
-            @{ name = "Yarn"; path = $yarnDir },
-            @{ name = "pnpm"; path = $pnpmDir },
-            @{ name = "WP-CLI"; path = $wpcliDir },
-            @{ name = "Adminer"; path = $adminerDir },
-            @{ name = "Poetry"; path = $poetryDir },
-            @{ name = "Ruby"; path = $rubyDir },
-            @{ name = "Go"; path = $goDir },
-            @{ name = "Certbot"; path = $certbotDir }
-        )
-        # Tabela Status
-        $table = @()
-        foreach ($c in $checks) {
-            $status = if (Test-Path $c.path) { 'OK' } else { 'NÃO INSTALADO' }
-            $table += [PSCustomObject]@{ Ferramenta = $c.name; Status = $status }
-        }
-        $col1 = 15; $col2 = 20
-        $header = ('_' * ($col1 + $col2 + 3))
-        Write-Host $header
-        Write-Host ("|{0}|{1}|" -f (Center-Text 'Ferramenta' $col1), (Center-Text 'Status' $col2))
-        Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|")
-        foreach ($row in $table) {
-            $color = if ($row.Status -eq 'OK') { 'Green' } else { 'Red' }
-            $ferramenta = Center-Text $row.Ferramenta $col1
-            $status = Center-Text $row.Status $col2
-            Write-Host -NoNewline "|"
-            Write-Host -NoNewline $ferramenta -ForegroundColor $color
-            Write-Host -NoNewline "|"
-            Write-Host -NoNewline $status -ForegroundColor $color
-            Write-Host "|"
-        }
-        Write-Host ("¯" * ($col1 + $col2 + 3))
+        List-InstalledVersions
         # Tabela PATH
         $pathList = $env:Path -split ';'
         $maxPathLen = ($pathList | Measure-Object -Property Length -Maximum).Maximum
