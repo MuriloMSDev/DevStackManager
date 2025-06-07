@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true, Position=0)]
-    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor")]
+    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help")]
     [string]$Command,
 
     [Parameter(Position=1)]
@@ -292,7 +292,53 @@ function Alias-Component {
     }
 }
 
+function Help-DevStack {
+    Write-Host "DevStackSetup - Comandos disponíveis:" -ForegroundColor Cyan
+    $cmds = @(
+        @{ cmd = "install <componente> [versão]"; desc = "Instala uma ferramenta ou versão específica." },
+        @{ cmd = "uninstall <componente> [versão]"; desc = "Remove uma ferramenta ou versão específica." },
+        @{ cmd = "list <componente|--installed>"; desc = "Lista versões disponíveis ou instaladas." },
+        @{ cmd = "status"; desc = "Mostra status de todas as ferramentas." },
+        @{ cmd = "test"; desc = "Testa todas as ferramentas instaladas." },
+        @{ cmd = "update <componente>"; desc = "Atualiza uma ferramenta para a última versão." },
+        @{ cmd = "deps"; desc = "Verifica dependências do sistema." },
+        @{ cmd = "alias <componente> <versão>"; desc = "Cria um alias .bat para a versão da ferramenta." },
+        @{ cmd = "global"; desc = "Adiciona DevStack ao PATH e cria alias global." },
+        @{ cmd = "self-update"; desc = "Atualiza o DevStackSetup." },
+        @{ cmd = "clean"; desc = "Remove logs e arquivos temporários." },
+        @{ cmd = "backup"; desc = "Cria backup das configs e logs." },
+        @{ cmd = "logs"; desc = "Exibe as últimas linhas do log." },
+        @{ cmd = "enable <serviço>"; desc = "Ativa um serviço do Windows." },
+        @{ cmd = "disable <serviço>"; desc = "Desativa um serviço do Windows." },
+        @{ cmd = "config"; desc = "Abre o diretório de configuração." },
+        @{ cmd = "reset <componente>"; desc = "Remove e reinstala uma ferramenta." },
+        @{ cmd = "proxy [set <url>|unset|show]"; desc = "Gerencia variáveis de proxy." },
+        @{ cmd = "ssl <domínio> [-openssl <versão>]"; desc = "Gera certificado SSL autoassinado." },
+        @{ cmd = "db <mysql|pgsql|mongo> <comando> [args...]"; desc = "Gerencia bancos de dados básicos." },
+        @{ cmd = "service"; desc = "Lista serviços DevStack (Windows)." },
+        @{ cmd = "doctor"; desc = "Diagnóstico do ambiente DevStack." },
+        @{ cmd = "site <domínio> [opções]"; desc = "Cria configuração de site nginx." },
+        @{ cmd = "help"; desc = "Exibe esta ajuda." }
+    )
+    $col1 = 46; $col2 = 60
+    Write-Host ("_" * ($col1 + $col2 + 3))
+    Write-Host ("|{0}|{1}|" -f (Center-Text 'Comando' $col1), (Center-Text 'Descrição' $col2))
+    Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|")
+    foreach ($c in $cmds) {
+        Write-Host -NoNewline "|"
+        Write-Host -NoNewline (Center-Text $c.cmd $col1) -ForegroundColor Yellow
+        Write-Host -NoNewline "|"
+        Write-Host -NoNewline (Center-Text $c.desc $col2) -ForegroundColor Gray
+        Write-Host "|"
+    }
+    Write-Host ("¯" * ($col1 + $col2 + 3))
+}
+
 switch ($Command) {
+    "help" {
+        Write-Log "Comando executado: help"
+        Help-DevStack
+    }
     "list" {
         Write-Log "Comando executado: list $($Args -join ' ')"
         if ($Args.Count -eq 0) {
