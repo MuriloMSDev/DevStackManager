@@ -31,6 +31,8 @@ $rubyDir = "$baseDir\ruby"
 $goDir = "$baseDir\go"
 $certbotDir = "$baseDir\certbot"
 $nginxSitesDir = "conf\sites-enabled"
+$openSSLDir = "$baseDir\openssl"
+$tmpDir = "$baseDir\tmp"
 
 . "$PSScriptRoot\src\install.ps1"
 . "$PSScriptRoot\src\uninstall.ps1"
@@ -62,6 +64,8 @@ Set-Variable -Name rubyDir -Value $rubyDir -Scope Global
 Set-Variable -Name goDir -Value $goDir -Scope Global
 Set-Variable -Name certbotDir -Value $certbotDir -Scope Global
 Set-Variable -Name nginxSitesDir -Value $nginxSitesDir -Scope Global
+Set-Variable -Name openSSLDir -Value $openSSLDir -Scope Global
+Set-Variable -Name tmpDir -Value $tmpDir -Scope Global
 
 function Write-Info($msg) { Write-Host $msg -ForegroundColor Cyan }
 function Write-WarningMsg($msg) { Write-Host $msg -ForegroundColor Yellow }
@@ -490,18 +494,33 @@ switch ($Command) {
     "ssl" {
         Write-Log "Comando executado: ssl $($Args -join ' ')"
         # Gera certificado SSL autoassinado para um domínio
-        if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 ssl <dominio>"; exit 1 }
+        if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 ssl <dominio> [-openssl <versao>]"; exit 1 }
         $domain = $Args[0]
         $sslDir = Join-Path $baseDir "configs\nginx\ssl"
         if (-not (Test-Path $sslDir)) { New-Item -ItemType Directory -Path $sslDir | Out-Null }
         $crt = Join-Path $sslDir "$domain.crt"
         $key = Join-Path $sslDir "$domain.key"
-        $openssl = "openssl"
-        if (-not (Get-Command $openssl -ErrorAction SilentlyContinue)) {
-            Write-ErrorMsg "OpenSSL não encontrado no PATH. Instale para usar este comando."
+        $opensslVersion = $null
+        for ($i = 1; $i -lt $Args.Count; $i++) {
+            if ($Args[$i] -eq "-openssl" -and ($i+1) -lt $Args.Count) {
+                $opensslVersion = $Args[$i+1]
+                break
+            }
+        }
+        if (-not $opensslVersion) {
+            $opensslVersion = Get-LatestOpenSSLVersion
+        }
+        $dir = Join-Path $openSSLDir "openssl-$opensslVersion\bin"
+        $opensslExe = Join-Path $dir "openssl.exe"
+        if (-not (Test-Path $opensslExe)) {
+            Write-Host "OpenSSL $opensslVersion não encontrado. Instalando..."
+            Install-OpenSSL $opensslVersion
+        }
+        if (-not (Test-Path $opensslExe)) {
+            Write-ErrorMsg "OpenSSL $opensslVersion não encontrado no PATH nem em $opensslExe. Instale para usar este comando."
             exit 1
         }
-        & $openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout $key -out $crt -subj "/CN=$domain"
+        & $opensslExe req -x509 -nodes -days 365 -newkey rsa:2048 -keyout $key -out $crt -subj "/CN=$domain"
         Write-Info "Certificado gerado: $($crt), $($key)"
     }
     "db" {

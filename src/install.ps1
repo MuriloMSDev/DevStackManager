@@ -46,6 +46,8 @@ function Install-Commands {
             "^go$"               { Install-Go }
             "^certbot-(.+)$"     { Install-Certbot ($component -replace "^certbot-") }
             "^certbot$"          { Install-Certbot }
+            "^openssl-(.+)$"     { Install-OpenSSL ($component -replace "^openssl-") }
+            "^openssl$"          { Install-OpenSSL }
             default              { Write-Host "Componente desconhecido: $component" }
         }
     }
@@ -247,6 +249,21 @@ function Get-LatestGoVersion {
 function Get-LatestCertbotVersion {
     $json = Invoke-RestMethod -Uri "https://pypi.org/pypi/certbot/json" -Headers @{ 'User-Agent' = 'DevStackSetup' }
     return $json.info.version
+}
+function Get-LatestOpenSSLVersion {
+    $page = Invoke-WebRequest -Uri "https://slproweb.com/products/Win32OpenSSL.html" -Headers @{ 'User-Agent' = 'DevStackSetup' }
+    if ($page.Content -match 'Win64OpenSSL-([\d_]+)\.exe') {
+        $ver = $matches[1] -replace '_','.'
+        return $ver
+    }
+    throw "Não foi possível obter a última versão do OpenSSL no slproweb.com."
+    $tag = $json.tag_name
+    if ($tag -match '([\d]+[\._][\d]+[\._]?[\d]*)') {
+        $ver = $matches[1] -replace '_','.'
+        if ($ver.EndsWith('.')) { $ver = $ver.Substring(0, $ver.Length-1) }
+        return $ver
+    }
+    throw "Não foi possível obter a última versão do OpenSSL. Tag: $tag"
 }
 
 function Install-Nginx {
@@ -640,4 +657,27 @@ function Install-Certbot {
     Write-Info "Instalando Certbot via pip..."
     & pip install --upgrade certbot
     Write-Info "Certbot instalado globalmente."
+}
+function Install-OpenSSL {
+    param(
+        [string]$version,
+        [string]$arch = "x64"  # default to 64-bit
+    )
+    if (-not $version) { $version = Get-LatestOpenSSLVersion }
+    $archPrefix = if ($arch -eq "x86") { "Win32OpenSSL" } else { "Win64OpenSSL" }
+    $subDir = "openssl-$version"
+    $versionUnderscore = $version -replace '\.', '_'
+    $installerName = "$archPrefix-$versionUnderscore.exe"
+    $installerUrl = "https://slproweb.com/download/$installerName"
+    Write-Host $installerUrl
+    $installDir = "C:\devstack\openssl\$subDir"
+    $installerPath = Join-Path $tmpDir $installerName
+    if (-not (Test-Path $tmpDir)) { New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null }
+    Write-Info "Baixando instalador do OpenSSL $version ($arch)..."
+    Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -ErrorAction Stop
+    Write-Info "Executando instalador do OpenSSL $version ($arch)..."
+    if (-not (Test-Path $installDir)) { New-Item -ItemType Directory -Force -Path $installDir | Out-Null }
+    Start-Process -FilePath $installerPath -ArgumentList "/silent /DIR=`"$installDir`"" -Wait
+    Remove-Item $installerPath
+    Write-Info "OpenSSL $version ($arch) instalado via instalador em $installDir"
 }
