@@ -789,7 +789,7 @@ switch ($Command) {
         if (-not (Test-Path $profilePath)) { New-Item -ItemType File -Path $profilePath -Force | Out-Null }
         $profileContent = Get-Content $profilePath -Raw
         if ($profileContent -notmatch "devstack.*setup.ps1") {
-            Add-Content $profilePath $aliasLine
+            Add-Content $profilePath "`n$aliasLine"
             Write-Host "Alias 'devstack' adicionado ao seu perfil do PowerShell." -ForegroundColor Green
         } else {
             Write-Host "Alias 'devstack' já existe no seu perfil do PowerShell." -ForegroundColor Yellow
