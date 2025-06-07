@@ -1,4 +1,5 @@
 function Normalize-Path([string]$path) {
+    if ([string]::IsNullOrWhiteSpace($path)) { return $null }
     return ([System.IO.Path]::GetFullPath($path)).TrimEnd('\')
 }
 
