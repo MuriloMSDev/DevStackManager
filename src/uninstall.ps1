@@ -1,3 +1,57 @@
+function Uninstall-Commands {
+    foreach ($component in $args) {
+        switch -Regex ($component) {
+            "^php-(.+)$"         { Uninstall-PHP ($component -replace "^php-") }
+            "^php$"              { Uninstall-PHP }
+            "^nginx$"            { Uninstall-Nginx }
+            "^mysql-(.+)$"       { Uninstall-MySQL ($component -replace "^mysql-") }
+            "^mysql$"            { Uninstall-MySQL }
+            "^nodejs-(.+)$"      { Uninstall-NodeJS ($component -replace "^nodejs-") }
+            "^(nodejs|node)$"    { Uninstall-NodeJS }
+            "^python-(.+)$"      { Uninstall-Python ($component -replace "^python-") }
+            "^python$"           { Uninstall-Python }
+            "^composer-(.+)$"    { Uninstall-Composer ($component -replace "^composer-") }
+            "^composer$"         { Uninstall-Composer }
+            "^phpmyadmin-(.+)$"  { Uninstall-PhpMyAdmin ($component -replace "^phpmyadmin-") }
+            "^phpmyadmin$"       { Uninstall-PhpMyAdmin }
+            "^git-(.+)$"         { Uninstall-Git ($component -replace "^git-") }
+            "^git$"              { Uninstall-Git }
+            "^mongodb-(.+)$"     { Uninstall-MongoDB ($component -replace "^mongodb-") }
+            "^mongodb$"          { Uninstall-MongoDB }
+            "^redis-(.+)$"       { Uninstall-Redis ($component -replace "^redis-") }
+            "^redis$"            { Uninstall-Redis }
+            "^pgsql-(.+)$"       { Uninstall-PgSQL ($component -replace "^pgsql-") }
+            "^pgsql$"            { Uninstall-PgSQL }
+            "^mailhog-(.+)$"     { Uninstall-MailHog ($component -replace "^mailhog-") }
+            "^mailhog$"          { Uninstall-MailHog }
+            "^elasticsearch-(.+)$" { Uninstall-Elasticsearch ($component -replace "^elasticsearch-") }
+            "^elasticsearch$"    { Uninstall-Elasticsearch }
+            "^memcached-(.+)$"   { Uninstall-Memcached ($component -replace "^memcached-") }
+            "^memcached$"        { Uninstall-Memcached }
+            "^docker-(.+)$"      { Uninstall-Docker ($component -replace "^docker-") }
+            "^docker$"           { Uninstall-Docker }
+            "^yarn-(.+)$"        { Uninstall-Yarn ($component -replace "^yarn-") }
+            "^yarn$"             { Uninstall-Yarn }
+            "^pnpm-(.+)$"        { Uninstall-Pnpm ($component -replace "^pnpm-") }
+            "^pnpm$"             { Uninstall-Pnpm }
+            "^wpcli-(.+)$"       { Uninstall-WPCLI ($component -replace "^wpcli-") }
+            "^wpcli$"            { Uninstall-WPCLI }
+            "^adminer-(.+)$"     { Uninstall-Adminer ($component -replace "^adminer-") }
+            "^adminer$"          { Uninstall-Adminer }
+            "^poetry-(.+)$"      { Uninstall-Poetry ($component -replace "^poetry-") }
+            "^poetry$"           { Uninstall-Poetry }
+            "^ruby-(.+)$"        { Uninstall-Ruby ($component -replace "^ruby-") }
+            "^ruby$"             { Uninstall-Ruby }
+            "^go-(.+)$"          { Uninstall-Go ($component -replace "^go-") }
+            "^go$"               { Uninstall-Go }
+            "^certbot-(.+)$"     { Uninstall-Certbot ($component -replace "^certbot-") }
+            "^certbot$"          { Uninstall-Certbot }
+            default              { Write-Host "Componente desconhecido: $component" }
+        }
+    }
+    Write-Host "Uninstall finalizado."
+}
+
 function Uninstall-GenericTool {
     param(
         [string]$ToolDir,

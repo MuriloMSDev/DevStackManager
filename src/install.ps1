@@ -1,3 +1,57 @@
+function Install-Commands {
+    foreach ($component in $args) {
+        switch -Regex ($component) {
+            "^php-(.+)$"         { Install-PHP ($component -replace "^php-") }
+            "^php$"              { Install-PHP }
+            "^nginx$"            { Install-Nginx }
+            "^mysql-(.+)$"       { Install-MySQL ($component -replace "^mysql-") }
+            "^mysql$"            { Install-MySQL }
+            "^nodejs-(.+)$"      { Install-NodeJS ($component -replace "^nodejs-") }
+            "^(nodejs|node)$"    { Install-NodeJS }
+            "^python-(.+)$"      { Install-Python ($component -replace "^python-") }
+            "^python$"           { Install-Python }
+            "^composer-(.+)$"    { Install-Composer ($component -replace "^composer-") }
+            "^composer$"         { Install-Composer }
+            "^phpmyadmin-(.+)$"  { Install-PhpMyAdmin ($component -replace "^phpmyadmin-") }
+            "^phpmyadmin$"       { Install-PhpMyAdmin }
+            "^git-(.+)$"         { Install-Git ($component -replace "^git-") }
+            "^git$"              { Install-Git }
+            "^mongodb-(.+)$"     { Install-MongoDB ($component -replace "^mongodb-") }
+            "^mongodb$"          { Install-MongoDB }
+            "^redis-(.+)$"       { Install-Redis ($component -replace "^redis-") }
+            "^redis$"            { Install-Redis }
+            "^pgsql-(.+)$"       { Install-PgSQL ($component -replace "^pgsql-") }
+            "^pgsql$"            { Install-PgSQL }
+            "^mailhog-(.+)$"     { Install-MailHog ($component -replace "^mailhog-") }
+            "^mailhog$"          { Install-MailHog }
+            "^elasticsearch-(.+)$" { Install-Elasticsearch ($component -replace "^elasticsearch-") }
+            "^elasticsearch$"    { Install-Elasticsearch }
+            "^memcached-(.+)$"   { Install-Memcached ($component -replace "^memcached-") }
+            "^memcached$"        { Install-Memcached }
+            "^docker-(.+)$"      { Install-Docker ($component -replace "^docker-") }
+            "^docker$"           { Install-Docker }
+            "^yarn-(.+)$"        { Install-Yarn ($component -replace "^yarn-") }
+            "^yarn$"             { Install-Yarn }
+            "^pnpm-(.+)$"        { Install-Pnpm ($component -replace "^pnpm-") }
+            "^pnpm$"             { Install-Pnpm }
+            "^wpcli-(.+)$"       { Install-WPCLI ($component -replace "^wpcli-") }
+            "^wpcli$"            { Install-WPCLI }
+            "^adminer-(.+)$"     { Install-Adminer ($component -replace "^adminer-") }
+            "^adminer$"          { Install-Adminer }
+            "^poetry-(.+)$"      { Install-Poetry ($component -replace "^poetry-") }
+            "^poetry$"           { Install-Poetry }
+            "^ruby-(.+)$"        { Install-Ruby ($component -replace "^ruby-") }
+            "^ruby$"             { Install-Ruby }
+            "^go-(.+)$"          { Install-Go ($component -replace "^go-") }
+            "^go$"               { Install-Go }
+            "^certbot-(.+)$"     { Install-Certbot ($component -replace "^certbot-") }
+            "^certbot$"          { Install-Certbot }
+            default              { Write-Host "Componente desconhecido: $component" }
+        }
+    }
+    Add-BinDirsToPath
+}
+
 function Install-GenericTool {
     param(
         [string]$ToolDir,

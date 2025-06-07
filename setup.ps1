@@ -242,113 +242,13 @@ switch ($Command) {
         Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream -NginxVersion $NginxVersion -IndexLocation $IndexLocation
     }
     "install" {
-        foreach ($component in $Args) {
-            switch -Regex ($component) {
-                "^php-(.+)$"         { Install-PHP ($component -replace "^php-") }
-                "^php$"              { Install-PHP }
-                "^nginx$"            { Install-Nginx }
-                "^mysql-(.+)$"       { Install-MySQL ($component -replace "^mysql-") }
-                "^mysql$"            { Install-MySQL }
-                "^nodejs-(.+)$"      { Install-NodeJS ($component -replace "^nodejs-") }
-                "^(nodejs|node)$"    { Install-NodeJS }
-                "^python-(.+)$"      { Install-Python ($component -replace "^python-") }
-                "^python$"           { Install-Python }
-                "^composer-(.+)$"    { Install-Composer ($component -replace "^composer-") }
-                "^composer$"         { Install-Composer }
-                "^phpmyadmin-(.+)$"  { Install-PhpMyAdmin ($component -replace "^phpmyadmin-") }
-                "^phpmyadmin$"       { Install-PhpMyAdmin }
-                "^git-(.+)$"         { Install-Git ($component -replace "^git-") }
-                "^git$"              { Install-Git }
-                "^mongodb-(.+)$"     { Install-MongoDB ($component -replace "^mongodb-") }
-                "^mongodb$"          { Install-MongoDB }
-                "^redis-(.+)$"       { Install-Redis ($component -replace "^redis-") }
-                "^redis$"            { Install-Redis }
-                "^pgsql-(.+)$"       { Install-PgSQL ($component -replace "^pgsql-") }
-                "^pgsql$"            { Install-PgSQL }
-                "^mailhog-(.+)$"     { Install-MailHog ($component -replace "^mailhog-") }
-                "^mailhog$"          { Install-MailHog }
-                "^elasticsearch-(.+)$" { Install-Elasticsearch ($component -replace "^elasticsearch-") }
-                "^elasticsearch$"    { Install-Elasticsearch }
-                "^memcached-(.+)$"   { Install-Memcached ($component -replace "^memcached-") }
-                "^memcached$"        { Install-Memcached }
-                "^docker-(.+)$"      { Install-Docker ($component -replace "^docker-") }
-                "^docker$"           { Install-Docker }
-                "^yarn-(.+)$"        { Install-Yarn ($component -replace "^yarn-") }
-                "^yarn$"             { Install-Yarn }
-                "^pnpm-(.+)$"        { Install-Pnpm ($component -replace "^pnpm-") }
-                "^pnpm$"             { Install-Pnpm }
-                "^wpcli-(.+)$"       { Install-WPCLI ($component -replace "^wpcli-") }
-                "^wpcli$"            { Install-WPCLI }
-                "^adminer-(.+)$"     { Install-Adminer ($component -replace "^adminer-") }
-                "^adminer$"          { Install-Adminer }
-                "^poetry-(.+)$"      { Install-Poetry ($component -replace "^poetry-") }
-                "^poetry$"           { Install-Poetry }
-                "^ruby-(.+)$"        { Install-Ruby ($component -replace "^ruby-") }
-                "^ruby$"             { Install-Ruby }
-                "^go-(.+)$"          { Install-Go ($component -replace "^go-") }
-                "^go$"               { Install-Go }
-                "^certbot-(.+)$"     { Install-Certbot ($component -replace "^certbot-") }
-                "^certbot$"          { Install-Certbot }
-                default              { Write-Host "Componente desconhecido: $component" }
-            }
-        }
-        Add-BinDirsToPath
+        Install-Commands @Args
     }
     "path" {
         Add-BinDirsToPath
     }
     "uninstall" {
-        foreach ($component in $Args) {
-            switch -Regex ($component) {
-                "^php-(.+)$"         { Uninstall-PHP ($component -replace "^php-") }
-                "^php$"              { Uninstall-PHP }
-                "^nginx$"            { Uninstall-Nginx }
-                "^mysql-(.+)$"       { Uninstall-MySQL ($component -replace "^mysql-") }
-                "^mysql$"            { Uninstall-MySQL }
-                "^nodejs-(.+)$"      { Uninstall-NodeJS ($component -replace "^nodejs-") }
-                "^(nodejs|node)$"    { Uninstall-NodeJS }
-                "^python-(.+)$"      { Uninstall-Python ($component -replace "^python-") }
-                "^python$"           { Uninstall-Python }
-                "^composer-(.+)$"    { Uninstall-Composer ($component -replace "^composer-") }
-                "^composer$"         { Uninstall-Composer }
-                "^phpmyadmin-(.+)$"  { Uninstall-PhpMyAdmin ($component -replace "^phpmyadmin-") }
-                "^phpmyadmin$"       { Uninstall-PhpMyAdmin }
-                "^git-(.+)$"         { Uninstall-Git ($component -replace "^git-") }
-                "^git$"              { Uninstall-Git }
-                "^mongodb-(.+)$"     { Uninstall-MongoDB ($component -replace "^mongodb-") }
-                "^mongodb$"          { Uninstall-MongoDB }
-                "^redis-(.+)$"       { Uninstall-Redis ($component -replace "^redis-") }
-                "^redis$"            { Uninstall-Redis }
-                "^pgsql-(.+)$"       { Uninstall-PgSQL ($component -replace "^pgsql-") }
-                "^pgsql$"            { Uninstall-PgSQL }
-                "^mailhog-(.+)$"     { Uninstall-MailHog ($component -replace "^mailhog-") }
-                "^mailhog$"          { Uninstall-MailHog }
-                "^elasticsearch-(.+)$" { Uninstall-Elasticsearch ($component -replace "^elasticsearch-") }
-                "^elasticsearch$"    { Uninstall-Elasticsearch }
-                "^memcached-(.+)$"   { Uninstall-Memcached ($component -replace "^memcached-") }
-                "^memcached$"        { Uninstall-Memcached }
-                "^docker-(.+)$"      { Uninstall-Docker ($component -replace "^docker-") }
-                "^docker$"           { Uninstall-Docker }
-                "^yarn-(.+)$"        { Uninstall-Yarn ($component -replace "^yarn-") }
-                "^yarn$"             { Uninstall-Yarn }
-                "^pnpm-(.+)$"        { Uninstall-Pnpm ($component -replace "^pnpm-") }
-                "^pnpm$"             { Uninstall-Pnpm }
-                "^wpcli-(.+)$"       { Uninstall-WPCLI ($component -replace "^wpcli-") }
-                "^wpcli$"            { Uninstall-WPCLI }
-                "^adminer-(.+)$"     { Uninstall-Adminer ($component -replace "^adminer-") }
-                "^adminer$"          { Uninstall-Adminer }
-                "^poetry-(.+)$"      { Uninstall-Poetry ($component -replace "^poetry-") }
-                "^poetry$"           { Uninstall-Poetry }
-                "^ruby-(.+)$"        { Uninstall-Ruby ($component -replace "^ruby-") }
-                "^ruby$"             { Uninstall-Ruby }
-                "^go-(.+)$"          { Uninstall-Go ($component -replace "^go-") }
-                "^go$"               { Uninstall-Go }
-                "^certbot-(.+)$"     { Uninstall-Certbot ($component -replace "^certbot-") }
-                "^certbot$"          { Uninstall-Certbot }
-                default              { Write-Host "Componente desconhecido: $component" }
-            }
-        }
-        Write-Host "Uninstall finalizado."
+        Uninstall-Commands @Args
     }
     "start" {
         if ($Args.Count -lt 1) {
@@ -357,8 +257,16 @@ switch ($Command) {
         }
         $target = $Args[0].ToLower()
         if ($target -eq "--all") {
-            ForEach-Version "nginx" { param($v) & $PSCommandPath start nginx $v }
-            ForEach-Version "php"   { param($v) & $PSCommandPath start php $v }
+            if (Test-Path $nginxDir) {
+                ForEach-Version "nginx" { param($v) & $PSCommandPath -Command start -Args @("nginx", $v) }
+            } else {
+                Write-WarningMsg "Diretório do nginx não encontrado. Ignorando."
+            }
+            if (Test-Path $phpDir) {
+                ForEach-Version "php" { param($v) & $PSCommandPath -Command start -Args @("php", $v) }
+            } else {
+                Write-WarningMsg "Diretório do PHP não encontrado. Ignorando."
+            }
             return
         }
         if ($Args.Count -lt 2) {
@@ -375,8 +283,16 @@ switch ($Command) {
         }
         $target = $Args[0].ToLower()
         if ($target -eq "--all") {
-            ForEach-Version "nginx" { param($v) & $PSCommandPath stop nginx $v }
-            ForEach-Version "php"   { param($v) & $PSCommandPath stop php $v }
+            if (Test-Path $nginxDir) {
+                ForEach-Version "nginx" { param($v) & $PSCommandPath -Command stop -Args @("nginx", $v) }
+            } else {
+                Write-WarningMsg "Diretório do nginx não encontrado. Ignorando."
+            }
+            if (Test-Path $phpDir) {
+                ForEach-Version "php" { param($v) & $PSCommandPath -Command stop -Args @("php", $v) }
+            } else {
+                Write-WarningMsg "Diretório do PHP não encontrado. Ignorando."
+            }
             return
         }
         if ($Args.Count -lt 2) {
@@ -393,8 +309,16 @@ switch ($Command) {
         }
         $target = $Args[0].ToLower()
         if ($target -eq "--all") {
-            ForEach-Version "nginx" { param($v) & $PSCommandPath restart nginx $v }
-            ForEach-Version "php"   { param($v) & $PSCommandPath restart php $v }
+            if (Test-Path $nginxDir) {
+                ForEach-Version "nginx" { param($v) & $PSCommandPath -Command restart -Args @("nginx", $v) }
+            } else {
+                Write-WarningMsg "Diretório do nginx não encontrado. Ignorando."
+            }
+            if (Test-Path $phpDir) {
+                ForEach-Version "php" { param($v) & $PSCommandPath -Command restart -Args @("php", $v) }
+            } else {
+                Write-WarningMsg "Diretório do PHP não encontrado. Ignorando."
+            }
             return
         }
         if ($Args.Count -lt 2) {
