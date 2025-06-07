@@ -73,6 +73,72 @@ function List-InstalledVersions {
     Write-Host ("¯" * ($col1 + $col2 + 3))
 }
 
+function Print-HorizontalTable {
+    param(
+        [string[]]$Items,
+        [int]$Cols = 6,
+        [string]$Header = "Versões disponíveis:",
+        [string[]]$Installed = @(),
+        [boolean]$OrderDescending = $true
+    )
+    if (-not $Items -or $Items.Count -eq 0) {
+        Write-Host "Nenhuma versão encontrada."
+        return
+    }
+    # Ordenar da maior para menor (descendente)
+    if ($OrderDescending) {
+        $Items = $Items | Sort-Object -Descending
+    }
+    $total = $Items.Count
+    $rows = [Math]::Ceiling($total / $Cols)
+    $width = 16
+    $tableWidth = ($width * $Cols) + $Cols + 1
+    Write-Host $Header
+    Write-Host ("-" * $tableWidth)
+    # Preencher linhas de cima para baixo (coluna 1: maior, coluna 2: próxima maior, etc)
+    for ($r = 0; $r -lt $rows; $r++) {
+        $row = "|"
+        for ($c = 0; $c -lt $Cols; $c++) {
+            $idx = $c * $rows + $r
+            if ($idx -lt $total) {
+                $val = $Items[$idx]
+                if ($Installed -contains $val) {
+                    $cell = Center-Text $val $width
+                    $row += "`e[32m$cell`e[0m|"  # ANSI verde
+                } else {
+                    $row += (Center-Text $val $width) + "|"
+                }
+            } else {
+                $row += (Center-Text "" $width) + "|"
+            }
+        }
+        # Corrigir cor: Write-Host não interpreta ANSI, então usar Write-Host -ForegroundColor Green para cada célula instalada
+        $parts = $row -split '\|'
+        Write-Host -NoNewline "|"
+        for ($i = 1; $i -le $Cols; $i++) {
+            $cellVal = $parts[$i]
+            $cellText = $cellVal.Trim()
+            if ($cellText -and $Installed -contains $cellText) {
+                Write-Host -NoNewline $cellVal -ForegroundColor Green
+            } else {
+                Write-Host -NoNewline $cellVal
+            }
+            Write-Host -NoNewline "|"
+        }
+        Write-Host ""
+    }
+    Write-Host ("¯" * $tableWidth)
+}
+
+function List-NginxVersions {
+    $page = Invoke-WebRequest -Uri "https://nginx.org/en/download.html"
+    $matches = [regex]::Matches($page.Content, "nginx-([\d\.]+)\.zip")
+    $versions = $matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Descending | Get-Unique
+    $installed = @()
+    if (Test-Path $nginxDir) { $installed = Get-ChildItem $nginxDir -Directory | ForEach-Object { $_.Name -replace '^nginx-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Nginx disponíveis para Windows:" -Installed $installed
+}
+
 function List-PHPVersions {
     $urls = @(
         "https://windows.php.net/downloads/releases/",
@@ -85,15 +151,17 @@ function List-PHPVersions {
         $allMatches += $matches | ForEach-Object { $_.Groups[1].Value }
     }
     $versions = $allMatches | Sort-Object -Descending | Get-Unique
-    Write-Host "Versões de PHP disponíveis para Windows x64:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $phpDir) { $installed = Get-ChildItem $phpDir -Directory | ForEach-Object { $_.Name -replace '^php-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de PHP disponíveis para Windows x64:" -Installed $installed
 }
 
 function List-NodeVersions {
     $json = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json"
     $versions = $json | Select-Object -ExpandProperty version
-    Write-Host "Versões de Node.js disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $nodeDir) { $installed = Get-ChildItem $nodeDir -Directory | ForEach-Object { $_.Name -replace '^node-v', '' -replace '-win-x64$', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Node.js disponíveis:" -Installed $installed
 }
 
 function List-PythonVersions {
@@ -101,121 +169,170 @@ function List-PythonVersions {
     $matches = [regex]::Matches($page.Content, "Python ([\d\.]+) ")
     $versions = $matches | ForEach-Object { $_.Groups[1].Value }
     $versions = $versions | Sort-Object -Descending | Get-Unique
-    Write-Host "Versões de Python disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $pythonDir) { $installed = Get-ChildItem $pythonDir -Directory | ForEach-Object { $_.Name -replace '^python-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Python disponíveis:" -Installed $installed
 }
 
 function List-MongoDBVersions {
     $json = Invoke-RestMethod -Uri "https://www.mongodb.com/try/download/community/json"
     $versions = $json.versions | Where-Object { $_.platform -eq "windows" } | Select-Object -ExpandProperty version
-    Write-Host "Versões de MongoDB disponíveis para Windows:" 
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $mongoDir) { $installed = Get-ChildItem $mongoDir -Directory | ForEach-Object { $_.Name -replace '^mongodb-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de MongoDB disponíveis para Windows:" -Installed $installed
 }
 
 function List-RedisVersions {
     $page = Invoke-WebRequest -Uri "https://github.com/microsoftarchive/redis/releases"
     $matches = [regex]::Matches($page.Content, "/microsoftarchive/redis/releases/tag/([\d\.]+)")
     $versions = $matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Descending | Get-Unique
-    Write-Host "Versões de Redis para Windows (Microsoft Archive):"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $redisDir) { $installed = Get-ChildItem $redisDir -Directory | ForEach-Object { $_.Name -replace '^redis-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Redis para Windows (Microsoft Archive):" -Installed $installed
 }
 
 function List-PgSQLVersions {
     $page = Invoke-WebRequest -Uri "https://www.enterprisedb.com/downloads/postgres-postgresql-downloads"
     $matches = [regex]::Matches($page.Content, "PostgreSQL ([\d\.]+)")
     $versions = $matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Descending | Get-Unique
-    Write-Host "Versões de PostgreSQL disponíveis para Windows:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $pgsqlDir) { $installed = Get-ChildItem $pgsqlDir -Directory | ForEach-Object { $_.Name -replace '^pgsql-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de PostgreSQL disponíveis para Windows:" -Installed $installed
 }
 
 function List-MailHogVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/mailhog/MailHog/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de MailHog disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $mailhogDir) { $installed = Get-ChildItem $mailhogDir -Directory | ForEach-Object { $_.Name -replace '^mailhog-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de MailHog disponíveis:" -Installed $installed
 }
 
 function List-ElasticsearchVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/elastic/elasticsearch/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Elasticsearch disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $elasticDir) { $installed = Get-ChildItem $elasticDir -Directory | ForEach-Object { $_.Name -replace '^elasticsearch-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Elasticsearch disponíveis:" -Installed $installed
 }
 
 function List-MemcachedVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/memcached/memcached/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Memcached disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $memcachedDir) { $installed = Get-ChildItem $memcachedDir -Directory | ForEach-Object { $_.Name -replace '^memcached-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Memcached disponíveis:" -Installed $installed
 }
 
 function List-DockerVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/docker/cli/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Docker CLI disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $dockerDir) { $installed = Get-ChildItem $dockerDir -Directory | ForEach-Object { $_.Name -replace '^docker-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Docker CLI disponíveis:" -Installed $installed
 }
 
 function List-YarnVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/yarnpkg/yarn/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Yarn disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $yarnDir) { $installed = Get-ChildItem $yarnDir -Directory | ForEach-Object { $_.Name -replace '^yarn-v', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Yarn disponíveis:" -Installed $installed
 }
 
 function List-PnpmVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/pnpm/pnpm/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de pnpm disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $pnpmDir) { $installed = Get-ChildItem $pnpmDir -Directory | ForEach-Object { $_.Name -replace '^pnpm-v', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de pnpm disponíveis:" -Installed $installed
 }
 
 function List-WPCLIVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/wp-cli/wp-cli/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de WP-CLI disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $wpcliDir) { $installed = Get-ChildItem $wpcliDir -Directory | ForEach-Object { $_.Name -replace '^wp-cli-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de WP-CLI disponíveis:" -Installed $installed
 }
 
 function List-AdminerVersions {
     $page = Invoke-WebRequest -Uri "https://www.adminer.org/en/"
     $matches = [regex]::Matches($page.Content, "Adminer ([\d\.]+)")
     $versions = $matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Descending | Get-Unique
-    Write-Host "Versões de Adminer disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $adminerDir) { $installed = Get-ChildItem $adminerDir -Directory | ForEach-Object { $_.Name -replace '^adminer-', '' -replace '\.php$', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Adminer disponíveis:" -Installed $installed
 }
 
 function List-PoetryVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/python-poetry/poetry/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Poetry disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $poetryDir) { $installed = Get-ChildItem $poetryDir -Directory | ForEach-Object { $_.Name -replace '^poetry-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Poetry disponíveis:" -Installed $installed
 }
 
 function List-RubyVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/oneclick/rubyinstaller2/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de RubyInstaller2 disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $rubyDir) { $installed = Get-ChildItem $rubyDir -Directory | ForEach-Object { $_.Name -replace '^ruby-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de RubyInstaller2 disponíveis:" -Installed $installed
 }
 
 function List-GoVersions {
     $json = Invoke-RestMethod -Uri "https://go.dev/dl/?mode=json"
     $versions = $json | Select-Object -ExpandProperty version
-    Write-Host "Versões de Go disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $goDir) { $installed = Get-ChildItem $goDir -Directory | ForEach-Object { $_.Name -replace '^go', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Go disponíveis:" -Installed $installed
 }
 
 function List-CertbotVersions {
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/certbot/certbot/releases"
     $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de Certbot disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $installed = @()
+    if (Test-Path $certbotDir) { $installed = Get-ChildItem $certbotDir -Directory | ForEach-Object { $_.Name -replace '^certbot-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de Certbot disponíveis:" -Installed $installed
 }
 
 function List-OpenSSLVersions {
-    $json = Invoke-RestMethod -Uri "https://api.github.com/repos/slproweb/openssl/releases"
-    $versions = $json | Select-Object -ExpandProperty tag_name
-    Write-Host "Versões de OpenSSL (SLProWeb) disponíveis:"
-    $versions | ForEach-Object { Write-Host "  $_" }
+    $json = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/slproweb/opensslhashes/master/win32_openssl_hashes.json"
+    $entries = $json.files.PSObject.Properties | Where-Object {
+        $_.Name -like 'Win64OpenSSL*' -or $_.Name -like 'WinUniversalOpenSSL*'
+    }
+    $normal = @()
+    $light = @()
+    foreach ($entry in $entries) {
+        $ver = $entry.Value.basever
+        if ($entry.Value.light -eq $true) {
+            $light += $ver
+        } else {
+            $normal += $ver
+        }
+    }
+    $normal = $normal | Sort-Object -Descending | Select-Object -Unique
+    $light = $light | Sort-Object -Descending | Select-Object -Unique
+    $basevers = @()
+    for ($i = 0; $i -lt $normal.Count; $i++) {
+        $basevers += $normal[$i]
+        if ($light -contains $normal[$i]) {
+            $light = $light | Where-Object { $_ -ne $normal[$i] }
+            $basevers += "light-$($normal[$i])"
+        }
+    }
+    foreach ($l in $light) {
+        if (-not ($normal -contains $l)) {
+            $basevers += "light-$l"
+        }
+    }
+    $installed = @()
+    if (Test-Path $opensslDir) {
+        $installed = Get-ChildItem $opensslDir -Directory | ForEach-Object {
+            $n = $_.Name -replace '^openssl-', ''
+            if ($n -like 'light-*') { $n } else { $n -replace '^light-', '' }
+        }
+    }
+    Print-HorizontalTable -Items $basevers -Header "Versões de OpenSSL (SLProWeb) disponíveis:" -Installed $installed -OrderDescending $false
 }

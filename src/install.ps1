@@ -251,19 +251,21 @@ function Get-LatestCertbotVersion {
     return $json.info.version
 }
 function Get-LatestOpenSSLVersion {
-    $page = Invoke-WebRequest -Uri "https://slproweb.com/products/Win32OpenSSL.html" -Headers @{ 'User-Agent' = 'DevStackSetup' }
-    if ($page.Content -match 'Win64OpenSSL-([\d_]+)\.exe') {
-        $ver = $matches[1] -replace '_','.'
-        return $ver
+    $json = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/slproweb/opensslhashes/master/win32_openssl_hashes.json" -Headers @{ 'User-Agent' = 'DevStackSetup' }
+    $entries = $json.files.PSObject.Properties | Where-Object {
+        $_.Name -like 'Win64OpenSSL*' -or $_.Name -like 'WinUniversalOpenSSL*'
     }
-    throw "Não foi possível obter a última versão do OpenSSL no slproweb.com."
-    $tag = $json.tag_name
-    if ($tag -match '([\d]+[\._][\d]+[\._]?[\d]*)') {
-        $ver = $matches[1] -replace '_','.'
-        if ($ver.EndsWith('.')) { $ver = $ver.Substring(0, $ver.Length-1) }
-        return $ver
+    $normal = @()
+    foreach ($entry in $entries) {
+        if ($entry.Value.light -ne $true) {
+            $normal += $entry.Value.basever
+        }
     }
-    throw "Não foi possível obter a última versão do OpenSSL. Tag: $tag"
+    if ($normal.Count -eq 0) {
+        throw "Não foi possível obter versões normais do OpenSSL no JSON."
+    }
+    $latest = $normal | Sort-Object -Descending | Select-Object -First 1
+    return $latest
 }
 
 function Install-Nginx {
