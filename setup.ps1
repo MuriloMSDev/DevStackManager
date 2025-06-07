@@ -199,6 +199,7 @@ function Alias-Component {
 
 switch ($Command) {
     "list" {
+        Write-Log "Comando executado: list $($Args -join ' ')"
         if ($Args.Count -eq 0) {
             Write-Host "Uso: setup.ps1 list <php|nodejs|python|--installed|-i>"
             exit 1
@@ -217,6 +218,7 @@ switch ($Command) {
         }
     }
     "site" {
+        Write-Log "Comando executado: site $($Args -join ' ')"
         if ($Args.Count -lt 1) {
             Write-Host "Uso: setup.ps1 site <dominio> [-root <diretorio>] [-php <php-upstream>] [-nginx <nginx-version>]"
             exit 1
@@ -242,15 +244,19 @@ switch ($Command) {
         Create-NginxSiteConfig -Domain $Domain -Root $Root -PhpUpstream $PhpUpstream -NginxVersion $NginxVersion -IndexLocation $IndexLocation
     }
     "install" {
+        Write-Log "Comando executado: install $($Args -join ' ')"
         Install-Commands @Args
     }
     "path" {
+        Write-Log "Comando executado: path $($Args -join ' ')"
         Add-BinDirsToPath
     }
     "uninstall" {
+        Write-Log "Comando executado: uninstall $($Args -join ' ')"
         Uninstall-Commands @Args
     }
     "start" {
+        Write-Log "Comando executado: start $($Args -join ' ')"
         if ($Args.Count -lt 1) {
             Write-Host "Uso: setup.ps1 start <nginx|php|--all> [<x.x.x>]"
             exit 1
@@ -277,6 +283,7 @@ switch ($Command) {
         Start-Component $target $version
     }
     "stop" {
+        Write-Log "Comando executado: stop $($Args -join ' ')"
         if ($Args.Count -lt 1) {
             Write-Host "Uso: setup.ps1 stop <nginx|php|--all> [<x.x.x>]"
             exit 1
@@ -303,6 +310,7 @@ switch ($Command) {
         Stop-Component $target $version
     }
     "restart" {
+        Write-Log "Comando executado: restart $($Args -join ' ')"
         if ($Args.Count -lt 1) {
             Write-Host "Uso: setup.ps1 restart <nginx|php|--all> [<x.x.x>]"
             exit 1
@@ -331,20 +339,25 @@ switch ($Command) {
         Start-Component $target $version
     }
     "status" {
+        Write-Log "Comando executado: status $($Args -join ' ')"
         Status-All
     }
     "test" {
+        Write-Log "Comando executado: test $($Args -join ' ')"
         Test-All
     }
     "deps" {
+        Write-Log "Comando executado: deps $($Args -join ' ')"
         Deps-Check
     }
     "update" {
+        Write-Log "Comando executado: update $($Args -join ' ')"
         foreach ($component in $Args) {
             Update-Component $component
         }
     }
     "alias" {
+        Write-Log "Comando executado: alias $($Args -join ' ')"
         if ($Args.Count -lt 2) {
             Write-Host "Uso: setup.ps1 alias <componente> <versão>"
             exit 1
@@ -352,6 +365,7 @@ switch ($Command) {
         Alias-Component $Args[0] $Args[1]
     }
     "self-update" {
+        Write-Log "Comando executado: self-update $($Args -join ' ')"
         # Atualiza o DevStackSetup via git pull ou cópia do repositório
         $repoDir = $PSScriptRoot
         if (Test-Path (Join-Path $repoDir ".git")) {
@@ -369,6 +383,7 @@ switch ($Command) {
         }
     }
     "clean" {
+        Write-Log "Comando executado: clean $($Args -join ' ')"
         # Limpa arquivos temporários e logs
         $logDir = Join-Path $baseDir "logs"
         $tmpDir = Join-Path $baseDir "tmp"
@@ -380,6 +395,7 @@ switch ($Command) {
         Write-Info "Limpeza concluída. ($count itens removidos)"
     }
     "backup" {
+        Write-Log "Comando executado: backup $($Args -join ' ')"
         # Backup dos diretórios de configuração e logs
         $backupDir = Join-Path $baseDir ("backup-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
         $toBackup = @("configs", "devstack.log")
@@ -392,6 +408,7 @@ switch ($Command) {
         Write-Info "Backup criado em $backupDir"
     }
     "logs" {
+        Write-Log "Comando executado: logs $($Args -join ' ')"
         # Exibe as últimas 50 linhas do log principal
         $logFile = Join-Path $baseDir "devstack.log"
         if (Test-Path $logFile) {
@@ -402,6 +419,7 @@ switch ($Command) {
         }
     }
     "enable" {
+        Write-Log "Comando executado: enable $($Args -join ' ')"
         # Ativa um serviço (Windows Service) relacionado ao DevStack
         if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 enable <serviço>"; exit 1 }
         $svc = $Args[0]
@@ -413,6 +431,7 @@ switch ($Command) {
         }
     }
     "disable" {
+        Write-Log "Comando executado: disable $($Args -join ' ')"
         # Desativa um serviço (Windows Service) relacionado ao DevStack
         if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 disable <serviço>"; exit 1 }
         $svc = $Args[0]
@@ -424,6 +443,7 @@ switch ($Command) {
         }
     }
     "config" {
+        Write-Log "Comando executado: config $($Args -join ' ')"
         # Abre o diretório de configuração para edição
         $configDir = Join-Path $baseDir "configs"
         if (Test-Path $configDir) {
@@ -434,6 +454,7 @@ switch ($Command) {
         }
     }
     "reset" {
+        Write-Log "Comando executado: reset $($Args -join ' ')"
         # Remove e reinstala uma ferramenta
         if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 reset <componente>"; exit 1 }
         $comp = $Args[0]
@@ -443,6 +464,7 @@ switch ($Command) {
         Write-Info "$comp resetado."
     }
     "proxy" {
+        Write-Log "Comando executado: proxy $($Args -join ' ')"
         # Gerencia variáveis de ambiente de proxy
         if ($Args.Count -eq 0) {
             Write-Host "Proxy atual: $env:HTTP_PROXY"
@@ -466,6 +488,7 @@ switch ($Command) {
         }
     }
     "ssl" {
+        Write-Log "Comando executado: ssl $($Args -join ' ')"
         # Gera certificado SSL autoassinado para um domínio
         if ($Args.Count -lt 1) { Write-Host "Uso: setup.ps1 ssl <dominio>"; exit 1 }
         $domain = $Args[0]
@@ -482,6 +505,7 @@ switch ($Command) {
         Write-Info "Certificado gerado: $($crt), $($key)"
     }
     "db" {
+        Write-Log "Comando executado: db $($Args -join ' ')"
         # Gerenciamento básico de bancos de dados (MySQL, PostgreSQL, MongoDB)
         if ($Args.Count -lt 2) { Write-Host "Uso: setup.ps1 db <mysql|pgsql|mongo> <comando> [args...]"; exit 1 }
         $db = $Args[0].ToLower()
@@ -521,6 +545,7 @@ switch ($Command) {
         }
     }
     "service" {
+        Write-Log "Comando executado: service $($Args -join ' ')"
         # Lista serviços DevStack (Windows Services)
         $services = Get-Service | Where-Object { $_.DisplayName -like '*devstack*' -or $_.ServiceType -eq 'Win32OwnProcess' }
         if ($services) {
@@ -530,6 +555,7 @@ switch ($Command) {
         }
     }
     "doctor" {
+        Write-Log "Comando executado: doctor $($Args -join ' ')"
         # Diagnóstico do ambiente DevStack
         Write-Host "Diagnóstico do ambiente DevStack:"
         $checks = @(
@@ -617,6 +643,7 @@ switch ($Command) {
         Write-Host ("¯" * ($colOS + 4))
     }
     "global" {
+        Write-Log "Comando executado: global $($Args -join ' ')"
         $devstackDir = $PSScriptRoot
         $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
         if ($currentPath -notlike "*$devstackDir*") {
