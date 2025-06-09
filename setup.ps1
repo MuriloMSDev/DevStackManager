@@ -3,7 +3,7 @@ param(
     [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help")]
     [string]$Command,
 
-    [Parameter(Position=1)]
+    [Parameter(Position=1, ValueFromRemainingArguments=$true)]
     [string[]]$Args
 )
 
