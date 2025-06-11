@@ -14,7 +14,7 @@ function Start-Component {
                 if ($proc) {
                     Write-WarningMsg "Nginx $Version já está em execução."
                 } else {
-                    Start-Process -FilePath $nginxExe -WorkingDirectory $nginxWorkDir -NoNewWindow
+                    Start-Process -FilePath $nginxExe -WorkingDirectory $nginxWorkDir -WindowStyle Hidden
                     Write-Info "Nginx $Version iniciado."
                     Write-Log "Nginx $Version iniciado."
                 }
@@ -32,9 +32,12 @@ function Start-Component {
                 if ($proc) {
                     Write-WarningMsg "php-cgi $Version já está em execução."
                 } else {
-                    Start-Process -FilePath $phpExe -ArgumentList "-b 127.${Version}:9000" -WorkingDirectory $phpWorkDir -NoNewWindow
-                    Write-Info "php-cgi $Version iniciado."
-                    Write-Log "php-cgi $Version iniciado."
+                    # Inicia 6 workers php-cgi para FastCGI, mantendo processos independentes do terminal
+                    for ($i=1; $i -le 6; $i++) {
+                        Start-Process -FilePath $phpExe -ArgumentList "-b 127.${Version}:9000" -WorkingDirectory $phpWorkDir -WindowStyle Hidden
+                    }
+                    Write-Info "php-cgi $Version iniciado com 6 workers em 127.${Version}:9000."
+                    Write-Log "php-cgi $Version iniciado com 6 workers em 127.${Version}:9000."
                 }
             } else {
                 Write-ErrorMsg "php-cgi $Version não encontrado."
