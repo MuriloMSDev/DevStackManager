@@ -514,8 +514,8 @@ server {
         rewrite ^/api/(\w+).*$ /api.php?type=`$1 last;
     }
 
-    error_log logs\${$Domain}_error.log;
-    access_log logs\${$Domain}_access.log;
+    error_log logs\${Domain}_error.log;
+    access_log logs\${Domain}_access.log;
 }
 "@
 
