@@ -48,6 +48,8 @@ function Install-Commands {
             "^certbot$"          { Install-Certbot }
             "^openssl-(.+)$"     { Install-OpenSSL ($component -replace "^openssl-") }
             "^openssl$"          { Install-OpenSSL }
+            "^phpcsfixer-(.+)$"  { Install-PHPCsFixer ($component -replace "^phpcsfixer-") }
+            "^phpcsfixer$"       { Install-PHPCsFixer }
             default              { Write-Host "Componente desconhecido: $component" }
         }
     }
@@ -268,6 +270,11 @@ function Get-LatestOpenSSLVersion {
     return $latest
 }
 
+function Get-LatestPHPCsFixerVersion {
+    $json = Invoke-RestMethod -Uri "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/releases/latest" -Headers @{ 'User-Agent' = 'DevStackSetup' }
+    return $json.tag_name.TrimStart('v')
+}
+
 function Install-Nginx {
     $version = Get-LatestNginxVersion
     $subDir = "nginx-$version"
@@ -435,6 +442,26 @@ function Install-Git {
     Remove-Item $git7zExe
     Write-Info "Git $version instalado em $gitDirFull."
     Write-Log "Git $version instalado em $gitDirFull"
+}
+
+function Install-PHPCsFixer {
+    param($version)
+    if (-not $version) {
+        $version = Get-LatestPHPCsFixerVersion
+    }
+    $phpCsFixerSubDir = "php-cs-fixer-$version"
+    $toolDir = Join-Path $phpcsfixerDir $phpCsFixerSubDir
+    if (Test-Path $toolDir) {
+        Write-Info "PHP CS Fixer $version já está instalado."
+        return
+    }
+    Write-Info "Baixando PHP CS Fixer $version..."
+    New-Item -ItemType Directory -Force -Path $toolDir | Out-Null
+    $url = "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v$version/php-cs-fixer.phar"
+    $pharPath = Join-Path $toolDir "php-cs-fixer-$version.phar"
+    Invoke-WebRequest -Uri $url -OutFile $pharPath -ErrorAction Stop
+    Write-Info "PHP CS Fixer $version instalado em $toolDir. Use 'php-cs-fixer' no terminal."
+    Write-Log "PHP CS Fixer $version instalado em $toolDir"
 }
 
 function Create-NginxSiteConfig {

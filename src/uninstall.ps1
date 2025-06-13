@@ -48,6 +48,8 @@ function Uninstall-Commands {
             "^certbot$"            { Uninstall-Certbot }
             "^openssl-(.+)$"       { Uninstall-OpenSSL ($component -replace "^openssl-") }
             "^openssl$"            { Uninstall-OpenSSL }
+            "^php-cs-fixer-(.+)$"  { Uninstall-PHPCsFixer ($component -replace "^php-cs-fixer-") }
+            "^php-cs-fixer$"       { Uninstall-PHPCsFixer }
             default                { Write-Host "Componente desconhecido: $component" }
         }
     }
@@ -436,6 +438,22 @@ function Uninstall-OpenSSL {
             }
         } else {
             Write-Host "OpenSSL não está instalado."
+        }
+    }
+}
+
+function Uninstall-PHPCsFixer {
+    param($version)
+    if ($version) {
+        $phpcsfixerSubDir = "php-cs-fixer-$version"
+        Uninstall-GenericTool -ToolDir $phpcsfixerDir -SubDir $phpcsfixerSubDir
+    } else {
+        if (Test-Path $phpcsfixerDir) {
+            Get-ChildItem $phpcsfixerDir -Directory | ForEach-Object {
+                Uninstall-GenericTool -ToolDir $phpcsfixerDir -SubDir $_.Name
+            }
+        } else {
+            Write-Host "PHP CS Fixer não está instalado."
         }
     }
 }

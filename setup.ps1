@@ -32,6 +32,7 @@ $goDir = "$baseDir\go"
 $certbotDir = "$baseDir\certbot"
 $nginxSitesDir = "conf\sites-enabled"
 $openSSLDir = "$baseDir\openssl"
+$phpcsfixerDir = "$baseDir\phpcsfixer"
 $tmpDir = "$baseDir\tmp"
 
 . "$PSScriptRoot\src\install.ps1"
@@ -65,6 +66,7 @@ Set-Variable -Name goDir -Value $goDir -Scope Global
 Set-Variable -Name certbotDir -Value $certbotDir -Scope Global
 Set-Variable -Name nginxSitesDir -Value $nginxSitesDir -Scope Global
 Set-Variable -Name openSSLDir -Value $openSSLDir -Scope Global
+Set-Variable -Name phpcsfixerDir -Value $phpcsfixerDir -Scope Global
 Set-Variable -Name tmpDir -Value $tmpDir -Scope Global
 
 function Write-Info($msg) { Write-Host $msg -ForegroundColor Cyan }
@@ -103,6 +105,7 @@ function Status-Component {
         "go" { $goDir }
         "certbot" { $certbotDir }
         "openssl" { $openSSLDir }
+        "phpcsfixer" { $phpcsfixerDir }
         default { return }
     }
     $versions = @()
@@ -149,6 +152,7 @@ function Status-All {
     Status-Component "go"
     Status-Component "certbot"
     Status-Component "openssl"
+    Status-Component "phpcsfixer"
 }
 
 function Test-All {
@@ -177,7 +181,8 @@ function Test-All {
         @{ name = "ruby"; exe = "ruby.exe"; dir = $rubyDir; args = "--version" },
         @{ name = "go"; exe = "go.exe"; dir = $goDir; args = "version" },
         @{ name = "certbot"; exe = "certbot.exe"; dir = $certbotDir; args = "--version" },
-        @{ name = "openssl"; exe = "openssl.exe"; dir = $openSSLDir; args = "version" }
+        @{ name = "openssl"; exe = "openssl.exe"; dir = $openSSLDir; args = "version" },
+        @{ name = "phpcsfixer"; exe = "php-cs-fixer-*.exe"; dir = $phpcsfixerDir; args = "--version" }
     )
     foreach ($tool in $tools) {
         if ($tool.name -eq "git") {
@@ -249,6 +254,7 @@ function Update-Component {
         "go" { Install-Go }
         "certbot" { Install-Certbot }
         "openssl" { Install-OpenSSL }
+        "phpcsfixer" { Install-PHPCsFixer }
         default { Write-ErrorMsg "Componente desconhecido: $Component" }
     }
 }
@@ -281,6 +287,7 @@ function Alias-Component {
         "go" { Join-Path $goDir "go$Version\bin\go.exe" }
         "certbot" { Join-Path $certbotDir "certbot-$Version\certbot.exe" }
         "openssl" { Join-Path $openSSLDir "openssl-$Version\bin\openssl.exe" }
+        "phpcsfixer" { Join-Path $phpcsfixerDir "php-cs-fixer-$Version\php-cs-fixer-$Version.exe" }
         default { $null }
     }
     if ($exe -and (Test-Path $exe)) {
@@ -376,6 +383,7 @@ switch ($Command) {
             "go"            { List-GoVersions }
             "certbot"       { List-CertbotVersions }
             "openssl"       { List-OpenSSLVersions }
+            "phpcsfixer"    { List-PHPCsFixerVersions }
             default         { Write-Host "Ferramenta desconhecida: $($firstArg)" }
         }
     }
@@ -740,39 +748,39 @@ switch ($Command) {
         $pathList = $env:Path -split ';'
         $maxPathLen = ($pathList | Measure-Object -Property Length -Maximum).Maximum
         $headerPath = ('_' * ($maxPathLen + 4))
-        Write-Host $headerPath
-        Write-Host ("| {0,-$maxPathLen} |" -f 'PATH')
-        Write-Host ("|" + ('-' * ($maxPathLen + 2)) + "|")
+        Write-Host $headerPath -ForegroundColor Gray
+        Write-Host ("| {0,-$maxPathLen} |" -f 'PATH') -ForegroundColor Gray
+        Write-Host ("|" + ('-' * ($maxPathLen + 2)) + "|") -ForegroundColor Gray
         foreach ($p in $pathList) {
             if (![string]::IsNullOrWhiteSpace($p)) {
                 Write-Host ("| {0,-$maxPathLen} |" -f $p) -ForegroundColor DarkGray
             }
         }
-        Write-Host ("¯" * ($maxPathLen + 4))
+        Write-Host ("¯" * ($maxPathLen + 4)) -ForegroundColor Gray
         # Tabela Usuário
         $user = $env:USERNAME
         $userLen = $user.Length
         $colUser = [Math]::Max(8, $userLen)
         $headerUser = ('_' * ($colUser + 4))
-        Write-Host $headerUser
-        Write-Host ("| {0,-$colUser} |" -f 'Usuário')
-        Write-Host ("|" + ('-' * ($colUser + 2)) + "|")
-        Write-Host -NoNewline "| "
+        Write-Host $headerUser -ForegroundColor Gray
+        Write-Host ("| {0,-$colUser} |" -f 'Usuário') -ForegroundColor Gray
+        Write-Host ("|" + ('-' * ($colUser + 2)) + "|") -ForegroundColor Gray
+        Write-Host -NoNewline "| " -ForegroundColor Gray
         Write-Host -NoNewline ("{0,-$colUser}" -f $user) -ForegroundColor Cyan
-        Write-Host " |"
-        Write-Host ("¯" * ($colUser + 4))
+        Write-Host " |" -ForegroundColor Gray
+        Write-Host ("¯" * ($colUser + 4)) -ForegroundColor Gray
         # Tabela Sistema
         $os = $env:OS
         $osLen = $os.Length
         $colOS = [Math]::Max(8, $osLen)
         $headerOS = ('_' * ($colOS + 4))
-        Write-Host $headerOS
-        Write-Host ("| {0,-$colOS} |" -f 'Sistema')
-        Write-Host ("|" + ('-' * ($colOS + 2)) + "|")
-        Write-Host -NoNewline "| "
+        Write-Host $headerOS -ForegroundColor Gray
+        Write-Host ("| {0,-$colOS} |" -f 'Sistema') -ForegroundColor Gray
+        Write-Host ("|" + ('-' * ($colOS + 2)) + "|") -ForegroundColor Gray
+        Write-Host -NoNewline "| " -ForegroundColor Gray
         Write-Host -NoNewline ("{0,-$colOS}" -f $os) -ForegroundColor Cyan
-        Write-Host " |"
-        Write-Host ("¯" * ($colOS + 4))
+        Write-Host " |" -ForegroundColor Gray
+        Write-Host ("¯" * ($colOS + 4)) -ForegroundColor Gray
     }
     "global" {
         Write-Log "Comando executado: global $($Args -join ' ')"

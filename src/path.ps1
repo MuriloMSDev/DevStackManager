@@ -46,16 +46,6 @@ function Add-BinDirsToPath {
         }
     }
 
-    # Composer (adiciona o diretório do composer.phar)
-    if (Test-Path $composerDir) {
-        Get-ChildItem $composerDir -Directory | ForEach-Object {
-            $composerPhar = Get-ChildItem $_.FullName -Filter "composer-*.phar" -File -ErrorAction SilentlyContinue
-            if ($composerPhar) {
-                $pathsToAdd += $_.FullName
-            }
-        }
-    }
-
     # MySQL (bin)
     if (Test-Path $mysqlDir) {
         Get-ChildItem $mysqlDir -Directory | ForEach-Object {

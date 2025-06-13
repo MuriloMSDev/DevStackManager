@@ -28,23 +28,24 @@ function List-InstalledVersions {
         @{ name = 'ruby'; dir = $rubyDir },
         @{ name = 'go'; dir = $goDir },
         @{ name = 'certbot'; dir = $certbotDir },
-        @{ name = 'openssl'; dir = $opensslDir }
+        @{ name = 'openssl'; dir = $opensslDir },
+        @{ name = 'php-cs-fixer'; dir = $phpcsfixerDir }
     )
     # Tabela de Ferramentas Instaladas
     $col1 = 15; $col2 = 40
     $header = ('_' * ($col1 + $col2 + 3))
-    Write-Host $header
-    Write-Host ("|{0}|{1}|" -f (Center-Text 'Ferramenta' $col1), (Center-Text 'Versões Instaladas' $col2))
-    Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|")
+    Write-Host $header -ForegroundColor Gray
+    Write-Host ("|{0}|{1}|" -f (Center-Text 'Ferramenta' $col1), (Center-Text 'Versões Instaladas' $col2)) -ForegroundColor Gray
+    Write-Host ("|" + ('-' * $col1) + "+" + ('-' * $col2) + "|") -ForegroundColor Gray
     foreach ($comp in $components) {
         if (-not (Test-Path $comp.dir)) {
             $ferramenta = Center-Text $comp.name $col1
             $status = Center-Text 'NÃO INSTALADO' $col2
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $ferramenta -ForegroundColor Red
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $status -ForegroundColor Red
-            Write-Host "|"
+            Write-Host "|" -ForegroundColor Gray
             continue
         }
         if ($comp.name -eq 'git') {
@@ -55,22 +56,22 @@ function List-InstalledVersions {
         if ($versions -and $versions.Count -gt 0) {
             $ferramenta = Center-Text $comp.name $col1
             $status = Center-Text ($versions -join ', ') $col2
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $ferramenta -ForegroundColor Green
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $status -ForegroundColor Green
-            Write-Host "|"
+            Write-Host "|" -ForegroundColor Gray
         } else {
             $ferramenta = Center-Text $comp.name $col1
             $status = Center-Text 'NÃO INSTALADO' $col2
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $ferramenta -ForegroundColor Red
-            Write-Host -NoNewline "|"
+            Write-Host -NoNewline "|" -ForegroundColor Gray
             Write-Host -NoNewline $status -ForegroundColor Red
-            Write-Host "|"
+            Write-Host "|" -ForegroundColor Gray
         }
     }
-    Write-Host ("¯" * ($col1 + $col2 + 3))
+    Write-Host ("¯" * ($col1 + $col2 + 3)) -ForegroundColor Gray
 }
 
 function Print-HorizontalTable {
@@ -101,7 +102,7 @@ function Print-HorizontalTable {
         for ($c = 0; $c -lt $Cols; $c++) {
             $idx = $c * $rows + $r
             if ($idx -lt $total) {
-                $val = $Items[$idx]
+                $val = $Items[$idx] -replace '[^\d\.]', ''
                 if ($Installed -contains $val) {
                     $cell = Center-Text $val $width
                     $row += "`e[32m$cell`e[0m|"  # ANSI verde
@@ -121,7 +122,7 @@ function Print-HorizontalTable {
             if ($cellText -and $Installed -contains $cellText) {
                 Write-Host -NoNewline $cellVal -ForegroundColor Green
             } else {
-                Write-Host -NoNewline $cellVal
+                Write-Host -NoNewline $cellVal -ForegroundColor Gray
             }
             Write-Host -NoNewline "|"
         }
@@ -335,4 +336,12 @@ function List-OpenSSLVersions {
         }
     }
     Print-HorizontalTable -Items $basevers -Header "Versões de OpenSSL (SLProWeb) disponíveis:" -Installed $installed -OrderDescending $false
+}
+
+function List-PHPCsFixerVersions {
+    $json = Invoke-RestMethod -Uri "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/releases"
+    $versions = $json | Select-Object -ExpandProperty tag_name
+    $installed = @()
+    if (Test-Path $phpcsfixerDir) { $installed = Get-ChildItem $phpcsfixerDir -Directory | ForEach-Object { $_.Name -replace '^php-cs-fixer-', '' } }
+    Print-HorizontalTable -Items $versions -Header "Versões de PHP CS Fixer disponíveis:" -Installed $installed
 }
