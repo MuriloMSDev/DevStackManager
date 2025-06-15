@@ -607,7 +607,7 @@ function Setup-ServicesTab {
     # Botões para controlar serviços
     $startButton = New-Object System.Windows.Forms.Button
     $startButton.Location = New-Object System.Drawing.Point(10, 350)
-    $startButton.Size = New-Object System.Drawing.Size(100, 30)
+    $startButton.Size = New-Object System.Drawing.Size(150, 30)
     $startButton.Text = "Iniciar"
     $startButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
@@ -636,8 +636,8 @@ function Setup-ServicesTab {
     $tabPage.Controls.Add($startButton)
     
     $stopButton = New-Object System.Windows.Forms.Button
-    $stopButton.Location = New-Object System.Drawing.Point(120, 350)
-    $stopButton.Size = New-Object System.Drawing.Size(100, 30)
+    $stopButton.Location = New-Object System.Drawing.Point(170, 350)
+    $stopButton.Size = New-Object System.Drawing.Size(150, 30)
     $stopButton.Text = "Parar"
     $stopButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
@@ -666,8 +666,8 @@ function Setup-ServicesTab {
     $tabPage.Controls.Add($stopButton)
     
     $restartButton = New-Object System.Windows.Forms.Button
-    $restartButton.Location = New-Object System.Drawing.Point(230, 350)
-    $restartButton.Size = New-Object System.Drawing.Size(100, 30)
+    $restartButton.Location = New-Object System.Drawing.Point(330, 350)
+    $restartButton.Size = New-Object System.Drawing.Size(150, 30)
     $restartButton.Text = "Reiniciar"
     $restartButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
@@ -696,16 +696,79 @@ function Setup-ServicesTab {
     $tabPage.Controls.Add($restartButton)
     
     $refreshButton = New-Object System.Windows.Forms.Button
-    $refreshButton.Location = New-Object System.Drawing.Point(340, 350)
-    $refreshButton.Size = New-Object System.Drawing.Size(100, 30)
+    $refreshButton.Location = New-Object System.Drawing.Point(490, 350)
+    $refreshButton.Size = New-Object System.Drawing.Size(150, 30)
     $refreshButton.Text = "Atualizar"
     $refreshButton.Add_Click({
         Update-StatusMessage "Atualizando lista de serviços..."
         Update-ServicesList
         Update-StatusMessage "Lista de serviços atualizada."
     })
+    $tabPage.Controls.Add($refreshButton)
     
-  $tabPage.Controls.Add($refreshButton)
+    # Adicionar botões para controlar todos os serviços de uma vez
+    $startAllButton = New-Object System.Windows.Forms.Button
+    $startAllButton.Location = New-Object System.Drawing.Point(10, 390)
+    $startAllButton.Size = New-Object System.Drawing.Size(150, 30)
+    $startAllButton.Text = "Iniciar Todos"
+    $startAllButton.Add_Click({
+        Update-StatusMessage "Iniciando todos os serviços..."
+        
+        try {
+            # Executar o comando start --all
+            & "$PSScriptRoot\..\setup.ps1" start --all
+            Update-StatusMessage "Todos os serviços foram iniciados com sucesso."
+            Update-ServicesList
+        }
+        catch {
+            $errorMsg = $_
+            Update-StatusMessage "Erro ao iniciar todos os serviços: $errorMsg"
+            [System.Windows.Forms.MessageBox]::Show("Erro ao iniciar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    })
+    $tabPage.Controls.Add($startAllButton)
+    
+    $stopAllButton = New-Object System.Windows.Forms.Button
+    $stopAllButton.Location = New-Object System.Drawing.Point(170, 390)
+    $stopAllButton.Size = New-Object System.Drawing.Size(150, 30)
+    $stopAllButton.Text = "Parar Todos"
+    $stopAllButton.Add_Click({
+        Update-StatusMessage "Parando todos os serviços..."
+        
+        try {
+            # Executar o comando stop --all
+            & "$PSScriptRoot\..\setup.ps1" stop --all
+            Update-StatusMessage "Todos os serviços foram parados com sucesso."
+            Update-ServicesList
+        }
+        catch {
+            $errorMsg = $_
+            Update-StatusMessage "Erro ao parar todos os serviços: $errorMsg"
+            [System.Windows.Forms.MessageBox]::Show("Erro ao parar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    })
+    $tabPage.Controls.Add($stopAllButton)
+    
+    $restartAllButton = New-Object System.Windows.Forms.Button
+    $restartAllButton.Location = New-Object System.Drawing.Point(330, 390)
+    $restartAllButton.Size = New-Object System.Drawing.Size(150, 30)
+    $restartAllButton.Text = "Reiniciar Todos"
+    $restartAllButton.Add_Click({
+        Update-StatusMessage "Reiniciando todos os serviços..."
+        
+        try {
+            # Executar o comando restart --all
+            & "$PSScriptRoot\..\setup.ps1" restart --all
+            Update-StatusMessage "Todos os serviços foram reiniciados com sucesso."
+            Update-ServicesList
+        }
+        catch {
+            $errorMsg = $_
+            Update-StatusMessage "Erro ao reiniciar todos os serviços: $errorMsg"
+            [System.Windows.Forms.MessageBox]::Show("Erro ao reiniciar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    })
+    $tabPage.Controls.Add($restartAllButton)
     
     # Armazenar referência ao DataGridView
     $script:serviceDataGrid = $dataGrid
