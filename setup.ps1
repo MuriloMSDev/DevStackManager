@@ -38,6 +38,7 @@ $tmpDir = "$baseDir\tmp"
 . "$PSScriptRoot\src\install.ps1"
 . "$PSScriptRoot\src\uninstall.ps1"
 . "$PSScriptRoot\src\path.ps1"
+. "$PSScriptRoot\src\data.ps1"
 . "$PSScriptRoot\src\list.ps1"
 . "$PSScriptRoot\src\process.ps1"
 
@@ -80,79 +81,35 @@ function Write-Log($msg) {
 
 function Status-Component {
     param([string]$Component)
-    $dir = switch ($Component) {
-        "php" { $phpDir }
-        "nginx" { $nginxDir }
-        "mysql" { $mysqlDir }
-        "nodejs" { $nodeDir }
-        "python" { $pythonDir }
-        "composer" { $composerDir }
-        "git" { $baseDir }
-        "phpmyadmin" { $pmaDir }
-        "mongodb" { $mongoDir }
-        "redis" { $redisDir }
-        "pgsql" { $pgsqlDir }
-        "mailhog" { $mailhogDir }
-        "elasticsearch" { $elasticDir }
-        "memcached" { $memcachedDir }
-        "docker" { $dockerDir }
-        "yarn" { $yarnDir }
-        "pnpm" { $pnpmDir }
-        "wpcli" { $wpcliDir }
-        "adminer" { $adminerDir }
-        "poetry" { $poetryDir }
-        "ruby" { $rubyDir }
-        "go" { $goDir }
-        "certbot" { $certbotDir }
-        "openssl" { $openSSLDir }
-        "phpcsfixer" { $phpcsfixerDir }
-        default { return }
-    }
-    $versions = @()
-    if (Test-Path $dir) {
-        if ($Component -eq "git") {
-            $versions = Get-ChildItem $dir -Directory | Where-Object { $_.Name -like 'git-*' } | ForEach-Object { $_.Name }
-        } else {
-            $versions = Get-ChildItem $dir -Directory | ForEach-Object { $_.Name }
-        }
-    }
-    if ($versions.Count -eq 0) {
-        Write-WarningMsg "$Component não está instalado."
+    
+    $status = Get-ComponentStatus -Component $Component
+    
+    if (-not $status.installed) {
+        Write-WarningMsg $status.message
         return
     }
+    
     Write-Info "$Component instalado(s):"
-    $versions | ForEach-Object {
+    $status.versions | ForEach-Object {
         Write-Host "  $_"
     }
 }
 
 function Status-All {
     Write-Host "Status do DevStack:"
-    Status-Component "php"
-    Status-Component "nginx"
-    Status-Component "mysql"
-    Status-Component "nodejs"
-    Status-Component "python"
-    Status-Component "composer"
-    Status-Component "git"
-    Status-Component "phpmyadmin"
-    Status-Component "mongodb"
-    Status-Component "redis"
-    Status-Component "pgsql"
-    Status-Component "mailhog"
-    Status-Component "elasticsearch"
-    Status-Component "memcached"
-    Status-Component "docker"
-    Status-Component "yarn"
-    Status-Component "pnpm"
-    Status-Component "wpcli"
-    Status-Component "adminer"
-    Status-Component "poetry"
-    Status-Component "ruby"
-    Status-Component "go"
-    Status-Component "certbot"
-    Status-Component "openssl"
-    Status-Component "phpcsfixer"
+    
+    $allStatus = Get-AllComponentsStatus
+    
+    foreach ($comp in $allStatus.Keys) {
+        if ($allStatus[$comp].installed) {
+            Write-Info "$comp instalado(s):"
+            $allStatus[$comp].versions | ForEach-Object {
+                Write-Host "  $_"
+            }
+        } else {
+            Write-WarningMsg "$comp não está instalado."
+        }
+    }
 }
 
 function Test-All {
@@ -345,11 +302,10 @@ switch ($Command) {
     "help" {
         Write-Log "Comando executado: help"
         Help-DevStack
-    }
-    "list" {
+    }    "list" {
         Write-Log "Comando executado: list $($Args -join ' ')"
         if ($Args.Count -eq 0) {
-            Write-Host "Uso: setup.ps1 list <php|nodejs|python|--installed|-i>"
+            Write-Host "Uso: setup.ps1 list <php|nodejs|python|composer|mysql|nginx|phpmyadmin|git|mongodb|redis|pgsql|mailhog|elasticsearch|memcached|docker|yarn|pnpm|wpcli|adminer|poetry|ruby|go|certbot|openssl|phpcsfixer|--installed>"
             exit 1
         }
         $firstArg = $Args[0].Trim()
@@ -369,14 +325,14 @@ switch ($Command) {
             "git"           { List-GitVersions }
             "mongodb"       { List-MongoDBVersions }
             "redis"         { List-RedisVersions }
-            "pgsql"         { List-PgsqlVersions }
-            "mailhog"       { List-MailhogVersions }
-            "elasticsearch" { List-ElasticVersions }
+            "pgsql"         { List-PgSQLVersions }
+            "mailhog"       { List-MailHogVersions }
+            "elasticsearch" { List-ElasticsearchVersions }
             "memcached"     { List-MemcachedVersions }
             "docker"        { List-DockerVersions }
             "yarn"          { List-YarnVersions }
             "pnpm"          { List-PnpmVersions }
-            "wpcli"         { List-WpcliVersions }
+            "wpcli"         { List-WPCLIVersions }
             "adminer"       { List-AdminerVersions }
             "poetry"        { List-PoetryVersions }
             "ruby"          { List-RubyVersions }
