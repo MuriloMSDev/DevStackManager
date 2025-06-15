@@ -31,7 +31,7 @@ function Start-DevStackGUI {
     # Criar o formulário principal
     $mainForm = New-Object System.Windows.Forms.Form
     $mainForm.Text = "DevStack Manager"
-    $mainForm.Size = New-Object System.Drawing.Size(800, 600)
+    $mainForm.Size = New-Object System.Drawing.Size(800, 620)
     $mainForm.StartPosition = "CenterScreen"
     
     # Tentar encontrar um ícone adequado para o formulário
@@ -81,7 +81,7 @@ function Start-DevStackGUI {
                 Update-StatusMessage "Atualizando componentes disponíveis para desinstalação..."
                 Update-UninstallComponentList
             }
- "Serviços" {
+            "Serviços" {
                 Update-StatusMessage "Atualizando status dos serviços..."
                 Update-ServicesList
             }
