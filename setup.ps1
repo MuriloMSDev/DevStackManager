@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory=$true, Position=0)]
-    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help")]
-    [string]$Command,
+    [Parameter(Mandatory=$false, Position=0)]
+    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help", "gui")]
+    [string]$Command = "gui",
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
     [string[]]$Args
@@ -41,6 +41,7 @@ $tmpDir = "$baseDir\tmp"
 . "$PSScriptRoot\src\data.ps1"
 . "$PSScriptRoot\src\list.ps1"
 . "$PSScriptRoot\src\process.ps1"
+. "$PSScriptRoot\src\gui.ps1"
 
 Set-Variable -Name baseDir -Value $baseDir -Scope Global
 Set-Variable -Name nginxDir -Value $nginxDir -Scope Global
@@ -282,6 +283,7 @@ function Help-DevStack {
         @{ cmd = "service"; desc = "Lista serviços DevStack (Windows)." },
         @{ cmd = "doctor"; desc = "Diagnóstico do ambiente DevStack." },
         @{ cmd = "site <domínio> [opções]"; desc = "Cria configuração de site nginx." },
+        @{ cmd = "gui"; desc = "Inicia a interface gráfica do DevStack." },
         @{ cmd = "help"; desc = "Exibe esta ajuda." }
     )
     $col1 = 46; $col2 = 60
@@ -759,6 +761,15 @@ switch ($Command) {
             Write-Host "Alias 'devstack' já existe no seu perfil do PowerShell." -ForegroundColor Yellow
         }
         Write-Host "Agora você pode rodar 'devstack' ou 'setup.ps1' de qualquer lugar no terminal." -ForegroundColor Cyan
+    }    
+    "gui" {
+        Write-Log "Comando executado: gui"
+        # Inicia a GUI do DevStack
+        try {
+            Invoke-DevStackGUI
+        } catch {
+            Write-ErrorMsg "Erro ao iniciar a interface gráfica: $_"
+        }
     }
     default {
         Write-Host "Comando desconhecido: $Command"

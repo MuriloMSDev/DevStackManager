@@ -897,9 +897,8 @@ function Get-ComponentStatus {
         "poetry" { $poetryDir }
         "ruby" { $rubyDir }
         "go" { $goDir }
-        "certbot" { $certbotDir }
-        "openssl" { $openSSLDir }
-        "phpcsfixer" { $phpcsfixerDir }
+        "certbot" { $certbotDir }        "openssl" { $openSSLDir }
+        "php-cs-fixer" { $phpcsfixerDir }
         default { return @{ installed = $false; versions = @(); message = "Componente desconhecido" } }
     }
     
