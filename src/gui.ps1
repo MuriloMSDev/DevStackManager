@@ -4,6 +4,7 @@
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName PresentationCore
 
 # Variáveis globais para controle da UI
 $script:statusLabel = $null
@@ -1196,7 +1197,6 @@ function Setup-UtilsTab {
     
     # Atribuir à variável global
     $script:utilsCommandTextBox = $commandTextBox
-    
     # Criar a caixa de saída primeiro
     $outputBox = New-Object System.Windows.Forms.RichTextBox
     $outputBox.Location = New-Object System.Drawing.Point(10, 70)
@@ -1204,7 +1204,15 @@ function Setup-UtilsTab {
     $outputBox.ReadOnly = $true
     $outputBox.BackColor = [System.Drawing.Color]::Black
     $outputBox.ForeColor = [System.Drawing.Color]::White
+    # Usar uma fonte monospace com bom suporte a UTF-8
     $outputBox.Font = New-Object System.Drawing.Font("Consolas", 10)
+    $outputBox.Multiline = $true
+    $outputBox.AcceptsTab = $true
+    $outputBox.WordWrap = $true
+    # Configurar RichEdit para suporte completo a caracteres internacionais
+    $outputBox.Text = ""
+    # Definir a propriedade RightToLeft como No para garantir exibição correta da esquerda para a direita
+    $outputBox.RightToLeft = [System.Windows.Forms.RightToLeft]::No
     $tabPage.Controls.Add($outputBox)
     
     # Atribuir a caixa de texto de saída à variável global
@@ -1212,15 +1220,16 @@ function Setup-UtilsTab {
     
     # Adicionar sugestões de comandos populares ao iniciar
     try {
-        $script:utilsOutputBox.AppendText("DevStackSetup GUI Console`r`n")
-        $script:utilsOutputBox.AppendText("-------------------`r`n")
-        $script:utilsOutputBox.AppendText("Comandos populares:`r`n")
-        $script:utilsOutputBox.AppendText("  * status`r`n")
-        $script:utilsOutputBox.AppendText("  * list --installed`r`n")
-        $script:utilsOutputBox.AppendText("  * list <componente>`r`n")
-        $script:utilsOutputBox.AppendText("  * test`r`n")
-        $script:utilsOutputBox.AppendText("  * doctor`r`n")
-        $script:utilsOutputBox.AppendText("-------------------`r`n`r`n")
+        # Definir o título e informações iniciais com suporte a UTF-8
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "DevStackSetup GUI Console`r`n" -color ([System.Drawing.Color]::Cyan)
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "-------------------`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "Comandos populares:`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "  * status`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "  * list --installed`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "  * list <componente>`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "  * test`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "  * doctor`r`n"
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "-------------------`r`n"
     } catch {
         [System.Windows.Forms.MessageBox]::Show("Erro ao inicializar console: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -1252,15 +1261,75 @@ function Setup-UtilsTab {
             
             # Garantir que a referência ao OutputBox ainda é válida
             $outputBox = $script:utilsOutputBox
-            $outputBox.AppendText("> $command`r`n")
+            # Colorir o prompt em azul usando a função Add-UTF8Text
+            Add-UTF8Text -textBox $outputBox -text "> $command`r`n" -color ([System.Drawing.Color]::Cyan)
             
             try {
-                $cmd = "& '$PSScriptRoot\..\setup.ps1' $command"
-                $output = Invoke-Expression $cmd | Out-String
-                $outputBox.AppendText($output)
-                $outputBox.AppendText("`r`n")
-                $outputBox.ScrollToCaret()
-                Update-StatusMessage "Comando executado com sucesso."
+                # Path para o script setup.ps1
+                $setupPath = "$PSScriptRoot\..\setup.ps1"
+                # Preparar para capturar a saída
+                $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+                $pinfo.FileName = "pwsh.exe"
+                # Tentar usar PowerShell 7 primeiro, que tem melhor suporte a Unicode
+                if (-not (Get-Command "pwsh.exe" -ErrorAction SilentlyContinue)) {
+                    # Fallback para PowerShell Windows padrão se o Core não estiver disponível
+                    $pinfo.FileName = "powershell.exe"
+                }
+                
+                # Configurar argumentos do PowerShell com encoding explícito
+                $pinfo.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command `"& { `$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; . '$setupPath' $command }`""
+                $pinfo.RedirectStandardOutput = $true
+                $pinfo.RedirectStandardError = $true
+                $pinfo.UseShellExecute = $false
+                $pinfo.CreateNoWindow = $true
+                $pinfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+                $pinfo.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+                
+                $process = New-Object System.Diagnostics.Process
+                $process.StartInfo = $pinfo
+                $process.Start() | Out-Null
+                # Capturar saída padrão e de erro diretamente com StreamReader para melhor controle de encoding
+                $stdoutReader = $process.StandardOutput
+                $stderrReader = $process.StandardError
+                
+                # Ler a saída linha por linha, preservando o encoding
+                $stdoutBuilder = New-Object System.Text.StringBuilder
+                $stderrBuilder = New-Object System.Text.StringBuilder
+                
+                while (!$stdoutReader.EndOfStream) {
+                    $line = $stdoutReader.ReadLine()
+                    [void]$stdoutBuilder.AppendLine($line)
+                }
+                
+                while (!$stderrReader.EndOfStream) {
+                    $line = $stderrReader.ReadLine()
+                    [void]$stderrBuilder.AppendLine($line)
+                }
+                
+                $process.WaitForExit()
+                
+                $stdout = $stdoutBuilder.ToString()
+                $stderr = $stderrBuilder.ToString()
+                # Exibir os resultados
+                if ($stdout) {
+                    # Usar a função Add-UTF8Text para garantir que o texto seja exibido corretamente
+                    Add-UTF8Text -textBox $outputBox -text $stdout -color ([System.Drawing.Color]::White)
+                }
+                
+                if ($stderr) {
+                    # Usar a função Add-UTF8Text para o texto de erro com cor vermelha
+                    Add-UTF8Text -textBox $outputBox -text "ERROS:`r`n" -color ([System.Drawing.Color]::Red)
+                    Add-UTF8Text -textBox $outputBox -text $stderr -color ([System.Drawing.Color]::Red)
+                }
+                if (-not $stdout -and -not $stderr) {
+                    Add-UTF8Text -textBox $outputBox -text "(Comando executado, sem saída gerada)`r`n" -color ([System.Drawing.Color]::Gray)
+                }
+                
+                Add-UTF8Text -textBox $outputBox -text "`r`n" -color ([System.Drawing.Color]::White)
+                Update-StatusMessage "Comando executado com sucesso (código de saída: $($process.ExitCode))."
+                
+                # Limpar a caixa de comando para facilitar a entrada do próximo comando
+                $script:utilsCommandTextBox.Text = ""
             }
             catch {
                 $outputBox.AppendText("Erro: $_`r`n")
@@ -1303,16 +1372,55 @@ function Update-AllTabs {
     
     # Atualizar lista de serviços (tab 4)
     Update-ServicesList
-    
     # Verificar se o OutputBox do console de utilitários está inicializado
     if ($script:utilsOutputBox -eq $null) {
         # Nesse caso não fazemos nada, pois a aba não foi acessada ainda
     } else {
-        # Adicionar uma mensagem indicando que os dados foram atualizados
-        $script:utilsOutputBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] Dados do sistema atualizados.`r`n")
-        $script:utilsOutputBox.ScrollToCaret()
+        # Adicionar uma mensagem indicando que os dados foram atualizados usando nossa função UTF-8
+        Add-UTF8Text -textBox $script:utilsOutputBox -text "[$(Get-Date -Format 'HH:mm:ss')] Dados do sistema atualizados.`r`n" -color ([System.Drawing.Color]::Gray)
     }
     
     # Outras atualizações podem ser adicionadas aqui conforme necessário
     Update-StatusMessage "Todas as informações foram atualizadas."
+}
+
+# Função auxiliar para adicionar texto UTF-8 ao RichTextBox
+function Add-UTF8Text {
+    param(
+        [System.Windows.Forms.RichTextBox]$textBox,
+        [string]$text,
+        [System.Drawing.Color]$color = [System.Drawing.Color]::White
+    )
+    
+    if (-not $textBox -or [string]::IsNullOrEmpty($text)) {
+        return
+    }
+    # Salvar a posição atual do cursor e a cor de seleção
+    $currentPosition = $textBox.SelectionStart
+    $currentColor = $textBox.SelectionColor
+    
+    # Garantir que estamos no final do texto antes de adicionar
+    $textBox.SelectionStart = $textBox.TextLength
+    
+    # Definir a cor do texto a ser adicionado
+    $textBox.SelectionColor = $color
+    
+    try {
+        # Substituições diretas para caracteres problemáticos comuns em português
+        $fixedText = $text
+        
+        # Aplicar texto ao RichTextBox
+        $textBox.AppendText($fixedText)
+        
+        # Rolar para a última linha adicionada
+        $textBox.ScrollToCaret()
+    }
+    catch {
+        # Se falhar, tente com o texto original diretamente
+        $textBox.AppendText($text)
+        $textBox.ScrollToCaret()
+    }
+    
+    # Restaurar a cor original
+    $textBox.SelectionColor = $currentColor
 }

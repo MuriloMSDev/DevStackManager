@@ -7,6 +7,14 @@ param(
     [string[]]$Args
 )
 
+# Configurar codificação para UTF-8 para garantir caracteres especiais
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+# Força uso de caracteres UTF-8 diretos em vez de códigos escape
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+$PSDefaultParameterValues['*:Encoding'] = 'utf8'
+
 $baseDir = "C:\devstack"
 $nginxDir = "$baseDir\nginx"
 $phpDir = "$baseDir\php"
@@ -71,9 +79,21 @@ Set-Variable -Name openSSLDir -Value $openSSLDir -Scope Global
 Set-Variable -Name phpcsfixerDir -Value $phpcsfixerDir -Scope Global
 Set-Variable -Name tmpDir -Value $tmpDir -Scope Global
 
-function Write-Info($msg) { Write-Host $msg -ForegroundColor Cyan }
-function Write-WarningMsg($msg) { Write-Host $msg -ForegroundColor Yellow }
-function Write-ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
+function Write-Info($msg) { 
+    # Garantir que a mensagem seja exibida com codificação UTF-8
+    $utf8Msg = [System.Text.Encoding]::UTF8.GetString([System.Text.Encoding]::Default.GetBytes($msg))
+    Write-Host $utf8Msg -ForegroundColor Cyan 
+}
+
+function Write-WarningMsg($msg) { 
+    $utf8Msg = [System.Text.Encoding]::UTF8.GetString([System.Text.Encoding]::Default.GetBytes($msg))
+    Write-Host $utf8Msg -ForegroundColor Yellow 
+}
+
+function Write-ErrorMsg($msg) { 
+    $utf8Msg = [System.Text.Encoding]::UTF8.GetString([System.Text.Encoding]::Default.GetBytes($msg))
+    Write-Host $utf8Msg -ForegroundColor Red 
+}
 function Write-Log($msg) {
     $logFile = Join-Path $baseDir "devstack.log"
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -721,7 +741,8 @@ switch ($Command) {
         $colUser = [Math]::Max(8, $userLen)
         $headerUser = ('_' * ($colUser + 4))
         Write-Host $headerUser -ForegroundColor Gray
-        Write-Host ("| {0,-$colUser} |" -f 'Usuário') -ForegroundColor Gray
+        # Usar a função Write-Info que já foi melhorada para tratar UTF-8
+        Write-Info ("| {0,-$colUser} |" -f 'Usuário')
         Write-Host ("|" + ('-' * ($colUser + 2)) + "|") -ForegroundColor Gray
         Write-Host -NoNewline "| " -ForegroundColor Gray
         Write-Host -NoNewline ("{0,-$colUser}" -f $user) -ForegroundColor Cyan
