@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$false, Position=0)]
-    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help", "gui")]
+    [ValidateSet("install", "site", "uninstall", "path", "list", "start", "stop", "restart", "status", "update", "deps", "test", "alias", "global", "self-update", "clean", "backup", "logs", "enable", "disable", "config", "reset", "proxy", "ssl", "db", "service", "doctor", "help", "gui", "Invoke-DevStackGUI")]
     [string]$Command = "gui",
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -787,7 +787,46 @@ switch ($Command) {
         Write-Log "Comando executado: gui"
         # Inicia a GUI do DevStack
         try {
-            Invoke-DevStackGUI
+            if ($Args.Count -gt 0 -and $Args[0] -and $Args[0].ToLower() -eq "--isnew") {
+                Invoke-DevStackGUI
+            } else {
+                # Determinar qual versão do PowerShell usar
+                $psExecutable = $null
+                $psArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass")
+                
+                # Verificar se estamos em Windows PowerShell ou PowerShell Core
+                if ($PSVersionTable.PSEdition -eq "Core") {
+                    # Estamos em PowerShell Core (pwsh.exe)
+                    if (Get-Command "pwsh" -ErrorAction SilentlyContinue) {
+                        Write-Log "Usando PowerShell Core (pwsh.exe)"
+                        $psExecutable = "pwsh"
+                    }
+                }
+                
+                # Se não encontrou pwsh ou não estamos em Core, usar powershell.exe
+                if (-not $psExecutable) {
+                    Write-Log "Usando Windows PowerShell (powershell.exe)"
+                    $psExecutable = "powershell"
+                }
+                
+                # Criar argumentos para iniciar a GUI
+                $guiArgs = @(
+                    "-WindowStyle", "Hidden", 
+                    "-Command", "& { . '$PSScriptRoot\setup.ps1' gui --IsNew }"
+                )
+                $finalArgs = $psArgs + $guiArgs
+
+                # Iniciar o processo
+                Write-Log "Iniciando GUI em novo processo: $psExecutable $finalArgs"
+                $process = Start-Process -FilePath $psExecutable -ArgumentList $finalArgs -WindowStyle Hidden -PassThru
+                
+                # Verificar se o processo iniciou corretamente
+                if ($null -ne $process) {
+                    Write-Host "Interface gráfica iniciada com sucesso (PID: $($process.Id))" -ForegroundColor Green
+                } else {
+                    Write-ErrorMsg "Falha ao iniciar a interface gráfica"
+                }
+            }
         } catch {
             Write-ErrorMsg "Erro ao iniciar a interface gráfica: $_"
         }
