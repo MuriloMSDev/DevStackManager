@@ -63,7 +63,8 @@ function Install-GenericTool {
         [string]$ZipUrl,
         [string]$SubDir,
         [string]$ExeName,
-        [string]$Prefix
+        [string]$Prefix,
+        [bool]$RenameExe = $true
     )
     $targetDir = Join-Path $ToolDir $SubDir
     $rollback = $false
@@ -80,7 +81,10 @@ function Install-GenericTool {
             Write-Host "$Prefix $Version instalado."
             $rollback = $true
         }
+        if ($RenameExe) {
+            Write-Host "Renomeando executável principal..."
         Rename-MainExe -Dir $targetDir -ExeName $ExeName -Version $Version -Prefix $Prefix
+        }
     } catch {
         Write-Host "Erro ao instalar $Prefix $($Version): $($_)"
         if ($rollback) { Rollback-Install $targetDir }
@@ -109,20 +113,20 @@ function Download-And-ExtractZip {
     Write-Progress -Activity "Baixando" -Status "Extraindo..." -PercentComplete 50
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = [IO.Compression.ZipFile]::OpenRead($ZipPath)
-    $zipBaseName = [IO.Path]::GetFileNameWithoutExtension($ZipPath)
-    $hasSubDir = $false
-    foreach ($entry in $zip.Entries) {
-        if ($entry.FullName -match "^$zipBaseName/") {
-            $hasSubDir = $true
-            break
-        }
+    $firstEntry = $zip.Entries | Select-Object -First 1
+    $topFolder = $null
+    if ($firstEntry -and $firstEntry.FullName -match '^([^/\\]+)[/\\]') {
+        $topFolder = $matches[1]
     }
     $zip.Dispose()
-    if ($hasSubDir) {
-        $dest = [IO.Path]::GetDirectoryName($ZipPath)
-        Expand-Archive $ZipPath -DestinationPath $dest -Force -ErrorAction Stop
-    } else {
         Expand-Archive $ZipPath -DestinationPath $ExtractTo -Force -ErrorAction Stop
+    # If the zip contains a top-level folder, move its contents up
+    if ($topFolder) {
+        $extractedPath = Join-Path $ExtractTo $topFolder
+        if (Test-Path $extractedPath) {
+            Get-ChildItem $extractedPath | Move-Item -Destination $ExtractTo -Force
+            Remove-Item $extractedPath -Recurse -Force
+        }
     }
     Remove-Item $ZipPath
     Write-Progress -Activity "Baixando" -Completed
@@ -165,7 +169,7 @@ function Get-LatestPHPVersion {
 
 function Get-LatestNodeVersion {
     $json = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json"
-    return $json | Where-Object { $_.lts } | Select-Object -First 1 -ExpandProperty version -replace "v"
+    return ($json | Where-Object { $_.lts } | Select-Object -First 1 -ExpandProperty version) -replace "^v"
 }
 
 function Get-LatestPythonVersion {
@@ -350,7 +354,46 @@ function Install-NodeJS {
     }
     $subDir = "node-v$version-win-x64"
     $zipUrl = "https://nodejs.org/dist/v$version/node-v$version-win-x64.zip"
-    Install-GenericTool -ToolDir $nodeDir -Version $version -ZipUrl $zipUrl -SubDir $subDir -ExeName "node.exe" -Prefix "node"
+    Install-GenericTool -ToolDir $nodeDir -Version $version -ZipUrl $zipUrl -SubDir $subDir -ExeName "node.exe" -Prefix "node" -RenameExe $false
+    $nodePath = Join-Path $nodeDir $subDir
+    $binDir = Join-Path $nodeDir "bin"
+    if (-not (Test-Path $binDir)) {
+        New-Item -ItemType Directory -Force -Path $binDir | Out-Null
+    }
+    $srcExe = Join-Path $nodePath "node.exe"
+    $dstExe = Join-Path $binDir "node-$version.exe"
+    if (Test-Path $srcExe) {
+        Copy-Item -Path $srcExe -Destination $dstExe -Force
+        Write-Host "Atalho node-$version.exe criado em $binDir"
+    }
+    $npm = Join-Path $nodePath "npm"
+    $npmCmd = Join-Path $nodePath "npm.cmd"
+    $npmPs1 = Join-Path $nodePath "npm.ps1"
+    $npx = Join-Path $nodePath "npx"
+    $npxCmd = Join-Path $nodePath "npx.cmd"
+    $npxPs1 = Join-Path $nodePath "npx.ps1"
+    $npmPkgJson = Join-Path $nodePath "node_modules\npm\package.json"
+    if (Test-Path $npmPkgJson) {
+        $npmVersion = (Get-Content $npmPkgJson | ConvertFrom-Json).version
+        foreach ($npmFile in @($npm, $npmCmd, $npmPs1)) {
+            if (Test-Path $npmFile) {
+                $ext = [IO.Path]::GetExtension($npmFile)
+                $newName = "npm-$npmVersion$ext"
+                Rename-Item -Path $npmFile -NewName $newName -Force
+                Write-Host "Renomeado $(Split-Path $npmFile -Leaf) para $newName"
+            }
+        }
+        foreach ($npmFile in @($npx, $npxCmd, $npxPs1)) {
+            if (Test-Path $npmFile) {
+                $ext = [IO.Path]::GetExtension($npmFile)
+                $newName = "npx-$npmVersion$ext"
+                Rename-Item -Path $npmFile -NewName $newName -Force
+                Write-Host "Renomeado $(Split-Path $npmFile -Leaf) para $newName"
+            }
+        }
+    } else {
+        Write-Host "Arquivo package.json do npm não encontrado."
+    }
 }
 
 function Install-Python {
