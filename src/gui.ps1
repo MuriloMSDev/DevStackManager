@@ -448,7 +448,7 @@ function Setup-InstallTab {
               # Usar a função existente no install.ps1
             try {
                 # Formato correto para instalação: componente-versão
-                & "$PSScriptRoot\..\setup.ps1" install $component $version
+                & "$PSScriptRoot\..\setup.ps1" install "$component-$version"
                 Update-StatusMessage "$component versão $version instalado com sucesso."
                 [System.Windows.Forms.MessageBox]::Show("$component versão $version foi instalado com sucesso.", "Sucesso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
                 

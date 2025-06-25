@@ -174,10 +174,45 @@ function Get-PythonVersions {
     param()
     
     try {
-        $page = Invoke-WebRequest -Uri "https://www.python.org/downloads/windows/"
-        $matches = [regex]::Matches($page.Content, "Python ([\d\.]+) ")
-        $versions = $matches | ForEach-Object { $_.Groups[1].Value }
-        $versions = $versions | Sort-Object -Descending | Get-Unique
+        # Define all Python indexes
+        $pythonIndexUrls = @(
+            "https://www.python.org/ftp/python/index-windows-recent.json",
+            "https://www.python.org/ftp/python/index-windows-legacy.json",
+            "https://www.python.org/ftp/python/index-windows.json"
+        )
+        
+        # Extract all versions that have amd64 zip files
+        $versions = @()
+        
+        # Process each index file
+        foreach ($indexUrl in $pythonIndexUrls) {
+            try {
+                $pythonVersions = Invoke-RestMethod -Uri $indexUrl -UseBasicParsing
+                
+                if ($pythonVersions -and $pythonVersions.versions) {
+                    foreach ($version in $pythonVersions.versions) {
+                        # Check for regular amd64 package (not embeddable or test)
+                        if ($version.url -match "python-(\d+\.\d+\.\d+)-amd64\.zip$" -and $version.url -notmatch "embeddable|test") {
+                            # Store matches in local variable to avoid scope issues
+                            $localMatches = $Matches
+                            # Extract version number directly from the regex match
+                            $versionNumber = $localMatches[1]
+                            # Avoid duplicates
+                            if ($versions -notcontains $versionNumber) {
+                                $versions += $versionNumber
+                            }
+                        }
+                    }
+                }
+            }
+            catch {
+                Write-Verbose "Erro ao carregar ${indexUrl}: $($_.ToString())"
+                # Continue with next index if this one fails
+                continue
+            }
+        }
+        
+        $versions = $versions | Sort-Object {[version]$_} -Descending
         
         $installed = @()
         if (Test-Path $pythonDir) { 

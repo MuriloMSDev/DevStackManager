@@ -173,11 +173,55 @@ function Get-LatestNodeVersion {
 }
 
 function Get-LatestPythonVersion {
-    $page = Invoke-WebRequest -Uri "https://www.python.org/downloads/windows/"
-    if ($page.Content -match "Latest Python 3 Release - Python ([\d\.]+)") {
-        return $matches[1]
-    } else {
-        throw "Não foi possível obter a última versão do Python."
+    try {
+        # Define all Python indexes
+        $pythonIndexUrls = @(
+            "https://www.python.org/ftp/python/index-windows-recent.json",
+            "https://www.python.org/ftp/python/index-windows-legacy.json",
+            "https://www.python.org/ftp/python/index-windows.json"
+        )
+        
+        # Filter for stable, non-beta, non-rc releases with amd64 zip files
+        $stableVersions = @()
+        
+        # Process each index file
+        foreach ($indexUrl in $pythonIndexUrls) {
+            try {
+                $pythonVersions = Invoke-RestMethod -Uri $indexUrl -UseBasicParsing
+                
+                if ($pythonVersions -and $pythonVersions.versions) {
+                    foreach ($version in $pythonVersions.versions) {
+                        # Only include regular amd64 packages (not embeddable or test)
+                        if ($version.url -match "python-(\d+\.\d+\.\d+)-amd64\.zip$" -and 
+                            $version.url -notmatch "embeddable|test" -and 
+                            -not $version.'sort-version'.Contains('a') -and 
+                            -not $version.'sort-version'.Contains('b') -and 
+                            -not $version.'sort-version'.Contains('rc')) {
+                            
+                            # Store matches in local variable to avoid scope issues
+                            $localMatches = $Matches
+                            $stableVersions += $localMatches[1]
+                        }
+                    }
+                }
+            }
+            catch {
+                Write-Verbose "Erro ao carregar ${indexUrl}: $($_.ToString())"
+                # Continue with next index if this one fails
+                continue
+            }
+        }
+        
+        # Get the latest stable version
+        if ($stableVersions.Count -gt 0) {
+            return ($stableVersions | Sort-Object -Property {[version]$_} -Descending | Select-Object -First 1)
+        }
+        
+        throw "Não foi possível encontrar uma versão estável do Python nos índices Windows"
+    }
+    catch {
+        Write-Error "Erro ao buscar versões do Python: $_"
+        throw
     }
 }
 
@@ -402,25 +446,55 @@ function Install-Python {
         $version = Get-LatestPythonVersion
     }
     $pySubDir = "python-$version"
-    $pyDirFull = Join-Path $pythonDir $pySubDir
-    if (Test-Path $pyDirFull) {
-        Write-Host "Python $version já está instalado."
-        return
+    
+    # Define all Python indexes
+    $pythonIndexUrls = @(
+        "https://www.python.org/ftp/python/index-windows-recent.json",
+        "https://www.python.org/ftp/python/index-windows-legacy.json",
+        "https://www.python.org/ftp/python/index-windows.json"
+    )
+    
+    # Search for the exact matching version across all indexes
+    $pyUrl = $null
+    foreach ($indexUrl in $pythonIndexUrls) {
+        try {
+            $pythonVersions = Invoke-RestMethod -Uri $indexUrl -UseBasicParsing -ErrorAction SilentlyContinue
+            
+            if ($pythonVersions -and $pythonVersions.versions) {
+                # First look for an exact URL match for the requested version
+                foreach ($versionEntry in $pythonVersions.versions) {
+                    # Use a strict version match with anchors to ensure we get the exact version
+                    if ($versionEntry.url -match "python-$version-amd64\.zip$" -and 
+                        $versionEntry.url -notmatch "embeddable|test") {
+                        Write-Host "Found exact match for Python $version in $indexUrl"
+                        $pyUrl = $versionEntry.url
+                        break
+                    }
+                }
+                
+                # Exit the outer loop if we found a URL
+                if ($pyUrl) { break }
+            }
+        }
+        catch {
+            Write-Verbose "Erro ao carregar ${indexUrl}: $($_.ToString())"
+            # Continue with next index if this one fails
+            continue
+        }
     }
-    Write-Host "Baixando Python $version..."
-    $pyExe = "$pythonDir\python-$version-amd64.exe"
-    $pyUrl = "https://www.python.org/ftp/python/$version/python-$version-amd64.exe"
-    Invoke-WebRequest -Uri $pyUrl -OutFile $pyExe
-    New-Item -ItemType Directory -Force -Path $pyDirFull | Out-Null
-    Write-Host "Instalando Python $version em modo silencioso..."
-    Start-Process -FilePath $pyExe -ArgumentList "/quiet InstallAllUsers=0 TargetDir=$pyDirFull" -Wait
-    Remove-Item $pyExe
+    
+    # Fallback to constructed URL if not found in index
+    if (-not $pyUrl) {
+        Write-Host "URL específica não encontrada no índice, usando URL padrão." -ForegroundColor Yellow
+        $pyUrl = "https://www.python.org/ftp/python/$version/python-$version-amd64.zip"
+        Write-Host "Tentando download de: $pyUrl" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "Usando URL encontrada nos índices: $pyUrl" -ForegroundColor Green
+    }
+    
+    Install-GenericTool -ToolDir $pythonDir -Version $version -ZipUrl $pyUrl -SubDir $pySubDir -ExeName "python.exe" -Prefix "python"
     Write-Host "Python $version instalado."
-    $pythonExe = Join-Path $pyDirFull "python.exe"
-    if (Test-Path $pythonExe) {
-        Rename-Item -Path $pythonExe -NewName "python-$version.exe" -Force
-        Write-Host "Renomeado python.exe para python-$version.exe"
-    }
 }
 
 function Install-Composer {
