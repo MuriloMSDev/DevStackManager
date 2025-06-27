@@ -724,6 +724,19 @@ switch ($Command) {
     }    
     "gui" {
         Write-Log "Comando executado: gui"
+        # Instala a fonte MesloLGS NF (Powerline) se não estiver instalada
+        $mesloFontName = "MesloLGS NF"
+        $fontInstalled = Get-ChildItem -Path "C:\Windows\Fonts" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "^MesloLGS.*Nerd.*\.ttf$" -or $_.Name -match "^MesloLGS NF.*\.ttf$" }
+        $fontInstalled = $fontInstalled.Count -gt 0
+        if (-not $fontInstalled) {
+            Write-Host "Instalando a fonte MesloLGS NF (Powerline) via winget..." -ForegroundColor Yellow
+            try {
+                winget install --id NerdFonts.Meslo --accept-package-agreements --accept-source-agreements -e
+                Write-Host "Fonte MesloLGS NF instalada com sucesso." -ForegroundColor Green
+            } catch {
+                Write-Host "Não foi possível instalar a fonte MesloLGS NF automaticamente. Instale manualmente se necessário." -ForegroundColor Red
+            }
+        }
         # Inicia a GUI do DevStack
         try {
             if ($Args.Count -gt 0 -and $Args[0] -and $Args[0].ToLower() -eq "--isnew") {
@@ -732,34 +745,24 @@ switch ($Command) {
                 # Determinar qual versão do PowerShell usar
                 $psExecutable = $null
                 $psArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass")
-                
                 # Verificar se estamos em Windows PowerShell ou PowerShell Core
                 if ($PSVersionTable.PSEdition -eq "Core") {
-                    # Estamos em PowerShell Core (pwsh.exe)
                     if (Get-Command "pwsh" -ErrorAction SilentlyContinue) {
                         Write-Log "Usando PowerShell Core (pwsh.exe)"
                         $psExecutable = "pwsh"
                     }
                 }
-                
-                # Se não encontrou pwsh ou não estamos em Core, usar powershell.exe
                 if (-not $psExecutable) {
                     Write-Log "Usando Windows PowerShell (powershell.exe)"
                     $psExecutable = "powershell"
                 }
-                
-                # Criar argumentos para iniciar a GUI
                 $guiArgs = @(
                     "-WindowStyle", "Hidden", 
                     "-Command", "& { . '$PSScriptRoot\setup.ps1' gui --IsNew }"
                 )
                 $finalArgs = $psArgs + $guiArgs
-
-                # Iniciar o processo
                 Write-Log "Iniciando GUI em novo processo: $psExecutable $finalArgs"
                 $process = Start-Process -FilePath $psExecutable -ArgumentList $finalArgs -WindowStyle Hidden -PassThru
-                
-                # Verificar se o processo iniciou corretamente
                 if ($null -ne $process) {
                     Write-Host "Interface gráfica iniciada com sucesso (PID: $($process.Id))" -ForegroundColor Green
                 } else {
