@@ -4,7 +4,7 @@
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName PresentationCore
+[System.Windows.Forms.Application]::EnableVisualStyles()
 
 # Variáveis globais para controle da UI
 $script:statusLabel = $null
@@ -27,108 +27,119 @@ function Update-StatusMessage {
     }
 }
 
-# Arrays de cores para temas
-$LightTheme = @{
-    FormBackColor = [System.Drawing.Color]::White
-    ForeColor = [System.Drawing.Color]::Black
-    ControlBackColor = [System.Drawing.Color]::White
-    ButtonBackColor = [System.Drawing.Color]::Gainsboro
-    ButtonForeColor = [System.Drawing.Color]::Black
-    GridBackColor = [System.Drawing.Color]::White
-    GridForeColor = [System.Drawing.Color]::Black
-    GridHeaderBackColor = [System.Drawing.Color]::LightGray
-    GridHeaderForeColor = [System.Drawing.Color]::Black
-    StatusBackColor = [System.Drawing.Color]::WhiteSmoke
-    StatusForeColor = [System.Drawing.Color]::Black
-}
-$DarkTheme = @{
-    FormBackColor = [System.Drawing.Color]::FromArgb(30,30,30)
-    ForeColor = [System.Drawing.Color]::White
-    ControlBackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-    ButtonBackColor = [System.Drawing.Color]::FromArgb(60,60,60)
-    ButtonForeColor = [System.Drawing.Color]::White
-    GridBackColor = [System.Drawing.Color]::FromArgb(30,30,30)
-    GridForeColor = [System.Drawing.Color]::White
-    GridHeaderBackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-    GridHeaderForeColor = [System.Drawing.Color]::White
-    StatusBackColor = [System.Drawing.Color]::FromArgb(45,45,48)
-    StatusForeColor = [System.Drawing.Color]::White
-}
-$script:CurrentTheme = "light"
 
-function Apply-Theme {
+# Modern Material-inspired themes (no icons)
+$ModernLightTheme = @{
+    FormBackColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    ForeColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
+    ControlBackColor = [System.Drawing.Color]::White
+    ButtonBackColor = [System.Drawing.Color]::FromArgb(0, 123, 255)
+    ButtonForeColor = [System.Drawing.Color]::White
+    ButtonHoverColor = [System.Drawing.Color]::FromArgb(0, 86, 179)
+    AccentColor = [System.Drawing.Color]::FromArgb(40, 167, 69)
+    GridBackColor = [System.Drawing.Color]::White
+    GridForeColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
+    GridHeaderBackColor = [System.Drawing.Color]::FromArgb(233, 236, 239)
+    GridHeaderForeColor = [System.Drawing.Color]::FromArgb(73, 80, 87)
+    StatusBackColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    StatusForeColor = [System.Drawing.Color]::FromArgb(108, 117, 125)
+    BorderColor = [System.Drawing.Color]::FromArgb(222, 226, 230)
+    ShadowColor = [System.Drawing.Color]::FromArgb(50, 0, 0, 0)
+}
+
+$ModernDarkTheme = @{
+    FormBackColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
+    ForeColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    ControlBackColor = [System.Drawing.Color]::FromArgb(52, 58, 64)
+    ButtonBackColor = [System.Drawing.Color]::FromArgb(0, 123, 255)
+    ButtonForeColor = [System.Drawing.Color]::White
+    ButtonHoverColor = [System.Drawing.Color]::FromArgb(0, 86, 179)
+    AccentColor = [System.Drawing.Color]::FromArgb(40, 167, 69)
+    GridBackColor = [System.Drawing.Color]::FromArgb(52, 58, 64)
+    GridForeColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    GridHeaderBackColor = [System.Drawing.Color]::FromArgb(73, 80, 87)
+    GridHeaderForeColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    StatusBackColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
+    StatusForeColor = [System.Drawing.Color]::FromArgb(173, 181, 189)
+    BorderColor = [System.Drawing.Color]::FromArgb(73, 80, 87)
+    ShadowColor = [System.Drawing.Color]::FromArgb(80, 0, 0, 0)
+}
+$script:CurrentTheme = "dark"
+$script:modernFont = New-Object System.Drawing.Font("Segoe UI", 10)
+$script:modernFontBold = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+
+
+# Modern theme application (no icons)
+function Apply-ModernTheme {
     param($form)
-    $theme = if ($script:CurrentTheme -eq "dark") { $DarkTheme } else { $LightTheme }
+    $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
     $form.BackColor = $theme.FormBackColor
     $form.ForeColor = $theme.ForeColor
-    foreach ($ctrl in $form.Controls) {
-        if ($ctrl -is [System.Windows.Forms.Button]) {
-            $ctrl.BackColor = $theme.ButtonBackColor
-            $ctrl.ForeColor = $theme.ButtonForeColor
-        } elseif ($ctrl -is [System.Windows.Forms.TabControl]) {
-            $ctrl.BackColor = $theme.ControlBackColor
-            $ctrl.ForeColor = $theme.ForeColor
-            $ctrl.DrawMode = 'OwnerDrawFixed'
-            $ctrl.remove_DrawItem($null) # Remove handlers antigos para evitar duplicidade
-            $ctrl.Add_DrawItem({
-                param($sender, $e)
-                $g = $e.Graphics
-                $tab = $sender.TabPages[$e.Index]
-                $rect = $e.Bounds
-                $isSelected = ($e.Index -eq $sender.SelectedIndex)
-                $backColor = if ($script:CurrentTheme -eq "dark") {
-                    if ($isSelected) { [System.Drawing.Color]::FromArgb(60,60,70) } else { [System.Drawing.Color]::FromArgb(40,40,40) }
-                } else {
-                    if ($isSelected) { [System.Drawing.Color]::WhiteSmoke } else { [System.Drawing.Color]::White }
-                }
-                $foreColor = if ($script:CurrentTheme -eq "dark") { [System.Drawing.Color]::White } else { [System.Drawing.Color]::Black }
-                $borderColor = if ($script:CurrentTheme -eq "dark") { [System.Drawing.Color]::DimGray } else { [System.Drawing.Color]::LightGray }
-                if (-not $backColor) { $backColor = [System.Drawing.Color]::White }
-                if (-not $foreColor) { $foreColor = [System.Drawing.Color]::Black }
-                $g.FillRectangle([System.Drawing.SolidBrush]::new($backColor), $rect)
-                $g.DrawRectangle([System.Drawing.Pen]::new($borderColor), $rect)
-                $format = New-Object System.Drawing.StringFormat
-                $format.Alignment = 'Center'
-                $format.LineAlignment = 'Center'
-                $rectF = [System.Drawing.RectangleF]::FromLTRB($rect.Left, $rect.Top, $rect.Right, $rect.Bottom)
-                $g.DrawString($tab.Text, $sender.Font, [System.Drawing.SolidBrush]::new($foreColor), $rectF, $format)
-            })
-            foreach ($tab in $ctrl.TabPages) {
-                $tab.BackColor = $theme.ControlBackColor
-                $tab.ForeColor = $theme.ForeColor
-                foreach ($c in $tab.Controls) {
-                    if ($c -is [System.Windows.Forms.DataGridView]) {
-                        $c.BackgroundColor = $theme.GridBackColor
-                        $c.ForeColor = $theme.GridForeColor
-                        $c.GridColor = $theme.GridHeaderBackColor
-                        $c.DefaultCellStyle.BackColor = $theme.GridBackColor
-                        $c.DefaultCellStyle.ForeColor = $theme.GridForeColor
-                        $c.DefaultCellStyle.SelectionBackColor = if ($script:CurrentTheme -eq "dark") { [System.Drawing.Color]::FromArgb(70,70,90) } else { [System.Drawing.Color]::LightBlue }
-                        $c.DefaultCellStyle.SelectionForeColor = $theme.GridForeColor
-                        $c.ColumnHeadersDefaultCellStyle.BackColor = $theme.GridHeaderBackColor
-                        $c.ColumnHeadersDefaultCellStyle.ForeColor = $theme.GridHeaderForeColor
-                        $c.ColumnHeadersDefaultCellStyle.SelectionBackColor = $theme.GridHeaderBackColor
-                        $c.ColumnHeadersDefaultCellStyle.SelectionForeColor = $theme.GridHeaderForeColor
-                        $c.EnableHeadersVisualStyles = $false
-                        $c.RowHeadersDefaultCellStyle.BackColor = $theme.GridHeaderBackColor
-                        $c.RowHeadersDefaultCellStyle.ForeColor = $theme.GridHeaderForeColor
-                        $c.RowHeadersDefaultCellStyle.SelectionBackColor = $theme.GridHeaderBackColor
-                        $c.RowHeadersDefaultCellStyle.SelectionForeColor = $theme.GridHeaderForeColor
-                        $c.BorderStyle = 'None'
-                    } elseif ($c -is [System.Windows.Forms.Button]) {
-                        $c.BackColor = $theme.ButtonBackColor
-                        $c.ForeColor = $theme.ButtonForeColor
-                    } elseif ($c -is [System.Windows.Forms.RichTextBox] -or $c -is [System.Windows.Forms.TextBox]) {
-                        $c.BackColor = $theme.ControlBackColor
-                        $c.ForeColor = $theme.ForeColor
-                    } elseif ($c -is [System.Windows.Forms.Label]) {
-                        $c.ForeColor = $theme.ForeColor
-                    }
+    $form.Font = $script:modernFont
+    Apply-ThemeToControls $form.Controls $theme
+}
+
+function Apply-ThemeToControls {
+    param($controls, $theme)
+    foreach ($ctrl in $controls) {
+        if (-not $ctrl.Font -or $ctrl.Font.Name -eq "Microsoft Sans Serif") {
+            $ctrl.Font = $script:modernFont
+        }
+        switch ($ctrl.GetType().Name) {
+            "Button" {
+                $ctrl.BackColor = $theme.ButtonBackColor
+                $ctrl.ForeColor = $theme.ButtonForeColor
+                $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                $ctrl.FlatAppearance.BorderSize = 1
+                $ctrl.FlatAppearance.BorderColor = $theme.BorderColor
+            }
+            "TabControl" {
+                $ctrl.BackColor = $theme.ControlBackColor
+                $ctrl.ForeColor = $theme.ForeColor
+                foreach ($tab in $ctrl.TabPages) {
+                    $tab.BackColor = $theme.FormBackColor
+                    $tab.ForeColor = $theme.ForeColor
+                    Apply-ThemeToControls $tab.Controls $theme
                 }
             }
-        } elseif ($ctrl -is [System.Windows.Forms.StatusStrip]) {
-            $ctrl.BackColor = $theme.StatusBackColor
-            foreach ($item in $ctrl.Items) { $item.ForeColor = $theme.StatusForeColor }
+            "DataGridView" {
+                $ctrl.BackgroundColor = $theme.GridBackColor
+                $ctrl.ForeColor = $theme.GridForeColor
+                $ctrl.GridColor = [System.Drawing.Color]::White
+                $ctrl.DefaultCellStyle.BackColor = $theme.GridBackColor
+                $ctrl.DefaultCellStyle.ForeColor = $theme.GridForeColor
+                $ctrl.DefaultCellStyle.SelectionBackColor = $theme.AccentColor
+                $ctrl.DefaultCellStyle.SelectionForeColor = [System.Drawing.Color]::White
+                $ctrl.ColumnHeadersDefaultCellStyle.BackColor = $theme.GridHeaderBackColor
+                $ctrl.ColumnHeadersDefaultCellStyle.SelectionBackColor = $theme.GridHeaderBackColor
+                $ctrl.ColumnHeadersDefaultCellStyle.ForeColor = $theme.GridHeaderForeColor
+                $ctrl.EnableHeadersVisualStyles = $false
+                $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+            }
+            "TextBox" {
+                $ctrl.BackColor = $theme.ControlBackColor
+                $ctrl.ForeColor = $theme.ForeColor
+                $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+            }
+            "ComboBox" {
+                $ctrl.BackColor = $theme.ControlBackColor
+                $ctrl.ForeColor = $theme.ForeColor
+                $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+            }
+            "RichTextBox" {
+                $ctrl.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
+                $ctrl.ForeColor = [System.Drawing.Color]::White
+            }
+            "Label" {
+                $ctrl.ForeColor = $theme.ForeColor
+            }
+            "StatusStrip" {
+                $ctrl.BackColor = $theme.StatusBackColor
+                foreach ($item in $ctrl.Items) { $item.ForeColor = $theme.StatusForeColor }
+            }
+        }
+        if ($ctrl.Controls.Count -gt 0) {
+            Apply-ThemeToControls $ctrl.Controls $theme
         }
     }
 }
@@ -164,38 +175,103 @@ function Apply-TabControlTheme {
 }
 
 # Função principal para iniciar a GUI
+
+# Modernized main GUI function (no icons)
 function Start-DevStackGUI {
-    # Criar o formulário principal
     $mainForm = New-Object System.Windows.Forms.Form
     $mainForm.Text = "DevStack Manager"
-    $mainForm.Size = New-Object System.Drawing.Size(800, 620)
+    $mainForm.Size = New-Object System.Drawing.Size(800, 700)
     $mainForm.StartPosition = "CenterScreen"
+    $mainForm.MinimumSize = New-Object System.Drawing.Size(800, 700)
+    $mainForm.Font = $script:modernFont
 
-    # Botão para alternar tema
+    # Top panel with app name and theme/refresh buttons
+    $topPanel = New-Object System.Windows.Forms.Panel
+    $topPanel.Height = 60
+    $topPanel.Dock = [System.Windows.Forms.DockStyle]::Top
+    $topPanel.BackColor = [System.Drawing.Color]::Transparent
+
+    $titleLabel = New-Object System.Windows.Forms.Label
+    $titleLabel.Text = "DevStack Manager"
+    $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
+    $titleLabel.Location = New-Object System.Drawing.Point(20, 15)
+    $titleLabel.Size = New-Object System.Drawing.Size(400, 35)
+    $topPanel.Controls.Add($titleLabel)
+
     $themeButton = New-Object System.Windows.Forms.Button
-    $themeButton.Text = "Tema Claro/Escuro"
-    $themeButton.Size = New-Object System.Drawing.Size(140, 28)
-    $themeButton.Location = New-Object System.Drawing.Point(640, 0)
-    $themeButton.Anchor = "Top,Right"
+    $themeButton.Text = "Tema"
+    $themeButton.Size = New-Object System.Drawing.Size(120, 35)
+    $themeButton.Location = New-Object System.Drawing.Point(620, 15)
+    $themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $themeButton.Add_Click({
         $script:CurrentTheme = if ($script:CurrentTheme -eq "light") { "dark" } else { "light" }
-        Apply-Theme $mainForm
-        Apply-TabControlTheme $tabControl
+        Apply-ModernTheme $mainForm
         $tabControl.Refresh()
     })
-    $mainForm.Controls.Add($themeButton)
+    $topPanel.Controls.Add($themeButton)
 
-    # Criar TabControl para organizar as diferentes funcionalidades
+    $refreshAllButton = New-Object System.Windows.Forms.Button
+    $refreshAllButton.Text = "Atualizar"
+    $refreshAllButton.Size = New-Object System.Drawing.Size(120, 35)
+    $refreshAllButton.Location = New-Object System.Drawing.Point(480, 15)
+    $refreshAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $refreshAllButton.Add_Click({
+        Update-StatusMessage "Atualizando todas as informações..."
+        Update-AllTabs
+    })
+    $topPanel.Controls.Add($refreshAllButton)
+
+    $separator = New-Object System.Windows.Forms.Panel
+    $separator.Height = 2
+    $separator.Dock = [System.Windows.Forms.DockStyle]::Top
+    $separator.BackColor = [System.Drawing.Color]::FromArgb(222, 226, 230)
+
+    $statusStrip = New-Object System.Windows.Forms.StatusStrip
+    $statusLabel = New-Object System.Windows.Forms.ToolStripStatusLabel
+    $statusLabel.Text = "Pronto"
+    $statusLabel.Font = $script:modernFont
+    $statusStrip.Items.Add($statusLabel)
+    $script:statusLabel = $statusLabel
+
     $tabControl = New-Object System.Windows.Forms.TabControl
-    $tabControl.Location = New-Object System.Drawing.Point(10, 40)
-    $tabControl.Size = New-Object System.Drawing.Size(770, 510)
-    $mainForm.Controls.Add($tabControl)
-    Apply-TabControlTheme $tabControl
+    $tabControl.Location = New-Object System.Drawing.Point(10, 75)
+    $tabControl.Size = New-Object System.Drawing.Size(($mainForm.ClientSize.Width - 20), ($mainForm.ClientSize.Height - 100))
+    $tabControl.Anchor = ([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Bottom)
+    $tabControl.Font = $script:modernFont
+    $tabControl.Padding = New-Object System.Drawing.Point(12, 8)
+    $tabControl.Appearance = [System.Windows.Forms.TabAppearance]::Normal
+    $tabControl.HotTrack = $true
+    $tabControl.DrawMode = [System.Windows.Forms.TabDrawMode]::OwnerDrawFixed
+    $tabControl.Add_DrawItem({
+        param($sender, $e)
+        $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
+        $g = $e.Graphics
+        $tab = $sender.TabPages[$e.Index]
+        $rect = $e.Bounds
+        $isSelected = ($e.Index -eq $sender.SelectedIndex)
+        $backColor = if ($isSelected) { $theme.FormBackColor } else { $theme.ControlBackColor }
+        $foreColor = $theme.ForeColor
+        $g.FillRectangle([System.Drawing.SolidBrush]::new($backColor), $rect)
+        $format = New-Object System.Drawing.StringFormat
+        $format.Alignment = 'Center'
+        $format.LineAlignment = 'Center'
+        $rectF = [System.Drawing.RectangleF]::FromLTRB($rect.Left, $rect.Top, $rect.Right, $rect.Bottom)
+        $g.DrawString($tab.Text, $sender.Font, [System.Drawing.SolidBrush]::new($foreColor), $rectF, $format)
+    })
 
-    # Adicionar evento para atualizar conteúdo quando uma tab for selecionada
+    $mainForm.Controls.Add($statusStrip)
+    $mainForm.Controls.Add($topPanel)
+    $mainForm.Controls.Add($separator)
+    $mainForm.Controls.Add($tabControl)
+
+    $mainForm.Add_Resize({
+        if ($tabControl) {
+            $tabControl.Size = New-Object System.Drawing.Size(($mainForm.ClientSize.Width - 20), ($mainForm.ClientSize.Height - 100))
+        }
+    })
+
     $tabControl.Add_SelectedIndexChanged({
         $selectedTab = $tabControl.SelectedTab
-        
         switch ($selectedTab.Text) {
             "Ferramentas Instaladas" {
                 Update-StatusMessage "Atualizando lista de ferramentas instaladas..."
@@ -210,9 +286,7 @@ function Start-DevStackGUI {
                 Update-ServicesList
             }
             "Utilitários" {
-                # Garantir que a referência ao OutputBox ainda é válida
                 if ($script:utilsOutputBox -eq $null) {
-                    # Tentar encontrar o RichTextBox na tab
                     $tabPage = $selectedTab
                     $outputBoxes = $tabPage.Controls | Where-Object { $_ -is [System.Windows.Forms.RichTextBox] }
                     if ($outputBoxes -and $outputBoxes.Count -gt 0) {
@@ -222,82 +296,54 @@ function Start-DevStackGUI {
                 }
             }
             Default {
-                # Para outras abas, não precisamos fazer nada especial
                 Update-StatusMessage "Tab $($selectedTab.Text) selecionada"
             }
         }
     })
 
-    # Tab 1: Ferramentas Instaladas
     $tabInstaladas = New-Object System.Windows.Forms.TabPage
     $tabInstaladas.Text = "Ferramentas Instaladas"
     $tabControl.Controls.Add($tabInstaladas)
 
-    # Tab 2: Instalação
     $tabInstall = New-Object System.Windows.Forms.TabPage
     $tabInstall.Text = "Instalar"
     $tabControl.Controls.Add($tabInstall)
 
-    # Tab 3: Desinstalação
     $tabUninstall = New-Object System.Windows.Forms.TabPage
     $tabUninstall.Text = "Desinstalar"
     $tabControl.Controls.Add($tabUninstall)
 
-    # Tab 4: Serviços
     $tabServices = New-Object System.Windows.Forms.TabPage
     $tabServices.Text = "Serviços"
     $tabControl.Controls.Add($tabServices)
 
-    # Tab 5: Configurações
     $tabConfig = New-Object System.Windows.Forms.TabPage
     $tabConfig.Text = "Configurações"
     $tabControl.Controls.Add($tabConfig)
 
-    # Tab 6: Sites
     $tabSites = New-Object System.Windows.Forms.TabPage
     $tabSites.Text = "Sites"
     $tabControl.Controls.Add($tabSites)
 
-    # Tab 7: Utilitários
     $tabUtils = New-Object System.Windows.Forms.TabPage
     $tabUtils.Text = "Utilitários"
     $tabControl.Controls.Add($tabUtils)
 
-    # Configurar a Tab de Ferramentas Instaladas
     Setup-InstalledToolsTab $tabInstaladas
-
-    # Configurar a Tab de Instalação
     Setup-InstallTab $tabInstall
-
-    # Configurar a Tab de Desinstalação
     Setup-UninstallTab $tabUninstall
-
-    # Configurar a Tab de Serviços
     Setup-ServicesTab $tabServices
-
-    # Configurar a Tab de Configurações
     Setup-ConfigTab $tabConfig
-
-    # Configurar a Tab de Sites
-    Setup-SitesTab $tabSites    # Configurar a Tab de Utilitários
+    Setup-SitesTab $tabSites
     Setup-UtilsTab $tabUtils
-    
-    # Mostrar o formulário
+
     $mainForm.Add_Shown({
         $mainForm.Activate()
-        # Atualizar a lista de ferramentas instaladas ao iniciar
         Update-InstalledToolsList
+        Update-StatusMessage "Interface moderna carregada com sucesso!"
     })
-    
-    # Configurar barra de status
-    $statusStrip = New-Object System.Windows.Forms.StatusStrip
-    $statusLabel = New-Object System.Windows.Forms.ToolStripStatusLabel
-    $statusLabel.Text = "Pronto"
-    $statusStrip.Items.Add($statusLabel)
-    $mainForm.Controls.Add($statusStrip)
-    $script:statusLabel = $statusLabel
 
-    Apply-Theme $mainForm
+    Apply-ModernTheme $mainForm
     [void]$mainForm.ShowDialog()
 }
 
@@ -448,7 +494,7 @@ function Setup-InstallTab {
               # Usar a função existente no install.ps1
             try {
                 # Formato correto para instalação: componente-versão
-                & "$PSScriptRoot\..\setup.ps1" install "$component-$version"
+                & "$PSScriptRoot\..\setup.ps1" install $component $version
                 Update-StatusMessage "$component versão $version instalado com sucesso."
                 [System.Windows.Forms.MessageBox]::Show("$component versão $version foi instalado com sucesso.", "Sucesso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
                 
