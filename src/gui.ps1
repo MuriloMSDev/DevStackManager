@@ -448,11 +448,20 @@ function Setup-InstalledToolsTab {
 
     $refreshButton.Controls.Add($refreshIcon2)
     $refreshButton.Controls.Add($refreshText2)
-    $refreshButton.Add_Click({
-        Update-StatusMessage "Atualizando lista de ferramentas instaladas..."
-        Update-InstalledToolsList
-        Update-StatusMessage "Lista atualizada."
-    })
+    $refreshClick = {
+        try {
+            Update-StatusMessage "Atualizando lista de ferramentas instaladas..."
+            Update-InstalledToolsList
+            Update-StatusMessage "Lista atualizada."
+        }
+        catch {
+            Write-Host "Erro ao atualizar lista de ferramentas: $($_.Exception.Message)" -ForegroundColor Red
+            [System.Windows.Forms.MessageBox]::Show("Erro ao atualizar lista de ferramentas: $($_.Exception.Message)", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    }
+    $refreshButton.Add_Click($refreshClick)
+    $refreshIcon2.Add_Click($refreshClick)
+    $refreshText2.Add_Click($refreshClick)
     $tabPage.Controls.Add($refreshButton)
     
     # Armazenar o DataGridView na variável global
@@ -572,7 +581,7 @@ function Setup-InstallTab {
 
     $installButton.Controls.Add($installIcon)
     $installButton.Controls.Add($installText)
-    $installButton.Add_Click({
+    $installClick = {
         $component = $script:componentComboBox.SelectedItem
         $version = $script:versionComboBox.SelectedItem
         
@@ -604,8 +613,10 @@ function Setup-InstallTab {
                     [System.Windows.Forms.MessageBox]::Show("Erro ao instalar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
             }
         }
-    })
-    
+    }
+    $installButton.Add_Click($installClick)
+    $installIcon.Add_Click($installClick)
+    $installText.Add_Click($installClick)
     $tabPage.Controls.Add($installButton)
     
     # Tela de console para mostrar o progresso
@@ -750,7 +761,7 @@ function Setup-UninstallTab {
 
     $uninstallButton.Controls.Add($uninstallIcon)
     $uninstallButton.Controls.Add($uninstallText)
-    $uninstallButton.Add_Click({
+    $uninstallClick = {
         $component = $script:uninstallComponentComboBox.SelectedItem
         $selectedIndex = $script:uninstallVersionComboBox.SelectedIndex
         
@@ -784,7 +795,11 @@ function Setup-UninstallTab {
                 [System.Windows.Forms.MessageBox]::Show("Erro ao desinstalar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
             }
         }
-    })
+    }
+    $uninstallButton.Add_Click($uninstallClick)
+    $uninstallIcon.Add_Click($uninstallClick)
+    $uninstallText.Add_Click($uninstallClick)
+
     $tabPage.Controls.Add($uninstallButton)
     
     # Populamos o ComboBox somente com componentes instalados após toda a inicialização
@@ -902,6 +917,7 @@ function Setup-ServicesTab {
     function Add-IconButton {
         param(
             [System.Windows.Forms.Button]$button,
+            [ScriptBlock]$onClick,
             [string]$icon,
             [string]$text
         )
@@ -925,6 +941,8 @@ function Setup-ServicesTab {
         $textLabel.ForeColor = $ModernDarkTheme.ButtonBackColor
         $textLabel.BackColor = [System.Drawing.Color]::Transparent
 
+        $iconLabel.Add_Click($onClick)
+        $textLabel.Add_Click($onClick)
         $button.Controls.Add($iconLabel)
         $button.Controls.Add($textLabel)
     }
@@ -935,8 +953,7 @@ function Setup-ServicesTab {
     $startButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $startButton.BackColor = [System.Drawing.Color]::Transparent
     $startButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $startButton $iconStart "Iniciar"
-    $startButton.Add_Click({
+    $startClick = {
         $selectedRows = $script:serviceDataGrid.SelectedRows
 
         if ($selectedRows.Count -eq 0) {
@@ -958,7 +975,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao iniciar serviço: $_"
             [System.Windows.Forms.MessageBox]::Show("Erro ao iniciar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $startButton $startClick $iconStart "Iniciar"
+    $startButton.Add_Click($startClick)
     $tabPage.Controls.Add($startButton)
 
     $stopButton = New-Object System.Windows.Forms.Button
@@ -967,8 +986,7 @@ function Setup-ServicesTab {
     $stopButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $stopButton.BackColor = [System.Drawing.Color]::Transparent
     $stopButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $stopButton $iconStop "Parar"
-    $stopButton.Add_Click({
+    $stopClick = {
         $selectedRows = $script:serviceDataGrid.SelectedRows
 
         if ($selectedRows.Count -eq 0) {
@@ -990,7 +1008,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao parar serviço: $_"
             [System.Windows.Forms.MessageBox]::Show("Erro ao parar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $stopButton $stopClick $iconStop "Parar"
+    $stopButton.Add_Click($stopClick)
     $tabPage.Controls.Add($stopButton)
 
     $restartButton = New-Object System.Windows.Forms.Button
@@ -999,8 +1019,7 @@ function Setup-ServicesTab {
     $restartButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $restartButton.BackColor = [System.Drawing.Color]::Transparent
     $restartButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $restartButton $iconRestart "Reiniciar"
-    $restartButton.Add_Click({
+    $restartClick = {
         $selectedRows = $script:serviceDataGrid.SelectedRows
 
         if ($selectedRows.Count -eq 0) {
@@ -1022,7 +1041,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao reiniciar serviço: $_"
             [System.Windows.Forms.MessageBox]::Show("Erro ao reiniciar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $restartButton $restartClick $iconRestart "Reiniciar"
+    $restartButton.Add_Click($restartClick)
     $tabPage.Controls.Add($restartButton)
 
     $refreshButton = New-Object System.Windows.Forms.Button
@@ -1031,12 +1052,13 @@ function Setup-ServicesTab {
     $refreshButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $refreshButton.BackColor = [System.Drawing.Color]::Transparent
     $refreshButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $refreshButton $iconRefresh "Atualizar"
-    $refreshButton.Add_Click({
+    $refreshClick = {
         Update-StatusMessage "Atualizando lista de serviços..."
         Update-ServicesList
         Update-StatusMessage "Lista de serviços atualizada."
-    })
+    }
+    Add-IconButton $refreshButton $refreshClick $iconRefresh "Atualizar"
+    $refreshButton.Add_Click($refreshClick)
     $tabPage.Controls.Add($refreshButton)
 
     # Adicionar botões para controlar todos os serviços de uma vez
@@ -1046,8 +1068,7 @@ function Setup-ServicesTab {
     $startAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $startAllButton.BackColor = [System.Drawing.Color]::Transparent
     $startAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $startAllButton $iconStartAll "Iniciar Todos"
-    $startAllButton.Add_Click({
+    $startAllClick = {
         Update-StatusMessage "Iniciando todos os serviços..."
 
         try {
@@ -1061,7 +1082,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao iniciar todos os serviços: $errorMsg"
             [System.Windows.Forms.MessageBox]::Show("Erro ao iniciar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $startAllButton $startAllClick $iconStartAll "Iniciar Todos"
+    $startAllButton.Add_Click($startAllClick)
     $tabPage.Controls.Add($startAllButton)
 
     $stopAllButton = New-Object System.Windows.Forms.Button
@@ -1070,8 +1093,7 @@ function Setup-ServicesTab {
     $stopAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $stopAllButton.BackColor = [System.Drawing.Color]::Transparent
     $stopAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $stopAllButton $iconStopAll "Parar Todos"
-    $stopAllButton.Add_Click({
+    $stopAllClick = {
         Update-StatusMessage "Parando todos os serviços..."
 
         try {
@@ -1085,7 +1107,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao parar todos os serviços: $errorMsg"
             [System.Windows.Forms.MessageBox]::Show("Erro ao parar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $stopAllButton $stopAllClick $iconStopAll "Parar Todos"
+    $stopAllButton.Add_Click($stopAllClick)
     $tabPage.Controls.Add($stopAllButton)
 
     $restartAllButton = New-Object System.Windows.Forms.Button
@@ -1094,8 +1118,7 @@ function Setup-ServicesTab {
     $restartAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $restartAllButton.BackColor = [System.Drawing.Color]::Transparent
     $restartAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-    Add-IconButton $restartAllButton $iconRestartAll "Reiniciar Todos"
-    $restartAllButton.Add_Click({
+    $restartAllClick = {
         Update-StatusMessage "Reiniciando todos os serviços..."
 
         try {
@@ -1109,7 +1132,9 @@ function Setup-ServicesTab {
             Update-StatusMessage "Erro ao reiniciar todos os serviços: $errorMsg"
             [System.Windows.Forms.MessageBox]::Show("Erro ao reiniciar todos os serviços: $errorMsg", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    Add-IconButton $restartAllButton $restartAllClick $iconRestartAll "Reiniciar Todos"
+    $restartAllButton.Add_Click($restartAllClick)
     $tabPage.Controls.Add($restartAllButton)
     
     # Armazenar referência ao DataGridView
@@ -1405,7 +1430,9 @@ function Setup-SitesTab {
     $rootTextBox.Location = New-Object System.Drawing.Point(450, 140)
     $rootTextBox.Size = New-Object System.Drawing.Size(200, 23)
     $tabPage.Controls.Add($rootTextBox)
-    
+    # Torna rootTextBox acessível no evento
+    $script:siteRootTextBox = $rootTextBox
+
     $browseButton = New-Object System.Windows.Forms.Button
     $browseButton.Location = New-Object System.Drawing.Point(650, 140)
     $browseButton.Size = New-Object System.Drawing.Size(120, 24)
@@ -1435,15 +1462,18 @@ function Setup-SitesTab {
 
     $browseButton.Controls.Add($browseIcon)
     $browseButton.Controls.Add($browseText)
-    $browseButton.Add_Click({
+    $browseClick = {
         $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         $folderBrowser.Description = "Selecione o diretório raiz do site"
         $folderBrowser.RootFolder = [System.Environment+SpecialFolder]::MyComputer
         
         if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $rootTextBox.Text = $folderBrowser.SelectedPath
+            $script:siteRootTextBox.Text = $folderBrowser.SelectedPath
         }
-    })
+    }
+    $browseButton.Add_Click($browseClick)
+    $browseIcon.Add_Click($browseClick)
+    $browseText.Add_Click($browseClick)
     $tabPage.Controls.Add($browseButton)
     
     # Campo de PHP Upstream
@@ -1529,7 +1559,7 @@ function Setup-SitesTab {
 
     $createSiteButton.Controls.Add($siteIcon)
     $createSiteButton.Controls.Add($siteText)
-    $createSiteButton.Add_Click({
+    $createSiteClick = {
         $domain = $domainTextBox.Text.Trim()
         $root = $rootTextBox.Text.Trim()
         $phpUpstream = $phpCombo.SelectedItem
@@ -1577,7 +1607,10 @@ function Setup-SitesTab {
             Update-StatusMessage "Erro ao criar configuração do site: $_"
             [System.Windows.Forms.MessageBox]::Show("Erro ao criar configuração do site: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
+    }
+    $createSiteButton.Add_Click($createSiteClick)
+    $siteIcon.Add_Click($createSiteClick)
+    $siteText.Add_Click($createSiteClick)
 
     $tabPage.Controls.Add($createSiteButton)
     
@@ -1629,7 +1662,7 @@ function Setup-SitesTab {
 
     $generateSslButton.Controls.Add($sslIcon)
     $generateSslButton.Controls.Add($sslText)
-    $generateSslButton.Add_Click({
+    $generateSslClick = {
         $domain = $sslDomainTextBox.Text.Trim()
         
         if ([string]::IsNullOrEmpty($domain)) {
@@ -1652,8 +1685,11 @@ function Setup-SitesTab {
             Update-StatusMessage "Erro ao gerar certificado SSL: $_"
             [System.Windows.Forms.MessageBox]::Show("Erro ao gerar certificado SSL: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-    })
-    
+    }
+    $generateSslButton.Add_Click($generateSslClick)
+    $sslIcon.Add_Click($generateSslClick)
+    $sslText.Add_Click($generateSslClick)
+
     $tabPage.Controls.Add($generateSslButton)
 }
 
