@@ -216,7 +216,7 @@ function Start-DevStackGUI {
     $topPanel.Height = 60
     $topPanel.Dock = [System.Windows.Forms.DockStyle]::Top
     $topPanel.BackColor = [System.Drawing.Color]::Transparent
-
+    $script:topPanel = $topPanel
     $titleLabel = New-Object System.Windows.Forms.Label
     $titleLabel.Text = "DevStack Manager"
     $titleLabel.Font = New-Object System.Drawing.Font($script:modernFont.FontFamily, 18, [System.Drawing.FontStyle]::Bold)
@@ -227,10 +227,16 @@ function Start-DevStackGUI {
     # Botão Tema com ícone grande e texto pequeno
     $themeButton = New-Object System.Windows.Forms.Button
     $themeButton.Size = New-Object System.Drawing.Size(120, 35)
-    $themeButton.Location = New-Object System.Drawing.Point(630, 15)
+    $themeButton.Location = New-Object System.Drawing.Point(850, 15)
     $themeButton.BackColor = [System.Drawing.Color]::Transparent
     $themeButton.Cursor = [System.Windows.Forms.Cursors]::Hand
-
+    $script:themeButton = $themeButton
+    $topPanel.Add_Resize({
+        $script:themeButton.Location = New-Object System.Drawing.Point(
+            ($script:topPanel.Width - $script:themeButton.Width - 15), 
+            15
+        )
+    })
     $iconLabel = New-Object System.Windows.Forms.Label
     $iconLabel.Text = [char]0xE706 # Segoe MDL2 Assets: 'Theme'
     $iconLabel.Font = $script:iconFont
@@ -299,8 +305,12 @@ function Start-DevStackGUI {
     # --- Modern ListBox Navigation ---
     $navListBox = New-Object System.Windows.Forms.ListBox
     $navListBox.Width = 220
-    $navListBox.IntegralHeight = $false
-    $navListBox.Dock = [System.Windows.Forms.DockStyle]::Left
+    $navListBox.Top = 60
+    # Calcular altura do ListBox entre o topo e o status bar
+    $statusStripHeight = 22
+    if ($statusStrip -and $statusStrip.Height) { $statusStripHeight = $statusStrip.Height }
+    $navListBox.Height = $script:mainForm.ClientSize.Height - $statusStripHeight
+    $navListBox.Anchor = 'Top,Left,Bottom'
     $navListBox.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
     $navListBox.ItemHeight = 48
     $navListBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None

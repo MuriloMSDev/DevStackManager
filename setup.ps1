@@ -757,6 +757,7 @@ switch ($Command) {
                 }
             }
         } catch {
+            Write-Log "Erro ao iniciar a interface gráfica: $_"
             Write-ErrorMsg "Erro ao iniciar a interface gráfica: $_"
         }
     }
