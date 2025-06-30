@@ -30,9 +30,9 @@ function Update-StatusMessage {
 
 # Modern Material-inspired themes (no icons)
 $ModernLightTheme = @{
-    FormBackColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    FormBackColor = [System.Drawing.Color]::FromArgb(231, 232, 233)
     ForeColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
-    ControlBackColor = [System.Drawing.Color]::White
+    ControlBackColor = [System.Drawing.Color]::FromArgb(245, 246, 247)
     ButtonBackColor = [System.Drawing.Color]::FromArgb(0, 123, 255)
     ButtonForeColor = [System.Drawing.Color]::White
     ButtonHoverColor = [System.Drawing.Color]::FromArgb(0, 86, 179)
@@ -41,10 +41,11 @@ $ModernLightTheme = @{
     GridForeColor = [System.Drawing.Color]::FromArgb(33, 37, 41)
     GridHeaderBackColor = [System.Drawing.Color]::FromArgb(233, 236, 239)
     GridHeaderForeColor = [System.Drawing.Color]::FromArgb(73, 80, 87)
-    StatusBackColor = [System.Drawing.Color]::FromArgb(248, 249, 250)
+    StatusBackColor = [System.Drawing.Color]::FromArgb(231, 232, 233)
     StatusForeColor = [System.Drawing.Color]::FromArgb(108, 117, 125)
     BorderColor = [System.Drawing.Color]::FromArgb(222, 226, 230)
     ShadowColor = [System.Drawing.Color]::FromArgb(50, 0, 0, 0)
+    ContentBackColor = [System.Drawing.Color]::FromArgb(253, 254, 255)
 }
 
 $ModernDarkTheme = @{
@@ -63,127 +64,152 @@ $ModernDarkTheme = @{
     StatusForeColor = [System.Drawing.Color]::FromArgb(173, 181, 189)
     BorderColor = [System.Drawing.Color]::FromArgb(73, 80, 87)
     ShadowColor = [System.Drawing.Color]::FromArgb(80, 0, 0, 0)
+    ContentBackColor = [System.Drawing.Color]::FromArgb(44, 48, 54)
 }
+# Tema e fonte modernos
 $script:CurrentTheme = "dark"
-$script:modernFont = New-Object System.Drawing.Font("MesloLGS NF", 10)
-$script:modernFontBold = New-Object System.Drawing.Font("MesloLGS NF", 10, [System.Drawing.FontStyle]::Bold)
+try {
+    $script:modernFont = New-Object System.Drawing.Font("Segoe UI", 10)
+    $script:modernFontBold = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $script:iconFont = New-Object System.Drawing.Font("Segoe MDL2 Assets", 16)
+}
+catch {
+    # Fallback para fontes padrão em caso de erro
+    $script:modernFont = New-Object System.Drawing.Font("Microsoft Sans Serif", 10)
+    $script:modernFontBold = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
+    $script:iconFont = New-Object System.Drawing.Font("Microsoft Sans Serif", 16)
+    Write-Warning "Erro ao carregar fontes customizadas, usando fontes padrão"
+}
 
 
 # Modern theme application (no icons)
 function Apply-ModernTheme {
     param($form)
-    $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
-    $form.BackColor = $theme.FormBackColor
-    $form.ForeColor = $theme.ForeColor
-    $form.Font = $script:modernFont
-    Apply-ThemeToControls $form.Controls $theme
+    try {
+        if (-not $form) {
+            Write-Warning "Form is null - cannot apply theme"
+            return
+        }
+        
+        $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
+        if (-not $theme) {
+            Write-Warning "Theme not found - using default"
+            return
+        }
+        
+        $form.BackColor = $theme.FormBackColor
+        $form.ForeColor = $theme.ForeColor
+        if ($script:modernFont) {
+            $form.Font = $script:modernFont
+        }
+        
+        if ($form.Controls) {
+            Apply-ThemeToControls $form.Controls $theme
+        }
+    }
+    catch {
+        Write-Host "Erro ao aplicar tema: $($_.Exception.Message)" -ForegroundColor Red
+    }
 }
 
 function Apply-ThemeToControls {
     param($controls, $theme)
-    foreach ($ctrl in $controls) {
-        if (-not $ctrl.Font -or $ctrl.Font.Name -eq "Microsoft Sans Serif") {
-            $ctrl.Font = $script:modernFont
-        }
-        switch ($ctrl.GetType().Name) {
-            "Button" {
-                $ctrl.BackColor = $theme.ButtonBackColor
-                $ctrl.ForeColor = $theme.ButtonForeColor
-                $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-                $ctrl.FlatAppearance.BorderSize = 1
-                $ctrl.FlatAppearance.BorderColor = $theme.BorderColor
-            }
-            "TabControl" {
-                $ctrl.BackColor = $theme.ControlBackColor
-                $ctrl.ForeColor = $theme.ForeColor
-                foreach ($tab in $ctrl.TabPages) {
-                    $tab.BackColor = $theme.FormBackColor
-                    $tab.ForeColor = $theme.ForeColor
-                    Apply-ThemeToControls $tab.Controls $theme
+    try {
+        if (-not $controls -or -not $theme) { return }
+        
+        foreach ($ctrl in $controls) {
+            if (-not $ctrl) { continue }
+            
+            try {
+                if ((-not $ctrl.Font -or $ctrl.Font.Name -eq "Microsoft Sans Serif") -and $script:modernFont) {
+                    $ctrl.Font = $script:modernFont
+                }
+                
+                switch ($ctrl.GetType().Name) {
+                    "Button" {
+                        $ctrl.BackColor = $theme.ButtonBackColor
+                        $ctrl.ForeColor = $theme.ButtonForeColor
+                        $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                        $ctrl.FlatAppearance.BorderSize = 1
+                        $ctrl.FlatAppearance.BorderColor = $theme.BorderColor
+                    }
+                    "ListBox" {
+                        $ctrl.BackColor = $theme.ControlBackColor
+                        $ctrl.ForeColor = $theme.ForeColor
+                        $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+                        $ctrl.Font = $script:modernFont
+                    }
+                    "DataGridView" {
+                        $ctrl.BackgroundColor = $theme.GridBackColor
+                        $ctrl.ForeColor = $theme.GridForeColor
+                        $ctrl.GridColor = [System.Drawing.Color]::White
+                        $ctrl.DefaultCellStyle.BackColor = $theme.GridBackColor
+                        $ctrl.DefaultCellStyle.ForeColor = $theme.GridForeColor
+                        $ctrl.DefaultCellStyle.SelectionBackColor = $theme.AccentColor
+                        $ctrl.DefaultCellStyle.SelectionForeColor = [System.Drawing.Color]::White
+                        $ctrl.ColumnHeadersDefaultCellStyle.BackColor = $theme.GridHeaderBackColor
+                        $ctrl.ColumnHeadersDefaultCellStyle.SelectionBackColor = $theme.GridHeaderBackColor
+                        $ctrl.ColumnHeadersDefaultCellStyle.ForeColor = $theme.GridHeaderForeColor
+                        $ctrl.EnableHeadersVisualStyles = $false
+                        $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+                    }
+                    "TextBox" {
+                        $ctrl.BackColor = $theme.ControlBackColor
+                        $ctrl.ForeColor = $theme.ForeColor
+                        $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+                    }
+                    "ComboBox" {
+                        $ctrl.BackColor = $theme.ControlBackColor
+                        $ctrl.ForeColor = $theme.ForeColor
+                        $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                    }
+                    "RichTextBox" {
+                        $ctrl.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
+                        $ctrl.ForeColor = [System.Drawing.Color]::White
+                    }
+                    "Label" {
+                        if ($ctrl.Parent -and $ctrl.Parent.GetType().Name -eq "Button") {
+                            # Se o label está dentro de um botão, manter branco
+                            $ctrl.ForeColor = $theme.ButtonForeColor
+                        } else {
+                            $ctrl.ForeColor = $theme.ForeColor
+                        }
+                    }
+                    "StatusStrip" {
+                        $ctrl.BackColor = $theme.StatusBackColor
+                        if ($ctrl.Items) {
+                            foreach ($item in $ctrl.Items) { 
+                                if ($item) { $item.ForeColor = $theme.StatusForeColor }
+                            }
+                        }
+                    }
+                    "Form" {
+                        $ctrl.BackColor = $theme.FormBackColor
+                    }
+                }
+                
+                if ($ctrl.Controls -and $ctrl.Controls.Count -gt 0) {
+                    Apply-ThemeToControls $ctrl.Controls $theme
                 }
             }
-            "DataGridView" {
-                $ctrl.BackgroundColor = $theme.GridBackColor
-                $ctrl.ForeColor = $theme.GridForeColor
-                $ctrl.GridColor = [System.Drawing.Color]::White
-                $ctrl.DefaultCellStyle.BackColor = $theme.GridBackColor
-                $ctrl.DefaultCellStyle.ForeColor = $theme.GridForeColor
-                $ctrl.DefaultCellStyle.SelectionBackColor = $theme.AccentColor
-                $ctrl.DefaultCellStyle.SelectionForeColor = [System.Drawing.Color]::White
-                $ctrl.ColumnHeadersDefaultCellStyle.BackColor = $theme.GridHeaderBackColor
-                $ctrl.ColumnHeadersDefaultCellStyle.SelectionBackColor = $theme.GridHeaderBackColor
-                $ctrl.ColumnHeadersDefaultCellStyle.ForeColor = $theme.GridHeaderForeColor
-                $ctrl.EnableHeadersVisualStyles = $false
-                $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::None
-            }
-            "TextBox" {
-                $ctrl.BackColor = $theme.ControlBackColor
-                $ctrl.ForeColor = $theme.ForeColor
-                $ctrl.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
-            }
-            "ComboBox" {
-                $ctrl.BackColor = $theme.ControlBackColor
-                $ctrl.ForeColor = $theme.ForeColor
-                $ctrl.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-            }
-            "RichTextBox" {
-                $ctrl.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
-                $ctrl.ForeColor = [System.Drawing.Color]::White
-            }
-            "Label" {
-                $ctrl.ForeColor = $theme.ForeColor
-            }
-            "StatusStrip" {
-                $ctrl.BackColor = $theme.StatusBackColor
-                foreach ($item in $ctrl.Items) { $item.ForeColor = $theme.StatusForeColor }
+            catch {
+                Write-Warning "Erro ao aplicar tema ao controle $($ctrl.GetType().Name): $($_.Exception.Message)"
             }
         }
-        if ($ctrl.Controls.Count -gt 0) {
-            Apply-ThemeToControls $ctrl.Controls $theme
-        }
+    }
+    catch {
+        Write-Host "Erro geral ao aplicar tema aos controles: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
-# Função para customizar as abas do TabControl para o tema escuro
-function Apply-TabControlTheme {
-    param($tabControl)
-    $theme = if ($script:CurrentTheme -eq "dark") { $DarkTheme } else { $LightTheme }
-    $tabControl.DrawMode = 'OwnerDrawFixed'
-    $tabControl.Add_DrawItem({
-        param($sender, $e)
-        $g = $e.Graphics
-        $tab = $sender.TabPages[$e.Index]
-        $rect = $e.Bounds
-        $isSelected = ($e.Index -eq $sender.SelectedIndex)
-        $backColor = if ($script:CurrentTheme -eq "dark") {
-            if ($isSelected) { [System.Drawing.Color]::FromArgb(60,60,70) } else { [System.Drawing.Color]::FromArgb(40,40,40) }
-        } else {
-            if ($isSelected) { [System.Drawing.Color]::WhiteSmoke } else { [System.Drawing.Color]::White }
-        }
-        $foreColor = if ($script:CurrentTheme -eq "dark") { [System.Drawing.Color]::White } else { [System.Drawing.Color]::Black }
-        $borderColor = if ($script:CurrentTheme -eq "dark") { [System.Drawing.Color]::DimGray } else { [System.Drawing.Color]::LightGray }
-        if (-not $backColor) { $backColor = [System.Drawing.Color]::White }
-        if (-not $foreColor) { $foreColor = [System.Drawing.Color]::Black }
-        $g.FillRectangle([System.Drawing.SolidBrush]::new($backColor), $rect)
-        $g.DrawRectangle([System.Drawing.Pen]::new($borderColor), $rect)
-        $format = New-Object System.Drawing.StringFormat
-        $format.Alignment = 'Center'
-        $format.LineAlignment = 'Center'
-        $rectF = [System.Drawing.RectangleF]::FromLTRB($rect.Left, $rect.Top, $rect.Right, $rect.Bottom)
-        $g.DrawString($tab.Text, $sender.Font, [System.Drawing.SolidBrush]::new($foreColor), $rectF, $format)
-    })
-}
-
-# Função principal para iniciar a GUI
-
 # Modernized main GUI function (no icons)
 function Start-DevStackGUI {
-    $mainForm = New-Object System.Windows.Forms.Form
-    $mainForm.Text = "DevStack Manager"
-    $mainForm.Size = New-Object System.Drawing.Size(946, 700)
-    $mainForm.StartPosition = "CenterScreen"
-    $mainForm.MinimumSize = New-Object System.Drawing.Size(946, 700)
-    $mainForm.Font = $script:modernFont
+    $script:mainForm = New-Object System.Windows.Forms.Form
+    $script:mainForm.Text = "DevStack Manager"
+    $script:mainForm.Size = New-Object System.Drawing.Size(1000, 650)
+    $script:mainForm.StartPosition = "CenterScreen"
+    $script:mainForm.MinimumSize = New-Object System.Drawing.Size(1000, 650)
+    $script:mainForm.Font = $script:modernFont
 
     # Top panel with app name and theme/refresh buttons
     $topPanel = New-Object System.Windows.Forms.Panel
@@ -198,33 +224,67 @@ function Start-DevStackGUI {
     $titleLabel.Size = New-Object System.Drawing.Size(400, 35)
     $topPanel.Controls.Add($titleLabel)
 
+    # Botão Tema com ícone grande e texto pequeno
     $themeButton = New-Object System.Windows.Forms.Button
-    $themeButton.Text = "󰖨 Tema"
     $themeButton.Size = New-Object System.Drawing.Size(120, 35)
-    $themeButton.Location = New-Object System.Drawing.Point(800, 15)
-    $themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $themeButton.Add_Click({
-        $script:CurrentTheme = if ($script:CurrentTheme -eq "light") { "dark" } else { "light" }
-        Apply-ModernTheme $mainForm
-        $tabControl.Refresh()
-    })
+    $themeButton.Location = New-Object System.Drawing.Point(630, 15)
+    $themeButton.BackColor = [System.Drawing.Color]::Transparent
+    $themeButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    $iconLabel = New-Object System.Windows.Forms.Label
+    $iconLabel.Text = [char]0xE706 # Segoe MDL2 Assets: 'Theme'
+    $iconLabel.Font = $script:iconFont
+    $iconLabel.AutoSize = $true
+    $iconLabel.Location = New-Object System.Drawing.Point(15, 6)
+    $iconLabel.Size = New-Object System.Drawing.Size(32, 32)
+    $iconLabel.TextAlign = 'MiddleLeft'
+    $iconLabel.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $iconLabel.BackColor = [System.Drawing.Color]::Transparent
+
+    $textLabel = New-Object System.Windows.Forms.Label
+    $textLabel.Text = "Tema"
+    $textLabel.Font = $script:modernFont
+    $textLabel.AutoSize = $true
+    $textLabel.Location = New-Object System.Drawing.Point(47, 6)
+    $textLabel.Size = New-Object System.Drawing.Size(60, 20)
+    $textLabel.TextAlign = 'MiddleLeft'
+    $textLabel.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $textLabel.BackColor = [System.Drawing.Color]::Transparent
+
+    # Clique em qualquer parte do painel ou labels
+    $themeClick = {
+        try {
+            $script:CurrentTheme = if ($script:CurrentTheme -eq "light") { "dark" } else { "light" }
+            
+            # Encontrar o ícone dentro do botão de tema
+            $themeBtn = $this.Parent
+            if (-not $themeBtn -or $themeBtn.GetType().Name -ne "Button") {
+                $themeBtn = $this.Parent.Controls | Where-Object { $_.GetType().Name -eq "Button" }
+                if ($themeBtn -is [System.Collections.IEnumerable]) {
+                    $themeBtn = $themeBtn | Select-Object -First 1
+                }
+            }
+            if (-not $themeBtn -or $themeBtn.GetType().Name -ne "Button") { return }
+            $iconLbl = $themeBtn.Controls | Where-Object { $_.GetType().Name -eq "Label" -and $_.Text -match "[\uE706\uE708]" }
+            
+            if ($iconLbl) {
+                $iconLbl.Text = if ($script:CurrentTheme -eq "light") { [char]0xE708 } else { [char]0xE706 }
+                $iconLbl.Location = if ($script:CurrentTheme -eq "light") { New-Object System.Drawing.Point(15, 4) } else { New-Object System.Drawing.Point(15, 6) }
+            }
+            
+            Apply-ModernTheme $script:mainForm
+        }
+        catch {
+            Write-Host "Erro ao alternar tema: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+    $themeButton.Add_Click($themeClick)
+    $iconLabel.Add_Click($themeClick)
+    $textLabel.Add_Click($themeClick)
+
+    $themeButton.Controls.Add($iconLabel)
+    $themeButton.Controls.Add($textLabel)
     $topPanel.Controls.Add($themeButton)
-
-    $refreshAllButton = New-Object System.Windows.Forms.Button
-    $refreshAllButton.Text = " Atualizar"
-    $refreshAllButton.Size = New-Object System.Drawing.Size(120, 35)
-    $refreshAllButton.Location = New-Object System.Drawing.Point(670, 15)
-    $refreshAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $refreshAllButton.Add_Click({
-        Update-StatusMessage "Atualizando todas as informações..."
-        Update-AllTabs
-    })
-    $topPanel.Controls.Add($refreshAllButton)
-
-    $separator = New-Object System.Windows.Forms.Panel
-    $separator.Height = 2
-    $separator.Dock = [System.Windows.Forms.DockStyle]::Top
-    $separator.BackColor = [System.Drawing.Color]::FromArgb(222, 226, 230)
 
     $statusStrip = New-Object System.Windows.Forms.StatusStrip
     $statusLabel = New-Object System.Windows.Forms.ToolStripStatusLabel
@@ -233,120 +293,105 @@ function Start-DevStackGUI {
     $statusStrip.Items.Add($statusLabel)
     $script:statusLabel = $statusLabel
 
-    $tabControl = New-Object System.Windows.Forms.TabControl
-    $tabControl.Location = New-Object System.Drawing.Point(10, 75)
-    $tabControl.Size = New-Object System.Drawing.Size(($mainForm.ClientSize.Width - 20), ($mainForm.ClientSize.Height - 100))
-    $tabControl.Anchor = ([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Bottom)
-    $tabControl.Font = $script:modernFont
-    $tabControl.Padding = New-Object System.Drawing.Point(12, 8)
-    $tabControl.Appearance = [System.Windows.Forms.TabAppearance]::Normal
-    $tabControl.HotTrack = $true
-    $tabControl.DrawMode = [System.Windows.Forms.TabDrawMode]::OwnerDrawFixed
-    $tabControl.Add_DrawItem({
+    $script:mainForm.Controls.Add($statusStrip)
+    $script:mainForm.Controls.Add($topPanel)
+
+    # --- Modern ListBox Navigation ---
+    $navListBox = New-Object System.Windows.Forms.ListBox
+    $navListBox.Width = 220
+    $navListBox.IntegralHeight = $false
+    $navListBox.Dock = [System.Windows.Forms.DockStyle]::Left
+    $navListBox.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
+    $navListBox.ItemHeight = 48
+    $navListBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+    $navListBox.BackColor = $ModernDarkTheme.ControlBackColor
+    $navListBox.ForeColor = $ModernDarkTheme.ForeColor
+    $navListBox.Font = $script:modernFont
+
+    $navItems = @(
+        @{ Name = "Ferramentas Instaladas"; Icon = [char]0xE9D5; Setup = 'Setup-InstalledToolsTab' },
+        @{ Name = "Instalar"; Icon = [char]0xE896; Setup = 'Setup-InstallTab' },
+        @{ Name = "Desinstalar"; Icon = [char]0xE74D; Setup = 'Setup-UninstallTab' },
+        @{ Name = "Serviços"; Icon = [char]0xEC57; Setup = 'Setup-ServicesTab' },
+        @{ Name = "Configurações"; Icon = [char]0xE713; Setup = 'Setup-ConfigTab' },
+        @{ Name = "Sites"; Icon = [char]0xE774; Setup = 'Setup-SitesTab' },
+        @{ Name = "Utilitários"; Icon = [char]0xE912; Setup = 'Setup-UtilsTab' }
+    )
+    foreach ($item in $navItems) {
+        $navListBox.Items.Add($item)
+    }
+    $navListBox.Add_DrawItem({
         param($sender, $e)
-        $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
         $g = $e.Graphics
-        $tab = $sender.TabPages[$e.Index]
+        $item = $sender.Items[$e.Index]
         $rect = $e.Bounds
+        $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
         $isSelected = ($e.Index -eq $sender.SelectedIndex)
-        $backColor = if ($isSelected) { $theme.FormBackColor } else { $theme.ControlBackColor }
-        $foreColor = $theme.ForeColor
+        $backColor = if ($isSelected) { $theme.AccentColor } else { $theme.ControlBackColor }
+        $foreColor = if ($isSelected) { $theme.ButtonForeColor } else { $theme.ForeColor }
+        # Corrige: limpa o fundo corretamente para cada item
         $g.FillRectangle([System.Drawing.SolidBrush]::new($backColor), $rect)
-        $format = New-Object System.Drawing.StringFormat
-        $format.Alignment = 'Center'
-        $format.LineAlignment = 'Center'
-        $rectF = [System.Drawing.RectangleF]::FromLTRB($rect.Left, $rect.Top, $rect.Right, $rect.Bottom)
-        $g.DrawString($tab.Text, $sender.Font, [System.Drawing.SolidBrush]::new($foreColor), $rectF, $format)
+        $iconFont = $script:iconFont
+        $icon = $item.Icon
+        $g.DrawString($icon, $iconFont, [System.Drawing.SolidBrush]::new($foreColor), $rect.Left+16, $rect.Top+12)
+        $textFont = $script:modernFontBold
+        $g.DrawString($item.Name, $textFont, [System.Drawing.SolidBrush]::new($foreColor), $rect.Left+56, $rect.Top+14)
+        # Remove highlight de seleção padrão do ListBox
+        $e.DrawFocusRectangle()
     })
+    $script:mainForm.Controls.Add($navListBox)
 
-    $mainForm.Controls.Add($statusStrip)
-    $mainForm.Controls.Add($topPanel)
-    $mainForm.Controls.Add($separator)
-    $mainForm.Controls.Add($tabControl)
+    # --- Main Content Panel ---
+    $contentPanel = New-Object System.Windows.Forms.Panel
+    $contentPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $contentPanel.BackColor = $ModernDarkTheme.ContentBackColor
 
-    $mainForm.Add_Resize({
-        if ($tabControl) {
-            $tabControl.Size = New-Object System.Drawing.Size(($mainForm.ClientSize.Width - 20), ($mainForm.ClientSize.Height - 100))
+    # Atualizar o BackColor do contentPanel ao trocar o tema
+    $updateContentPanelTheme = {
+        $theme = if ($script:CurrentTheme -eq "dark") { $ModernDarkTheme } else { $ModernLightTheme }
+        $contentPanel.BackColor = $theme.ContentBackColor
+    }
+    $themeButton.Add_Click($updateContentPanelTheme)
+    $iconLabel.Add_Click($updateContentPanelTheme)
+    $textLabel.Add_Click($updateContentPanelTheme)
+    $script:mainForm.Controls.Add($contentPanel)
+
+    # --- Section Panels (one per nav item) ---
+    $sectionPanels = @{}
+    for ($i=0; $i -lt $navItems.Count; $i++) {
+        $item = $navItems[$i]
+        $panel = New-Object System.Windows.Forms.Panel
+        $panel.Dock = [System.Windows.Forms.DockStyle]::Fill
+        $panel.Visible = $false
+        $contentPanel.Controls.Add($panel)
+        $sectionPanels[$item.Name] = $panel
+        & $item.Setup $panel
+    }
+    $sectionPanels[$navItems[0].Name].Visible = $true
+    $navListBox.SelectedIndex = 0
+
+    $navListBox.Add_SelectedIndexChanged({
+        for ($i=0; $i -lt $navItems.Count; $i++) {
+            $name = $navItems[$i].Name
+            $sectionPanels[$name].Visible = ($i -eq $navListBox.SelectedIndex)
+        }
+        $navListBox.Invalidate() # Força a repintura para corrigir o AccentColor
+        Update-StatusMessage "${($navItems[$navListBox.SelectedIndex].Name)} selecionado"
+        switch ($navItems[$navListBox.SelectedIndex].Name) {
+            "Ferramentas Instaladas" { Update-InstalledToolsList }
+            "Desinstalar" { Update-UninstallComponentList }
+            "Serviços" { Update-ServicesList }
         }
     })
 
-    $tabControl.Add_SelectedIndexChanged({
-        $selectedTab = $tabControl.SelectedTab
-        switch ($selectedTab.Text) {
-            "Ferramentas Instaladas" {
-                Update-StatusMessage "Atualizando lista de ferramentas instaladas..."
-                Update-InstalledToolsList
-            }
-            "Desinstalar" {
-                Update-StatusMessage "Atualizando componentes disponíveis para desinstalação..."
-                Update-UninstallComponentList
-            }
-            "Serviços" {
-                Update-StatusMessage "Atualizando status dos serviços..."
-                Update-ServicesList
-            }
-            "Utilitários" {
-                if ($script:utilsOutputBox -eq $null) {
-                    $tabPage = $selectedTab
-                    $outputBoxes = $tabPage.Controls | Where-Object { $_ -is [System.Windows.Forms.RichTextBox] }
-                    if ($outputBoxes -and $outputBoxes.Count -gt 0) {
-                        $script:utilsOutputBox = $outputBoxes[0]
-                        Update-StatusMessage "Reinicializando console de utilitários..."
-                    }
-                }
-            }
-            Default {
-                # Remove ícone do texto da aba para exibir só o nome
-                $tabName = $selectedTab.Text -replace '^[^\w\d]+', '' -replace '^\s+', ''
-                Update-StatusMessage "Tab $tabName selecionada"
-            }
-        }
-    })
-
-    $tabInstaladas = New-Object System.Windows.Forms.TabPage
-    $tabInstaladas.Text = "󱁤 Ferramentas Instaladas"
-    $tabControl.Controls.Add($tabInstaladas)
-
-    $tabInstall = New-Object System.Windows.Forms.TabPage
-    $tabInstall.Text = " Instalar"
-    $tabControl.Controls.Add($tabInstall)
-
-    $tabUninstall = New-Object System.Windows.Forms.TabPage
-    $tabUninstall.Text = " Desinstalar"
-    $tabControl.Controls.Add($tabUninstall)
-
-    $tabServices = New-Object System.Windows.Forms.TabPage
-    $tabServices.Text = " Serviços"
-    $tabControl.Controls.Add($tabServices)
-
-    $tabConfig = New-Object System.Windows.Forms.TabPage
-    $tabConfig.Text = " Configurações"
-    $tabControl.Controls.Add($tabConfig)
-
-    $tabSites = New-Object System.Windows.Forms.TabPage
-    $tabSites.Text = " Sites"
-    $tabControl.Controls.Add($tabSites)
-
-    $tabUtils = New-Object System.Windows.Forms.TabPage
-    $tabUtils.Text = " Utilitários"
-    $tabControl.Controls.Add($tabUtils)
-
-    Setup-InstalledToolsTab $tabInstaladas
-    Setup-InstallTab $tabInstall
-    Setup-UninstallTab $tabUninstall
-    Setup-ServicesTab $tabServices
-    Setup-ConfigTab $tabConfig
-    Setup-SitesTab $tabSites
-    Setup-UtilsTab $tabUtils
-
-    $mainForm.Add_Shown({
-        $mainForm.Activate()
+    $script:mainForm.Add_Shown({
+        $script:mainForm.Activate()
         Update-InstalledToolsList
         Update-StatusMessage "Interface moderna carregada com sucesso!"
     })
 
-    Apply-ModernTheme $mainForm
-    [void]$mainForm.ShowDialog()
+    Apply-ModernTheme $script:mainForm
+    [void]$script:mainForm.ShowDialog()
 }
 
 # Esta seção foi movida para o início do arquivo
@@ -357,8 +402,8 @@ function Setup-InstalledToolsTab {
 
     # Criar DataGridView para listar ferramentas instaladas
     $dataGrid = New-Object System.Windows.Forms.DataGridView
-    $dataGrid.Location = New-Object System.Drawing.Point(10, 10)
-    $dataGrid.Size = New-Object System.Drawing.Size(882, 450)
+    $dataGrid.Location = New-Object System.Drawing.Point(240, 80)
+    $dataGrid.Size = New-Object System.Drawing.Size(730, 450)
     $dataGrid.AutoSizeColumnsMode = [System.Windows.Forms.DataGridViewAutoSizeColumnsMode]::Fill
     $dataGrid.AllowUserToAddRows = $false
     $dataGrid.AllowUserToDeleteRows = $false
@@ -375,9 +420,34 @@ function Setup-InstalledToolsTab {
     
     # Botão de atualizar
     $refreshButton = New-Object System.Windows.Forms.Button
-    $refreshButton.Location = New-Object System.Drawing.Point(10, 470)
-    $refreshButton.Size = New-Object System.Drawing.Size(100, 30)
-    $refreshButton.Text = " Atualizar"
+    $refreshButton.Location = New-Object System.Drawing.Point(240, 540)
+    $refreshButton.Size = New-Object System.Drawing.Size(120, 30)
+    $refreshButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $refreshButton.BackColor = [System.Drawing.Color]::Transparent
+    $refreshButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    $refreshIcon2 = New-Object System.Windows.Forms.Label
+    $refreshIcon2.Text = [char]0xE72C # 'Refresh'
+    $refreshIcon2.Font = $script:iconFont
+    $refreshIcon2.AutoSize = $true
+    $refreshIcon2.Location = New-Object System.Drawing.Point(5, 3)
+    $refreshIcon2.Size = New-Object System.Drawing.Size(24, 24)
+    $refreshIcon2.TextAlign = 'MiddleLeft'
+    $refreshIcon2.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $refreshIcon2.BackColor = [System.Drawing.Color]::Transparent
+
+    $refreshText2 = New-Object System.Windows.Forms.Label
+    $refreshText2.Text = "Atualizar"
+    $refreshText2.Font = $script:modernFont
+    $refreshText2.AutoSize = $true
+    $refreshText2.Location = New-Object System.Drawing.Point(32, 4)
+    $refreshText2.Size = New-Object System.Drawing.Size(70, 20)
+    $refreshText2.TextAlign = 'MiddleLeft'
+    $refreshText2.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $refreshText2.BackColor = [System.Drawing.Color]::Transparent
+
+    $refreshButton.Controls.Add($refreshIcon2)
+    $refreshButton.Controls.Add($refreshText2)
     $refreshButton.Add_Click({
         Update-StatusMessage "Atualizando lista de ferramentas instaladas..."
         Update-InstalledToolsList
@@ -428,13 +498,13 @@ function Setup-InstallTab {
     
     # Criar controles para seleção de componente e versão
     $componentLabel = New-Object System.Windows.Forms.Label
-    $componentLabel.Location = New-Object System.Drawing.Point(10, 20)
+    $componentLabel.Location = New-Object System.Drawing.Point(240, 80)
     $componentLabel.Size = New-Object System.Drawing.Size(100, 23)
     $componentLabel.Text = "Componente:"
     $tabPage.Controls.Add($componentLabel)
     
     $componentCombo = New-Object System.Windows.Forms.ComboBox
-    $componentCombo.Location = New-Object System.Drawing.Point(120, 20)
+    $componentCombo.Location = New-Object System.Drawing.Point(350, 80)
     $componentCombo.Size = New-Object System.Drawing.Size(200, 23)
     $componentCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     
@@ -457,13 +527,13 @@ function Setup-InstallTab {
     $tabPage.Controls.Add($componentCombo)
     
     $versionLabel = New-Object System.Windows.Forms.Label
-    $versionLabel.Location = New-Object System.Drawing.Point(10, 60)
+    $versionLabel.Location = New-Object System.Drawing.Point(240, 120)
     $versionLabel.Size = New-Object System.Drawing.Size(100, 23)
     $versionLabel.Text = "Versão:"
     $tabPage.Controls.Add($versionLabel)
     
     $versionCombo = New-Object System.Windows.Forms.ComboBox
-    $versionCombo.Location = New-Object System.Drawing.Point(120, 60)
+    $versionCombo.Location = New-Object System.Drawing.Point(350, 120)
     $versionCombo.Size = New-Object System.Drawing.Size(200, 23)
     $versionCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $tabPage.Controls.Add($versionCombo)
@@ -473,9 +543,35 @@ function Setup-InstallTab {
     
     # Botão de instalação
     $installButton = New-Object System.Windows.Forms.Button
-    $installButton.Location = New-Object System.Drawing.Point(120, 100)
+    $installButton.Location = New-Object System.Drawing.Point(350, 160)
     $installButton.Size = New-Object System.Drawing.Size(130, 30)
-    $installButton.Text = " Instalar"
+    $installButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $installButton.BackColor = [System.Drawing.Color]::Transparent
+    $installButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    # Ícone Segoe MDL2 Assets (Download: U+E896)
+    $installIcon = New-Object System.Windows.Forms.Label
+    $installIcon.Text = [char]0xE896
+    $installIcon.Font = $script:iconFont
+    $installIcon.AutoSize = $true
+    $installIcon.Location = New-Object System.Drawing.Point(10, 3)
+    $installIcon.Size = New-Object System.Drawing.Size(24, 24)
+    $installIcon.TextAlign = 'MiddleLeft'
+    $installIcon.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $installIcon.BackColor = [System.Drawing.Color]::Transparent
+
+    $installText = New-Object System.Windows.Forms.Label
+    $installText.Text = "Instalar"
+    $installText.Font = $script:modernFont
+    $installText.AutoSize = $true
+    $installText.Location = New-Object System.Drawing.Point(38, 4)
+    $installText.Size = New-Object System.Drawing.Size(70, 20)
+    $installText.TextAlign = 'MiddleLeft'
+    $installText.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $installText.BackColor = [System.Drawing.Color]::Transparent
+
+    $installButton.Controls.Add($installIcon)
+    $installButton.Controls.Add($installText)
     $installButton.Add_Click({
         $component = $script:componentComboBox.SelectedItem
         $version = $script:versionComboBox.SelectedItem
@@ -514,8 +610,8 @@ function Setup-InstallTab {
     
     # Tela de console para mostrar o progresso
     $outputBox = New-Object System.Windows.Forms.RichTextBox
-    $outputBox.Location = New-Object System.Drawing.Point(10, 150)
-    $outputBox.Size = New-Object System.Drawing.Size(882, 350)
+    $outputBox.Location = New-Object System.Drawing.Point(240, 210)
+    $outputBox.Size = New-Object System.Drawing.Size(730, 350)
     $outputBox.ReadOnly = $true
     $outputBox.BackColor = [System.Drawing.Color]::Black
     $outputBox.ForeColor = [System.Drawing.Color]::White
@@ -589,12 +685,12 @@ function Setup-UninstallTab {
     
     # Criar controles para seleção de componente e versão
     $componentLabel = New-Object System.Windows.Forms.Label
-    $componentLabel.Location = New-Object System.Drawing.Point(10, 20)
+    $componentLabel.Location = New-Object System.Drawing.Point(240, 80)
     $componentLabel.Size = New-Object System.Drawing.Size(100, 23)
     $componentLabel.Text = "Componente:"
     $tabPage.Controls.Add($componentLabel)
     $componentCombo = New-Object System.Windows.Forms.ComboBox
-    $componentCombo.Location = New-Object System.Drawing.Point(120, 20)
+    $componentCombo.Location = New-Object System.Drawing.Point(350, 80)
     $componentCombo.Size = New-Object System.Drawing.Size(200, 23)
     $componentCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     
@@ -609,13 +705,13 @@ function Setup-UninstallTab {
     $tabPage.Controls.Add($componentCombo)
     
     $versionLabel = New-Object System.Windows.Forms.Label
-    $versionLabel.Location = New-Object System.Drawing.Point(10, 60)
+    $versionLabel.Location = New-Object System.Drawing.Point(240, 120)
     $versionLabel.Size = New-Object System.Drawing.Size(100, 23)
     $versionLabel.Text = "Versão:"
     $tabPage.Controls.Add($versionLabel)
     
     $versionCombo = New-Object System.Windows.Forms.ComboBox
-    $versionCombo.Location = New-Object System.Drawing.Point(120, 60)
+    $versionCombo.Location = New-Object System.Drawing.Point(350, 120)
     $versionCombo.Size = New-Object System.Drawing.Size(200, 23)
     $versionCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $tabPage.Controls.Add($versionCombo)
@@ -625,9 +721,35 @@ function Setup-UninstallTab {
     
     # Botão de desinstalação
     $uninstallButton = New-Object System.Windows.Forms.Button
-    $uninstallButton.Location = New-Object System.Drawing.Point(120, 100)
+    $uninstallButton.Location = New-Object System.Drawing.Point(350, 160)
     $uninstallButton.Size = New-Object System.Drawing.Size(130, 30)
-    $uninstallButton.Text = " Desinstalar"
+    $uninstallButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $uninstallButton.BackColor = [System.Drawing.Color]::Transparent
+    $uninstallButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    # Ícone Segoe MDL2 Assets (Delete: U+E74D)
+    $uninstallIcon = New-Object System.Windows.Forms.Label
+    $uninstallIcon.Text = [char]0xE74D
+    $uninstallIcon.Font = $script:iconFont
+    $uninstallIcon.AutoSize = $true
+    $uninstallIcon.Location = New-Object System.Drawing.Point(10, 3)
+    $uninstallIcon.Size = New-Object System.Drawing.Size(24, 24)
+    $uninstallIcon.TextAlign = 'MiddleLeft'
+    $uninstallIcon.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $uninstallIcon.BackColor = [System.Drawing.Color]::Transparent
+
+    $uninstallText = New-Object System.Windows.Forms.Label
+    $uninstallText.Text = "Desinstalar"
+    $uninstallText.Font = $script:modernFont
+    $uninstallText.AutoSize = $true
+    $uninstallText.Location = New-Object System.Drawing.Point(38, 4)
+    $uninstallText.Size = New-Object System.Drawing.Size(90, 20)
+    $uninstallText.TextAlign = 'MiddleLeft'
+    $uninstallText.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $uninstallText.BackColor = [System.Drawing.Color]::Transparent
+
+    $uninstallButton.Controls.Add($uninstallIcon)
+    $uninstallButton.Controls.Add($uninstallText)
     $uninstallButton.Add_Click({
         $component = $script:uninstallComponentComboBox.SelectedItem
         $selectedIndex = $script:uninstallVersionComboBox.SelectedIndex
@@ -747,17 +869,10 @@ function Update-UninstallComponentList {
 function Setup-ServicesTab {
     param($tabPage)
     
-    # Criar controles para serviços
-    $serviceLabel = New-Object System.Windows.Forms.Label
-    $serviceLabel.Location = New-Object System.Drawing.Point(10, 10)
-    $serviceLabel.Size = New-Object System.Drawing.Size(882, 23)
-    $serviceLabel.Text = " Serviços (PHP-FPM, Nginx, MySQL)"
-    $tabPage.Controls.Add($serviceLabel)
-    
     # DataGridView para listar serviços
     $dataGrid = New-Object System.Windows.Forms.DataGridView
-    $dataGrid.Location = New-Object System.Drawing.Point(10, 40)
-    $dataGrid.Size = New-Object System.Drawing.Size(882, 300)
+    $dataGrid.Location = New-Object System.Drawing.Point(240, 100)
+    $dataGrid.Size = New-Object System.Drawing.Size(730, 300)
     $dataGrid.AutoSizeColumnsMode = [System.Windows.Forms.DataGridViewAutoSizeColumnsMode]::Fill
     $dataGrid.AllowUserToAddRows = $false
     $dataGrid.AllowUserToDeleteRows = $false
@@ -775,23 +890,65 @@ function Setup-ServicesTab {
     $tabPage.Controls.Add($dataGrid)
     
     # Botões para controlar serviços
+    # Ícones Segoe MDL2 Assets
+    $iconStart      = [char]0xE768 # Play
+    $iconStop       = [char]0xE71A # Stop
+    $iconRestart    = [char]0xE895 # Refresh/Restart
+    $iconRefresh    = [char]0xE72C # Refresh
+    $iconStartAll   = [char]0xE768 # Play
+    $iconStopAll    = [char]0xE71A # Stop
+    $iconRestartAll = [char]0xE895 # Refresh/Restart
+
+    function Add-IconButton {
+        param(
+            [System.Windows.Forms.Button]$button,
+            [string]$icon,
+            [string]$text
+        )
+        $iconLabel = New-Object System.Windows.Forms.Label
+        $iconLabel.Text = $icon
+        $iconLabel.Font = $script:iconFont
+        $iconLabel.AutoSize = $true
+        $iconLabel.Location = New-Object System.Drawing.Point(10, 3)
+        $iconLabel.Size = New-Object System.Drawing.Size(24, 24)
+        $iconLabel.TextAlign = 'MiddleLeft'
+        $iconLabel.ForeColor = $ModernDarkTheme.ButtonBackColor
+        $iconLabel.BackColor = [System.Drawing.Color]::Transparent
+
+        $textLabel = New-Object System.Windows.Forms.Label
+        $textLabel.Text = $text
+        $textLabel.Font = $script:modernFont
+        $textLabel.AutoSize = $true
+        $textLabel.Location = New-Object System.Drawing.Point(38, 4)
+        $textLabel.Size = New-Object System.Drawing.Size(90, 20)
+        $textLabel.TextAlign = 'MiddleLeft'
+        $textLabel.ForeColor = $ModernDarkTheme.ButtonBackColor
+        $textLabel.BackColor = [System.Drawing.Color]::Transparent
+
+        $button.Controls.Add($iconLabel)
+        $button.Controls.Add($textLabel)
+    }
+
     $startButton = New-Object System.Windows.Forms.Button
-    $startButton.Location = New-Object System.Drawing.Point(10, 350)
+    $startButton.Location = New-Object System.Drawing.Point(240, 410)
     $startButton.Size = New-Object System.Drawing.Size(150, 30)
-    $startButton.Text = " Iniciar"
+    $startButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $startButton.BackColor = [System.Drawing.Color]::Transparent
+    $startButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $startButton $iconStart "Iniciar"
     $startButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
-        
+
         if ($selectedRows.Count -eq 0) {
             [System.Windows.Forms.MessageBox]::Show("Selecione um serviço para iniciar.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
-        
+
         $component = $selectedRows[0].Cells[0].Value
         $version = $selectedRows[0].Cells[1].Value
-        
+
         Update-StatusMessage "Iniciando $component versão $version..."
-        
+
         try {
             & "$PSScriptRoot\..\setup.ps1" start $component $version
             Update-StatusMessage "$component versão $version iniciado com sucesso."
@@ -802,26 +959,28 @@ function Setup-ServicesTab {
             [System.Windows.Forms.MessageBox]::Show("Erro ao iniciar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     })
-    
     $tabPage.Controls.Add($startButton)
-    
+
     $stopButton = New-Object System.Windows.Forms.Button
-    $stopButton.Location = New-Object System.Drawing.Point(170, 350)
+    $stopButton.Location = New-Object System.Drawing.Point(400, 410)
     $stopButton.Size = New-Object System.Drawing.Size(150, 30)
-    $stopButton.Text = " Parar"
+    $stopButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $stopButton.BackColor = [System.Drawing.Color]::Transparent
+    $stopButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $stopButton $iconStop "Parar"
     $stopButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
-        
+
         if ($selectedRows.Count -eq 0) {
             [System.Windows.Forms.MessageBox]::Show("Selecione um serviço para parar.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
-        
+
         $component = $selectedRows[0].Cells[0].Value
         $version = $selectedRows[0].Cells[1].Value
-        
+
         Update-StatusMessage "Parando $component versão $version..."
-        
+
         try {
             & "$PSScriptRoot\..\setup.ps1" stop $component $version
             Update-StatusMessage "$component versão $version parado com sucesso."
@@ -832,26 +991,28 @@ function Setup-ServicesTab {
             [System.Windows.Forms.MessageBox]::Show("Erro ao parar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     })
-    
     $tabPage.Controls.Add($stopButton)
-    
+
     $restartButton = New-Object System.Windows.Forms.Button
-    $restartButton.Location = New-Object System.Drawing.Point(330, 350)
+    $restartButton.Location = New-Object System.Drawing.Point(560, 410)
     $restartButton.Size = New-Object System.Drawing.Size(150, 30)
-    $restartButton.Text = " Reiniciar"
+    $restartButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $restartButton.BackColor = [System.Drawing.Color]::Transparent
+    $restartButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $restartButton $iconRestart "Reiniciar"
     $restartButton.Add_Click({
         $selectedRows = $script:serviceDataGrid.SelectedRows
-        
+
         if ($selectedRows.Count -eq 0) {
             [System.Windows.Forms.MessageBox]::Show("Selecione um serviço para reiniciar.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
-        
+
         $component = $selectedRows[0].Cells[0].Value
         $version = $selectedRows[0].Cells[1].Value
-        
+
         Update-StatusMessage "Reiniciando $component versão $version..."
-        
+
         try {
             & "$PSScriptRoot\..\setup.ps1" restart $component $version
             Update-StatusMessage "$component versão $version reiniciado com sucesso."
@@ -862,28 +1023,33 @@ function Setup-ServicesTab {
             [System.Windows.Forms.MessageBox]::Show("Erro ao reiniciar $component versão ${version}: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     })
-    
     $tabPage.Controls.Add($restartButton)
-    
+
     $refreshButton = New-Object System.Windows.Forms.Button
-    $refreshButton.Location = New-Object System.Drawing.Point(490, 350)
+    $refreshButton.Location = New-Object System.Drawing.Point(720, 410)
     $refreshButton.Size = New-Object System.Drawing.Size(150, 30)
-    $refreshButton.Text = " Atualizar"
+    $refreshButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $refreshButton.BackColor = [System.Drawing.Color]::Transparent
+    $refreshButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $refreshButton $iconRefresh "Atualizar"
     $refreshButton.Add_Click({
         Update-StatusMessage "Atualizando lista de serviços..."
         Update-ServicesList
         Update-StatusMessage "Lista de serviços atualizada."
     })
     $tabPage.Controls.Add($refreshButton)
-    
+
     # Adicionar botões para controlar todos os serviços de uma vez
     $startAllButton = New-Object System.Windows.Forms.Button
-    $startAllButton.Location = New-Object System.Drawing.Point(10, 390)
+    $startAllButton.Location = New-Object System.Drawing.Point(240, 450)
     $startAllButton.Size = New-Object System.Drawing.Size(150, 30)
-    $startAllButton.Text = " Iniciar Todos"
+    $startAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $startAllButton.BackColor = [System.Drawing.Color]::Transparent
+    $startAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $startAllButton $iconStartAll "Iniciar Todos"
     $startAllButton.Add_Click({
         Update-StatusMessage "Iniciando todos os serviços..."
-        
+
         try {
             # Executar o comando start --all
             & "$PSScriptRoot\..\setup.ps1" start --all
@@ -897,14 +1063,17 @@ function Setup-ServicesTab {
         }
     })
     $tabPage.Controls.Add($startAllButton)
-    
+
     $stopAllButton = New-Object System.Windows.Forms.Button
-    $stopAllButton.Location = New-Object System.Drawing.Point(170, 390)
+    $stopAllButton.Location = New-Object System.Drawing.Point(400, 450)
     $stopAllButton.Size = New-Object System.Drawing.Size(150, 30)
-    $stopAllButton.Text = " Parar Todos"
+    $stopAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $stopAllButton.BackColor = [System.Drawing.Color]::Transparent
+    $stopAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $stopAllButton $iconStopAll "Parar Todos"
     $stopAllButton.Add_Click({
         Update-StatusMessage "Parando todos os serviços..."
-        
+
         try {
             # Executar o comando stop --all
             & "$PSScriptRoot\..\setup.ps1" stop --all
@@ -918,14 +1087,17 @@ function Setup-ServicesTab {
         }
     })
     $tabPage.Controls.Add($stopAllButton)
-    
+
     $restartAllButton = New-Object System.Windows.Forms.Button
-    $restartAllButton.Location = New-Object System.Drawing.Point(330, 390)
+    $restartAllButton.Location = New-Object System.Drawing.Point(560, 450)
     $restartAllButton.Size = New-Object System.Drawing.Size(150, 30)
-    $restartAllButton.Text = " Reiniciar Todos"
+    $restartAllButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $restartAllButton.BackColor = [System.Drawing.Color]::Transparent
+    $restartAllButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+    Add-IconButton $restartAllButton $iconRestartAll "Reiniciar Todos"
     $restartAllButton.Add_Click({
         Update-StatusMessage "Reiniciando todos os serviços..."
-        
+
         try {
             # Executar o comando restart --all
             & "$PSScriptRoot\..\setup.ps1" restart --all
@@ -999,16 +1171,17 @@ function Setup-ConfigTab {
     
     # Criar controles para configurações
     $pathLabel = New-Object System.Windows.Forms.Label
-    $pathLabel.Location = New-Object System.Drawing.Point(10, 20)
+    $pathLabel.Location = New-Object System.Drawing.Point(240, 80)
     $pathLabel.Size = New-Object System.Drawing.Size(882, 23)
     $pathLabel.Text = "Gerenciamento de PATH"
     $tabPage.Controls.Add($pathLabel)
     
     # Botão para adicionar ao PATH
     $addPathButton = New-Object System.Windows.Forms.Button
-    $addPathButton.Location = New-Object System.Drawing.Point(10, 50)
+    $addPathButton.Location = New-Object System.Drawing.Point(240, 110)
     $addPathButton.Size = New-Object System.Drawing.Size(200, 30)
     $addPathButton.Text = "Adicionar DevStack ao PATH"
+    $addPathButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $addPathButton.Add_Click({
         Update-StatusMessage "Adicionando DevStack ao PATH do sistema..."
         
@@ -1027,9 +1200,10 @@ function Setup-ConfigTab {
     
     # Botão para configuração global
     $globalButton = New-Object System.Windows.Forms.Button
-    $globalButton.Location = New-Object System.Drawing.Point(220, 50)
+    $globalButton.Location = New-Object System.Drawing.Point(450, 110)
     $globalButton.Size = New-Object System.Drawing.Size(200, 30)
     $globalButton.Text = "Configuração Global"
+    $globalButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $globalButton.Add_Click({
         Update-StatusMessage "Aplicando configuração global..."
         
@@ -1047,9 +1221,10 @@ function Setup-ConfigTab {
     
     # Botão para executar diagnóstico
     $doctorButton = New-Object System.Windows.Forms.Button
-    $doctorButton.Location = New-Object System.Drawing.Point(10, 100)
+    $doctorButton.Location = New-Object System.Drawing.Point(240, 160)
     $doctorButton.Size = New-Object System.Drawing.Size(200, 30)
     $doctorButton.Text = "Diagnóstico do Sistema"
+    $doctorButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $doctorButton.Add_Click({
         Update-StatusMessage "Executando diagnóstico do sistema..."
         
@@ -1061,7 +1236,7 @@ function Setup-ConfigTab {
             
             $outputBox = New-Object System.Windows.Forms.RichTextBox
             $outputBox.Location = New-Object System.Drawing.Point(10, 10)
-            $outputBox.Size = New-Object System.Drawing.Size(882, 540)
+            $outputBox.Size = New-Object System.Drawing.Size(765, 540)
             $outputBox.ReadOnly = $true
             $outputBox.BackColor = [System.Drawing.Color]::Black
             $outputBox.ForeColor = [System.Drawing.Color]::White
@@ -1101,9 +1276,10 @@ function Setup-ConfigTab {
     
     # Botão para verificar dependências
     $depsButton = New-Object System.Windows.Forms.Button
-    $depsButton.Location = New-Object System.Drawing.Point(220, 100)
+    $depsButton.Location = New-Object System.Drawing.Point(450, 160)
     $depsButton.Size = New-Object System.Drawing.Size(200, 30)
     $depsButton.Text = "Verificar Dependências"
+    $depsButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $depsButton.Add_Click({
         Update-StatusMessage "Verificando dependências do sistema..."
         
@@ -1121,9 +1297,10 @@ function Setup-ConfigTab {
     
     # Botão para Limpar Logs/Temp
     $cleanButton = New-Object System.Windows.Forms.Button
-    $cleanButton.Location = New-Object System.Drawing.Point(10, 150)
+    $cleanButton.Location = New-Object System.Drawing.Point(240, 210)
     $cleanButton.Size = New-Object System.Drawing.Size(200, 30)
     $cleanButton.Text = "Limpar Logs/Temp"
+    $cleanButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $cleanButton.Add_Click({
         Update-StatusMessage "Limpando arquivos temporários e logs..."
         
@@ -1151,9 +1328,10 @@ function Setup-ConfigTab {
     
     # Botão para Backup
     $backupButton = New-Object System.Windows.Forms.Button
-    $backupButton.Location = New-Object System.Drawing.Point(220, 150)
+    $backupButton.Location = New-Object System.Drawing.Point(450, 210)
     $backupButton.Size = New-Object System.Drawing.Size(200, 30)
     $backupButton.Text = "Criar Backup"
+    $backupButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $backupButton.Add_Click({
         Update-StatusMessage "Criando backup das configurações..."
         
@@ -1172,9 +1350,10 @@ function Setup-ConfigTab {
     
     # Botão para Atualizar DevStack
     $updateButton = New-Object System.Windows.Forms.Button
-    $updateButton.Location = New-Object System.Drawing.Point(10, 200)
+    $updateButton.Location = New-Object System.Drawing.Point(240, 260)
     $updateButton.Size = New-Object System.Drawing.Size(200, 30)
     $updateButton.Text = "Atualizar DevStack"
+    $updateButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $updateButton.Add_Click({
         Update-StatusMessage "Atualizando DevStack..."
         
@@ -1198,39 +1377,64 @@ function Setup-SitesTab {
     
     # Criar controles para gerenciamento de sites Nginx
     $siteLabel = New-Object System.Windows.Forms.Label
-    $siteLabel.Location = New-Object System.Drawing.Point(10, 20)
+    $siteLabel.Location = New-Object System.Drawing.Point(240, 80)
     $siteLabel.Size = New-Object System.Drawing.Size(300, 23)
     $siteLabel.Text = "Criar configuração de site"
     $tabPage.Controls.Add($siteLabel)
     
     # Campo de domínio
     $domainLabel = New-Object System.Windows.Forms.Label
-    $domainLabel.Location = New-Object System.Drawing.Point(10, 50)
+    $domainLabel.Location = New-Object System.Drawing.Point(240, 110)
     $domainLabel.Size = New-Object System.Drawing.Size(200, 23)
     $domainLabel.Text = "Domínio:"
     $tabPage.Controls.Add($domainLabel)
     
     $domainTextBox = New-Object System.Windows.Forms.TextBox
-    $domainTextBox.Location = New-Object System.Drawing.Point(220, 50)
+    $domainTextBox.Location = New-Object System.Drawing.Point(450, 110)
     $domainTextBox.Size = New-Object System.Drawing.Size(200, 23)
     $tabPage.Controls.Add($domainTextBox)
     
     # Campo de diretório raiz
     $rootLabel = New-Object System.Windows.Forms.Label
-    $rootLabel.Location = New-Object System.Drawing.Point(10, 80)
+    $rootLabel.Location = New-Object System.Drawing.Point(240, 140)
     $rootLabel.Size = New-Object System.Drawing.Size(200, 23)
     $rootLabel.Text = "Diretório Raiz:"
     $tabPage.Controls.Add($rootLabel)
     
     $rootTextBox = New-Object System.Windows.Forms.TextBox
-    $rootTextBox.Location = New-Object System.Drawing.Point(220, 80)
+    $rootTextBox.Location = New-Object System.Drawing.Point(450, 140)
     $rootTextBox.Size = New-Object System.Drawing.Size(200, 23)
     $tabPage.Controls.Add($rootTextBox)
     
     $browseButton = New-Object System.Windows.Forms.Button
-    $browseButton.Location = New-Object System.Drawing.Point(420, 80)
-    $browseButton.Size = New-Object System.Drawing.Size(100, 24)
-    $browseButton.Text = " Procurar"
+    $browseButton.Location = New-Object System.Drawing.Point(650, 140)
+    $browseButton.Size = New-Object System.Drawing.Size(120, 24)
+    $browseButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $browseButton.BackColor = [System.Drawing.Color]::Transparent
+    $browseButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    $browseIcon = New-Object System.Windows.Forms.Label
+    $browseIcon.Text = [char]0xED25
+    $browseIcon.Font = $script:iconFont
+    $browseIcon.AutoSize = $true
+    $browseIcon.Location = New-Object System.Drawing.Point(10, 0)
+    $browseIcon.Size = New-Object System.Drawing.Size(24, 24)
+    $browseIcon.TextAlign = 'MiddleLeft'
+    $browseIcon.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $browseIcon.BackColor = [System.Drawing.Color]::Transparent
+
+    $browseText = New-Object System.Windows.Forms.Label
+    $browseText.Text = "Procurar"
+    $browseText.Font = $script:modernFont
+    $browseText.AutoSize = $true
+    $browseText.Location = New-Object System.Drawing.Point(38, 1)
+    $browseText.Size = New-Object System.Drawing.Size(70, 20)
+    $browseText.TextAlign = 'MiddleLeft'
+    $browseText.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $browseText.BackColor = [System.Drawing.Color]::Transparent
+
+    $browseButton.Controls.Add($browseIcon)
+    $browseButton.Controls.Add($browseText)
     $browseButton.Add_Click({
         $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         $folderBrowser.Description = "Selecione o diretório raiz do site"
@@ -1244,13 +1448,13 @@ function Setup-SitesTab {
     
     # Campo de PHP Upstream
     $phpLabel = New-Object System.Windows.Forms.Label
-    $phpLabel.Location = New-Object System.Drawing.Point(10, 110)
+    $phpLabel.Location = New-Object System.Drawing.Point(240, 170)
     $phpLabel.Size = New-Object System.Drawing.Size(200, 23)
     $phpLabel.Text = "PHP Upstream:"
     $tabPage.Controls.Add($phpLabel)
     
     $phpCombo = New-Object System.Windows.Forms.ComboBox
-    $phpCombo.Location = New-Object System.Drawing.Point(220, 110)
+    $phpCombo.Location = New-Object System.Drawing.Point(450, 170)
     $phpCombo.Size = New-Object System.Drawing.Size(200, 23)
     $phpCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     
@@ -1270,13 +1474,13 @@ function Setup-SitesTab {
     
     # Campo de versão do Nginx
     $nginxLabel = New-Object System.Windows.Forms.Label
-    $nginxLabel.Location = New-Object System.Drawing.Point(10, 140)
+    $nginxLabel.Location = New-Object System.Drawing.Point(240, 200)
     $nginxLabel.Size = New-Object System.Drawing.Size(200, 23)
     $nginxLabel.Text = "Nginx Versão:"
     $tabPage.Controls.Add($nginxLabel)
     
     $nginxCombo = New-Object System.Windows.Forms.ComboBox
-    $nginxCombo.Location = New-Object System.Drawing.Point(220, 140)
+    $nginxCombo.Location = New-Object System.Drawing.Point(450, 200)
     $nginxCombo.Size = New-Object System.Drawing.Size(200, 23)
     $nginxCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     
@@ -1296,39 +1500,65 @@ function Setup-SitesTab {
     
     # Botão para criar site
     $createSiteButton = New-Object System.Windows.Forms.Button
-    $createSiteButton.Location = New-Object System.Drawing.Point(220, 180)
+    $createSiteButton.Location = New-Object System.Drawing.Point(450, 240)
     $createSiteButton.Size = New-Object System.Drawing.Size(180, 30)
-    $createSiteButton.Text = " Criar Configuração"
+    $createSiteButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $createSiteButton.BackColor = [System.Drawing.Color]::Transparent
+    $createSiteButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    # Ícone Segoe MDL2 Assets (Add: U+E710)
+    $siteIcon = New-Object System.Windows.Forms.Label
+    $siteIcon.Text = [char]0xE710
+    $siteIcon.Font = $script:iconFont
+    $siteIcon.AutoSize = $true
+    $siteIcon.Location = New-Object System.Drawing.Point(10, 3)
+    $siteIcon.Size = New-Object System.Drawing.Size(24, 24)
+    $siteIcon.TextAlign = 'MiddleLeft'
+    $siteIcon.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $siteIcon.BackColor = [System.Drawing.Color]::Transparent
+
+    $siteText = New-Object System.Windows.Forms.Label
+    $siteText.Text = "Criar Configuração"
+    $siteText.Font = $script:modernFont
+    $siteText.AutoSize = $true
+    $siteText.Location = New-Object System.Drawing.Point(38, 4)
+    $siteText.Size = New-Object System.Drawing.Size(120, 20)
+    $siteText.TextAlign = 'MiddleLeft'
+    $siteText.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $siteText.BackColor = [System.Drawing.Color]::Transparent
+
+    $createSiteButton.Controls.Add($siteIcon)
+    $createSiteButton.Controls.Add($siteText)
     $createSiteButton.Add_Click({
         $domain = $domainTextBox.Text.Trim()
         $root = $rootTextBox.Text.Trim()
         $phpUpstream = $phpCombo.SelectedItem
         $nginxVersion = $nginxCombo.SelectedItem
-        
+
         if ([string]::IsNullOrEmpty($domain)) {
             [System.Windows.Forms.MessageBox]::Show("Por favor, informe o domínio do site.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
-        
+
         Update-StatusMessage "Criando configuração para o site $domain..."
-        
+
         $args = @("site", $domain)
-        
+
         if (-not [string]::IsNullOrEmpty($root)) {
             $args += "-root", $root
         }
-        
+
         if ($phpUpstream) {
             $args += "-php", $phpUpstream
         }
-        
+
         if ($nginxVersion) {
             $args += "-nginx", $nginxVersion
         }
-        
+
         try {
             & "$PSScriptRoot\..\setup.ps1" @args
-            
+
             Update-StatusMessage "Configuração para o site $domain criada com sucesso."
             [System.Windows.Forms.MessageBox]::Show(
                 "Configuração para o site $domain criada com sucesso.`n`n" + 
@@ -1338,7 +1568,7 @@ function Setup-SitesTab {
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Information
             )
-            
+
             # Limpar os campos
             $domainTextBox.Text = ""
             $rootTextBox.Text = ""
@@ -1348,31 +1578,57 @@ function Setup-SitesTab {
             [System.Windows.Forms.MessageBox]::Show("Erro ao criar configuração do site: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
     })
-    
+
     $tabPage.Controls.Add($createSiteButton)
     
     # Botão para gerar certificado SSL
     $sslLabel = New-Object System.Windows.Forms.Label
-    $sslLabel.Location = New-Object System.Drawing.Point(10, 230)
+    $sslLabel.Location = New-Object System.Drawing.Point(240, 290)
     $sslLabel.Size = New-Object System.Drawing.Size(200, 23)
     $sslLabel.Text = "Gerar certificado SSL"
     $tabPage.Controls.Add($sslLabel)
     
     $sslDomainLabel = New-Object System.Windows.Forms.Label
-    $sslDomainLabel.Location = New-Object System.Drawing.Point(10, 260)
+    $sslDomainLabel.Location = New-Object System.Drawing.Point(240, 320)
     $sslDomainLabel.Size = New-Object System.Drawing.Size(200, 23)
     $sslDomainLabel.Text = "Domínio SSL:"
     $tabPage.Controls.Add($sslDomainLabel)
     
     $sslDomainTextBox = New-Object System.Windows.Forms.TextBox
-    $sslDomainTextBox.Location = New-Object System.Drawing.Point(220, 260)
+    $sslDomainTextBox.Location = New-Object System.Drawing.Point(450, 320)
     $sslDomainTextBox.Size = New-Object System.Drawing.Size(200, 23)
     $tabPage.Controls.Add($sslDomainTextBox)
     
     $generateSslButton = New-Object System.Windows.Forms.Button
-    $generateSslButton.Location = New-Object System.Drawing.Point(220, 290)
+    $generateSslButton.Location = New-Object System.Drawing.Point(450, 350)
     $generateSslButton.Size = New-Object System.Drawing.Size(180, 30)
-    $generateSslButton.Text = " Gerar Certificado SSL"
+    $generateSslButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $generateSslButton.BackColor = [System.Drawing.Color]::Transparent
+    $generateSslButton.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+    # Ícone Segoe MDL2 Assets (Add: U+E710)
+    $sslIcon = New-Object System.Windows.Forms.Label
+    $sslIcon.Text = [char]0xE710
+    $sslIcon.Font = $script:iconFont
+    $sslIcon.AutoSize = $true
+    $sslIcon.Location = New-Object System.Drawing.Point(10, 3)
+    $sslIcon.Size = New-Object System.Drawing.Size(24, 24)
+    $sslIcon.TextAlign = 'MiddleLeft'
+    $sslIcon.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $sslIcon.BackColor = [System.Drawing.Color]::Transparent
+
+    $sslText = New-Object System.Windows.Forms.Label
+    $sslText.Text = "Gerar Certificado SSL"
+    $sslText.Font = $script:modernFont
+    $sslText.AutoSize = $true
+    $sslText.Location = New-Object System.Drawing.Point(38, 4)
+    $sslText.Size = New-Object System.Drawing.Size(120, 20)
+    $sslText.TextAlign = 'MiddleLeft'
+    $sslText.ForeColor = $ModernDarkTheme.ButtonBackColor
+    $sslText.BackColor = [System.Drawing.Color]::Transparent
+
+    $generateSslButton.Controls.Add($sslIcon)
+    $generateSslButton.Controls.Add($sslText)
     $generateSslButton.Add_Click({
         $domain = $sslDomainTextBox.Text.Trim()
         
@@ -1407,33 +1663,32 @@ function Setup-UtilsTab {
     
     # Reset das variáveis globais para esta aba
     $script:utilsOutputBox = $null
-    $script:utilsCommandTextBox = $null
-    
+    $script:utilsCommandTextBox = $null    
     # Terminal/Console embutido para executar comandos
     $consoleLabel = New-Object System.Windows.Forms.Label
-    $consoleLabel.Location = New-Object System.Drawing.Point(10, 10)
-    $consoleLabel.Size = New-Object System.Drawing.Size(882, 23)
+    $consoleLabel.Location = New-Object System.Drawing.Point(240, 70)
+    $consoleLabel.Size = New-Object System.Drawing.Size(600, 23)
     $consoleLabel.Text = "Console DevStack"
     $tabPage.Controls.Add($consoleLabel)
     
     $commandLabel = New-Object System.Windows.Forms.Label
-    $commandLabel.Location = New-Object System.Drawing.Point(10, 43)
+    $commandLabel.Location = New-Object System.Drawing.Point(240, 103)
     $commandLabel.Size = New-Object System.Drawing.Size(75, 23)
     $commandLabel.Text = "Comando:"
     $tabPage.Controls.Add($commandLabel)
     
     # Adicionar variável global para o campo de texto de comando
     $commandTextBox = New-Object System.Windows.Forms.TextBox
-    $commandTextBox.Location = New-Object System.Drawing.Point(95, 40)
-    $commandTextBox.Size = New-Object System.Drawing.Size(707, 23)
+    $commandTextBox.Location = New-Object System.Drawing.Point(325, 100)
+    $commandTextBox.Size = New-Object System.Drawing.Size(550, 23)
     $tabPage.Controls.Add($commandTextBox)
     
     # Atribuir à variável global
     $script:utilsCommandTextBox = $commandTextBox
     # Criar a caixa de saída primeiro
     $outputBox = New-Object System.Windows.Forms.RichTextBox
-    $outputBox.Location = New-Object System.Drawing.Point(10, 70)
-    $outputBox.Size = New-Object System.Drawing.Size(882, 420)
+    $outputBox.Location = New-Object System.Drawing.Point(240, 130)
+    $outputBox.Size = New-Object System.Drawing.Size(730, 420)
     $outputBox.ReadOnly = $true
     $outputBox.BackColor = [System.Drawing.Color]::Black
     $outputBox.ForeColor = [System.Drawing.Color]::White
@@ -1468,9 +1723,10 @@ function Setup-UtilsTab {
     }
     # Criar o botão de execução
     $executeButton = New-Object System.Windows.Forms.Button
-    $executeButton.Location = New-Object System.Drawing.Point(802, 39)
+    $executeButton.Location = New-Object System.Drawing.Point(880, 99)
     $executeButton.Size = New-Object System.Drawing.Size(90, 25)
     $executeButton.Text = "Executar"
+    $executeButton.Cursor = [System.Windows.Forms.Cursors]::Hand
     $executeButton.Add_Click({
         try {
             if (-not $script:utilsCommandTextBox) {
