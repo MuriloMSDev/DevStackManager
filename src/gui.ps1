@@ -896,12 +896,12 @@ function Setup-ServicesTab {
     
     # DataGridView para listar serviços
     $dataGrid = New-Object System.Windows.Forms.DataGridView
+    $dataGrid.RowTemplate.Height = 32
     $dataGrid.Location = New-Object System.Drawing.Point(240, 100)
     $dataGrid.Size = New-Object System.Drawing.Size(730, 300)
-    $dataGrid.AutoSizeColumnsMode = [System.Windows.Forms.DataGridViewAutoSizeColumnsMode]::Fill
     $dataGrid.AllowUserToAddRows = $false
     $dataGrid.AllowUserToDeleteRows = $false
-    $dataGrid.ReadOnly = $true
+    $dataGrid.ReadOnly = $false
     $dataGrid.RowHeadersVisible = $false
     $dataGrid.SelectionMode = [System.Windows.Forms.DataGridViewSelectionMode]::FullRowSelect
     
@@ -911,6 +911,56 @@ function Setup-ServicesTab {
     $dataGrid.Columns[1].Name = "Versão"
     $dataGrid.Columns[2].Name = "Status"
     $dataGrid.Columns[3].Name = "PID"
+    
+    # Configurar larguras das colunas
+    $dataGrid.Columns[0].Width = 100  # Componente
+    $dataGrid.Columns[1].Width = 100  # Versão
+    $dataGrid.Columns[2].Width = 120  # Status
+    $dataGrid.Columns[3].Width = 320  # PID
+    
+    # Tornar as colunas principais somente leitura
+    $dataGrid.Columns[0].ReadOnly = $true
+    $dataGrid.Columns[1].ReadOnly = $true
+    $dataGrid.Columns[2].ReadOnly = $true
+    $dataGrid.Columns[3].ReadOnly = $true
+    
+    # Adicionar coluna de botão para copiar PID
+    $copyButtonColumn = New-Object System.Windows.Forms.DataGridViewButtonColumn
+    $copyButtonColumn.Name = "CopyPID"
+    $copyButtonColumn.HeaderText = "Copiar PID"
+    $copyButtonColumn.Text = [char]0xF0E3
+    $copyButtonColumn.DefaultCellStyle.Font = $script:iconFont
+    $copyButtonColumn.UseColumnTextForButtonValue = $true
+    $dataGrid.Columns.Add($copyButtonColumn)
+    $dataGrid.Columns[4].Width = 89
+
+    # Event handler para clique no botão de copiar
+    $dataGrid.Add_CellClick({
+        param($sender, $e)
+        
+        # Verificar se o clique foi na coluna de botão copiar
+        if ($e.ColumnIndex -eq 4 -and $e.RowIndex -ge 0) {
+            $pidValue = $sender.Rows[$e.RowIndex].Cells[3].Value
+            
+            if ($pidValue -and $pidValue -ne "-") {
+                try {
+                    # Copiar PID para a área de transferência
+                    [System.Windows.Forms.Clipboard]::SetText($pidValue.ToString())
+                    
+                    # Mostrar mensagem de confirmação
+                    $component = $sender.Rows[$e.RowIndex].Cells[0].Value
+                    $version = $sender.Rows[$e.RowIndex].Cells[1].Value
+                    Update-StatusMessage "PID(s) $pidValue copiado(s) para a área de transferência ($component $version)"
+                }
+                catch {
+                    Update-StatusMessage "Erro ao copiar PID: $_"
+                    [System.Windows.Forms.MessageBox]::Show("Erro ao copiar PID para a área de transferência: $_", "Erro", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                }
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("Serviço não está em execução, não há PID para copiar.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+            }
+        }
+    })
     
     $tabPage.Controls.Add($dataGrid)
     
@@ -1167,7 +1217,9 @@ function Update-ServicesList {
             $phpProcesses = Get-Process -Name "php-*" -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*$($dir.Name)*" }
             
             if ($phpProcesses -and $phpProcesses.Count -gt 0) {
-                [void]$script:serviceDataGrid.Rows.Add("php", $versionNumber, "Em execução", $phpProcesses[0].Id)
+                # Listar todos os PIDs dos processos PHP-FPM encontrados
+                $pids = ($phpProcesses | ForEach-Object { $_.Id }) -join ', '
+                [void]$script:serviceDataGrid.Rows.Add("php", $versionNumber, "Em execução", $pids)
                 $rowIndex = $script:serviceDataGrid.Rows.Count - 1
                 $script:serviceDataGrid.Rows[$rowIndex].DefaultCellStyle.ForeColor = [System.Drawing.Color]::Green
             } else {
