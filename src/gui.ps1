@@ -210,6 +210,17 @@ function Start-DevStackGUI {
     $script:mainForm.StartPosition = "CenterScreen"
     $script:mainForm.MinimumSize = New-Object System.Drawing.Size(1000, 650)
     $script:mainForm.Font = $script:modernFont
+    $iconPath = Join-Path $PSScriptRoot '..\DevStack.ico'
+    if (Test-Path $iconPath) {
+        try {
+            $mainIcon = [System.Drawing.Icon]::ExtractAssociatedIcon((Resolve-Path $iconPath))
+            if ($mainIcon) {
+                $script:mainForm.Icon = $mainIcon
+            }
+        } catch {
+            # fallback: ignora erro de ícone
+        }
+    }
 
     # Top panel with app name and theme/refresh buttons
     $topPanel = New-Object System.Windows.Forms.Panel
@@ -217,12 +228,30 @@ function Start-DevStackGUI {
     $topPanel.Dock = [System.Windows.Forms.DockStyle]::Top
     $topPanel.BackColor = [System.Drawing.Color]::Transparent
     $script:topPanel = $topPanel
-    $titleLabel = New-Object System.Windows.Forms.Label
-    $titleLabel.Text = "DevStack Manager"
-    $titleLabel.Font = New-Object System.Drawing.Font($script:modernFont.FontFamily, 18, [System.Drawing.FontStyle]::Bold)
-    $titleLabel.Location = New-Object System.Drawing.Point(20, 15)
-    $titleLabel.Size = New-Object System.Drawing.Size(400, 35)
-    $topPanel.Controls.Add($titleLabel)
+    # Adiciona logo ao lado do texto
+    $logoPath = Join-Path $PSScriptRoot '..\DevStack.ico'
+    if (Test-Path $logoPath) {
+        $logoImage = [System.Drawing.Image]::FromFile($logoPath)
+        $logoPictureBox = New-Object System.Windows.Forms.PictureBox
+        $logoPictureBox.Image = $logoImage
+        $logoPictureBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+        $logoPictureBox.Location = New-Object System.Drawing.Point(20, 10)
+        $logoPictureBox.Size = New-Object System.Drawing.Size(40, 40)
+        $topPanel.Controls.Add($logoPictureBox)
+        $titleLabel = New-Object System.Windows.Forms.Label
+        $titleLabel.Text = "DevStack Manager"
+        $titleLabel.Font = New-Object System.Drawing.Font($script:modernFont.FontFamily, 18, [System.Drawing.FontStyle]::Bold)
+        $titleLabel.Location = New-Object System.Drawing.Point(55, 10)
+        $titleLabel.Size = New-Object System.Drawing.Size(400, 35)
+        $topPanel.Controls.Add($titleLabel)
+    } else {
+        $titleLabel = New-Object System.Windows.Forms.Label
+        $titleLabel.Text = "DevStack Manager"
+        $titleLabel.Font = New-Object System.Drawing.Font($script:modernFont.FontFamily, 18, [System.Drawing.FontStyle]::Bold)
+        $titleLabel.Location = New-Object System.Drawing.Point(20, 10)
+        $titleLabel.Size = New-Object System.Drawing.Size(400, 35)
+        $topPanel.Controls.Add($titleLabel)
+    }
 
     # Botão Tema com ícone grande e texto pequeno
     $themeButton = New-Object System.Windows.Forms.Button
