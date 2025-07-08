@@ -1,2 +1,10 @@
 .idea/
 .env
+src/GUI/bin
+src/GUI/obj
+src/CLI/bin
+src/CLI/obj
+src/INSTALLER/bin
+src/INSTALLER/obj
+src/UNINSTALLER/bin
+src/UNINSTALLER/obj

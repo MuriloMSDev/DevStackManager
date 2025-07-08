@@ -1,6 +1,6 @@
-# DevStackSetup
+# DevStackManager
 
-![DevStackSetup Banner](https://img.shields.io/badge/PowerShell-DevStack-blue?style=for-the-badge&logo=powershell)
+![DevStackManager Banner](https://img.shields.io/badge/PowerShell-DevStack-blue?style=for-the-badge&logo=powershell)
 
 > **Ambiente de desenvolvimento local completo para Windows, com um só comando.**
 
@@ -13,35 +13,51 @@ Scripts PowerShell para instalar, gerenciar e remover rapidamente um ambiente de
 
 ## ⚡ Como usar
 
-Abra um terminal **PowerShell como administrador** e execute:
+### Compilar e usar (recomendado)
 
+1. **Compile o projeto:**
 ```powershell
-# Torne o DevStackSetup global (execute uma vez):
-./setup.ps1 global
-# Após isso, use 'devstack' ou 'setup.ps1' de qualquer pasta no terminal!
+cd scripts
+.\build.ps1
+.\deploy.ps1
 ```
 
-### Exemplos de comandos
+2. **Use os executáveis:**
+```powershell
+cd release
+.\DevStack.exe [comando] [argumentos]    # CLI
+.\DevStackGUI.exe                        # Interface gráfica
+```
 
-| Comando                                    | Descrição                                 |
-|--------------------------------------------|-------------------------------------------|
-| `devstack list php`                        | Listar versões disponíveis do PHP          |
-| `devstack install php-8.3.21 nginx mysql`  | Instalar componentes                      |
-| `devstack uninstall php-8.3.21 nginx`      | Remover componentes                       |
-| `devstack path`                            | Adicionar diretórios ao PATH               |
-| `devstack site meuprojeto.localhost ...`   | Criar site Nginx                          |
-| `devstack start nginx 1.25.4`              | Iniciar serviço                           |
-| `devstack stop php 8.3.21`                 | Parar serviço                             |
-| `devstack restart nginx 1.25.4`            | Reiniciar serviço                         |
-| `devstack status`                          | Verificar status dos componentes          |
-| `devstack test`                            | Testar funcionamento dos binários         |
-| `devstack deps`                            | Verificar dependências do sistema         |
-| `devstack update php nodejs ...`           | Atualizar para a última versão            |
-| `devstack alias php 8.3.21`                | Criar alias/batch para um executável      |
-| `devstack logs`                            | Ver logs do DevStack                      |
-| `devstack backup`                          | Fazer backup das configs e logs           |
-| `devstack clean`                           | Limpar arquivos temporários e logs        |
-| `devstack doctor`                          | Diagnóstico do ambiente                   |
+### Comandos Disponíveis (usando CLI)
+
+| Comando                                                    | Descrição                                               |
+|------------------------------------------------------------|--------------------------------------------------------|
+| `.\DevStack.exe install <componente> [versão]`            | Instala uma ferramenta ou versão específica            |
+| `.\DevStack.exe uninstall <componente> [versão]`          | Remove uma ferramenta ou versão específica             |
+| `.\DevStack.exe list <componente\|--installed>`           | Lista versões disponíveis ou instaladas                |
+| `.\DevStack.exe path [add\|remove\|list\|help]`           | Gerencia PATH das ferramentas instaladas               |
+| `.\DevStack.exe status`                                    | Mostra status de todas as ferramentas                  |
+| `.\DevStack.exe test`                                      | Testa todas as ferramentas instaladas                  |
+| `.\DevStack.exe update <componente>`                       | Atualiza uma ferramenta para a última versão           |
+| `.\DevStack.exe deps`                                      | Verifica dependências do sistema                       |
+| `.\DevStack.exe alias <componente> <versão>`              | Cria um alias .bat para a versão da ferramenta         |
+| `.\DevStack.exe global`                                    | Adiciona DevStack ao PATH e cria alias global          |
+| `.\DevStack.exe self-update`                               | Atualiza o DevStackManager                              |
+| `.\DevStack.exe clean`                                     | Remove logs e arquivos temporários                     |
+| `.\DevStack.exe backup`                                    | Cria backup das configs e logs                         |
+| `.\DevStack.exe logs`                                      | Exibe as últimas linhas do log                         |
+| `.\DevStack.exe enable <serviço>`                          | Ativa um serviço do Windows                            |
+| `.\DevStack.exe disable <serviço>`                         | Desativa um serviço do Windows                         |
+| `.\DevStack.exe config`                                    | Abre o diretório de configuração                       |
+| `.\DevStack.exe reset <componente>`                        | Remove e reinstala uma ferramenta                      |
+| `.\DevStack.exe proxy [set <url>\|unset\|show]`           | Gerencia variáveis de proxy                            |
+| `.\DevStack.exe ssl <domínio> [-openssl <versão>]`        | Gera certificado SSL autoassinado                      |
+| `.\DevStack.exe db <mysql\|pgsql\|mongo> <comando> [args...]` | Gerencia bancos de dados básicos                   |
+| `.\DevStack.exe service`                                   | Lista serviços DevStack (Windows)                      |
+| `.\DevStack.exe doctor`                                    | Diagnóstico do ambiente DevStack                       |
+| `.\DevStack.exe site <domínio> [opções]`                  | Cria configuração de site nginx                        |
+| `.\DevStack.exe help`                                      | Exibe esta ajuda                                       |
 
 ---
 
@@ -65,7 +81,7 @@ Abra um terminal **PowerShell como administrador** e execute:
 
 ## 🤝 Contribuição
 
-- Siga o padrão modular dos scripts (tudo em `src/`).
+- Siga o padrão modular do código (separação CLI/GUI/Shared).
 - Adicione exemplos de uso ao README.
 - Faça PRs com testes automatizados.
 - Sugestões e issues são bem-vindos!
@@ -74,30 +90,46 @@ Abra um terminal **PowerShell como administrador** e execute:
 
 ## 📂 Estrutura do Projeto
 
-```
+```text
 DevStackSetup/
-│   setup.ps1
 │   README.md
 │
 ├───src/
-│       install.ps1
-│       uninstall.ps1
-│       path.ps1
-│       list.ps1
-│       process.ps1
+│   ├───CLI/                   # Projeto da interface de linha de comando
+│   │       DevStackCLI.csproj
+│   │       Program.cs
+│   │
+│   ├───GUI/                   # Projeto da interface gráfica
+│   │       DevStackGUI.csproj
+│   │       Program.cs
+│   │       Gui*.cs
+│   │
+│   └───Shared/               # Código compartilhado
+│           DevStackConfig.cs
+│           DataManager.cs
+│           InstallManager.cs
+│           UninstallManager.cs
+│           ListManager.cs
+│           PathManager.cs
+│           ProcessManager.cs
+│           DevStack.ico
 │
-├───configs/
-│   ├───nginx/
-│   ├───php/
-│   └───...
-└───...
+├───scripts/
+│   ├───build.ps1             # Script de compilação
+│   └───deploy.ps1            # Script de deploy
+│
+└───release/                  # Pasta de distribuição
+    ├───configs/              # Configurações (nginx, php, etc.)
+    ├───DevStack.exe          # CLI compilado
+    ├───DevStackGUI.exe       # GUI compilado
+    └───...                   # Dependências e arquivos de runtime
 ```
 
 ---
 
 ## 💡 Dica
 
-> Use `devstack doctor` para checar rapidamente se tudo está funcionando!
+> Use `.\DevStack.exe doctor` para checar rapidamente se tudo está funcionando!
 
 ---
 
