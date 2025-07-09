@@ -40,7 +40,7 @@ namespace DevStackManager
                 new { name = "php", dir = Path.Combine(baseDir, "php"), pattern = (string?)null },
                 new { name = "nginx", dir = Path.Combine(baseDir, "nginx"), pattern = (string?)null },
                 new { name = "mysql", dir = Path.Combine(baseDir, "mysql"), pattern = (string?)null },
-                new { name = "nodejs", dir = Path.Combine(baseDir, "nodejs"), pattern = (string?)null },
+                new { name = "node", dir = Path.Combine(baseDir, "node"), pattern = (string?)null },
                 new { name = "python", dir = Path.Combine(baseDir, "python"), pattern = (string?)null },
                 new { name = "composer", dir = Path.Combine(baseDir, "composer"), pattern = (string?)null },
                 new { name = "phpmyadmin", dir = Path.Combine(baseDir, "phpmyadmin"), pattern = (string?)null },
@@ -84,6 +84,7 @@ namespace DevStackManager
                         versions = Directory.GetDirectories(comp.dir)
                             .Select(d => Path.GetFileName(d))
                             .Where(name => Regex.IsMatch(name, comp.pattern.Replace("*", ".*")))
+                            .Select(name => name.Replace("git-", ""))
                             .ToList();
                     }
                     else
@@ -92,6 +93,13 @@ namespace DevStackManager
                         {
                             versions = Directory.GetDirectories(comp.dir)
                                 .Select(d => Path.GetFileName(d))
+                                .Select(name => {
+                                    // Remove prefixo do componente (ex: php-, nginx-, etc.)
+                                    var prefix = $"{comp.name}-";
+                                    return name.StartsWith(prefix) ? name.Substring(prefix.Length) : null;
+                                })
+                                .Where(x => x != null)
+                                .Select(x => x!)
                                 .ToList();
                         }
                         catch
@@ -222,9 +230,15 @@ namespace DevStackManager
                 var versions = (nodeReleases ?? Array.Empty<JsonElement>())
                     .Select(release => release.GetProperty("version").GetString() ?? "")
                     .Where(v => !string.IsNullOrEmpty(v))
+                    .Select(v => {
+                        var match = Regex.Match(v, @"v?(\d+\.\d+\.\d+)");
+                        return match.Success ? match.Groups[1].Value : null;
+                    })
+                    .Where(v => !string.IsNullOrEmpty(v))
+                    .Select(v => v!) // Ensure non-null for the list
                     .ToList();
 
-                var installed = GetInstalledVersionsForComponent("nodejs", "node-v", "-win-x64");
+                var installed = GetInstalledVersionsForComponent("node", "node-");
 
                 return new VersionData
                 {
@@ -687,7 +701,7 @@ namespace DevStackManager
                 "php" => Path.Combine(baseDir, "php"),
                 "nginx" => Path.Combine(baseDir, "nginx"),
                 "mysql" => Path.Combine(baseDir, "mysql"),
-                "nodejs" => Path.Combine(baseDir, "nodejs"),
+                "node" => Path.Combine(baseDir, "node"),
                 "python" => Path.Combine(baseDir, "python"),
                 "composer" => Path.Combine(baseDir, "composer"),
                 "git" => baseDir,
@@ -732,12 +746,15 @@ namespace DevStackManager
                         versions = Directory.GetDirectories(dir)
                             .Select(d => Path.GetFileName(d))
                             .Where(name => name.StartsWith("git-"))
+                            .Select(name => name.Substring(4)) // Remove "git-" prefix
                             .ToList();
                     }
                     else
                     {
+                        var prefix = $"{component.ToLowerInvariant()}-";
                         versions = Directory.GetDirectories(dir)
                             .Select(d => Path.GetFileName(d))
+                            .Select(name => name.StartsWith(prefix) ? name.Substring(prefix.Length) : name)
                             .ToList();
                     }
                 }
@@ -772,7 +789,7 @@ namespace DevStackManager
         {
             var components = new[]
             {
-                "php", "nginx", "mysql", "nodejs", "python", "composer", "git", "phpmyadmin",
+                "php", "nginx", "mysql", "node", "python", "composer", "git", "phpmyadmin",
                 "mongodb", "redis", "pgsql", "mailhog", "elasticsearch", "memcached",
                 "docker", "yarn", "pnpm", "wpcli", "adminer", "poetry", "ruby", "go",
                 "certbot", "openssl", "phpcsfixer"

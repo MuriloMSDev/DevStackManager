@@ -130,14 +130,17 @@ namespace DevStackManager
             panel.Children.Add(nginxComboBox);
 
             // Botão Criar Site
-            var createButton = GuiTheme.CreateStyledButton("🌐 Criar Configuração de Site", (s, e) => 
+            var createButton = GuiTheme.CreateStyledButton("🌐 Criar Configuração de Site", (s, e) =>
             {
                 var domain = domainTextBox.Text.Trim();
                 var root = rootTextBox.Text.Trim();
                 var phpUpstream = phpComboBox.SelectedItem?.ToString() ?? "";
                 var nginxVersion = nginxComboBox.SelectedItem?.ToString() ?? "";
+
+                CreateSite(mainWindow, domain, root, $"127.{phpUpstream}:9000", nginxVersion);
                 
-                CreateSite(mainWindow, domain, root, phpUpstream, nginxVersion);
+                phpComboBox.SelectedIndex = -1;
+                nginxComboBox.SelectedIndex = -1;
             });
             createButton.Height = 40;
             createButton.FontSize = 14;
@@ -197,25 +200,9 @@ namespace DevStackManager
                     {
                         phpComboBox.Items.Add(version);
                     }
-
-                    if (phpComboBox.Items.Count > 0)
-                    {
-                        phpComboBox.SelectedIndex = 0;
-                    }
-                }
-                
-                // Adicionar opção padrão se nenhuma versão instalada
-                if (phpComboBox.Items.Count == 0)
-                {
-                    phpComboBox.Items.Add("127.0.0.1:9000");
-                    phpComboBox.SelectedIndex = 0;
                 }
             }
-            catch
-            {
-                phpComboBox.Items.Add("127.0.0.1:9000");
-                phpComboBox.SelectedIndex = 0;
-            }
+            catch {}
         }
 
         /// <summary>
@@ -238,24 +225,9 @@ namespace DevStackManager
                     {
                         nginxComboBox.Items.Add(version);
                     }
-
-                    if (nginxComboBox.Items.Count > 0)
-                    {
-                        nginxComboBox.SelectedIndex = 0;
-                    }
-                }
-
-                if (nginxComboBox.Items.Count == 0)
-                {
-                    nginxComboBox.Items.Add("latest");
-                    nginxComboBox.SelectedIndex = 0;
                 }
             }
-            catch
-            {
-                nginxComboBox.Items.Add("latest");
-                nginxComboBox.SelectedIndex = 0;
-            }
+            catch {}
         }
 
         /// <summary>
@@ -272,13 +244,11 @@ namespace DevStackManager
             try
             {
                 mainWindow.StatusMessage = $"Criando configuração para o site {domain}...";
-                InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, null, nginxVersion);
+                InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
                 
-                var message = $"Configuração para o site {domain} criada com sucesso.\n\n" +
-                             $"Não se esqueça de adicionar uma entrada no arquivo hosts:\n" +
-                             $"127.0.0.1    {domain}";
-                
-                MessageBox.Show(message, "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Reiniciar serviços do Nginx após criar a configuração
+                mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
+                RestartNginxServices(mainWindow);
                 
                 mainWindow.StatusMessage = $"Site {domain} criado";
                 
@@ -387,6 +357,64 @@ namespace DevStackManager
                 GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao gerar certificado SSL: {ex.Message}");
                 mainWindow.StatusMessage = $"Erro ao gerar SSL para {domain}";
                 MessageBox.Show($"Erro ao gerar certificado SSL: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Reinicia os serviços do Nginx
+        /// </summary>
+        private static void RestartNginxServices(DevStackGui mainWindow)
+        {
+            try
+            {
+                GuiConsolePanel.AppendToConsole(mainWindow, "🔄 Reiniciando serviços do Nginx...");
+                
+                // Encontrar todas as versões instaladas do Nginx usando os componentes carregados na memória
+                var nginxComponents = mainWindow.InstalledComponents
+                    .Where(component => component.Name.Equals("nginx", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (nginxComponents.Any())
+                {
+                    int restartedCount = 0;
+                    
+                    // Reiniciar cada versão instalada do Nginx
+                    foreach (var nginxComponent in nginxComponents)
+                    {
+                        foreach (var version in nginxComponent.Versions)
+                        {
+                            try
+                            {
+                                GuiConsolePanel.AppendToConsole(mainWindow, $"🔄 Reiniciando Nginx v{version}...");
+                                ProcessManager.RestartComponent("nginx", version);
+                                GuiConsolePanel.AppendToConsole(mainWindow, $"✅ Nginx v{version} reiniciado com sucesso");
+                                restartedCount++;
+                            }
+                            catch (Exception ex)
+                            {
+                                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao reiniciar Nginx v{version}: {ex.Message}");
+                            }
+                        }
+                    }
+                    
+                    if (restartedCount == 0)
+                    {
+                        GuiConsolePanel.AppendToConsole(mainWindow, "ℹ️ Nenhuma versão do Nginx foi reiniciada (podem não estar em execução)");
+                    }
+                    else
+                    {
+                        GuiConsolePanel.AppendToConsole(mainWindow, $"✅ {restartedCount} versão(ões) do Nginx reiniciadas");
+                    }
+                }
+                else
+                {
+                    GuiConsolePanel.AppendToConsole(mainWindow, "❌ Nenhuma versão do Nginx instalada encontrada");
+                }
+            }
+            catch (Exception ex)
+            {
+                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao reiniciar Nginx: {ex.Message}");
+                // Não propagar a exceção para não interromper o fluxo principal
             }
         }
     }

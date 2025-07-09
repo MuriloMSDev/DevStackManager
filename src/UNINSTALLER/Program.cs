@@ -218,11 +218,11 @@ namespace DevStackUninstaller
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 var version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
-                return version ?? "2.0.0";
+                return version ?? "Unknown";
             }
             catch
             {
-                return "2.0.0";
+                return "Unknown";
             }
         }
 

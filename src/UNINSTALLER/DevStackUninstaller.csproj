@@ -11,7 +11,7 @@
     <AssemblyTitle>DevStack Uninstaller</AssemblyTitle>
     <AssemblyDescription>DevStack Manager Tool - Uninstaller</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
+    <FileVersion>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\..\..\VERSION').Trim())</FileVersion>
     <Copyright>© 2025 DevStackManager</Copyright>
     <OutputPath>bin\Release\</OutputPath>
     <AssemblyName>DevStack-Uninstaller</AssemblyName>

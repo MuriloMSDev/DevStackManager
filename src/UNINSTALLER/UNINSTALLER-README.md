@@ -130,7 +130,7 @@ Quando o instalador executa, ele registra o DevStack com as seguintes informaç�
 ```registry
 [HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DevStack]
 "DisplayName" = "DevStack Manager"
-"DisplayVersion" = "2.0.0"
+"DisplayVersion" = "x.x.x"
 "Publisher" = "DevStackManager"
 "InstallLocation" = "C:\Program Files\DevStack"
 "UninstallString" = "C:\Program Files\DevStack\DevStack-Uninstaller.exe"
@@ -179,7 +179,7 @@ Quando o instalador executa, ele registra o DevStack com as seguintes informaç�
 .\scripts\build.ps1 -WithInstaller -Clean
 
 # 2. Instalar (como administrador)
-.\installer\DevStack-2.0.0-Installer.exe
+.\installer\DevStack-x.x.x-Installer.exe
 
 # 3. Desinstalar via Windows:
 #    Configurações > Apps > DevStack Manager > Desinstalar

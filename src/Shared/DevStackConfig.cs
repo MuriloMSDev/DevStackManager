@@ -81,7 +81,7 @@ namespace DevStackManager
             phpDir = Path.Combine(baseDir, "php");
             nginxDir = Path.Combine(baseDir, "nginx");
             mysqlDir = Path.Combine(baseDir, "mysql");
-            nodeDir = Path.Combine(baseDir, "nodejs");
+            nodeDir = Path.Combine(baseDir, "node");
             pythonDir = Path.Combine(baseDir, "python");
             composerDir = Path.Combine(baseDir, "composer");
             pmaDir = Path.Combine(baseDir, "phpmyadmin");

@@ -13,19 +13,13 @@ $releaseDir = Join-Path $rootDir "release"
 
 Write-Host "=== DevStack Uninstaller Build Script ===" -ForegroundColor Green
 
-# Get version from CLI project
-$cliProjectPath = Join-Path $srcDir "CLI\DevStackCLI.csproj"
-if (!(Test-Path $cliProjectPath)) {
-    throw "CLI project not found at: $cliProjectPath"
+# Get version from VERSION file
+$versionFile = Join-Path $rootDir "VERSION"
+if (!(Test-Path $versionFile)) {
+    throw "VERSION file not found at: $versionFile"
 }
 
-$cliProjectContent = Get-Content $cliProjectPath
-$versionLine = $cliProjectContent | Where-Object { $_ -match "<FileVersion>(.*)</FileVersion>" }
-if (!$versionLine) {
-    throw "FileVersion not found in CLI project"
-}
-
-$version = $versionLine -replace ".*<FileVersion>(.*)</FileVersion>.*", '$1'
+$version = (Get-Content $versionFile).Trim()
 Write-Host "Detected version: $version" -ForegroundColor Green
 
 # Build uninstaller project using publish to create single file

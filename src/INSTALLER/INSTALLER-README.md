@@ -41,7 +41,7 @@ installer/            # Pasta gerada com o instalador final
 
 ## Funcionamento do Instalador
 
-1. **Versioning Automático**: O instalador detecta automaticamente a versão dos projetos CLI/GUI através do campo `FileVersion` nos arquivos `.csproj`
+1. **Versioning Automático**: O instalador detecta automaticamente a versão dos projetos CLI/GUI através do arquivo `VERSION` na raiz do projeto
 
 2. **Nome do Executável**: O instalador é gerado com o nome `DevStack-x.x.x-Installer.exe` onde `x.x.x` é a versão detectada
 
@@ -76,7 +76,7 @@ O sistema de instalador DevStack está **100% funcional**:
 
 O instalador final na pasta `installer/` contém apenas:
 
-- `DevStack-2.0.0-Installer.exe` - Arquivo único autossuficiente (~1.2 MB)
+- `DevStack-x.x.x-Installer.exe` - Arquivo único autossuficiente (~1.2 MB)
   - Contém todos os arquivos da release embutidos
   - Ícone da aplicação incorporado
   - Interface gráfica completa
@@ -100,9 +100,8 @@ O instalador final na pasta `installer/` contém apenas:
 
 Para atualizar a versão do instalador:
 
-1. Atualize o campo `<FileVersion>` nos arquivos:
-   - `src/CLI/DevStackCLI.csproj`
-   - `src/GUI/DevStackGUI.csproj`
+1. Atualize o arquivo `VERSION` na raiz do projeto:
+   - `VERSION`
 
 2. Execute o build completo:
 
@@ -120,11 +119,11 @@ O sistema automaticamente:
 
 ```powershell
 # Build completo com instalador
-cd C:\Workspace\DevStackSetup
+cd C:\Workspace\DevStackManager
 .\scripts\build.ps1 -WithInstaller
 
 # O resultado será um único arquivo:
-# installer/DevStack-2.0.0-Installer.exe (~1.2 MB, completamente autossuficiente)
+# installer/DevStack-x.x.x-Installer.exe (~1.2 MB, completamente autossuficiente)
 ```
 
 ## Notas Técnicas
