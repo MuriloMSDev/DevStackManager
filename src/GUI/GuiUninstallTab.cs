@@ -179,19 +179,24 @@ namespace DevStackManager
                 try
                 {
                     mainWindow.StatusMessage = $"Carregando versões instaladas de {mainWindow.SelectedUninstallComponent}...";
-                    
                     var status = DataManager.GetComponentStatus(mainWindow.SelectedUninstallComponent);
-                    
                     mainWindow.Dispatcher.Invoke(() =>
                     {
                         var versionCombo = GuiHelpers.FindChild<ComboBox>(mainWindow, "UninstallVersionCombo");
                         if (versionCombo != null)
                         {
                             versionCombo.Items.Clear();
-                            
                             if (status.Installed && status.Versions.Any())
                             {
-                                foreach (var version in status.Versions)
+                                // Ordena as versões em ordem decrescente
+                                foreach (var version in status.Versions
+                                    .OrderByDescending(v => Version.TryParse(
+                                        mainWindow.SelectedUninstallComponent == "git" && v.StartsWith("git-")
+                                            ? v.Substring(4)
+                                            : v.StartsWith($"{mainWindow.SelectedUninstallComponent}-")
+                                                ? v.Substring(mainWindow.SelectedUninstallComponent.Length + 1)
+                                                : v,
+                                        out var parsed) ? parsed : new Version(0, 0)))
                                 {
                                     // Extrair apenas a parte da versão, removendo o nome do componente
                                     var versionNumber = version;
@@ -203,14 +208,7 @@ namespace DevStackManager
                                     {
                                         versionNumber = version.Substring(mainWindow.SelectedUninstallComponent.Length + 1);
                                     }
-                                    
                                     versionCombo.Items.Add(versionNumber);
-                                }
-                                
-                                if (versionCombo.Items.Count > 0)
-                                {
-                                    versionCombo.SelectedIndex = 0;
-                                    mainWindow.SelectedUninstallVersion = versionCombo.SelectedItem?.ToString() ?? "";
                                 }
                             }
                             else
@@ -218,9 +216,8 @@ namespace DevStackManager
                                 MessageBox.Show($"{mainWindow.SelectedUninstallComponent} não possui versões instaladas.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                         }
-                        
-                        mainWindow.StatusMessage = status.Installed ? 
-                            $"Versões carregadas para {mainWindow.SelectedUninstallComponent}" : 
+                        mainWindow.StatusMessage = status.Installed ?
+                            $"Versões carregadas para {mainWindow.SelectedUninstallComponent}" :
                             $"{mainWindow.SelectedUninstallComponent} não está instalado";
                     });
                 }

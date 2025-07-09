@@ -193,10 +193,13 @@ namespace DevStackManager
                     mainWindow.Dispatcher.Invoke(() =>
                     {
                         mainWindow.AvailableVersions.Clear();
-                        foreach (var version in versionData.Versions)
+                        foreach (var version in versionData.Versions
+                            .OrderByDescending(v => 
+                                Version.TryParse(v, out var parsed) ? parsed : new Version(0, 0)))
                         {
                             mainWindow.AvailableVersions.Add(version);
                         }
+                        
                         mainWindow.StatusMessage = $"{mainWindow.AvailableVersions.Count} versões carregadas para {mainWindow.SelectedComponent}";
                     });
                 }
