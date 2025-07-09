@@ -147,7 +147,7 @@ namespace DevStackManager
         #region Initialization Methods
         private void InitializeComponent()
         {
-            var version = System.IO.File.Exists("VERSION") ? System.IO.File.ReadAllText("VERSION").Trim() : "Unknown";
+            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion ?? "Unknown";
             Title = $"DevStack Manager v{version}";
             Width = 1200;
             Height = 800;
