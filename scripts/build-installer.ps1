@@ -91,7 +91,7 @@ $installerSrcPath = Join-Path $srcDir "INSTALLER"
 Push-Location $installerSrcPath
 
 try {
-    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=false -r win-x64 --verbosity quiet
+    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64 --verbosity quiet
     if ($LASTEXITCODE -ne 0) {
         throw "Installer build failed"
     }
@@ -111,9 +111,24 @@ try {
     # Copy installer exe to installer directory with correct name
     $targetInstallerPath = Join-Path $installerDir $installerExeName
     Copy-Item $sourceInstallerPath $targetInstallerPath -Force
-    
     Write-Host "Installer built successfully: $targetInstallerPath" -ForegroundColor Green
-    
+
+    # Compacta o installer .exe em um .zip com o mesmo nome
+    $zipInstallerPath = $targetInstallerPath.Replace('.exe', '.zip')
+    if (Test-Path $zipInstallerPath) {
+        Remove-Item $zipInstallerPath -Force
+    }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::Open($zipInstallerPath, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $targetInstallerPath, [System.IO.Path]::GetFileName($targetInstallerPath)) | Out-Null
+    } finally {
+        $zip.Dispose()
+    }
+    Write-Host "Installer compactado em: $zipInstallerPath" -ForegroundColor Green
+    # Remove o .exe após zipar para evitar upload acidental
+    Remove-Item $targetInstallerPath -Force
+    Write-Host "Installer .exe removido após compactação." -ForegroundColor Yellow
 } finally {
     Pop-Location
     
