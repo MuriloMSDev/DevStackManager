@@ -32,9 +32,8 @@ namespace DevStackManager
                 case "mysql":
                     UninstallMySQL(version);
                     break;
-                case "nodejs":
                 case "node":
-                    UninstallNodeJS(version);
+                    UninstallNode(version);
                     break;
                 case "python":
                     UninstallPython(version);
@@ -156,16 +155,16 @@ namespace DevStackManager
             UninstallGenericTool(DevStackConfig.mysqlDir, mysqlSubDir);
         }
 
-        public static void UninstallNodeJS(string? version = null)
+        public static void UninstallNode(string? version = null)
         {
             if (string.IsNullOrEmpty(version))
             {
                 DevStackConfig.WriteColoredLine("Erro: Versão do Node.js deve ser especificada para desinstalar.", ConsoleColor.Red);
-                DevStackConfig.WriteColoredLine("Exemplo: uninstall nodejs 22.17.0", ConsoleColor.Yellow);
+                DevStackConfig.WriteColoredLine("Exemplo: uninstall node 22.17.0", ConsoleColor.Yellow);
                 return;
             }
 
-            string nodeSubDir = $"node-v{version}-win-x64";
+            string nodeSubDir = $"node-{version}";
             UninstallGenericTool(DevStackConfig.nodeDir, nodeSubDir);
         }
 

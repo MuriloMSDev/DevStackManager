@@ -62,11 +62,11 @@ namespace DevStackInstaller
             {
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 var version = assembly.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>()?.Version;
-                return version ?? "2.0.0";
+                return version ?? "Unknown";
             }
             catch
             {
-                return "2.0.0";
+                return "Unknown";
             }
         }
 

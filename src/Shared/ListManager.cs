@@ -361,7 +361,6 @@ namespace DevStackManager
                     ListPHPVersions();
                     break;
                 case "node":
-                case "nodejs":
                     ListNodeVersions();
                     break;
                 case "python":

@@ -37,13 +37,55 @@ namespace DevStackManager
             Grid.SetRow(inputPanel, 1);
             grid.Children.Add(inputPanel);
 
-            // Console output
+            // Console output (with overlay Clear button)
+            var consoleGrid = new Grid();
+            // Layer 0: Console
             var consoleScrollViewer = CreateConsoleScrollViewer(mainWindow);
-            Grid.SetRow(consoleScrollViewer, 2);
-            grid.Children.Add(consoleScrollViewer);
+            consoleGrid.Children.Add(consoleScrollViewer);
 
-            // Buttons panel
-            var buttonsPanel = CreateQuickButtonsPanel(mainWindow);
+            // Layer 1: Clear button (top-right)
+            var clearButton = new Button
+            {
+                Content = "❌",
+                BorderBrush = Brushes.Transparent,
+                Foreground = GuiTheme.CurrentTheme.Danger,
+                Width = 32,
+                Height = 32,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, 2, 6, 0),
+                ToolTip = "Limpar Console"
+            };
+            // Custom ControlTemplate: always transparent background, even on hover/press
+            var buttonTemplate = new ControlTemplate(typeof(Button));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+            borderFactory.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
+            borderFactory.SetValue(Border.SnapsToDevicePixelsProperty, true);
+            // ContentPresenter for the icon
+            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            borderFactory.AppendChild(contentPresenterFactory);
+            buttonTemplate.VisualTree = borderFactory;
+            // Remove highlight/hover/pressed background
+            var style = new Style(typeof(Button));
+            style.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
+            style.Setters.Add(new Setter(Button.ForegroundProperty, GuiTheme.CurrentTheme.Danger));
+            style.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
+            style.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            style.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
+            // No triggers needed: template always keeps background transparent
+            clearButton.Style = style;
+            clearButton.Click += (s, e) => ClearConsole(mainWindow);
+            Panel.SetZIndex(clearButton, 10);
+            consoleGrid.Children.Add(clearButton);
+
+            Grid.SetRow(consoleGrid, 2);
+            grid.Children.Add(consoleGrid);
+
+            // Buttons panel (without Clear button)
+            var buttonsPanel = CreateQuickButtonsPanel(mainWindow, includeClearButton: false);
             Grid.SetRow(buttonsPanel, 3);
             grid.Children.Add(buttonsPanel);
 
@@ -140,6 +182,12 @@ namespace DevStackManager
         /// </summary>
         private static WrapPanel CreateQuickButtonsPanel(DevStackGui mainWindow)
         {
+            return CreateQuickButtonsPanel(mainWindow, includeClearButton: true);
+        }
+
+        // Nova sobrecarga para permitir remover o botão de limpar
+        private static WrapPanel CreateQuickButtonsPanel(DevStackGui mainWindow, bool includeClearButton)
+        {
             var buttonsPanel = new WrapPanel
             {
                 Margin = new Thickness(10, 5, 10, 10),
@@ -152,7 +200,6 @@ namespace DevStackManager
                 new { Text = "📦 Instalados", Command = "list --installed" },
                 new { Text = "🔍 Diagnóstico", Command = "doctor" },
                 new { Text = "🧪 Testar", Command = "test" },
-                new { Text = "🧹 Limpar", Command = "clean" },
                 new { Text = "❓ Ajuda", Command = "help" }
             };
 
@@ -177,11 +224,8 @@ namespace DevStackManager
                 buttonsPanel.Children.Add(button);
             }
 
-            var clearButton = GuiTheme.CreateStyledButton("🗑️ Limpar Console", (s, e) => ClearConsole(mainWindow));
-            clearButton.Width = 120;
-            clearButton.Height = 35;
-            clearButton.Margin = new Thickness(5);
-            buttonsPanel.Children.Add(clearButton);
+
+            // O botão de limpar não é mais adicionado aqui, pois agora é sobreposto ao console
 
             return buttonsPanel;
         }

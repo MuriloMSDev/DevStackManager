@@ -80,7 +80,7 @@ namespace DevStackManager
 
             // Console output
             var outputBox = GuiTheme.CreateStyledTextBox(true);
-            outputBox.Height = 400;
+            outputBox.Height = 600;
             outputBox.IsReadOnly = true;
             outputBox.FontSize = 12;
             outputBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;

@@ -249,7 +249,7 @@ namespace DevStackManager
                 new { name = "php", exe = "php-*.exe", dir = phpDir, args = "-v" },
                 new { name = "nginx", exe = "nginx-*.exe", dir = nginxDir, args = "-v" },
                 new { name = "mysql", exe = "mysqld-*.exe", dir = mysqlDir, args = "--version" },
-                new { name = "nodejs", exe = "node-*.exe", dir = nodeDir, args = "-v" },
+                new { name = "node", exe = "node-*.exe", dir = nodeDir, args = "-v" },
                 new { name = "python", exe = "python-*.exe", dir = pythonDir, args = "--version" },
                 new { name = "git", exe = "git.exe", dir = baseDir, args = "--version" },
                 new { name = "composer", exe = "composer-*.exe", dir = composerDir, args = "--version" },
@@ -350,7 +350,7 @@ namespace DevStackManager
             {
                 "php" => Path.Combine(phpDir, $"php-{version}", $"php-{version}.exe"),
                 "nginx" => Path.Combine(nginxDir, $"nginx-{version}", $"nginx-{version}.exe"),
-                "nodejs" => Path.Combine(nodeDir, $"node-v{version}-win-x64", $"node-{version}.exe"),
+                "node" => Path.Combine(nodeDir, $"node-{version}", $"node-{version}.exe"),
                 "python" => Path.Combine(pythonDir, $"python-{version}", $"python-{version}.exe"),
                 "git" => Path.Combine(baseDir, $"git-{version}", "cmd", "git.exe"),
                 "mysql" => Path.Combine(mysqlDir, $"mysql-{version}", "bin", "mysql.exe"),
@@ -552,7 +552,7 @@ namespace DevStackManager
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Uso: DevStackManager list <php|nodejs|python|composer|mysql|nginx|phpmyadmin|git|mongodb|redis|pgsql|mailhog|elasticsearch|memcached|docker|yarn|pnpm|wpcli|adminer|poetry|ruby|go|certbot|openssl|phpcsfixer|--installed>");
+                Console.WriteLine("Uso: DevStackManager list <php|node|python|composer|mysql|nginx|phpmyadmin|git|mongodb|redis|pgsql|mailhog|elasticsearch|memcached|docker|yarn|pnpm|wpcli|adminer|poetry|ruby|go|certbot|openssl|phpcsfixer|--installed>");
                 return 1;
             }
 
@@ -579,7 +579,6 @@ namespace DevStackManager
             string? root = null;
             string? phpUpstream = null;
             string? nginxVersion = null;
-            string? indexLocation = null;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -589,18 +588,15 @@ namespace DevStackManager
                         if (++i < args.Length) root = args[i];
                         break;
                     case "-php":
-                        if (++i < args.Length) phpUpstream = args[i];
+                        if (++i < args.Length) phpUpstream = $"127.{args[i]}:9000";
                         break;
                     case "-nginx":
                         if (++i < args.Length) nginxVersion = args[i];
                         break;
-                    case "-index":
-                        if (++i < args.Length) indexLocation = args[i];
-                        break;
                 }
             }
 
-            CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion, indexLocation);
+            CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
             return 0;
         }
 
@@ -1468,9 +1464,9 @@ namespace DevStackManager
             }
         }
 
-        private static void CreateNginxSiteConfig(string domain, string? root, string? phpUpstream, string? nginxVersion, string? indexLocation) 
+        private static void CreateNginxSiteConfig(string domain, string? root, string? phpUpstream, string? nginxVersion) 
         { 
-            InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion, indexLocation);
+            InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
         }
         
         private static async Task InstallCommands(string[] args) 
@@ -1507,10 +1503,10 @@ namespace DevStackManager
                     var version = Regex.Replace(arg, @"^mysql-", "");
                     specificVersions.Add($"mysql:{version}");
                 }
-                else if (Regex.IsMatch(arg, @"^nodejs-(.+)$"))
+                else if (Regex.IsMatch(arg, @"^node-(.+)$"))
                 {
-                    var version = Regex.Replace(arg, @"^nodejs-", "");
-                    specificVersions.Add($"nodejs:{version}");
+                    var version = Regex.Replace(arg, @"^node-", "");
+                    specificVersions.Add($"node:{version}");
                 }
                 else if (Regex.IsMatch(arg, @"^python-(.+)$"))
                 {
@@ -1539,7 +1535,7 @@ namespace DevStackManager
                         if (Regex.IsMatch(nextArg, @"^\d+\.\d+"))
                         {
                             string component = arg.ToLowerInvariant();
-                            if (component == "node") component = "nodejs";
+                            if (component == "node") component = "node";
                             specificVersions.Add($"{component}:{nextArg}");
                         }
                     }

@@ -218,7 +218,7 @@ namespace DevStackManager
         {
             var components = new[]
             {
-                "php", "nginx", "mysql", "nodejs", "python", "composer", "phpmyadmin", 
+                "php", "nginx", "mysql", "node", "python", "composer", "phpmyadmin", 
                 "git", "mongodb", "redis", "pgsql", "mailhog", "elasticsearch", 
                 "memcached", "docker", "yarn", "pnpm", "wpcli", "adminer", 
                 "poetry", "ruby", "go", "certbot", "openssl", "phpcsfixer"
@@ -240,7 +240,7 @@ namespace DevStackManager
             {
                 "php" => DataManager.GetPHPVersions(),
                 "nginx" => DataManager.GetNginxVersions(),
-                "nodejs" or "node" => DataManager.GetNodeVersions(),
+                "node" => DataManager.GetNodeVersions(),
                 "python" => DataManager.GetPythonVersions(),
                 "mysql" => DataManager.GetMySQLVersions(),
                 "composer" => DataManager.GetComposerVersions(),

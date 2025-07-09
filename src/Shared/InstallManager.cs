@@ -43,7 +43,7 @@ namespace DevStackManager
                 case "php": await InstallPHP(version); break;
                 case "nginx": await InstallNginx(); break;
                 case "mysql": await InstallMySQL(version); break;
-                case "nodejs": case "node": await InstallNodeJS(version); break;
+                case "node": await InstallNode(version); break;
                 case "python": await InstallPython(version); break;
                 case "composer": await InstallComposer(version); break;
                 case "phpmyadmin": await InstallPhpMyAdmin(version); break;
@@ -391,11 +391,11 @@ namespace DevStackManager
             await InstallGenericTool(DevStackConfig.mysqlDir, version, zipUrl, subDir, Path.Combine("bin", "mysqld.exe"), "mysqld");
         }
 
-        public static async Task InstallNodeJS(string? version = null)
+        public static async Task InstallNode(string? version = null)
         {
             version ??= GetLatestNodeVersion();
             
-            string subDir = $"node-v{version}-win-x64";
+            string subDir = $"node-{version}";
             string zipUrl = $"https://nodejs.org/dist/v{version}/node-v{version}-win-x64.zip";
             
             await InstallGenericTool(DevStackConfig.nodeDir, version, zipUrl, subDir, "node.exe", "node", false);
@@ -920,7 +920,7 @@ namespace DevStackManager
             DevStackConfig.WriteLog($"PHP CS Fixer {version} instalado em {toolDir}");
         }
 
-        public static void CreateNginxSiteConfig(string domain, string? root, string? phpUpstream, string? nginxVersion, string? indexLocation)
+        public static void CreateNginxSiteConfig(string domain, string? root, string? phpUpstream, string? nginxVersion)
         {
             nginxVersion ??= GetLatestNginxVersion();
             string nginxVersionDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{nginxVersion}");
@@ -936,7 +936,6 @@ namespace DevStackManager
                 Directory.CreateDirectory(nginxSitesDirFull);
             }
 
-            indexLocation ??= "webroot";
             phpUpstream ??= "127.0.0.1:9000";
 
             if (string.IsNullOrEmpty(root) && Directory.Exists(Path.Combine("C:", "Workspace", domain)))
@@ -946,7 +945,7 @@ namespace DevStackManager
 
             string confPath = Path.Combine(nginxSitesDirFull, $"{domain}.conf");
             string serverName = $"{domain}.localhost";
-            string rootPath = Path.Combine(root ?? "", indexLocation);
+            string rootPath = root ?? "";
 
             string template = $@"server {{
 
@@ -989,7 +988,7 @@ namespace DevStackManager
     access_log logs\{domain}_access.log;
 }}";
 
-            File.WriteAllText(confPath, template, Encoding.UTF8);
+            File.WriteAllText(confPath, template, new UTF8Encoding(false));
             Console.WriteLine($"Arquivo {confPath} criado/configurado com sucesso!");
 
             string hostsPath = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot")!, "System32", "drivers", "etc", "hosts");
