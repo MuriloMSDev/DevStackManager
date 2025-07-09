@@ -41,7 +41,7 @@ namespace DevStackManager
             switch (component.ToLowerInvariant())
             {
                 case "php": await InstallPHP(version); break;
-                case "nginx": await InstallNginx(); break;
+                case "nginx": await InstallNginx(version); break;
                 case "mysql": await InstallMySQL(version); break;
                 case "node": await InstallNode(version); break;
                 case "python": await InstallPython(version); break;
@@ -289,9 +289,9 @@ namespace DevStackManager
         }
 
         // Install methods
-        public static async Task InstallNginx()
+        public static async Task InstallNginx(string? version = null)
         {
-            var version = GetLatestNginxVersion();
+            version ??= GetLatestNginxVersion();
             var subDir = $"nginx-{version}";
             var zipUrl = $"https://nginx.org/download/nginx-{version}.zip";
             Console.WriteLine(DevStackConfig.nginxDir);
