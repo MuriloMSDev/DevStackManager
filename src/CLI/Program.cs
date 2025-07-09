@@ -129,20 +129,48 @@ namespace DevStackManager
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
 
-            // Se não há argumentos, mostrar help
-            if (args.Length == 0)
-            {
-                ShowUsage();
-                return 0;
-            }
-
-            string command = args[0].ToLowerInvariant();
-            string[] commandArgs = args.Skip(1).ToArray();
-
             try
             {
                 LoadConfiguration();
-                return ExecuteCommand(command, commandArgs);
+
+                // Se não há argumentos, entrar em modo REPL
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("DevStack Shell Interativo. Digite 'help' para ajuda ou digite 'exit' para sair.");
+                    while (true)
+                    {
+                        Console.Write("DevStack> ");
+                        string? input = Console.ReadLine();
+                        if (input == null) continue;
+                        input = input.Trim();
+                        if (string.IsNullOrEmpty(input)) continue;
+                        if (input.Equals("exit", StringComparison.OrdinalIgnoreCase) || input.Equals("quit", StringComparison.OrdinalIgnoreCase))
+                            break;
+
+                        // Separar comando e argumentos
+                        var split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        string command = split[0].ToLowerInvariant();
+                        string[] commandArgs = split.Skip(1).ToArray();
+                        try
+                        {
+                            int result = ExecuteCommand(command, commandArgs);
+                            // Opcional: mostrar código de saída se não for 0
+                            if (result != 0)
+                                Console.WriteLine($"(código de saída: {result})");
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteErrorMsg($"Erro inesperado: {ex.Message}");
+                            WriteLog($"Erro inesperado: {ex}");
+                        }
+                    }
+                    return 0;
+                }
+
+                // Modo tradicional (com argumentos)
+                string commandArg = args[0].ToLowerInvariant();
+                string[] commandArgsArr = args.Skip(1).ToArray();
+                return ExecuteCommand(commandArg, commandArgsArr);
             }
             catch (Exception ex)
             {
