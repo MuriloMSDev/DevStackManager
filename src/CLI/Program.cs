@@ -248,22 +248,29 @@ namespace DevStackManager
         private static void StatusAll()
         {
             Console.WriteLine("Status do DevStack:");
-            
-            var allStatus = GetAllComponentsStatus();
-            
+            var allStatus = DevStackManager.DataManager.GetAllComponentsStatus();
             foreach (var comp in allStatus.Keys)
             {
-                if (allStatus[comp].installed)
+                var status = allStatus[comp];
+                if (status.Installed && status.Versions.Count > 0)
                 {
+                    // Detectar se é serviço monitorado
+                    var isService = comp == "php" || comp == "nginx";
                     WriteInfo($"{comp} instalado(s):");
-                    foreach (var version in allStatus[comp].versions)
+                    foreach (var (version, idx) in status.Versions.Select((v, i) => (v, i)))
                     {
-                        Console.WriteLine($"  {version}");
+                        if (isService)
+                        {
+                            // Exibir status individual do serviço (RunningList)
+                            bool running = status.RunningList != null && idx < status.RunningList.Count && status.RunningList[idx];
+                            string runningText = running ? "[executando]" : "[parado]";
+                            Console.WriteLine($"  {version} {runningText}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"  {version}");
+                        }
                     }
-                }
-                else
-                {
-                    WriteWarningMsg($"{comp} não está instalado.");
                 }
             }
         }
@@ -1413,14 +1420,131 @@ namespace DevStackManager
         // Helper methods that need to be implemented
         private static (bool installed, string message, string[] versions) GetComponentStatus(string component)
         {
-            // Implementation needed - placeholder
-            return (false, $"{component} não está instalado.", Array.Empty<string>());
+            // Map component name to directory
+            string? dir = component.ToLowerInvariant() switch
+            {
+                "php" => phpDir,
+                "nginx" => nginxDir,
+                "mysql" => mysqlDir,
+                "node" or "nodejs" => nodeDir,
+                "python" => pythonDir,
+                "composer" => composerDir,
+                "git" => baseDir,
+                "phpmyadmin" or "pma" => pmaDir,
+                "mongodb" or "mongo" => mongoDir,
+                "redis" => redisDir,
+                "pgsql" or "postgresql" => pgsqlDir,
+                "mailhog" => mailhogDir,
+                "elasticsearch" or "elastic" => elasticDir,
+                "memcached" => memcachedDir,
+                "docker" => dockerDir,
+                "yarn" => yarnDir,
+                "pnpm" => pnpmDir,
+                "wpcli" or "wp-cli" => wpcliDir,
+                "adminer" => adminerDir,
+                "poetry" => poetryDir,
+                "ruby" => rubyDir,
+                "go" or "golang" => goDir,
+                "certbot" => certbotDir,
+                "openssl" => openSSLDir,
+                "php-cs-fixer" or "phpcsfixer" => phpcsfixerDir,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+            {
+                return (false, string.Empty, Array.Empty<string>());
+            }
+
+            string[] versions;
+            if (component.Equals("git", StringComparison.OrdinalIgnoreCase))
+            {
+                // git: procurar subdiretórios git-*
+                versions = Directory.GetDirectories(dir, "git-*")
+                    .Select(f => Path.GetFileName(f) ?? string.Empty)
+                    .Where(f => !string.IsNullOrEmpty(f))
+                    .ToArray();
+            }
+            else
+            {
+                versions = Directory.GetDirectories(dir)
+                    .Select(f => Path.GetFileName(f) ?? string.Empty)
+                    .Where(f => !string.IsNullOrEmpty(f))
+                    .ToArray();
+            }
+
+            if (versions.Length == 0)
+            {
+                return (false, string.Empty, Array.Empty<string>());
+            }
+
+            // Serviços monitorados pela aba Serviços
+            var serviceComponents = new[] { "php", "nginx" };
+            if (serviceComponents.Contains(component.ToLowerInvariant()))
+            {
+                var processList = System.Diagnostics.Process.GetProcesses();
+                var versionsWithStatus = versions.Select(version => {
+                    string dirName = version;
+                    string status = "parado";
+                    if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Exemplo: dirName = "php-8.2.12"; version = "php-8.2.12" ou "8.2.12"
+                        string search = dirName;
+                        var running = processList.Any(p => {
+                            try
+                            {
+                                if (p.ProcessName.StartsWith("php", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var processPath = p.MainModule?.FileName;
+                                    return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
+                                }
+                            }
+                            catch { }
+                            return false;
+                        });
+                        if (running) status = "executando";
+                    }
+                    else if (component.Equals("nginx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string search = dirName;
+                        var running = processList.Any(p => {
+                            try
+                            {
+                                if (p.ProcessName.StartsWith("nginx", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var processPath = p.MainModule?.FileName;
+                                    return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
+                                }
+                            }
+                            catch { }
+                            return false;
+                        });
+                        if (running) status = "executando";
+                    }
+                    return $"{version} ({status})";
+                }).ToArray();
+                return (true, $"{component} instalado(s)", versionsWithStatus);
+            }
+
+            return (true, $"{component} instalado(s)", versions);
         }
 
         private static Dictionary<string, (bool installed, string message, string[] versions)> GetAllComponentsStatus()
         {
-            // Implementation needed - placeholder
-            return new Dictionary<string, (bool installed, string message, string[] versions)>();
+            string[] components = new[]
+            {
+                "php", "nginx", "mysql", "nodejs", "python", "composer", "git", "phpmyadmin",
+                "mongodb", "redis", "pgsql", "mailhog", "elasticsearch", "memcached",
+                "docker", "yarn", "pnpm", "wpcli", "adminer", "poetry", "ruby", "go",
+                "certbot", "openssl", "phpcsfixer"
+            };
+
+            var results = new Dictionary<string, (bool installed, string message, string[] versions)>();
+            foreach (var comp in components)
+            {
+                results[comp] = GetComponentStatus(comp);
+            }
+            return results;
         }
 
         private static string? FindFile(string directory, string pattern, bool recursive, string? pathFilter = null)
