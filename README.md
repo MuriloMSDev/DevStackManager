@@ -1,38 +1,46 @@
-# DevStackManager
-
-![DevStackManager Banner](https://img.shields.io/badge/PowerShell-DevStack-blue?style=for-the-badge&logo=powershell)
-
-> **Ambiente de desenvolvimento local completo para Windows, com um só comando.**
-
----
+<span style="display: flex; align-items: center; gap: 10px;">
+    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="60" height="60"/>
+    <span style="font-size:2em; font-weight:bold; margin-bottom: 7px;">DevStack Manager</span>
+</span>
 
 ## 🚀 O que é?
-Scripts PowerShell para instalar, gerenciar e remover rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.
+Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.
 
 ---
 
-## ⚡ Como usar
+## 📥 Como Instalar
 
-### Compilar e usar (recomendado)
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.1.1-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.1.1)
 
-1. **Compile o projeto:**
-```powershell
-cd scripts
-.\build.ps1
-.\deploy.ps1
-```
+<div align="center" style="margin: 16px 0;">
+    <span style="font-size:1.2em; font-weight:bold; color:#888;">━━━ <b>OU</b> ━━━</span>
+</div>
 
-2. **Use os executáveis:**
-```powershell
-cd release
-.\DevStack.exe [comando] [argumentos]    # CLI
-.\DevStackGUI.exe                        # Interface gráfica
-```
+* **Clone o repositório e acesse os executáveis:**
+    ```
+    git clone https://github.com/MuriloMSDev/DevStackManager.git
+    cd DevStackManager/release
+    ```
+    Os executáveis `DevStack.exe` (CLI) e `DevStackGUI.exe` (interface gráfica) estarão disponíveis na pasta `release`.
+
+---
+
+## ⚡ Como Compilar
+
+* **Compile o projeto:**
+    ```
+    .\scripts\build.ps1 [-WithInstaller] [-Clean]
+    cd release
+    ```
+    Os executáveis `DevStack.exe` (CLI) e `DevStackGUI.exe` (interface gráfica) estarão disponíveis na pasta `release`.
+
+---
 
 ### Comandos Disponíveis (usando CLI)
 
 | Comando                                                    | Descrição                                               |
 |------------------------------------------------------------|--------------------------------------------------------|
+| `.\DevStack.exe`                                          | Abre um shell interativo (REPL)                        |
 | `.\DevStack.exe install <componente> [versão]`            | Instala uma ferramenta ou versão específica            |
 | `.\DevStack.exe uninstall <componente> [versão]`          | Remove uma ferramenta ou versão específica             |
 | `.\DevStack.exe list <componente\|--installed>`           | Lista versões disponíveis ou instaladas                |
@@ -67,15 +75,13 @@ cd release
 - Se um download falhar, tente novamente ou verifique sua conexão.
 - O arquivo de log `C:\devstack\devstack.log` registra todas as operações.
 - Se PATH não atualizar, reinicie o terminal.
-- Se o alias 'devstack' não funcionar, feche e abra o PowerShell novamente ou rode `& $PROFILE` para recarregar o perfil.
 
 ---
 
 ## 🧩 Como estender
 
-- Adicione novos scripts em PowerShell para outros stacks.
+- Adicione novos componentes ou integrações criando código C# nas áreas CLI, GUI ou Shared.
 - Use as funções helper para evitar duplicação.
-- Adicione testes automatizados com [Pester](https://pester.dev/).
 
 ---
 
@@ -91,20 +97,35 @@ cd release
 ## 📂 Estrutura do Projeto
 
 ```text
-DevStackSetup/
+DevStackManager/
 │   README.md
+│   VERSION
 │
 ├───src/
 │   ├───CLI/                   # Projeto da interface de linha de comando
 │   │       DevStackCLI.csproj
 │   │       Program.cs
+│   │       ...
 │   │
 │   ├───GUI/                   # Projeto da interface gráfica
 │   │       DevStackGUI.csproj
 │   │       Program.cs
 │   │       Gui*.cs
+│   │       ...
 │   │
-│   └───Shared/               # Código compartilhado
+│   ├───INSTALLER/             # Projeto do instalador
+│   │       DevStackInstaller.csproj
+│   │       Program.cs
+│   │       app.manifest
+│   │       ...
+│   │
+│   ├───UNINSTALLER/           # Projeto do desinstalador
+│   │       DevStackUninstaller.csproj
+│   │       Program.cs
+│   │       app.manifest
+│   │       ...
+│   │
+│   └───Shared/                # Código compartilhado
 │           DevStackConfig.cs
 │           DataManager.cs
 │           InstallManager.cs
@@ -113,16 +134,17 @@ DevStackSetup/
 │           PathManager.cs
 │           ProcessManager.cs
 │           DevStack.ico
+│           ...
 │
 ├───scripts/
-│   ├───build.ps1             # Script de compilação
-│   └───deploy.ps1            # Script de deploy
+│       build.ps1                  # Script de compilação
+│       deploy.ps1                 # Script de deploy
 │
-└───release/                  # Pasta de distribuição
-    ├───configs/              # Configurações (nginx, php, etc.)
-    ├───DevStack.exe          # CLI compilado
-    ├───DevStackGUI.exe       # GUI compilado
-    └───...                   # Dependências e arquivos de runtime
+└───release/                   # Pasta de distribuição
+        configs/               # Configurações (nginx, php, etc.)
+        DevStack.exe           # CLI compilado
+        DevStackGUI.exe        # GUI compilado
+        ...
 ```
 
 ---

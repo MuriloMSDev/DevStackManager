@@ -774,6 +774,59 @@ namespace DevStackManager
                 };
             }
 
+            // Serviços monitorados: php, nginx
+            var serviceComponents = new[] { "php", "nginx" };
+            if (serviceComponents.Contains(component.ToLowerInvariant()))
+            {
+                var processList = System.Diagnostics.Process.GetProcesses();
+                // Para cada versão, verifica se está executando
+                var runningList = new List<bool>();
+                foreach (var version in versions)
+                {
+                    string search = $"{component.ToLowerInvariant()}-{version}";
+                    bool running = false;
+                    if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
+                    {
+                        running = processList.Any(p => {
+                            try
+                            {
+                                if (p.ProcessName.StartsWith("php", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var processPath = p.MainModule?.FileName;
+                                    return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
+                                }
+                            }
+                            catch { }
+                            return false;
+                        });
+                    }
+                    else if (component.Equals("nginx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        running = processList.Any(p => {
+                            try
+                            {
+                                if (p.ProcessName.StartsWith("nginx", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var processPath = p.MainModule?.FileName;
+                                    return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
+                                }
+                            }
+                            catch { }
+                            return false;
+                        });
+                    }
+                    runningList.Add(running);
+                }
+                // Adiciona a lista de status de execução por versão em uma propriedade auxiliar (não existe em ComponentStatus, mas pode ser usada no CLI)
+                return new ComponentStatus
+                {
+                    Installed = true,
+                    Versions = versions,
+                    Message = $"{component} instalado(s)",
+                    RunningList = runningList
+                };
+            }
+
             return new ComponentStatus
             {
                 Installed = true,
@@ -813,5 +866,6 @@ namespace DevStackManager
         public bool Installed { get; set; } = false;
         public List<string> Versions { get; set; } = new List<string>();
         public string Message { get; set; } = "";
+        public List<bool>? RunningList { get; set; } // true/false para cada versão, na mesma ordem da lista Versions
     }
 }
