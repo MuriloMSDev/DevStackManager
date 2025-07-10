@@ -40,6 +40,7 @@ namespace DevStackManager
             // Console output (with overlay Clear button)
             var consoleGrid = new Grid();
             // Layer 0: Console
+
             var consoleScrollViewer = CreateConsoleScrollViewer(mainWindow);
             consoleGrid.Children.Add(consoleScrollViewer);
 
@@ -53,7 +54,7 @@ namespace DevStackManager
                 Height = 32,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 2, 6, 0),
+                Margin = new Thickness(0, 1, 6, 0),
                 ToolTip = "Limpar Console"
             };
             // Custom ControlTemplate: always transparent background, even on hover/press
@@ -80,6 +81,25 @@ namespace DevStackManager
             clearButton.Click += (s, e) => ClearConsole(mainWindow);
             Panel.SetZIndex(clearButton, 10);
             consoleGrid.Children.Add(clearButton);
+
+            // Ajuste dinâmico da margem do botão Clear conforme o scroll horizontal
+            void UpdateClearButtonMargin()
+            {
+                // Se o ScrollViewer mostrar a barra de rolagem vertical, aumente a margem da direita
+                if (consoleScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+                {
+                    clearButton.Margin = new Thickness(0, 1, 23, 0); // margem maior à direita
+                }
+                else
+                {
+                    clearButton.Margin = new Thickness(0, 1, 6, 0); // margem padrão
+                }
+            }
+            // Atualiza ao carregar e ao rolar
+            consoleScrollViewer.ScrollChanged += (s, e) => UpdateClearButtonMargin();
+            consoleScrollViewer.SizeChanged += (s, e) => UpdateClearButtonMargin();
+            // Atualiza ao mostrar
+            consoleScrollViewer.Loaded += (s, e) => UpdateClearButtonMargin();
 
             Grid.SetRow(consoleGrid, 2);
             grid.Children.Add(consoleGrid);

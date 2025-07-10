@@ -1,16 +1,18 @@
-<span style="display: flex; align-items: center; gap: 10px;">
-    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="60" height="60"/>
-    <span style="font-size:2em; font-weight:bold; margin-bottom: 7px;">DevStack Manager</span>
-</span>
+![DevStackManager Banner](https://img.shields.io/badge/Build-v2.1.2-blue?style=for-the-badge&logo=build)
+
+<p align="center">
+    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/><br>
+    <span style="font-size:2.2em; font-weight:bold; margin-bottom:7px;">DevStack Manager</span>
+</p>
 
 ## 🚀 O que é?
-Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.
+**Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.**
 
 ---
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.1.1-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.1.1)
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.1.2-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.1.2)
 
 <div align="center" style="margin: 16px 0;">
     <span style="font-size:1.2em; font-weight:bold; color:#888;">━━━ <b>OU</b> ━━━</span>
