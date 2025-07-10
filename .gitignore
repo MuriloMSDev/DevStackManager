@@ -9,3 +9,4 @@ src/INSTALLER/obj
 src/UNINSTALLER/bin
 src/UNINSTALLER/obj
 DevStackManager.sln
+installer
