@@ -1,9 +1,11 @@
 ![DevStackManager Banner](https://img.shields.io/badge/Build-v2.1.2-blue?style=for-the-badge&logo=build)
 
 <p align="center">
-    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/><br>
-    <span style="font-size:2.2em; font-weight:bold; margin-bottom:7px;">DevStack Manager</span>
+    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
 </p>
+<div align="center">
+    <span style="font-size:2.2em; font-weight:bold; color:#888;">DevStack Manager</span>
+</div>
 
 ## 🚀 O que é?
 **Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.**
