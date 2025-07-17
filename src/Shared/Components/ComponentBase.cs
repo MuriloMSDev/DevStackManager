@@ -15,6 +15,7 @@ namespace DevStackManager.Components
         static ComponentBase()
         {
             httpClient.DefaultRequestHeaders.Add("User-Agent", "DevStackManager");
+            httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
         }
 
         public abstract string Name { get; }
