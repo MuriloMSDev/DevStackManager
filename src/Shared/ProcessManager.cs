@@ -8,10 +8,6 @@ namespace DevStackManager
 {
     public static class ProcessManager
     {
-        private static readonly string baseDir = "C:\\devstack";
-        private static readonly string nginxDir = Path.Combine(baseDir, "nginx");
-        private static readonly string phpDir = Path.Combine(baseDir, "php");
-
         /// <summary>
         /// Inicia um componente específico com uma versão
         /// </summary>
@@ -55,8 +51,8 @@ namespace DevStackManager
         /// </summary>
         private static void StartNginx(string version)
         {
-            var nginxExe = Path.Combine(nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
-            var nginxWorkDir = Path.Combine(nginxDir, $"nginx-{version}");
+            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
+            var nginxWorkDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}");
 
             if (!File.Exists(nginxExe))
             {
@@ -111,7 +107,7 @@ namespace DevStackManager
         /// </summary>
         private static void StopNginx(string version)
         {
-            var nginxExe = Path.Combine(nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
+            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
 
             if (!File.Exists(nginxExe))
             {
@@ -172,8 +168,8 @@ namespace DevStackManager
         /// </summary>
         private static void StartPhp(string version)
         {
-            var phpExe = Path.Combine(phpDir, $"php-{version}", $"php-cgi-{version}.exe");
-            var phpWorkDir = Path.Combine(phpDir, $"php-{version}");
+            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe");
+            var phpWorkDir = Path.Combine(DevStackConfig.phpDir, $"php-{version}");
 
             if (!File.Exists(phpExe))
             {
@@ -234,7 +230,7 @@ namespace DevStackManager
         /// </summary>
         private static void StopPhp(string version)
         {
-            var phpExe = Path.Combine(phpDir, $"php-{version}", $"php-cgi-{version}.exe");
+            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe");
 
             try
             {
@@ -291,8 +287,8 @@ namespace DevStackManager
         {
             var dir = component.ToLowerInvariant() switch
             {
-                "nginx" => nginxDir,
-                "php" => phpDir,
+                "nginx" => DevStackConfig.nginxDir,
+                "php" => DevStackConfig.phpDir,
                 _ => null
             };
 
@@ -324,26 +320,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Obtém todas as versões instaladas de um componente
-        /// </summary>
-        public static List<string> GetInstalledVersions(string component)
-        {
-            var versions = new List<string>();
-            
-            ForEachVersion(component, version => versions.Add(version));
-            
-            return versions.OrderBy(v => v).ToList();
-        }
-
-        /// <summary>
         /// Verifica se um componente específico está em execução
         /// </summary>
         public static bool IsComponentRunning(string component, string version)
         {
             var exePath = component.ToLowerInvariant() switch
             {
-                "nginx" => Path.Combine(nginxDir, $"nginx-{version}", $"nginx-{version}.exe"),
-                "php" => Path.Combine(phpDir, $"php-{version}", $"php-cgi-{version}.exe"),
+                "nginx" => Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe"),
+                "php" => Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe"),
                 _ => null
             };
 
@@ -386,8 +370,8 @@ namespace DevStackManager
             foreach (var component in components)
             {
                 DevStackConfig.WriteColoredLine($"{component.ToUpper()}:", ConsoleColor.Yellow);
-                
-                var versions = GetInstalledVersions(component);
+                var compObj = Components.ComponentsFactory.GetComponent(component);
+                var versions = compObj?.ListInstalled() ?? new List<string>();
                 if (versions.Any())
                 {
                     foreach (var version in versions)
@@ -395,7 +379,6 @@ namespace DevStackManager
                         var isRunning = IsComponentRunning(component, version);
                         var status = isRunning ? "EXECUTANDO" : "PARADO";
                         var color = isRunning ? ConsoleColor.Green : ConsoleColor.Red;
-                        
                         Console.Write($"  {component}-{version}: ");
                         DevStackConfig.WriteColoredLine(status, color);
                     }
@@ -417,7 +400,8 @@ namespace DevStackManager
             
             foreach (var component in components)
             {
-                var versions = GetInstalledVersions(component);
+                var compObj = Components.ComponentsFactory.GetComponent(component);
+                var versions = compObj?.ListInstalled() ?? new List<string>();
                 foreach (var version in versions)
                 {
                     if (IsComponentRunning(component, version))
@@ -437,7 +421,8 @@ namespace DevStackManager
             
             foreach (var component in components)
             {
-                var versions = GetInstalledVersions(component);
+                var compObj = Components.ComponentsFactory.GetComponent(component);
+                var versions = compObj?.ListInstalled() ?? new List<string>();
                 foreach (var version in versions)
                 {
                     if (!IsComponentRunning(component, version))
@@ -473,7 +458,7 @@ namespace DevStackManager
         {
             try
             {
-                string logFile = Path.Combine(baseDir, "devstack.log");
+                string logFile = Path.Combine(DevStackConfig.baseDir, "devstack.log");
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string logEntry = $"[{timestamp}] {message}";
                 File.AppendAllText(logFile, logEntry + Environment.NewLine);

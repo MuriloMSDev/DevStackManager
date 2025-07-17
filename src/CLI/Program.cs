@@ -54,20 +54,11 @@ namespace DevStackManager
         public static string composerDir => DevStackConfig.composerDir;
         public static string pmaDir => DevStackConfig.pmaDir;
         public static string mongoDir => DevStackConfig.mongoDir;
-        public static string redisDir => DevStackConfig.redisDir;
         public static string pgsqlDir => DevStackConfig.pgsqlDir;
-        public static string mailhogDir => DevStackConfig.mailhogDir;
         public static string elasticDir => DevStackConfig.elasticDir;
-        public static string memcachedDir => DevStackConfig.memcachedDir;
-        public static string dockerDir => DevStackConfig.dockerDir;
-        public static string yarnDir => DevStackConfig.yarnDir;
-        public static string pnpmDir => DevStackConfig.pnpmDir;
         public static string wpcliDir => DevStackConfig.wpcliDir;
         public static string adminerDir => DevStackConfig.adminerDir;
-        public static string poetryDir => DevStackConfig.poetryDir;
-        public static string rubyDir => DevStackConfig.rubyDir;
         public static string goDir => DevStackConfig.goDir;
-        public static string certbotDir => DevStackConfig.certbotDir;
         public static string openSSLDir => DevStackConfig.openSSLDir;
         public static string phpcsfixerDir => DevStackConfig.phpcsfixerDir;
         public static string nginxSitesDir => DevStackConfig.nginxSitesDir;
@@ -287,25 +278,16 @@ namespace DevStackManager
                 new { name = "node", exe = "node-*.exe", dir = nodeDir, args = "-v" },
                 new { name = "python", exe = "python-*.exe", dir = pythonDir, args = "--version" },
                 new { name = "git", exe = "git.exe", dir = baseDir, args = "--version" },
-                new { name = "composer", exe = "composer-*.exe", dir = composerDir, args = "--version" },
+                new { name = "composer", exe = "composer-*.phar", dir = composerDir, args = "--version" },
                 new { name = "phpmyadmin", exe = "index.php", dir = pmaDir, args = "" },
                 new { name = "mongodb", exe = "mongo.exe", dir = mongoDir, args = "--version" },
-                new { name = "redis", exe = "redis-server.exe", dir = redisDir, args = "--version" },
                 new { name = "pgsql", exe = "psql.exe", dir = pgsqlDir, args = "--version" },
-                new { name = "mailhog", exe = "mailhog.exe", dir = mailhogDir, args = "--version" },
                 new { name = "elasticsearch", exe = "elasticsearch.exe", dir = elasticDir, args = "--version" },
-                new { name = "memcached", exe = "memcached.exe", dir = memcachedDir, args = "-h" },
-                new { name = "docker", exe = "docker.exe", dir = dockerDir, args = "--version" },
-                new { name = "yarn", exe = "yarn.cmd", dir = yarnDir, args = "--version" },
-                new { name = "pnpm", exe = "pnpm.exe", dir = pnpmDir, args = "--version" },
                 new { name = "wpcli", exe = "wp-cli.phar", dir = wpcliDir, args = "--version" },
                 new { name = "adminer", exe = "adminer-*.php", dir = adminerDir, args = "" },
-                new { name = "poetry", exe = "poetry.exe", dir = poetryDir, args = "--version" },
-                new { name = "ruby", exe = "ruby.exe", dir = rubyDir, args = "--version" },
                 new { name = "go", exe = "go.exe", dir = goDir, args = "version" },
-                new { name = "certbot", exe = "certbot.exe", dir = certbotDir, args = "--version" },
                 new { name = "openssl", exe = "openssl.exe", dir = openSSLDir, args = "version" },
-                new { name = "phpcsfixer", exe = "php-cs-fixer-*.exe", dir = phpcsfixerDir, args = "--version" }
+                new { name = "phpcsfixer", exe = "php-cs-fixer-*.phar", dir = phpcsfixerDir, args = "--version" }
             };
 
             foreach (var tool in tools)
@@ -391,22 +373,13 @@ namespace DevStackManager
                 "mysql" => Path.Combine(mysqlDir, $"mysql-{version}", "bin", "mysql.exe"),
                 "phpmyadmin" => Path.Combine(pmaDir, $"phpmyadmin-{version}", "index.php"),
                 "mongodb" => Path.Combine(mongoDir, $"mongodb-{version}", "bin", "mongo.exe"),
-                "redis" => Path.Combine(redisDir, $"redis-{version}", "redis-server.exe"),
                 "pgsql" => Path.Combine(pgsqlDir, $"pgsql-{version}", "bin", "psql.exe"),
-                "mailhog" => Path.Combine(mailhogDir, $"mailhog-{version}", "mailhog.exe"),
                 "elasticsearch" => Path.Combine(elasticDir, $"elasticsearch-{version}", "bin", "elasticsearch.exe"),
-                "memcached" => Path.Combine(memcachedDir, $"memcached-{version}", "memcached.exe"),
-                "docker" => Path.Combine(dockerDir, $"docker-{version}", "docker.exe"),
-                "yarn" => Path.Combine(yarnDir, $"yarn-v{version}", "bin", "yarn.cmd"),
-                "pnpm" => Path.Combine(pnpmDir, $"pnpm-v{version}", "pnpm.exe"),
                 "wpcli" => Path.Combine(wpcliDir, $"wp-cli-{version}", "wp-cli.phar"),
                 "adminer" => Path.Combine(adminerDir, $"adminer-{version}.php"),
-                "poetry" => Path.Combine(poetryDir, $"poetry-{version}", "bin", "poetry.exe"),
-                "ruby" => Path.Combine(rubyDir, $"ruby-{version}", "bin", "ruby.exe"),
                 "go" => Path.Combine(goDir, $"go{version}", "bin", "go.exe"),
-                "certbot" => Path.Combine(certbotDir, $"certbot-{version}", "certbot.exe"),
                 "openssl" => Path.Combine(openSSLDir, $"openssl-{version}", "bin", "openssl.exe"),
-                "phpcsfixer" => Path.Combine(phpcsfixerDir, $"php-cs-fixer-{version}", $"php-cs-fixer-{version}.exe"),
+                "phpcsfixer" => Path.Combine(phpcsfixerDir, $"phpcsfixer-{version}", $"php-cs-fixer-{version}.phar"),
                 _ => null
             };
 
@@ -587,7 +560,7 @@ namespace DevStackManager
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Uso: DevStackManager list <php|node|python|composer|mysql|nginx|phpmyadmin|git|mongodb|redis|pgsql|mailhog|elasticsearch|memcached|docker|yarn|pnpm|wpcli|adminer|poetry|ruby|go|certbot|openssl|phpcsfixer|--installed>");
+                Console.WriteLine("Uso: DevStackManager list <php|node|python|composer|mysql|nginx|phpmyadmin|git|mongodb|pgsql|elasticsearch|wpcli|adminer|go|openssl|phpcsfixer|--installed>");
                 return 1;
             }
 
@@ -613,7 +586,7 @@ namespace DevStackManager
             string domain = args[0];
             string? root = null;
             string? phpUpstream = null;
-            string? nginxVersion = null;
+            string nginxVersion = string.Empty;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -631,7 +604,7 @@ namespace DevStackManager
                 }
             }
 
-            CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
+            InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
             return 0;
         }
 
@@ -716,7 +689,7 @@ namespace DevStackManager
             {
                 if (Directory.Exists(nginxDir))
                 {
-                    ForEachVersion("nginx", v => StartComponent("nginx", v));
+                    ProcessManager.ForEachVersion("nginx", v => ProcessManager.StartComponent("nginx", v));
                 }
                 else
                 {
@@ -725,7 +698,7 @@ namespace DevStackManager
 
                 if (Directory.Exists(phpDir))
                 {
-                    ForEachVersion("php", v => StartComponent("php", v));
+                    ProcessManager.ForEachVersion("php", v => ProcessManager.StartComponent("php", v));
                 }
                 else
                 {
@@ -741,7 +714,7 @@ namespace DevStackManager
             }
 
             string version = args[1];
-            StartComponent(target, version);
+            ProcessManager.StartComponent(target, version);
             return 0;
         }
 
@@ -758,7 +731,7 @@ namespace DevStackManager
             {
                 if (Directory.Exists(nginxDir))
                 {
-                    ForEachVersion("nginx", v => StopComponent("nginx", v));
+                    ProcessManager.ForEachVersion("nginx", v => ProcessManager.StopComponent("nginx", v));
                 }
                 else
                 {
@@ -767,7 +740,7 @@ namespace DevStackManager
 
                 if (Directory.Exists(phpDir))
                 {
-                    ForEachVersion("php", v => StopComponent("php", v));
+                    ProcessManager.ForEachVersion("php", v => ProcessManager.StopComponent("php", v));
                 }
                 else
                 {
@@ -783,7 +756,7 @@ namespace DevStackManager
             }
 
             string version = args[1];
-            StopComponent(target, version);
+            ProcessManager.StopComponent(target, version);
             return 0;
         }
 
@@ -800,11 +773,11 @@ namespace DevStackManager
             {
                 if (Directory.Exists(nginxDir))
                 {
-                    ForEachVersion("nginx", v => 
+                    ProcessManager.ForEachVersion("nginx", v => 
                     {
-                        StopComponent("nginx", v);
+                        ProcessManager.StopComponent("nginx", v);
                         Thread.Sleep(1000);
-                        StartComponent("nginx", v);
+                        ProcessManager.StartComponent("nginx", v);
                     });
                 }
                 else
@@ -814,11 +787,11 @@ namespace DevStackManager
 
                 if (Directory.Exists(phpDir))
                 {
-                    ForEachVersion("php", v => 
+                    ProcessManager.ForEachVersion("php", v => 
                     {
-                        StopComponent("php", v);
+                        ProcessManager.StopComponent("php", v);
                         Thread.Sleep(1000);
-                        StartComponent("php", v);
+                        ProcessManager.StartComponent("php", v);
                     });
                 }
                 else
@@ -835,9 +808,9 @@ namespace DevStackManager
             }
 
             string version = args[1];
-            StopComponent(target, version);
+            ProcessManager.StopComponent(target, version);
             Thread.Sleep(1000);
-            StartComponent(target, version);
+            ProcessManager.StartComponent(target, version);
             return 0;
         }
 
@@ -1092,7 +1065,16 @@ namespace DevStackManager
 
             if (string.IsNullOrEmpty(opensslVersion))
             {
-                opensslVersion = InstallManager.GetLatestOpenSSLVersion();
+                var opensslComponent = Components.ComponentsFactory.GetComponent("openssl");
+                if (opensslComponent != null)
+                {
+                    opensslVersion = opensslComponent.GetLatestVersion();
+                }
+                else
+                {
+                    WriteErrorMsg("Componente 'openssl' não encontrado.");
+                    return 1;
+                }
             }
 
             string dir = Path.Combine(openSSLDir, $"openssl-{opensslVersion}", "bin");
@@ -1101,7 +1083,7 @@ namespace DevStackManager
             if (!File.Exists(opensslExe))
             {
                 Console.WriteLine($"OpenSSL {opensslVersion} não encontrado. Instalando...");
-                await InstallManager.InstallOpenSSL(opensslVersion);
+                await InstallManager.InstallCommands(["openssl", opensslVersion]);
             }
 
             if (!File.Exists(opensslExe))
@@ -1432,22 +1414,13 @@ namespace DevStackManager
                 "git" => baseDir,
                 "phpmyadmin" or "pma" => pmaDir,
                 "mongodb" or "mongo" => mongoDir,
-                "redis" => redisDir,
                 "pgsql" or "postgresql" => pgsqlDir,
-                "mailhog" => mailhogDir,
                 "elasticsearch" or "elastic" => elasticDir,
-                "memcached" => memcachedDir,
-                "docker" => dockerDir,
-                "yarn" => yarnDir,
-                "pnpm" => pnpmDir,
                 "wpcli" or "wp-cli" => wpcliDir,
                 "adminer" => adminerDir,
-                "poetry" => poetryDir,
-                "ruby" => rubyDir,
                 "go" or "golang" => goDir,
-                "certbot" => certbotDir,
                 "openssl" => openSSLDir,
-                "php-cs-fixer" or "phpcsfixer" => phpcsfixerDir,
+                "phpcsfixer" => phpcsfixerDir,
                 _ => null
             };
 
@@ -1534,9 +1507,8 @@ namespace DevStackManager
             string[] components = new[]
             {
                 "php", "nginx", "mysql", "nodejs", "python", "composer", "git", "phpmyadmin",
-                "mongodb", "redis", "pgsql", "mailhog", "elasticsearch", "memcached",
-                "docker", "yarn", "pnpm", "wpcli", "adminer", "poetry", "ruby", "go",
-                "certbot", "openssl", "phpcsfixer"
+                "mongodb", "pgsql", "elasticsearch", "wpcli", "adminer",
+                "go", "openssl", "phpcsfixer"
             };
 
             var results = new Dictionary<string, (bool installed, string message, string[] versions)>();
@@ -1615,11 +1587,6 @@ namespace DevStackManager
                 CopyDirectory(subDir, destSubDir);
             }
         }
-
-        private static void CreateNginxSiteConfig(string domain, string? root, string? phpUpstream, string? nginxVersion) 
-        { 
-            InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
-        }
         
         private static async Task InstallCommands(string[] args) 
         {
@@ -1696,33 +1663,5 @@ namespace DevStackManager
             
             UninstallManager.UninstallCommands(args);
         }
-        
-        private static void AddBinDirsToPath() 
-        { 
-            if (pathManager != null)
-            {
-                pathManager.AddBinDirsToPath();
-            }
-            else
-            {
-                WriteWarningMsg("PathManager não foi inicializado");
-            }
-        }
-        
-        private static void ForEachVersion(string component, Action<string> action)
-        {
-            ProcessManager.ForEachVersion(component, action);
-        }
-        
-        private static void StartComponent(string component, string version) 
-        { 
-            ProcessManager.StartComponent(component, version);
-        }
-        
-        private static void StopComponent(string component, string version) 
-        { 
-            ProcessManager.StopComponent(component, version);
-        }
-
     }
 }

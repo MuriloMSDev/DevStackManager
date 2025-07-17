@@ -19,20 +19,11 @@ namespace DevStackManager
         public static string composerDir = "";
         public static string pmaDir = "";
         public static string mongoDir = "";
-        public static string redisDir = "";
         public static string pgsqlDir = "";
-        public static string mailhogDir = "";
         public static string elasticDir = "";
-        public static string memcachedDir = "";
-        public static string dockerDir = "";
-        public static string yarnDir = "";
-        public static string pnpmDir = "";
         public static string wpcliDir = "";
         public static string adminerDir = "";
-        public static string poetryDir = "";
-        public static string rubyDir = "";
         public static string goDir = "";
-        public static string certbotDir = "";
         public static string openSSLDir = "";
         public static string phpcsfixerDir = "";
         public static string nginxSitesDir = "";
@@ -72,6 +63,13 @@ namespace DevStackManager
             ("help", "Exibe esta ajuda.")
         };
 
+        public static readonly string[] components = new[]
+        {
+            "php", "nginx", "mysql", "node", "python", "composer", "phpmyadmin", 
+            "git", "mongodb", "pgsql", "elasticsearch", "wpcli", "adminer",
+            "go", "openssl", "phpcsfixer"
+        };
+
         /// <summary>
         /// Inicializa todas as configurações de diretórios
         /// </summary>
@@ -86,25 +84,16 @@ namespace DevStackManager
             composerDir = Path.Combine(baseDir, "composer");
             pmaDir = Path.Combine(baseDir, "phpmyadmin");
             mongoDir = Path.Combine(baseDir, "mongodb");
-            redisDir = Path.Combine(baseDir, "redis");
             pgsqlDir = Path.Combine(baseDir, "pgsql");
-            mailhogDir = Path.Combine(baseDir, "mailhog");
             elasticDir = Path.Combine(baseDir, "elasticsearch");
-            memcachedDir = Path.Combine(baseDir, "memcached");
-            dockerDir = Path.Combine(baseDir, "docker");
-            yarnDir = Path.Combine(baseDir, "yarn");
-            pnpmDir = Path.Combine(baseDir, "pnpm");
             wpcliDir = Path.Combine(baseDir, "wpcli");
             adminerDir = Path.Combine(baseDir, "adminer");
-            poetryDir = Path.Combine(baseDir, "poetry");
-            rubyDir = Path.Combine(baseDir, "ruby");
             goDir = Path.Combine(baseDir, "go");
-            certbotDir = Path.Combine(baseDir, "certbot");
             openSSLDir = Path.Combine(baseDir, "openssl");
             phpcsfixerDir = Path.Combine(baseDir, "phpcsfixer");
             nginxSitesDir = "conf\\sites-enabled";
             tmpDir = Path.Combine(baseDir, "tmp");
-            
+
             // Inicializar PathManager
             pathManager = new PathManager(baseDir, phpDir, nodeDir, pythonDir, nginxDir, mysqlDir);
         }

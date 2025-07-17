@@ -432,6 +432,40 @@ namespace DevStackManager
                 MinHeight = 35
             };
 
+            // Evento para rolar o dropdown para o início ao abrir
+            comboBox.DropDownOpened += (s, e) =>
+            {
+                // Tenta encontrar o ScrollViewer do dropdown
+                if (comboBox.Template != null)
+                {
+                    comboBox.ApplyTemplate();
+                    var popup = comboBox.Template.FindName("Popup", comboBox) as System.Windows.Controls.Primitives.Popup;
+                    if (popup != null && popup.Child is Border border)
+                    {
+                        var scrollViewer = FindScrollViewer(border);
+                        if (scrollViewer != null)
+                        {
+                            scrollViewer.ScrollToTop();
+                        }
+                    }
+                }
+            };
+
+            // Helper para buscar ScrollViewer dentro do Border
+            static ScrollViewer? FindScrollViewer(DependencyObject parent)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+                {
+                    var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is ScrollViewer sv)
+                        return sv;
+                    var result = FindScrollViewer(child);
+                    if (result != null)
+                        return result;
+                }
+                return null;
+            }
+
             // Create a simplified but effective style for dark theme
             var comboStyle = new Style(typeof(ComboBox));
             

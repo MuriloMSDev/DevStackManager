@@ -31,6 +31,9 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\*.cs" />
+    <Compile Include="..\Shared\Components\*.cs" />
+    <Compile Include="..\Shared\Models\*.cs" />
+    <EmbeddedResource Include="..\Shared\AvailableVersions\*.json" />
   </ItemGroup>
 
 </Project>

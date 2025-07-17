@@ -1,21 +1,22 @@
-![DevStackManager Banner](https://img.shields.io/badge/Build-v2.1.2-blue?style=for-the-badge&logo=build)
+![DevStackManager Banner](https://img.shields.io/badge/Build-v2.2.0-blue?style=for-the-badge&logo=build)
 
-<p align="center">
-    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/><br>
-    <span style="font-size:2.2em; font-weight:bold; margin-bottom:7px;">DevStack Manager</span>
-</p>
+<div align="center">
+    <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
+</div>
+<h1 align="center"><b>DevStack Manager</b></h1><br>
+
 
 ## 🚀 O que é?
-**Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, Redis, PostgreSQL, Docker, e mais) no Windows.**
+**Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, PostgreSQL, e mais) no Windows.**
 
 ---
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.1.2-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.1.2)
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.2.0-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.2.0)
 
-<div align="center" style="margin: 16px 0;">
-    <span style="font-size:1.2em; font-weight:bold; color:#888;">━━━ <b>OU</b> ━━━</span>
+<div align="center">
+    <span>━━━ <b>OU</b> ━━━</span>
 </div>
 
 * **Clone o repositório e acesse os executáveis:**
@@ -40,34 +41,34 @@
 
 ### Comandos Disponíveis (usando CLI)
 
-| Comando                                                    | Descrição                                               |
-|------------------------------------------------------------|--------------------------------------------------------|
-| `.\DevStack.exe`                                          | Abre um shell interativo (REPL)                        |
-| `.\DevStack.exe install <componente> [versão]`            | Instala uma ferramenta ou versão específica            |
-| `.\DevStack.exe uninstall <componente> [versão]`          | Remove uma ferramenta ou versão específica             |
-| `.\DevStack.exe list <componente\|--installed>`           | Lista versões disponíveis ou instaladas                |
-| `.\DevStack.exe path [add\|remove\|list\|help]`           | Gerencia PATH das ferramentas instaladas               |
-| `.\DevStack.exe status`                                    | Mostra status de todas as ferramentas                  |
-| `.\DevStack.exe test`                                      | Testa todas as ferramentas instaladas                  |
-| `.\DevStack.exe update <componente>`                       | Atualiza uma ferramenta para a última versão           |
-| `.\DevStack.exe deps`                                      | Verifica dependências do sistema                       |
-| `.\DevStack.exe alias <componente> <versão>`              | Cria um alias .bat para a versão da ferramenta         |
-| `.\DevStack.exe global`                                    | Adiciona DevStack ao PATH e cria alias global          |
-| `.\DevStack.exe self-update`                               | Atualiza o DevStackManager                              |
-| `.\DevStack.exe clean`                                     | Remove logs e arquivos temporários                     |
-| `.\DevStack.exe backup`                                    | Cria backup das configs e logs                         |
-| `.\DevStack.exe logs`                                      | Exibe as últimas linhas do log                         |
-| `.\DevStack.exe enable <serviço>`                          | Ativa um serviço do Windows                            |
-| `.\DevStack.exe disable <serviço>`                         | Desativa um serviço do Windows                         |
-| `.\DevStack.exe config`                                    | Abre o diretório de configuração                       |
-| `.\DevStack.exe reset <componente>`                        | Remove e reinstala uma ferramenta                      |
-| `.\DevStack.exe proxy [set <url>\|unset\|show]`           | Gerencia variáveis de proxy                            |
-| `.\DevStack.exe ssl <domínio> [-openssl <versão>]`        | Gera certificado SSL autoassinado                      |
-| `.\DevStack.exe db <mysql\|pgsql\|mongo> <comando> [args...]` | Gerencia bancos de dados básicos                   |
-| `.\DevStack.exe service`                                   | Lista serviços DevStack (Windows)                      |
-| `.\DevStack.exe doctor`                                    | Diagnóstico do ambiente DevStack                       |
-| `.\DevStack.exe site <domínio> [opções]`                  | Cria configuração de site nginx                        |
-| `.\DevStack.exe help`                                      | Exibe esta ajuda                                       |
+| Comando                                                       | Descrição                                              |
+|---------------------------------------------------------------|--------------------------------------------------------|
+| `.\DevStack.exe`                                              | Abre um shell interativo (REPL)                        |
+| `.\DevStack.exe install <componente> [versão]`                | Instala uma ferramenta ou versão específica            |
+| `.\DevStack.exe uninstall <componente> [versão]`              | Remove uma ferramenta ou versão específica             |
+| `.\DevStack.exe list <componente\|--installed>`               | Lista versões disponíveis ou instaladas                |
+| `.\DevStack.exe path [add\|remove\|list\|help]`               | Gerencia PATH das ferramentas instaladas               |
+| `.\DevStack.exe status`                                       | Mostra status de todas as ferramentas                  |
+| `.\DevStack.exe test`                                         | Testa todas as ferramentas instaladas                  |
+| `.\DevStack.exe update <componente>`                          | Atualiza uma ferramenta para a última versão           |
+| `.\DevStack.exe deps`                                         | Verifica dependências do sistema                       |
+| `.\DevStack.exe alias <componente> <versão>`                  | Cria um alias .bat para a versão da ferramenta         |
+| `.\DevStack.exe global`                                       | Adiciona DevStack ao PATH e cria alias global          |
+| `.\DevStack.exe self-update`                                  | Atualiza o DevStackManager                             |
+| `.\DevStack.exe clean`                                        | Remove logs e arquivos temporários                     |
+| `.\DevStack.exe backup`                                       | Cria backup das configs e logs                         |
+| `.\DevStack.exe logs`                                         | Exibe as últimas linhas do log                         |
+| `.\DevStack.exe enable <serviço>`                             | Ativa um serviço do Windows                            |
+| `.\DevStack.exe disable <serviço>`                            | Desativa um serviço do Windows                         |
+| `.\DevStack.exe config`                                       | Abre o diretório de configuração                       |
+| `.\DevStack.exe reset <componente>`                           | Remove e reinstala uma ferramenta                      |
+| `.\DevStack.exe proxy [set <url>\|unset\|show]`               | Gerencia variáveis de proxy                            |
+| `.\DevStack.exe ssl <domínio> [-openssl <versão>]`            | Gera certificado SSL autoassinado                      |
+| `.\DevStack.exe db <mysql\|pgsql\|mongo> <comando> [args...]` | Gerencia bancos de dados básicos                       |
+| `.\DevStack.exe service`                                      | Lista serviços DevStack (Windows)                      |
+| `.\DevStack.exe doctor`                                       | Diagnóstico do ambiente DevStack                       |
+| `.\DevStack.exe site <domínio> [opções]`                      | Cria configuração de site nginx                        |
+| `.\DevStack.exe help`                                         | Exibe esta ajuda                                       |
 
 ---
 
@@ -136,11 +137,15 @@ DevStackManager/
 │           PathManager.cs
 │           ProcessManager.cs
 │           DevStack.ico
+│           AvailableVersions/
+│           Components/
+│           Models/
 │           ...
 │
 ├───scripts/
 │       build.ps1                  # Script de compilação
-│       deploy.ps1                 # Script de deploy
+│       build-installer.ps1         # Script de build do instalador
+│       build-uninstaller.ps1       # Script de build do desinstalador
 │
 └───release/                   # Pasta de distribuição
         configs/               # Configurações (nginx, php, etc.)
