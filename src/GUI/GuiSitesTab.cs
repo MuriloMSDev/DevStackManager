@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -165,7 +166,23 @@ namespace DevStackManager
             sslDomainTextBox.Name = "SslDomainTextBox";
             panel.Children.Add(sslDomainTextBox);
 
-            var generateSslButton = GuiTheme.CreateStyledButton("🔒 Gerar Certificado SSL", (s, e) => GenerateSslCertificate(mainWindow, sslDomainTextBox.Text));
+            Button? generateSslButton = null;
+            generateSslButton = GuiTheme.CreateStyledButton("🔒 Gerar Certificado SSL", async (s, e) => 
+            {
+                if (generateSslButton != null)
+                    generateSslButton.IsEnabled = false;
+                try
+                {
+                    await GenerateSslCertificate(mainWindow, sslDomainTextBox.Text);
+                    await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                    sslDomainTextBox.Text = "";
+                }
+                finally
+                {
+                    if (generateSslButton != null)
+                        generateSslButton.IsEnabled = true;
+                }
+            });
             generateSslButton.Height = 40;
             generateSslButton.FontSize = 14;
             generateSslButton.Margin = new Thickness(0, 10, 0, 0);
@@ -269,7 +286,7 @@ namespace DevStackManager
         /// <summary>
         /// Gera um certificado SSL para o domínio especificado
         /// </summary>
-        private static void GenerateSslCertificate(DevStackGui mainWindow, string domain)
+        private static async Task GenerateSslCertificate(DevStackGui mainWindow, string domain)
         {
             if (string.IsNullOrEmpty(domain))
             {
@@ -280,77 +297,11 @@ namespace DevStackManager
             try
             {
                 mainWindow.StatusMessage = $"Gerando certificado SSL para {domain}...";
-                
-                // Chamar o setup.ps1 com comando SSL
-                var setupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "setup.ps1");
-                if (!File.Exists(setupPath))
-                {
-                    setupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "setup.ps1");
-                }
-
-                if (File.Exists(setupPath))
-                {
-                    var startInfo = new ProcessStartInfo
-                    {
-                        FileName = "pwsh.exe",
-                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{setupPath}\" ssl {domain}",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    // Fallback para PowerShell Windows se pwsh não estiver disponível
-                    try
-                    {
-                        using var process = Process.Start(startInfo);
-                        if (process != null)
-                        {
-                            process.WaitForExit();
-                            var output = process.StandardOutput.ReadToEnd();
-                            var error = process.StandardError.ReadToEnd();
-
-                            if (process.ExitCode == 0)
-                            {
-                                MessageBox.Show($"Certificado SSL para {domain} gerado com sucesso.", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                                mainWindow.StatusMessage = $"Certificado SSL para {domain} gerado";
-                                
-                                // Limpar o campo
-                                var sslDomainTextBox = GuiHelpers.FindChild<TextBox>(mainWindow, "SslDomainTextBox");
-                                if (sslDomainTextBox != null) sslDomainTextBox.Text = "";
-                            }
-                            else
-                            {
-                                throw new Exception($"Processo falhou com código {process.ExitCode}: {error}");
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Fallback para powershell.exe
-                        startInfo.FileName = "powershell.exe";
-                        using var process = Process.Start(startInfo);
-                        if (process != null)
-                        {
-                            process.WaitForExit();
-                            if (process.ExitCode == 0)
-                            {
-                                MessageBox.Show($"Certificado SSL para {domain} gerado com sucesso.", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
-                                
-                                mainWindow.StatusMessage = $"Certificado SSL para {domain} gerado";
-                            }
-                            else
-                            {
-                                throw new Exception("Falha na execução do comando SSL");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    mainWindow.StatusMessage = $"SSL para {domain} - em desenvolvimento";
-                }
+                // Chama a lógica compartilhada para geração de certificado
+                var args = new string[] { domain };
+                await GenerateManager.GenerateSslCertificate(args);
+                // O método já faz o output no console, mas podemos adicionar feedback extra se necessário
+                mainWindow.StatusMessage = $"Processo de geração de SSL para {domain} finalizado.";
             }
             catch (Exception ex)
             {

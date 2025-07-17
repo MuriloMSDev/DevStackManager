@@ -71,7 +71,7 @@ namespace DevStackManager
             if (serviceComponents.Contains(component.ToLowerInvariant()))
             {
                 var processList = System.Diagnostics.Process.GetProcesses();
-                var runningList = new List<bool>();
+                var runningList = new Dictionary<string, bool>();
                 foreach (var version in installedVersions)
                 {
                     string search = $"{component.ToLowerInvariant()}-{version}";
@@ -106,7 +106,7 @@ namespace DevStackManager
                             return false;
                         });
                     }
-                    runningList.Add(running);
+                    runningList[version] = running;
                 }
                 return new ComponentStatus
                 {

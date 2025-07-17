@@ -9,6 +9,31 @@ namespace DevStackManager
     public static class ProcessManager
     {
         /// <summary>
+        /// Executa um comando no terminal e retorna a saída
+        /// </summary>
+        public static string ExecuteProcess(string fileName, string arguments, string? workingDirectory = null, System.Diagnostics.ProcessWindowStyle? windowStyle = null)
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = workingDirectory ?? "",
+                WindowStyle = windowStyle ?? ProcessWindowStyle.Hidden
+            };
+
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return output.Trim();
+        }
+
+        /// <summary>
         /// Inicia um componente específico com uma versão
         /// </summary>
         public static void StartComponent(string component, string version)

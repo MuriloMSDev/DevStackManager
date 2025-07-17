@@ -248,12 +248,11 @@ namespace DevStackManager
                     // Detectar se é serviço monitorado
                     var isService = comp == "php" || comp == "nginx";
                     WriteInfo($"{comp} instalado(s):");
-                    foreach (var (version, idx) in status.Versions.Select((v, i) => (v, i)))
+                    foreach (var version in status.Versions)
                     {
                         if (isService)
                         {
-                            // Exibir status individual do serviço (RunningList)
-                            bool running = status.RunningList != null && idx < status.RunningList.Count && status.RunningList[idx];
+                            bool running = status.RunningList != null && status.RunningList.TryGetValue(version, out var isRunning) && isRunning;
                             string runningText = running ? "[executando]" : "[parado]";
                             Console.WriteLine($"  {version} {runningText}");
                         }
@@ -307,7 +306,7 @@ namespace DevStackManager
                 {
                     try
                     {
-                        var output = ExecuteProcess(found, tool.args);
+                        var output = ProcessManager.ExecuteProcess(found, tool.args);
                         WriteInfo($"{tool.name}: {output}");
                     }
                     catch
@@ -534,7 +533,7 @@ namespace DevStackManager
                     return HandleProxyCommand(args);
 
                 case "ssl":
-                    return HandleSslCommand(args).GetAwaiter().GetResult();
+                    return HandleSslCommand(args).Result;
 
                 case "db":
                     return HandleDbCommand(args);
@@ -834,7 +833,7 @@ namespace DevStackManager
                 WriteInfo("Atualizando via git pull...");
                 try
                 {
-                    var result = ExecuteProcess("git", "pull", repoDir);
+                    var result = ProcessManager.ExecuteProcess("git", "pull", repoDir);
                     WriteInfo("DevStackManager atualizado com sucesso.");
                 }
                 catch (Exception ex)
@@ -1037,63 +1036,7 @@ namespace DevStackManager
 
         private static async Task<int> HandleSslCommand(string[] args)
         {
-            if (args.Length < 1)
-            {
-                Console.WriteLine("Uso: DevStackManager ssl <dominio> [-openssl <versao>]");
-                return 1;
-            }
-
-            string domain = args[0];
-            string sslDir = Path.Combine(baseDir, "configs", "nginx", "ssl");
-            if (!Directory.Exists(sslDir))
-            {
-                Directory.CreateDirectory(sslDir);
-            }
-
-            string crt = Path.Combine(sslDir, $"{domain}.crt");
-            string key = Path.Combine(sslDir, $"{domain}.key");
-            string? opensslVersion = null;
-
-            for (int i = 1; i < args.Length; i++)
-            {
-                if (args[i] == "-openssl" && (i + 1) < args.Length)
-                {
-                    opensslVersion = args[i + 1];
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(opensslVersion))
-            {
-                var opensslComponent = Components.ComponentsFactory.GetComponent("openssl");
-                if (opensslComponent != null)
-                {
-                    opensslVersion = opensslComponent.GetLatestVersion();
-                }
-                else
-                {
-                    WriteErrorMsg("Componente 'openssl' não encontrado.");
-                    return 1;
-                }
-            }
-
-            string dir = Path.Combine(openSSLDir, $"openssl-{opensslVersion}", "bin");
-            string opensslExe = Path.Combine(dir, "openssl.exe");
-
-            if (!File.Exists(opensslExe))
-            {
-                Console.WriteLine($"OpenSSL {opensslVersion} não encontrado. Instalando...");
-                await InstallManager.InstallCommands(["openssl", opensslVersion]);
-            }
-
-            if (!File.Exists(opensslExe))
-            {
-                WriteErrorMsg($"OpenSSL {opensslVersion} não encontrado no PATH nem em {opensslExe}. Instale para usar este comando.");
-                return 1;
-            }
-
-            ExecuteProcess(opensslExe, $"req -x509 -nodes -days 365 -newkey rsa:2048 -keyout \"{key}\" -out \"{crt}\" -subj \"/CN={domain}\"");
-            WriteInfo($"Certificado gerado: {crt}, {key}");
+            await GenerateManager.GenerateSslCertificate(args);
             return 0;
         }
 
@@ -1122,15 +1065,15 @@ namespace DevStackManager
                         switch (cmd)
                         {
                             case "list":
-                                ExecuteProcess(mysqlExe, "-e \"SHOW DATABASES;\"");
+                                ProcessManager.ExecuteProcess(mysqlExe, "-e \"SHOW DATABASES;\"");
                                 break;
                             case "create":
                                 if (args.Length > 2)
-                                    ExecuteProcess(mysqlExe, $"-e \"CREATE DATABASE {args[2]};\"");
+                                    ProcessManager.ExecuteProcess(mysqlExe, $"-e \"CREATE DATABASE {args[2]};\"");
                                 break;
                             case "drop":
                                 if (args.Length > 2)
-                                    ExecuteProcess(mysqlExe, $"-e \"DROP DATABASE {args[2]};\"");
+                                    ProcessManager.ExecuteProcess(mysqlExe, $"-e \"DROP DATABASE {args[2]};\"");
                                 break;
                             default:
                                 Console.WriteLine("Comando db mysql desconhecido.");
@@ -1151,15 +1094,15 @@ namespace DevStackManager
                         switch (cmd)
                         {
                             case "list":
-                                ExecuteProcess(psqlExe, "-c \"\\l\"");
+                                ProcessManager.ExecuteProcess(psqlExe, "-c \"\\l\"");
                                 break;
                             case "create":
                                 if (args.Length > 2)
-                                    ExecuteProcess(psqlExe, $"-c \"CREATE DATABASE {args[2]};\"");
+                                    ProcessManager.ExecuteProcess(psqlExe, $"-c \"CREATE DATABASE {args[2]};\"");
                                 break;
                             case "drop":
                                 if (args.Length > 2)
-                                    ExecuteProcess(psqlExe, $"-c \"DROP DATABASE {args[2]};\"");
+                                    ProcessManager.ExecuteProcess(psqlExe, $"-c \"DROP DATABASE {args[2]};\"");
                                 break;
                             default:
                                 Console.WriteLine("Comando db pgsql desconhecido.");
@@ -1180,15 +1123,15 @@ namespace DevStackManager
                         switch (cmd)
                         {
                             case "list":
-                                ExecuteProcess(mongoExe, "--eval \"db.adminCommand('listDatabases')\"");
+                                ProcessManager.ExecuteProcess(mongoExe, "--eval \"db.adminCommand('listDatabases')\"");
                                 break;
                             case "create":
                                 if (args.Length > 2)
-                                    ExecuteProcess(mongoExe, $"--eval \"db.getSiblingDB('{args[2]}')\"");
+                                    ProcessManager.ExecuteProcess(mongoExe, $"--eval \"db.getSiblingDB('{args[2]}')\"");
                                 break;
                             case "drop":
                                 if (args.Length > 2)
-                                    ExecuteProcess(mongoExe, $"--eval \"db.getSiblingDB('{args[2]}').dropDatabase()\"");
+                                    ProcessManager.ExecuteProcess(mongoExe, $"--eval \"db.getSiblingDB('{args[2]}').dropDatabase()\"");
                                 break;
                             default:
                                 Console.WriteLine("Comando db mongo desconhecido.");
@@ -1539,27 +1482,6 @@ namespace DevStackManager
             {
                 return null;
             }
-        }
-
-        private static string ExecuteProcess(string fileName, string arguments, string? workingDirectory = null)
-        {
-            using var process = new Process();
-            process.StartInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory ?? ""
-            };
-
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            return output.Trim();
         }
 
 #pragma warning disable CA1416 // Validate platform compatibility
