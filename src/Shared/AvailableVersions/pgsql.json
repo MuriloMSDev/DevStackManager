@@ -1,0 +1,54 @@
+[
+  {
+    "version": "17.5.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259623"
+  },
+  {
+    "version": "16.9.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259621"
+  },
+  {
+    "version": "15.13.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259618"
+  },
+  {
+    "version": "14.18.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259608"
+  },
+  {
+    "version": "13.21.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259611"
+  },
+  {
+    "version": "12.22.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259241"
+  },
+  {
+    "version": "11.21.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1258670"
+  },
+  {
+    "version": "10.23.0",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1258258"
+  },
+  {
+    "version": "9.6.24",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1257907"
+  },
+  {
+    "version": "9.4.26",
+    "url": "https://sbp.enterprisedb.com/getfile.jsp?fileid=12372"
+  },
+  {
+    "version": "9.3.25",
+    "url": "https://get.enterprisedb.com/postgresql/postgresql-9.3.25-1-windows-x64-binaries.zip?ls=Crossover&amp;type=Crossover"
+  },
+  {
+    "version": "9.2.24",
+    "url": "https://get.enterprisedb.com/postgresql/postgresql-9.2.24-1-windows-x64-binaries.zip?ls=Crossover&amp;type=Crossover"
+  },
+  {
+    "version": "9.1.24",
+    "url": "https://www.enterprisedb.com/postgresql-9124-binaries-win64?ls=Crossover&amp;type=Crossover"
+  }
+]

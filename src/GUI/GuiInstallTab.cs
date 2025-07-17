@@ -219,16 +219,8 @@ namespace DevStackManager
         /// </summary>
         public static void LoadAvailableComponents(DevStackGui mainWindow)
         {
-            var components = new[]
-            {
-                "php", "nginx", "mysql", "node", "python", "composer", "phpmyadmin", 
-                "git", "mongodb", "redis", "pgsql", "mailhog", "elasticsearch", 
-                "memcached", "docker", "yarn", "pnpm", "wpcli", "adminer", 
-                "poetry", "ruby", "go", "certbot", "openssl", "phpcsfixer"
-            };
-
             mainWindow.AvailableComponents.Clear();
-            foreach (var component in components)
+            foreach (var component in DevStackConfig.components)
             {
                 mainWindow.AvailableComponents.Add(component);
             }
@@ -239,35 +231,28 @@ namespace DevStackManager
         /// </summary>
         public static VersionData GetVersionDataForComponent(string component)
         {
-            return component.ToLowerInvariant() switch
+            try
             {
-                "php" => DataManager.GetPHPVersions(),
-                "nginx" => DataManager.GetNginxVersions(),
-                "node" => DataManager.GetNodeVersions(),
-                "python" => DataManager.GetPythonVersions(),
-                "mysql" => DataManager.GetMySQLVersions(),
-                "composer" => DataManager.GetComposerVersions(),
-                "phpmyadmin" => DataManager.GetPhpMyAdminVersions(),
-                "git" => DataManager.GetGitVersions(),
-                "mongodb" => DataManager.GetMongoDBVersions(),
-                "redis" => DataManager.GetRedisVersions(),
-                "pgsql" => DataManager.GetPgSQLVersions(),
-                "mailhog" => DataManager.GetMailHogVersions(),
-                "elasticsearch" => DataManager.GetElasticsearchVersions(),
-                "memcached" => DataManager.GetMemcachedVersions(),
-                "docker" => DataManager.GetDockerVersions(),
-                "yarn" => DataManager.GetYarnVersions(),
-                "pnpm" => DataManager.GetPnpmVersions(),
-                "wpcli" => DataManager.GetWPCLIVersions(),
-                "adminer" => DataManager.GetAdminerVersions(),
-                "poetry" => DataManager.GetPoetryVersions(),
-                "ruby" => DataManager.GetRubyVersions(),
-                "go" => DataManager.GetGoVersions(),
-                "certbot" => DataManager.GetCertbotVersions(),
-                "openssl" => DataManager.GetOpenSSLVersions(),
-                "phpcsfixer" => DataManager.GetPHPCsFixerVersions(),
-                _ => new VersionData { Status = "error", Message = "Componente não suportado" }
-            };
+                var comp = Components.ComponentsFactory.GetComponent(component);
+                if (comp != null)
+                {
+                    var versions = comp.ListAvailable();
+                    return new VersionData
+                    {
+                        Status = "ok",
+                        Versions = versions,
+                        Message = $"{versions.Count} versões encontradas para {component}"
+                    };
+                }
+                else
+                {
+                    return new VersionData { Status = "error", Message = $"Componente '{component}' não suportado" };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new VersionData { Status = "error", Message = $"Erro ao obter versões: {ex.Message}" };
+            }
         }
     }
 }
