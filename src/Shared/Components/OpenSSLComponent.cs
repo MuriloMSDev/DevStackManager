@@ -25,22 +25,18 @@ namespace DevStackManager.Components
             Console.WriteLine($"Baixando instalador do OpenSSL {version} ({arch})...");
             using var response = await httpClient.GetAsync(installerUrl);
             response.EnsureSuccessStatusCode();
-            await using var fileStream = System.IO.File.Create(installerPath);
-            await response.Content.CopyToAsync(fileStream);
-            fileStream.Close();
+            await using (var fileStream = System.IO.File.Create(installerPath))
+            {
+                await response.Content.CopyToAsync(fileStream);
+            }
             Console.WriteLine($"Executando instalador do OpenSSL {version} ({arch})...");
             if (!System.IO.Directory.Exists(installDir))
             {
                 System.IO.Directory.CreateDirectory(installDir);
             }
-            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = installerPath,
-                Arguments = $"/silent /DIR=\"{installDir}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
-            process?.WaitForExit();
+            // Executa o instalador em modo oculto usando ProcessManager.ExecuteProcess
+            string psCommand = $"Start-Process -FilePath \"{installerPath}\" -ArgumentList '/VERYSILENT /DIR=\"{installDir}\"' -WindowStyle Hidden -Verb runAs -Wait";
+            ProcessManager.ExecuteProcess("powershell.exe", $"-Command \"{psCommand}\"", DevStackConfig.tmpDir);
             System.IO.File.Delete(installerPath);
             Console.WriteLine($"OpenSSL {version} ({arch}) instalado via instalador em {installDir}");
         }

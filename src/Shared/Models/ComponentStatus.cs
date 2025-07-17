@@ -13,6 +13,6 @@ namespace DevStackManager
         public bool Installed { get; set; } = false;
         public List<string> Versions { get; set; } = new List<string>();
         public string Message { get; set; } = "";
-        public List<bool>? RunningList { get; set; } // true/false para cada versão, na mesma ordem da lista Versions
+        public Dictionary<string, bool>? RunningList { get; set; } // versão: status
     }
 }
