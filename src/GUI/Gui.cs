@@ -34,8 +34,38 @@ namespace DevStackManager
         private string _selectedVersion = "";
         private string _selectedUninstallComponent = "";
         private string _selectedUninstallVersion = "";
-        private string _consoleOutput = "";
-        private bool _isLoading = false;
+        // Console outputs separados por tab
+        private string _installConsoleOutput = "";
+        private string _uninstallConsoleOutput = "";
+        private string _sitesConsoleOutput = "";
+        private string _servicesConsoleOutput = "";
+        private string _configConsoleOutput = "";
+        private string _utilitiesConsoleOutput = "";
+        private string _consoleOutput = ""; // Mantém para compatibilidade/aba principal
+        private bool _isInstallingComponent = false;
+        private bool _isUninstallingComponent = false;
+        private bool _isLoadingServices = false;
+        private bool _isCreatingSite = false;
+        public bool IsInstallingComponent
+        {
+            get => _isInstallingComponent;
+            set { _isInstallingComponent = value; OnPropertyChanged(); }
+        }
+        public bool IsUninstallingComponent
+        {
+            get => _isUninstallingComponent;
+            set { _isUninstallingComponent = value; OnPropertyChanged(); }
+        }
+        public bool IsLoadingServices
+        {
+            get => _isLoadingServices;
+            set { _isLoadingServices = value; OnPropertyChanged(); }
+        }
+        public bool IsCreatingSite
+        {
+            get => _isCreatingSite;
+            set { _isCreatingSite = value; OnPropertyChanged(); }
+        }
         public ContentControl? _mainContent;
         private int _selectedNavIndex = 0;
         private static GuiTheme.ThemeColors CurrentTheme => GuiTheme.DarkTheme;
@@ -96,16 +126,53 @@ namespace DevStackManager
             set { _selectedUninstallVersion = value; OnPropertyChanged(); }
         }
 
+        // Console da aba Instalar
+        public string InstallConsoleOutput
+        {
+            get => _installConsoleOutput;
+            set { _installConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console da aba Desinstalar
+        public string UninstallConsoleOutput
+        {
+            get => _uninstallConsoleOutput;
+            set { _uninstallConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console da aba Sites
+        public string SitesConsoleOutput
+        {
+            get => _sitesConsoleOutput;
+            set { _sitesConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console da aba Serviços
+        public string ServicesConsoleOutput
+        {
+            get => _servicesConsoleOutput;
+            set { _servicesConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console da aba Configurações
+        public string ConfigConsoleOutput
+        {
+            get => _configConsoleOutput;
+            set { _configConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console da aba Utilitários
+        public string UtilitiesConsoleOutput
+        {
+            get => _utilitiesConsoleOutput;
+            set { _utilitiesConsoleOutput = value; OnPropertyChanged(); }
+        }
+
+        // Console padrão/compatibilidade (pode ser usado na aba principal ou migrado depois)
         public string ConsoleOutput
         {
             get => _consoleOutput;
             set { _consoleOutput = value; OnPropertyChanged(); }
-        }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set { _isLoading = value; OnPropertyChanged(); }
         }
         
         public int SelectedNavIndex
@@ -113,10 +180,7 @@ namespace DevStackManager
             get => _selectedNavIndex;
             set { 
                 _selectedNavIndex = value; 
-                OnPropertyChanged(); 
-                
-                // Limpar console ao trocar de aba
-                GuiConsolePanel.ClearConsole(this);
+                OnPropertyChanged();
 
                 GuiNavigation.NavigateToSection(this, value);
             }

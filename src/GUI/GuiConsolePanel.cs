@@ -22,7 +22,7 @@ namespace DevStackManager
         /// <summary>
         /// Inicia a captura da saída do console principal
         /// </summary>
-        public static void StartConsoleCapture(DevStackGui mainWindow)
+        public static void StartConsoleCapture(DevStackGui mainWindow, string propertyName)
         {
             if (_isCapturing) return;
 
@@ -30,8 +30,8 @@ namespace DevStackManager
             _originalConsoleOut = Console.Out;
             _consoleCapture = new StringWriter();
 
-            // Redirecionar Console.Out para capturar saída
-            Console.SetOut(new ConsoleWriter(mainWindow));
+            // Redirecionar Console.Out para capturar saída na propriedade correta
+            Console.SetOut(new ConsoleWriter(mainWindow, propertyName));
             _isCapturing = true;
         }
 
@@ -59,7 +59,10 @@ namespace DevStackManager
         /// </summary>
         public static void ClearConsole(DevStackGui mainWindow)
         {
-            mainWindow.ConsoleOutput = "";
+            var propertyName = GetConsolePropertyName(mainWindow);
+            var prop = mainWindow.GetType().GetProperty(propertyName);
+            if (prop != null && prop.CanWrite)
+                prop.SetValue(mainWindow, "");
         }
 
         /// <summary>
@@ -87,11 +90,10 @@ namespace DevStackManager
             outputBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             outputBox.AcceptsReturn = true;
             outputBox.TextWrapping = TextWrapping.Wrap;
-            outputBox.Name = "ConsoleOutput";
 
-            var outputBinding = new Binding("ConsoleOutput") { Source = mainWindow };
+            var propertyName = GetConsolePropertyName(mainWindow);
+            var outputBinding = new Binding(propertyName) { Source = mainWindow };
             outputBox.SetBinding(TextBox.TextProperty, outputBinding);
-
             panel.Children.Add(outputBox);
 
             // Botão limpar
@@ -100,8 +102,8 @@ namespace DevStackManager
             clearButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(clearButton);
 
-            // Iniciar captura do console quando o painel é criado
-            StartConsoleCapture(mainWindow);
+            // Iniciar captura do console quando o painel é criado, para a propriedade correta
+            StartConsoleCapture(mainWindow, propertyName);
 
             return panel;
         }
@@ -115,28 +117,48 @@ namespace DevStackManager
             if (message.Contains("❌") || message.Contains("⚠️"))
             {
                 var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                AppendToConsoleInternal(mainWindow, $"[{timestamp}] {message}");
+                AppendToConsoleInternal(mainWindow, $"[{timestamp}] {message}", GetConsolePropertyName(mainWindow));
             }
         }
 
         /// <summary>
-        /// Adiciona texto diretamente ao console (uso interno)
+        /// Adiciona texto diretamente ao console (uso interno) para uma propriedade específica
         /// </summary>
-        internal static void AppendToConsoleInternal(DevStackGui mainWindow, string text)
+        internal static void AppendToConsoleInternal(DevStackGui mainWindow, string text, string propertyName)
         {
             if (mainWindow != null)
             {
                 Application.Current?.Dispatcher.Invoke(() =>
                 {
-                    mainWindow.ConsoleOutput += text + "\n";
-                    
-                    // Limitar o tamanho do console (manter últimas 1000 linhas)
-                    var lines = mainWindow.ConsoleOutput.Split('\n');
-                    if (lines.Length > 1000)
+                    var prop = mainWindow.GetType().GetProperty(propertyName);
+                    if (prop != null && prop.CanRead && prop.CanWrite)
                     {
-                        mainWindow.ConsoleOutput = string.Join("\n", lines.TakeLast(1000));
+                        var current = prop.GetValue(mainWindow) as string ?? string.Empty;
+                        current += text + "\n";
+                        // Limitar o tamanho do console (manter últimas 1000 linhas)
+                        var lines = current.Split('\n');
+                        if (lines.Length > 1000)
+                            current = string.Join("\n", lines.TakeLast(1000));
+                        prop.SetValue(mainWindow, current);
                     }
                 });
+            }
+        }
+        
+        /// <summary>
+        /// Retorna o nome da propriedade de console conforme a tab selecionada
+        /// </summary>
+        public static string GetConsolePropertyName(DevStackGui mainWindow)
+        {
+            switch (mainWindow.SelectedNavIndex)
+            {
+                case 0: return "InstallConsoleOutput";
+                case 1: return "UninstallConsoleOutput";
+                case 2: return "SitesConsoleOutput";
+                case 3: return "ServicesConsoleOutput";
+                case 4: return "ConfigConsoleOutput";
+                case 5: return "UtilitiesConsoleOutput";
+                default: return "ConsoleOutput";
             }
         }
     }
@@ -147,11 +169,13 @@ namespace DevStackManager
     internal class ConsoleWriter : TextWriter
     {
         private readonly DevStackGui _mainWindow;
+        private readonly string _propertyName;
         private readonly StringBuilder _lineBuffer = new StringBuilder();
 
-        public ConsoleWriter(DevStackGui mainWindow)
+        public ConsoleWriter(DevStackGui mainWindow, string propertyName)
         {
             _mainWindow = mainWindow;
+            _propertyName = propertyName;
         }
 
         public override Encoding Encoding => Encoding.UTF8;
@@ -165,7 +189,7 @@ namespace DevStackManager
                 if (!string.IsNullOrEmpty(line))
                 {
                     var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {line}");
+                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {line}", _propertyName);
                 }
                 _lineBuffer.Clear();
             }
@@ -180,7 +204,7 @@ namespace DevStackManager
             if (!string.IsNullOrEmpty(value))
             {
                 var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {value}");
+                GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {value}", _propertyName);
             }
         }
 
@@ -193,7 +217,7 @@ namespace DevStackManager
                 if (!string.IsNullOrEmpty(remaining))
                 {
                     var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {remaining}");
+                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {remaining}", _propertyName);
                 }
             }
             base.Dispose(disposing);
