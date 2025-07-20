@@ -21,24 +21,21 @@ namespace DevStackManager
 
                 // Inicializar aplicação WPF
                 var app = new Application();
-                
+
                 // Criar e mostrar a janela principal
                 var mainWindow = new DevStackGui();
                 app.MainWindow = mainWindow;
-                
+
                 // Executar aplicação
                 var result = app.Run(mainWindow);
-                
-                // Parar captura do console ao finalizar
-                GuiConsolePanel.StopConsoleCapture();
-                
+
                 return result;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao inicializar DevStack GUI: {ex.Message}", 
-                              "DevStack Manager - Erro", 
-                              MessageBoxButton.OK, 
+                GuiTheme.CreateStyledMessageBox($"Erro ao inicializar DevStack GUI: {ex.Message}",
+                              "DevStack Manager - Erro",
+                              MessageBoxButton.OK,
                               MessageBoxImage.Error);
                 return 1;
             }

@@ -42,6 +42,8 @@ namespace DevStackManager
     /// </summary>
     public static class GuiServicesTab
     {
+        // Overlays de loading usados apenas nesta tab
+        private static Border? ServicesLoadingOverlay;
         /// <summary>
         /// Cria o conteúdo completo da aba "Serviços"
         /// </summary>
@@ -66,6 +68,23 @@ namespace DevStackManager
             var controlPanel = CreateServicesControlPanel(mainWindow);
             Grid.SetRow(controlPanel, 2);
             grid.Children.Add(controlPanel);
+
+
+            // Overlay de loading único cobrindo toda a área de serviços
+            var overlay = GuiTheme.CreateLoadingOverlay();
+            // Overlay sempre visível se carregando serviços
+            overlay.Visibility = mainWindow.IsLoadingServices ? Visibility.Visible : Visibility.Collapsed;
+            mainWindow.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(mainWindow.IsLoadingServices))
+                {
+                    overlay.Visibility = mainWindow.IsLoadingServices ? Visibility.Visible : Visibility.Collapsed;
+                }
+            };
+
+            Grid.SetRowSpan(overlay, 3);
+            grid.Children.Add(overlay);
+            ServicesLoadingOverlay = overlay;
 
             return grid;
         }
@@ -298,13 +317,13 @@ namespace DevStackManager
                     }
                     else
                     {
-                        MessageBox.Show("Serviço não está em execução, não há PID para copiar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        GuiTheme.CreateStyledMessageBox("Serviço não está em execução, não há PID para copiar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao copiar PID: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao copiar PID: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao copiar PID";
             }
         }
@@ -314,26 +333,31 @@ namespace DevStackManager
         /// </summary>
         private static async void StartServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
+            mainWindow.IsLoadingServices = true;
+            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
             try
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
                     mainWindow.StatusMessage = $"Iniciando {service.Name} versão {service.Version}...";
-                    
                     await Task.Run(() =>
                     {
                         ProcessManager.StartComponent(service.Name, service.Version);
                     });
-
                     mainWindow.StatusMessage = $"{service.Name} iniciado com sucesso";
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao iniciar serviço: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao iniciar serviço: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao iniciar serviço";
                 DevStackConfig.WriteLog($"Erro ao iniciar serviço na GUI: {ex}");
+            }
+            finally
+            {
+                mainWindow.IsLoadingServices = false;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -342,26 +366,31 @@ namespace DevStackManager
         /// </summary>
         private static async void StopServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
+            mainWindow.IsLoadingServices = true;
+            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
             try
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
                     mainWindow.StatusMessage = $"Parando {service.Name} versão {service.Version}...";
-                    
                     await Task.Run(() =>
                     {
                         ProcessManager.StopComponent(service.Name, service.Version);
                     });
-
                     mainWindow.StatusMessage = $"{service.Name} parado com sucesso";
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao parar serviço: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao parar serviço: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao parar serviço";
                 DevStackConfig.WriteLog($"Erro ao parar serviço na GUI: {ex}");
+            }
+            finally
+            {
+                mainWindow.IsLoadingServices = false;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -370,26 +399,31 @@ namespace DevStackManager
         /// </summary>
         private static async void RestartServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
+            mainWindow.IsLoadingServices = true;
+            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
             try
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
                     mainWindow.StatusMessage = $"Reiniciando {service.Name} versão {service.Version}...";
-                    
                     await Task.Run(() =>
                     {
                         ProcessManager.RestartComponent(service.Name, service.Version);
                     });
-
                     mainWindow.StatusMessage = $"{service.Name} reiniciado com sucesso";
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao reiniciar serviço: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao reiniciar serviço: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao reiniciar serviço";
                 DevStackConfig.WriteLog($"Erro ao reiniciar serviço na GUI: {ex}");
+            }
+            finally
+            {
+                mainWindow.IsLoadingServices = false;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -406,19 +440,49 @@ namespace DevStackManager
             };
 
             // Botões para todos os serviços
-            var startAllButton = GuiTheme.CreateStyledButton("▶️ Iniciar Todos", async (s, e) => await StartAllServices(mainWindow));
+            var startAllButton = GuiTheme.CreateStyledButton("▶️ Iniciar Todos", async (s, e) =>
+            {
+                mainWindow.IsLoadingServices = true;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
+                try { await StartAllServices(mainWindow); }
+                finally
+                {
+                    mainWindow.IsLoadingServices = false;
+                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
+                }
+            });
             startAllButton.Width = 140;
             startAllButton.Height = 40;
             startAllButton.Margin = new Thickness(10);
             panel.Children.Add(startAllButton);
 
-            var stopAllButton = GuiTheme.CreateStyledButton("⏹️ Parar Todos", async (s, e) => await StopAllServices(mainWindow));
+            var stopAllButton = GuiTheme.CreateStyledButton("⏹️ Parar Todos", async (s, e) =>
+            {
+                mainWindow.IsLoadingServices = true;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
+                try { await StopAllServices(mainWindow); }
+                finally
+                {
+                    mainWindow.IsLoadingServices = false;
+                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
+                }
+            });
             stopAllButton.Width = 140;
             stopAllButton.Height = 40;
             stopAllButton.Margin = new Thickness(10);
             panel.Children.Add(stopAllButton);
 
-            var restartAllButton = GuiTheme.CreateStyledButton("🔄 Reiniciar Todos", async (s, e) => await RestartAllServices(mainWindow));
+            var restartAllButton = GuiTheme.CreateStyledButton("🔄 Reiniciar Todos", async (s, e) =>
+            {
+                mainWindow.IsLoadingServices = true;
+                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
+                try { await RestartAllServices(mainWindow); }
+                finally
+                {
+                    mainWindow.IsLoadingServices = false;
+                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
+                }
+            });
             restartAllButton.Width = 140;
             restartAllButton.Height = 40;
             restartAllButton.Margin = new Thickness(10);
@@ -671,7 +735,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao iniciar todos os serviços: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao iniciar todos os serviços: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao iniciar todos os serviços";
                 DevStackConfig.WriteLog($"Erro ao iniciar todos os serviços na GUI: {ex}");
             }
@@ -696,7 +760,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao parar todos os serviços: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao parar todos os serviços: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao parar todos os serviços";
                 DevStackConfig.WriteLog($"Erro ao parar todos os serviços na GUI: {ex}");
             }
@@ -724,7 +788,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao reiniciar todos os serviços: {ex.Message}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao reiniciar todos os serviços: {ex.Message}");
                 mainWindow.StatusMessage = "Erro ao reiniciar todos os serviços";
                 DevStackConfig.WriteLog($"Erro ao reiniciar todos os serviços na GUI: {ex}");
             }

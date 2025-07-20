@@ -49,85 +49,39 @@ namespace DevStackManager
         {
             var pathsToAdd = new List<string>();
 
-            // PHP
-            if (Directory.Exists(phpDir))
+            // Para cada componente, buscar todas as versões instaladas e montar o caminho do binário
+            foreach (var component in Components.ComponentsFactory.GetAll())
             {
-                foreach (var dir in Directory.GetDirectories(phpDir))
+                try
                 {
-                    var phpExe = Directory.GetFiles(dir, "php-*.exe").FirstOrDefault();
-                    if (phpExe != null)
+                    var installedVersions = component.ListInstalled(); // agora retorna versões
+                    if (installedVersions != null && installedVersions.Count > 0)
                     {
-                        pathsToAdd.Add(dir);
-                    }
-                }
-            }
-
-            // Node.js
-            if (Directory.Exists(nodeDir))
-            {
-                foreach (var dir in Directory.GetDirectories(nodeDir))
-                {
-                    var nodeExe = Directory.GetFiles(dir, "node-*.exe").FirstOrDefault();
-                    if (nodeExe != null)
-                    {
-                        pathsToAdd.Add(dir);
-                    }
-                }
-            }
-
-            // Python
-            if (Directory.Exists(pythonDir))
-            {
-                foreach (var dir in Directory.GetDirectories(pythonDir))
-                {
-                    var pythonExe = Directory.GetFiles(dir, "python-*.exe").FirstOrDefault();
-                    if (pythonExe != null)
-                    {
-                        pathsToAdd.Add(dir);
-                    }
-                }
-            }
-
-            // Nginx
-            if (Directory.Exists(nginxDir))
-            {
-                foreach (var dir in Directory.GetDirectories(nginxDir))
-                {
-                    var nginxExe = Directory.GetFiles(dir, "nginx-*.exe").FirstOrDefault();
-                    if (nginxExe != null)
-                    {
-                        pathsToAdd.Add(dir);
-                    }
-                }
-            }
-
-            // MySQL (bin)
-            if (Directory.Exists(mysqlDir))
-            {
-                foreach (var dir in Directory.GetDirectories(mysqlDir))
-                {
-                    var mysqlBin = Path.Combine(dir, "bin");
-                    if (Directory.Exists(mysqlBin))
-                    {
-                        var mysqldExe = Directory.GetFiles(mysqlBin, "mysqld-*.exe").FirstOrDefault();
-                        if (mysqldExe != null)
+                        foreach (var version in installedVersions)
                         {
-                            pathsToAdd.Add(mysqlBin);
+                            // Montar caminho do binário: baseDir\Components\<NomeComponente>\<Versao>\bin
+                            var componentDir = Path.Combine(baseDir, component.Name, $"{component.Name}-{version}");
+                            var binDir1 = Path.Combine(componentDir, "bin");
+                            var binDir2 = Path.Combine(baseDir, component.Name, "bin");
+                            if (Directory.Exists(binDir1) && !pathsToAdd.Contains(binDir1) && Directory.GetFiles(binDir1, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
+                            {
+                                pathsToAdd.Add(binDir1);
+                            }
+                            else if (Directory.Exists(componentDir) && !pathsToAdd.Contains(componentDir) && Directory.GetFiles(componentDir, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
+                            {
+                                pathsToAdd.Add(componentDir);
+                            }
+                            
+                            if (Directory.Exists(binDir2) && !pathsToAdd.Contains(binDir2) && Directory.GetFiles(binDir2, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
+                            {
+                                pathsToAdd.Add(binDir2);
+                            }
                         }
                     }
                 }
-            }
-
-            // Git (Portable)
-            if (Directory.Exists(baseDir))
-            {
-                foreach (var dir in Directory.GetDirectories(baseDir, "git-*"))
+                catch (System.Exception ex)
                 {
-                    var gitBin = Path.Combine(dir, "cmd");
-                    if (Directory.Exists(gitBin))
-                    {
-                        pathsToAdd.Add(gitBin);
-                    }
+                    DevStackConfig.WriteLog($"Erro ao obter versões instaladas para o componente {component.Name}: {ex.Message}");
                 }
             }
 
@@ -214,49 +168,42 @@ namespace DevStackManager
         {
             var dirsToRemove = new List<string>();
 
-            // Coletar todos os diretórios que podem estar no PATH
-            if (Directory.Exists(phpDir))
+            var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
+            var currentPathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(NormalizePath)
+                                            .Where(p => !string.IsNullOrEmpty(p));
+            // Para cada componente, buscar todas as versões instaladas e montar o caminho do binário
+            foreach (var component in Components.ComponentsFactory.GetAll())
             {
-                dirsToRemove.AddRange(Directory.GetDirectories(phpDir));
-            }
-
-            if (Directory.Exists(nodeDir))
-            {
-                dirsToRemove.AddRange(Directory.GetDirectories(nodeDir));
-            }
-
-            if (Directory.Exists(pythonDir))
-            {
-                dirsToRemove.AddRange(Directory.GetDirectories(pythonDir));
-            }
-
-            if (Directory.Exists(nginxDir))
-            {
-                dirsToRemove.AddRange(Directory.GetDirectories(nginxDir));
-            }
-
-            if (Directory.Exists(mysqlDir))
-            {
-                foreach (var dir in Directory.GetDirectories(mysqlDir))
+                try
                 {
-                    var mysqlBin = Path.Combine(dir, "bin");
-                    if (Directory.Exists(mysqlBin))
+                    var installedVersions = component.ListInstalled(); // agora retorna versões
+                    if (installedVersions != null && installedVersions.Count > 0)
                     {
-                        dirsToRemove.Add(mysqlBin);
+                        foreach (var version in installedVersions)
+                        {
+                            // Montar caminho do binário: baseDir\Components\<NomeComponente>\<Versao>\bin
+                            var componentDir = Path.Combine(baseDir, component.Name, $"{component.Name}-{version}");
+                            var binDir1 = Path.Combine(componentDir, "bin");
+                            var binDir2 = Path.Combine(baseDir, component.Name, "bin");
+                            if (Directory.Exists(binDir1) && currentPathList.Any(p => p == NormalizePath(binDir1)))
+                            {
+                                dirsToRemove.Add(binDir1);
+                            }
+                            if (Directory.Exists(binDir2) && currentPathList.Any(p => p == NormalizePath(binDir2)))
+                            {
+                                dirsToRemove.Add(binDir2);
+                            }
+                            if (Directory.Exists(componentDir) && currentPathList.Any(p => p == NormalizePath(componentDir)))
+                            {
+                                dirsToRemove.Add(componentDir);
+                            }
+                        }
                     }
                 }
-            }
-
-            // Git (Portable)
-            if (Directory.Exists(baseDir))
-            {
-                foreach (var dir in Directory.GetDirectories(baseDir, "git-*"))
+                catch (System.Exception ex)
                 {
-                    var gitBin = Path.Combine(dir, "cmd");
-                    if (Directory.Exists(gitBin))
-                    {
-                        dirsToRemove.Add(gitBin);
-                    }
+                    DevStackConfig.WriteLog($"Erro ao obter versões instaladas para o componente {component.Name}: {ex.Message}");
                 }
             }
 

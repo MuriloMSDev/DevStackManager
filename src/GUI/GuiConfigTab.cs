@@ -24,7 +24,7 @@ namespace DevStackManager
             grid.Children.Add(leftPanel);
 
             // Painel direito - Console de saída
-            var rightPanel = GuiConsolePanel.CreateConsoleOutputPanel(mainWindow);
+            var rightPanel = GuiConsolePanel.CreateConsolePanel(GuiConsolePanel.ConsoleTab.Config);
             Grid.SetColumn(rightPanel, 1);
             grid.Children.Add(rightPanel);
 
@@ -45,35 +45,35 @@ namespace DevStackManager
             var panel = new StackPanel();
 
             // Configurações de Path
-            var pathGroup = CreatePathConfigGroup(mainWindow);
-            panel.Children.Add(pathGroup);
-
-            // Configurações de Proxy
-            var proxyGroup = CreateProxyConfigGroup(mainWindow);
-            panel.Children.Add(proxyGroup);
+            var pathPanel = CreatePathConfigPanel(mainWindow);
+            panel.Children.Add(pathPanel);
 
             scrollViewer.Content = panel;
             return scrollViewer;
         }
 
         /// <summary>
-        /// Cria o grupo de configurações do PATH
+        /// Cria o painel de configurações do PATH (StackPanel estilizado)
         /// </summary>
-        private static GroupBox CreatePathConfigGroup(DevStackGui mainWindow)
+        private static StackPanel CreatePathConfigPanel(DevStackGui mainWindow)
         {
-            var group = new GroupBox
+            var panel = new StackPanel
             {
-                Header = "Gerenciamento do PATH",
-                Margin = new Thickness(0, 0, 0, 20),
-                Padding = new Thickness(10)
+                Margin = new Thickness(0, 0, 0, 10)
             };
 
-            var panel = new StackPanel();
-            
+            // Gerenciamento do PATH
+            var pathTitleLabel = GuiTheme.CreateStyledLabel("Gerenciamento do PATH", true);
+            pathTitleLabel.FontSize = 18;
+            pathTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            panel.Children.Add(pathTitleLabel);
+
+            // Descrição
             var pathLabel = GuiTheme.CreateStyledLabel("Adicionar ferramentas ao PATH do sistema");
             pathLabel.FontWeight = FontWeights.Bold;
             panel.Children.Add(pathLabel);
 
+            // Botão Adicionar
             var addPathButton = GuiTheme.CreateStyledButton("➕ Adicionar ao PATH", (s, e) => AddToPath(mainWindow));
             addPathButton.Width = 200;
             addPathButton.Height = 35;
@@ -81,6 +81,7 @@ namespace DevStackManager
             addPathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(addPathButton);
 
+            // Botão Remover
             var removePathButton = GuiTheme.CreateStyledButton("➖ Remover do PATH", (s, e) => RemoveFromPath(mainWindow));
             removePathButton.Width = 200;
             removePathButton.Height = 35;
@@ -88,6 +89,7 @@ namespace DevStackManager
             removePathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(removePathButton);
 
+            // Botão Listar
             var listPathButton = GuiTheme.CreateStyledButton("📋 Listar PATH Atual", (s, e) => ListCurrentPath(mainWindow));
             listPathButton.Width = 200;
             listPathButton.Height = 35;
@@ -95,50 +97,35 @@ namespace DevStackManager
             listPathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(listPathButton);
 
-            group.Content = panel;
-            return group;
-        }
+            // Info
+            var infoLabel = GuiTheme.CreateStyledLabel("ℹ️ As alterações no PATH afetam o terminal e o sistema.");
+            infoLabel.FontStyle = FontStyles.Italic;
+            infoLabel.Margin = new Thickness(0, 10, 0, 20);
+            panel.Children.Add(infoLabel);
 
-        /// <summary>
-        /// Cria o grupo de configurações de proxy
-        /// </summary>
-        private static GroupBox CreateProxyConfigGroup(DevStackGui mainWindow)
-        {
-            var group = new GroupBox
-            {
-                Header = "Configurações de Proxy",
-                Margin = new Thickness(0, 0, 0, 20),
-                Padding = new Thickness(10)
-            };
+            // Gerenciamento do PATH
+            var dirsTitleLabel = GuiTheme.CreateStyledLabel("Diretórios", true);
+            dirsTitleLabel.FontSize = 18;
+            dirsTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            panel.Children.Add(dirsTitleLabel);
 
-            var panel = new StackPanel();
+            // Botão Abrir Pasta do Executável
+            var openExeFolderButton = GuiTheme.CreateStyledButton("📂 DevStack Manager", (s, e) => OpenExeFolder(mainWindow));
+            openExeFolderButton.Width = 200;
+            openExeFolderButton.Height = 35;
+            openExeFolderButton.Margin = new Thickness(0, 5, 0, 10);
+            openExeFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
+            panel.Children.Add(openExeFolderButton);
 
-            var proxyLabel = GuiTheme.CreateStyledLabel("URL do Proxy (opcional):");
-            proxyLabel.FontWeight = FontWeights.Bold;
-            panel.Children.Add(proxyLabel);
-
-            var proxyTextBox = GuiTheme.CreateStyledTextBox();
-            proxyTextBox.Height = 30;
-            proxyTextBox.Margin = new Thickness(0, 5, 0, 10);
-            proxyTextBox.Text = Environment.GetEnvironmentVariable("HTTP_PROXY") ?? "";
-            panel.Children.Add(proxyTextBox);
-
-            var setProxyButton = GuiTheme.CreateStyledButton("✅ Definir Proxy", (s, e) => SetProxy(mainWindow, proxyTextBox.Text));
-            setProxyButton.Width = 150;
-            setProxyButton.Height = 35;
-            setProxyButton.Margin = new Thickness(0, 5, 5, 5);
-            setProxyButton.HorizontalAlignment = HorizontalAlignment.Left;
-            panel.Children.Add(setProxyButton);
-
-            var removeProxyButton = GuiTheme.CreateStyledButton("❌ Remover Proxy", (s, e) => { proxyTextBox.Text = ""; SetProxy(mainWindow, ""); });
-            removeProxyButton.Width = 150;
-            removeProxyButton.Height = 35;
-            removeProxyButton.Margin = new Thickness(0, 5, 0, 10);
-            removeProxyButton.HorizontalAlignment = HorizontalAlignment.Left;
-            panel.Children.Add(removeProxyButton);
-
-            group.Content = panel;
-            return group;
+            // Botão Abrir Pasta das Ferramentas
+            var openBaseDirFolderButton = GuiTheme.CreateStyledButton("📂 Ferramentas", (s, e) => OpenBaseDir(mainWindow));
+            openBaseDirFolderButton.Width = 200;
+            openBaseDirFolderButton.Height = 35;
+            openBaseDirFolderButton.Margin = new Thickness(0, 5, 0, 10);
+            openBaseDirFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
+            panel.Children.Add(openBaseDirFolderButton);
+            
+            return panel;
         }
 
         /// <summary>
@@ -146,17 +133,20 @@ namespace DevStackManager
         /// </summary>
         private static void AddToPath(DevStackGui mainWindow)
         {
-            try
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
-                DevStackConfig.pathManager?.AddBinDirsToPath();
-                
-                mainWindow.StatusMessage = "PATH atualizado com sucesso";
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao adicionar ao PATH: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao atualizar PATH";
-            }
+                try
+                {
+                    DevStackConfig.pathManager?.AddBinDirsToPath();
+                    mainWindow.StatusMessage = "PATH atualizado com sucesso";
+                }
+                catch (Exception ex)
+                {
+                    progress.Report($"❌ Erro ao adicionar ao PATH: {ex.Message}");
+                    mainWindow.StatusMessage = "Erro ao atualizar PATH";
+                }
+                await Task.CompletedTask;
+            });
         }
 
         /// <summary>
@@ -164,17 +154,20 @@ namespace DevStackManager
         /// </summary>
         private static void RemoveFromPath(DevStackGui mainWindow)
         {
-            try
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
-                DevStackConfig.pathManager?.RemoveAllDevStackFromPath();
-                
-                mainWindow.StatusMessage = "PATH limpo com sucesso";
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao remover do PATH: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao limpar PATH";
-            }
+                try
+                {
+                    DevStackConfig.pathManager?.RemoveAllDevStackFromPath();
+                    mainWindow.StatusMessage = "PATH limpo com sucesso";
+                }
+                catch (Exception ex)
+                {
+                    progress.Report($"❌ Erro ao remover do PATH: {ex.Message}");
+                    mainWindow.StatusMessage = "Erro ao limpar PATH";
+                }
+                await Task.CompletedTask;
+            });
         }
 
         /// <summary>
@@ -182,43 +175,91 @@ namespace DevStackManager
         /// </summary>
         private static void ListCurrentPath(DevStackGui mainWindow)
         {
-            try
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
-                DevStackConfig.pathManager?.ListCurrentPath();
-
-                mainWindow.StatusMessage = "PATH listado";
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao listar PATH: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao listar PATH";
-            }
+                try
+                {
+                    DevStackConfig.pathManager?.ListCurrentPath();
+                    mainWindow.StatusMessage = "PATH listado";
+                }
+                catch (Exception ex)
+                {
+                    progress.Report($"❌ Erro ao listar PATH: {ex.Message}");
+                    mainWindow.StatusMessage = "Erro ao listar PATH";
+                }
+                await Task.CompletedTask;
+            });
         }
 
         /// <summary>
-        /// Define ou remove o proxy do sistema
+        /// Abre a pasta onde está o executável DevStackGUI.exe
         /// </summary>
-        private static void SetProxy(DevStackGui mainWindow, string proxyUrl)
+        private static void OpenExeFolder(DevStackGui mainWindow)
         {
-            try
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
-                if (string.IsNullOrEmpty(proxyUrl))
+                try
                 {
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", null);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", null);
+                    var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                    var folder = System.IO.Path.GetDirectoryName(exePath);
+                    if (!string.IsNullOrEmpty(folder))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = folder,
+                            UseShellExecute = true,
+                            Verb = "open"
+                        });
+                        mainWindow.StatusMessage = "Pasta do executável aberta";
+                    }
+                    else
+                    {
+                        progress.Report($"❌ Não foi possível localizar a pasta do executável.");
+                        mainWindow.StatusMessage = "Erro ao abrir pasta do executável";
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", proxyUrl);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", proxyUrl);
+                    progress.Report($"❌ Erro ao abrir pasta do executável: {ex.Message}");
+                    mainWindow.StatusMessage = "Erro ao abrir pasta do executável";
                 }
-                mainWindow.StatusMessage = "Configuração de proxy atualizada";
-            }
-            catch (Exception ex)
+                await Task.CompletedTask;
+            });
+        }
+
+        /// <summary>
+        /// Abre a pasta base das ferramentas (DevStackConfig.baseDir)
+        /// </summary>
+        private static void OpenBaseDir(DevStackGui mainWindow)
+        {
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
-                GuiConsolePanel.AppendToConsole(mainWindow, $"❌ Erro ao configurar proxy: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao configurar proxy";
-            }
+                try
+                {
+                    var baseDir = DevStackConfig.baseDir;
+                    if (!string.IsNullOrEmpty(baseDir) && System.IO.Directory.Exists(baseDir))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = baseDir,
+                            UseShellExecute = true,
+                            Verb = "open"
+                        });
+                        mainWindow.StatusMessage = "Pasta de ferramentas aberta";
+                    }
+                    else
+                    {
+                        progress.Report($"❌ Não foi possível localizar a pasta de ferramentas.");
+                        mainWindow.StatusMessage = "Erro ao abrir pasta de ferramentas";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    progress.Report($"❌ Erro ao abrir pasta de ferramentas: {ex.Message}");
+                    mainWindow.StatusMessage = "Erro ao abrir pasta de ferramentas";
+                }
+                await Task.CompletedTask;
+            });
         }
     }
 }
