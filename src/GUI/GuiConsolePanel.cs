@@ -1,84 +1,54 @@
+
+
 using System;
-using System.IO;
-using System.Linq;
+using System.Collections.Concurrent;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
+using System.Threading.Tasks;
 
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pelo painel de console compartilhado - usado por várias abas
-    /// Captura saída do terminal principal em tempo real
+    /// ConsolePanel multi-abas: cada aba (Install, Uninstall, Sites) tem seu próprio buffer persistente.
+    /// Outputs de execuções em background continuam sendo enviados para o buffer correto.
     /// </summary>
     public static class GuiConsolePanel
     {
-        private static DevStackGui? _currentMainWindow;
-        private static StringWriter? _consoleCapture;
-        private static TextWriter? _originalConsoleOut;
-        private static bool _isCapturing = false;
-        /// <summary>
-        /// Inicia a captura da saída do console principal
-        /// </summary>
-        public static void StartConsoleCapture(DevStackGui mainWindow)
+        public enum ConsoleTab { Install, Uninstall, Sites, Config }
+
+        // Buffer persistente para cada aba
+        private static readonly ConcurrentDictionary<ConsoleTab, StringBuilder> Buffers = new();
+        // Lista de TextBox ativos por aba (atualiza output ao alternar)
+        private static readonly ConcurrentDictionary<ConsoleTab, TextBox> ActiveTextBoxes = new();
+        // Lock para escrita
+        private static readonly object _lock = new();
+
+        static GuiConsolePanel()
         {
-            if (_isCapturing) return;
-
-            _currentMainWindow = mainWindow;
-            _originalConsoleOut = Console.Out;
-            _consoleCapture = new StringWriter();
-
-            // Redirecionar Console.Out para capturar saída
-            Console.SetOut(new ConsoleWriter(mainWindow));
-            _isCapturing = true;
+            foreach (ConsoleTab tab in Enum.GetValues(typeof(ConsoleTab)))
+                Buffers[tab] = new StringBuilder();
         }
 
         /// <summary>
-        /// Para a captura da saída do console principal
+        /// Cria painel de console para uma aba específica
         /// </summary>
-        public static void StopConsoleCapture()
+        public static StackPanel CreateConsolePanel(ConsoleTab tab)
         {
-            if (!_isCapturing) return;
-
-            if (_originalConsoleOut != null)
+            var panel = new StackPanel { Margin = new Thickness(10) };
+            var title = tab switch
             {
-                Console.SetOut(_originalConsoleOut);
-            }
-
-            _consoleCapture?.Dispose();
-            _consoleCapture = null;
-            _originalConsoleOut = null;
-            _currentMainWindow = null;
-            _isCapturing = false;
-        }
-
-        /// <summary>
-        /// Limpa o console
-        /// </summary>
-        public static void ClearConsole(DevStackGui mainWindow)
-        {
-            mainWindow.ConsoleOutput = "";
-        }
-
-        /// <summary>
-        /// Cria o painel de saída do console compartilhado
-        /// </summary>
-        public static StackPanel CreateConsoleOutputPanel(DevStackGui mainWindow)
-        {
-            var panel = new StackPanel
-            {
-                Margin = new Thickness(10)
+                ConsoleTab.Install => "Saída do Console - Instalar",
+                ConsoleTab.Uninstall => "Saída do Console - Desinstalar",
+                ConsoleTab.Sites => "Saída do Console - Sites",
+                ConsoleTab.Config => "Saída do Console - Configurações",
+                _ => "Saída do Console"
             };
-
-            // Título
-            var titleLabel = GuiTheme.CreateStyledLabel("Saída do Console", true);
+            var titleLabel = GuiTheme.CreateStyledLabel(title, true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 10);
             panel.Children.Add(titleLabel);
 
-            // Console output
             var outputBox = GuiTheme.CreateStyledTextBox(true);
             outputBox.Height = 600;
             outputBox.IsReadOnly = true;
@@ -87,116 +57,111 @@ namespace DevStackManager
             outputBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             outputBox.AcceptsReturn = true;
             outputBox.TextWrapping = TextWrapping.Wrap;
-            outputBox.Name = "ConsoleOutput";
-
-            var outputBinding = new Binding("ConsoleOutput") { Source = mainWindow };
-            outputBox.SetBinding(TextBox.TextProperty, outputBinding);
+            outputBox.Name = $"ConsoleOutput_{tab}";
+            outputBox.Text = Buffers[tab].ToString();
+            ActiveTextBoxes[tab] = outputBox;
 
             panel.Children.Add(outputBox);
 
-            // Botão limpar
-            var clearButton = GuiTheme.CreateStyledButton("🗑️ Limpar Console", (s, e) => ClearConsole(mainWindow));
+            var clearButton = GuiTheme.CreateStyledButton("🗑️ Limpar Console", (s, e) => Clear(tab));
             clearButton.Height = 35;
             clearButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(clearButton);
-
-            // Iniciar captura do console quando o painel é criado
-            StartConsoleCapture(mainWindow);
 
             return panel;
         }
 
         /// <summary>
-        /// Adiciona uma mensagem ao console principal (apenas para erros)
+        /// Limpa o buffer do console da aba
         /// </summary>
-        public static void AppendToConsole(DevStackGui mainWindow, string message)
+        public static void Clear(ConsoleTab tab)
         {
-            // Só usar para mensagens de erro - a saída normal será capturada automaticamente
-            if (message.Contains("❌") || message.Contains("⚠️"))
+            lock (_lock)
             {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                AppendToConsoleInternal(mainWindow, $"[{timestamp}] {message}");
+                Buffers[tab].Clear();
+                if (ActiveTextBoxes.TryGetValue(tab, out var box))
+                {
+                    Application.Current?.Dispatcher.Invoke(() => box.Text = "");
+                }
             }
         }
 
         /// <summary>
-        /// Adiciona texto diretamente ao console (uso interno)
+        /// Adiciona output ao buffer da aba (thread-safe, pode ser chamado de qualquer thread)
         /// </summary>
-        internal static void AppendToConsoleInternal(DevStackGui mainWindow, string text)
+        public static void Append(ConsoleTab tab, string text)
         {
-            if (mainWindow != null)
+            lock (_lock)
+            {
+                var timestamp = DateTime.Now.ToString("HH:mm:ss");
+                Buffers[tab].AppendLine($"[{timestamp}] {text}");
+                // Atualiza textbox se a aba estiver visível
+                if (ActiveTextBoxes.TryGetValue(tab, out var box))
+                {
+                    Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        box.Text = Buffers[tab].ToString();
+                        box.ScrollToEnd();
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Recupera o buffer atual da aba (para restaurar ao alternar)
+        /// </summary>
+        public static string GetBuffer(ConsoleTab tab)
+        {
+            lock (_lock)
+            {
+                return Buffers[tab].ToString();
+            }
+        }
+
+        /// <summary>
+        /// Deve ser chamado ao alternar para uma aba para restaurar o output
+        /// </summary>
+        public static void OnTabActivated(ConsoleTab tab)
+        {
+            if (ActiveTextBoxes.TryGetValue(tab, out var box))
             {
                 Application.Current?.Dispatcher.Invoke(() =>
                 {
-                    mainWindow.ConsoleOutput += text + "\n";
-                    
-                    // Limitar o tamanho do console (manter últimas 1000 linhas)
-                    var lines = mainWindow.ConsoleOutput.Split('\n');
-                    if (lines.Length > 1000)
-                    {
-                        mainWindow.ConsoleOutput = string.Join("\n", lines.TakeLast(1000));
-                    }
+                    box.Text = Buffers[tab].ToString();
+                    box.ScrollToEnd();
                 });
             }
         }
-    }
 
-    /// <summary>
-    /// Writer customizado para capturar saída do console em tempo real
-    /// </summary>
-    internal class ConsoleWriter : TextWriter
-    {
-        private readonly DevStackGui _mainWindow;
-        private readonly StringBuilder _lineBuffer = new StringBuilder();
-
-        public ConsoleWriter(DevStackGui mainWindow)
+        /// <summary>
+        /// Permite executar uma ação e enviar output para o buffer correto, mesmo em background
+        /// </summary>
+        public static async Task RunWithConsoleOutput(ConsoleTab tab, Func<IProgress<string>, Task> action)
         {
-            _mainWindow = mainWindow;
-        }
-
-        public override Encoding Encoding => Encoding.UTF8;
-
-        public override void Write(char value)
-        {
-            if (value == '\n')
+            var progress = new Progress<string>(msg => Append(tab, msg));
+            var originalOut = Console.Out;
+            try
             {
-                // Linha completa - enviar para o console da GUI
-                var line = _lineBuffer.ToString();
-                if (!string.IsNullOrEmpty(line))
+                using (var writer = new ProgressTextWriter(progress))
                 {
-                    var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {line}");
-                }
-                _lineBuffer.Clear();
-            }
-            else if (value != '\r')
-            {
-                _lineBuffer.Append(value);
-            }
-        }
-
-        public override void WriteLine(string? value)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {value}");
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && _lineBuffer.Length > 0)
-            {
-                // Enviar qualquer texto restante no buffer
-                var remaining = _lineBuffer.ToString();
-                if (!string.IsNullOrEmpty(remaining))
-                {
-                    var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                    GuiConsolePanel.AppendToConsoleInternal(_mainWindow, $"[{timestamp}] {remaining}");
+                    Console.SetOut(writer);
+                    await action(progress);
                 }
             }
-            base.Dispose(disposing);
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+        }
+
+        // Writer que envia tudo para progress.Report
+        private class ProgressTextWriter : System.IO.TextWriter
+        {
+            private readonly IProgress<string> _progress;
+            public ProgressTextWriter(IProgress<string> progress) { _progress = progress; }
+            public override Encoding Encoding => Encoding.UTF8;
+            public override void WriteLine(string? value) => _progress.Report(value ?? "");
+            public override void Write(string? value) => _progress.Report(value ?? "");
         }
     }
 }
