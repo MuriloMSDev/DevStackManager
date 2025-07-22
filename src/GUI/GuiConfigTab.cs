@@ -200,8 +200,7 @@ namespace DevStackManager
             {
                 try
                 {
-                    var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                    var folder = System.IO.Path.GetDirectoryName(exePath);
+                    var folder = System.AppContext.BaseDirectory;
                     if (!string.IsNullOrEmpty(folder))
                     {
                         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
