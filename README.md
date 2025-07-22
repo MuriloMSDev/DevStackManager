@@ -1,10 +1,9 @@
-![DevStackManager Banner](https://img.shields.io/badge/Build-v2.3.1-blue?style=for-the-badge&logo=build)
+![DevStackManager Banner](https://img.shields.io/badge/Build-v2.3.2-blue?style=for-the-badge&logo=build)
 
 <div align="center">
     <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
 </div>
 <h1 align="center"><b>DevStack Manager</b></h1><br>
-
 
 ## 🚀 O que é?
 **Gerencie rapidamente um ambiente de desenvolvimento local moderno (PHP, Node.js, Python, Nginx, MySQL, Composer, phpMyAdmin, MongoDB, PostgreSQL, e mais) no Windows.**
@@ -13,18 +12,7 @@
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.3.1-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.3.1)
-
-<div align="center">
-    <span>━━━ <b>OU</b> ━━━</span>
-</div>
-
-* **Clone o repositório e acesse os executáveis:**
-    ```
-    git clone https://github.com/MuriloMSDev/DevStackManager.git
-    cd DevStackManager/release
-    ```
-    Os executáveis `DevStack.exe` (CLI) e `DevStackGUI.exe` (interface gráfica) estarão disponíveis na pasta `release`.
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.3.2-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.3.2)
 
 ---
 
@@ -32,7 +20,9 @@
 
 * **Compile o projeto:**
     ```
-    .\scripts\build.ps1 [-WithInstaller] [-Clean]
+    git clone https://github.com/MuriloMSDev/DevStackManager.git
+    cd DevStackManager
+    .\scripts\build.ps1 [-WithInstaller]
     cd release
     ```
     Os executáveis `DevStack.exe` (CLI) e `DevStackGUI.exe` (interface gráfica) estarão disponíveis na pasta `release`.

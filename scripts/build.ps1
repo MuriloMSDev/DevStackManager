@@ -1,8 +1,7 @@
 # Script para compilar DevStack CLI e GUI
 # Execute este script a partir da pasta scripts
 param(
-    [switch]$WithInstaller = $false,
-    [switch]$Clean = $false
+    [switch]$WithInstaller = $false
 )
 
 Write-Host "=== DevStack Build Script ===" -ForegroundColor Green
@@ -167,15 +166,9 @@ Write-Host "  DevStackGUI.exe  - Interface gráfica" -ForegroundColor White
 if ($WithInstaller) {
     Write-Host ""
     Write-Host "=== Building Installer ===" -ForegroundColor Magenta
-    
     $installerScript = Join-Path $PSScriptRoot "build-installer.ps1"
     if (Test-Path $installerScript) {
-        if ($Clean) {
-            & $installerScript -Clean
-        } else {
-            & $installerScript
-        }
-        
+        & $installerScript
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Installer created successfully!" -ForegroundColor Green
         } else {
