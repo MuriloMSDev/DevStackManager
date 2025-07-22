@@ -15,6 +15,9 @@
     <OutputPath>bin\Release\</OutputPath>
     <AssemblyName>DevStack</AssemblyName>
     <StartupObject>DevStackManager.Program</StartupObject>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -848,7 +848,7 @@ namespace DevStackManager
 
         private static int HandleSelfUpdateCommand()
         {
-            string repoDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "";
+            string repoDir = System.AppContext.BaseDirectory;
             if (Directory.Exists(Path.Combine(repoDir, ".git")))
             {
                 WriteInfo("Atualizando via git pull...");
@@ -1311,7 +1311,7 @@ namespace DevStackManager
 
         private static int HandleGlobalCommand()
         {
-            string devstackDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "";
+            string devstackDir = System.AppContext.BaseDirectory;
             string currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
             
             if (!currentPath.Contains(devstackDir))

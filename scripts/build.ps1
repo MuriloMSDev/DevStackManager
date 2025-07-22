@@ -52,7 +52,7 @@ Write-Host ""
 
 # Compilar DevStack CLI (Exe)
 Write-Host "Compilando DevStack CLI (DevStack.exe)..." -ForegroundColor Cyan
-dotnet build "src\CLI\DevStackCLI.csproj" -c Release
+dotnet publish "src\CLI\DevStackCLI.csproj" -c Release -r win-x64 --self-contained true
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Erro ao compilar DevStack CLI!" -ForegroundColor Red
     exit 1
@@ -62,7 +62,7 @@ Write-Host ""
 
 # Compilar DevStack GUI (WinExe)
 Write-Host "Compilando DevStack GUI (DevStackGUI.exe)..." -ForegroundColor Cyan
-dotnet build "src\GUI\DevStackGUI.csproj" -c Release
+dotnet publish "src\GUI\DevStackGUI.csproj" -c Release -r win-x64 --self-contained true
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Erro ao compilar DevStack GUI!" -ForegroundColor Red
     exit 1
@@ -76,13 +76,13 @@ Write-Host "  • DevStack.exe     (CLI - Console Application)" -ForegroundColor
 Write-Host "  • DevStackGUI.exe  (GUI - Windows Application)" -ForegroundColor White
 Write-Host ""
 Write-Host "Localizados em:" -ForegroundColor Gray
-Write-Host "  CLI: src\CLI\bin\Release\net9.0-windows\" -ForegroundColor Gray
-Write-Host "  GUI: src\GUI\bin\Release\net9.0-windows\" -ForegroundColor Gray
+Write-Host "  CLI: src\CLI\bin\Release\net9.0-windows\win-x64\publish\" -ForegroundColor Gray
+Write-Host "  GUI: src\GUI\bin\Release\net9.0-windows\win-x64\publish\" -ForegroundColor Gray
 Write-Host ""
 
 # Mostrar informações dos arquivos gerados
-$cliPath = "src\CLI\bin\Release\net9.0-windows\DevStack.exe"
-$guiPath = "src\GUI\bin\Release\net9.0-windows\DevStackGUI.exe"
+$cliPath = "src\CLI\bin\Release\net9.0-windows\win-x64\publish\DevStack.exe"
+$guiPath = "src\GUI\bin\Release\net9.0-windows\win-x64\publish\DevStackGUI.exe"
 
 if (Test-Path $cliPath) {
     $cliInfo = Get-Item $cliPath
@@ -104,8 +104,8 @@ Write-Host ""
 Write-Host "=== Iniciando Deploy para Pasta Release ===" -ForegroundColor Magenta
 
 # Caminhos
-$cliSourceDir = "src\CLI\bin\Release\net9.0-windows"
-$guiSourceDir = "src\GUI\bin\Release\net9.0-windows"
+$cliSourceDir = "src\CLI\bin\Release\net9.0-windows\win-x64\publish"
+$guiSourceDir = "src\GUI\bin\Release\net9.0-windows\win-x64\publish"
 $releaseDir = "release"
 
 # Criar pasta release se não existir
@@ -114,60 +114,25 @@ if (!(Test-Path $releaseDir)) {
     Write-Host "Pasta release criada." -ForegroundColor Green
 }
 
-# Limpar pasta release (exceto configs)
-Write-Host "Limpando pasta release (preservando configs)..." -ForegroundColor Yellow
-Get-ChildItem $releaseDir | Where-Object { $_.Name -ne "configs" } | Remove-Item -Recurse -Force
+# Limpar pasta release
+Write-Host "Limpando pasta release" -ForegroundColor Yellow
+Get-ChildItem $releaseDir | Remove-Item -Recurse -Force
 
 Write-Host ""
 
 # Copiar DevStack.exe (CLI) e dependências
 Write-Host "Copiando DevStack.exe (CLI) e dependências..." -ForegroundColor Cyan
 Copy-Item "$cliSourceDir\DevStack.exe" "$releaseDir\DevStack.exe" -Force
-Copy-Item "$cliSourceDir\DevStack.dll" "$releaseDir\DevStack.dll" -Force
-Copy-Item "$cliSourceDir\DevStack.deps.json" "$releaseDir\DevStack.deps.json" -Force
-Copy-Item "$cliSourceDir\DevStack.runtimeconfig.json" "$releaseDir\DevStack.runtimeconfig.json" -Force
 
 # Copiar DevStackGUI.exe (GUI) e dependências
-Write-Host "Copiando DevStackGUI.exe (GUI) e dependências..." -ForegroundColor Cyan
+Write-Host "Copiando DevStackGUI.exe (GUI)..." -ForegroundColor Cyan
 Copy-Item "$guiSourceDir\DevStackGUI.exe" "$releaseDir\DevStackGUI.exe" -Force
-Copy-Item "$guiSourceDir\DevStackGUI.dll" "$releaseDir\DevStackGUI.dll" -Force
-Copy-Item "$guiSourceDir\DevStackGUI.deps.json" "$releaseDir\DevStackGUI.deps.json" -Force
-Copy-Item "$guiSourceDir\DevStackGUI.runtimeconfig.json" "$releaseDir\DevStackGUI.runtimeconfig.json" -Force
+Copy-Item "$guiSourceDir\PresentationNative_cor3.dll" "$releaseDir\PresentationNative_cor3.dll" -Force
+Copy-Item "$guiSourceDir\wpfgfx_cor3.dll" "$releaseDir\wpfgfx_cor3.dll" -Force
 
 # Copiar ícone
 Write-Host "Copiando ícone..." -ForegroundColor Cyan
 Copy-Item "src\Shared\DevStack.ico" "$releaseDir\DevStack.ico" -Force
-
-# Copiar dependências DLL únicas (evitar duplicatas)
-Write-Host "Copiando dependências DLL..." -ForegroundColor Cyan
-$copiedDlls = @()
-
-# Coletar DLLs do CLI
-Get-ChildItem "$cliSourceDir" -Filter "*.dll" | Where-Object { $_.Name -notmatch "^DevStack" } | ForEach-Object {
-    if ($_.Name -notin $copiedDlls) {
-        Copy-Item $_.FullName "$releaseDir" -Force
-        $copiedDlls += $_.Name
-    }
-}
-
-# Coletar DLLs do GUI (apenas as que ainda não foram copiadas)
-Get-ChildItem "$guiSourceDir" -Filter "*.dll" | Where-Object { $_.Name -notmatch "^DevStack" } | ForEach-Object {
-    if ($_.Name -notin $copiedDlls) {
-        Copy-Item $_.FullName "$releaseDir" -Force
-        $copiedDlls += $_.Name
-    }
-}
-
-# Copiar pasta runtimes se existir
-$cliRuntimes = "$cliSourceDir\runtimes"
-$guiRuntimes = "$guiSourceDir\runtimes"
-if (Test-Path $cliRuntimes) {
-    Write-Host "Copiando runtimes do CLI..." -ForegroundColor Cyan
-    Copy-Item $cliRuntimes "$releaseDir\runtimes" -Recurse -Force
-} elseif (Test-Path $guiRuntimes) {
-    Write-Host "Copiando runtimes do GUI..." -ForegroundColor Cyan
-    Copy-Item $guiRuntimes "$releaseDir\runtimes" -Recurse -Force
-}
 
 # Verificar se a pasta configs já existe (foi movida anteriormente)
 if (!(Test-Path "$releaseDir\configs")) {

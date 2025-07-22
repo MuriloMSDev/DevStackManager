@@ -28,7 +28,7 @@ $uninstallerSrcPath = Join-Path $srcDir "UNINSTALLER"
 Push-Location $uninstallerSrcPath
 
 try {
-    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=false -r win-x64 --verbosity quiet
+    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64
     if ($LASTEXITCODE -ne 0) {
         throw "Uninstaller build failed"
     }

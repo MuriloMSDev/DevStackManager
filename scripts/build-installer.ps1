@@ -91,7 +91,7 @@ $installerSrcPath = Join-Path $srcDir "INSTALLER"
 Push-Location $installerSrcPath
 
 try {
-    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64 --verbosity quiet
+    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64
     if ($LASTEXITCODE -ne 0) {
         throw "Installer build failed"
     }
