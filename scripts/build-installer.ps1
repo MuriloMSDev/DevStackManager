@@ -1,7 +1,4 @@
 # DevStack Installer Build Script
-param(
-    [switch]$Clean = $false
-)
 
 $ErrorActionPreference = "Stop"
 
@@ -17,12 +14,10 @@ Write-Host "Root Directory: $rootDir" -ForegroundColor Yellow
 Write-Host "Release Directory: $releaseDir" -ForegroundColor Yellow
 Write-Host "Installer Directory: $installerDir" -ForegroundColor Yellow
 
-# Clean directories if requested
-if ($Clean) {
-    Write-Host "Cleaning build directories..." -ForegroundColor Yellow
-    if (Test-Path $installerDir) {
-        Remove-Item $installerDir -Recurse -Force
-    }
+# Clean directories
+Write-Host "Cleaning build directories..." -ForegroundColor Yellow
+if (Test-Path $installerDir) {
+    Remove-Item $installerDir -Recurse -Force
 }
 
 # Create installer directory
@@ -56,7 +51,7 @@ if ($releaseFiles.Count -eq 0) {
 Write-Host "Building uninstaller..." -ForegroundColor Yellow
 $buildUninstallerScript = Join-Path $scriptDir "build-uninstaller.ps1"
 if (Test-Path $buildUninstallerScript) {
-    & $buildUninstallerScript -Clean:$Clean
+    & $buildUninstallerScript
     if ($LASTEXITCODE -ne 0) {
         throw "Uninstaller build failed"
     }

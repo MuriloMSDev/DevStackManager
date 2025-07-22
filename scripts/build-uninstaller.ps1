@@ -1,7 +1,4 @@
 # DevStack Uninstaller Build Script
-param(
-    [switch]$Clean = $false
-)
 
 $ErrorActionPreference = "Stop"
 
