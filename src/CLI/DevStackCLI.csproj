@@ -37,6 +37,7 @@
     <Compile Include="..\Shared\Components\*.cs" />
     <Compile Include="..\Shared\Models\*.cs" />
     <EmbeddedResource Include="..\Shared\AvailableVersions\*.json" />
+    <EmbeddedResource Include="..\Shared\Configs\*" />
   </ItemGroup>
 
 </Project>

@@ -18,10 +18,6 @@ namespace DevStackManager
             }
 
             string domain = args[0];
-            if (domain.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
-            {
-                domain = domain.Substring(0, domain.Length - ".localhost".Length);
-            }
             string? opensslVersion = null;
             for (int i = 1; i < args.Length; i++)
             {
@@ -72,10 +68,10 @@ namespace DevStackManager
             // Executa o comando para gerar o certificado
             // Cria arquivo de configuração temporário para SAN
             string opensslConfigPath = Path.Combine(sslDir, $"openssl-{domain}-san.conf");
-            File.WriteAllText(opensslConfigPath, $"[req]\ndistinguished_name = req_distinguished_name\nreq_extensions = v3_req\n[req_distinguished_name]\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = {domain}.localhost\n");
+            File.WriteAllText(opensslConfigPath, $"[req]\ndistinguished_name = req_distinguished_name\nreq_extensions = v3_req\n[req_distinguished_name]\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = {domain}\n");
 
             // Executa o comando para gerar o certificado com SAN
-            ProcessManager.ExecuteProcess(opensslExe, $"req -x509 -nodes -days 730 -newkey rsa:2048 -keyout \"{key}\" -out \"{crt}\" -subj \"/CN={domain}.localhost\" -extensions v3_req -config \"{opensslConfigPath}\"");
+            await ProcessManager.ExecuteProcessAsync(opensslExe, $"req -x509 -nodes -days 730 -newkey rsa:2048 -keyout \"{key}\" -out \"{crt}\" -subj \"/CN={domain}\" -extensions v3_req -config \"{opensslConfigPath}\"");
 
             // Remove arquivo temporário
             if (File.Exists(opensslConfigPath)) File.Delete(opensslConfigPath);
@@ -88,10 +84,28 @@ namespace DevStackManager
                 // Instala o certificado na store de autoridades confiáveis do Windows
                 try
                 {
-                    // Executa o comando PowerShell como administrador usando ProcessManager
-                    string psCommand = $"Start-Process powershell -WindowStyle Hidden -ArgumentList 'Import-Certificate -FilePath \"{crt}\" -CertStoreLocation Cert:\\LocalMachine\\Root' -Verb runAs";
-                    ProcessManager.ExecuteProcess("powershell.exe", $"-Command \"{psCommand}\"");
-                    Console.WriteLine($"Certificado instalado na store de autoridades confiáveis do Windows.");
+                    // Remove certificado antigo (se existir) e adiciona o novo usando certutil
+                    var subject = domain;
+                    var delPsi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "certutil.exe",
+                        Arguments = $"-delstore Root {subject}",
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        CreateNoWindow = true
+                    };
+                    System.Diagnostics.Process.Start(delPsi);
+
+                    var addPsi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "certutil.exe",
+                        Arguments = $"-addstore Root \"{crt}\"",
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        CreateNoWindow = true
+                    };
+                    System.Diagnostics.Process.Start(addPsi);
+                    Console.WriteLine($"Certificado removido (se existia) e instalado na store de autoridades confiáveis do Windows.");
                 }
                 catch (Exception ex)
                 {
@@ -151,22 +165,6 @@ namespace DevStackManager
                     else
                     {
                         Console.WriteLine($"Diretivas SSL já presentes em {foundConfPath} (nginx v{foundNginxVersion}).");
-                    }
-
-                    // Verifica se o nginx da versão está rodando usando DataManager.GetComponentStatus
-                    var nginxStatus = DataManager.GetComponentStatus("nginx");
-                    bool isRunning = nginxStatus.RunningList != null && nginxStatus.RunningList.TryGetValue(foundNginxVersion, out var running) && running;
-                    if (isRunning)
-                    {
-                        try
-                        {
-                            ProcessManager.RestartComponent("nginx", foundNginxVersion);
-                            Console.WriteLine($"Nginx v{foundNginxVersion} reiniciado.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Falha ao reiniciar nginx v{foundNginxVersion}: {ex.Message}");
-                        }
                     }
                 }
                 else

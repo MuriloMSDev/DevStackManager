@@ -36,7 +36,7 @@ namespace DevStackManager.Components
             }
             // Executa o instalador em modo oculto usando ProcessManager.ExecuteProcess
             string psCommand = $"Start-Process -FilePath \"{installerPath}\" -ArgumentList '/VERYSILENT /DIR=\"{installDir}\"' -WindowStyle Hidden -Verb runAs -Wait";
-            ProcessManager.ExecuteProcess("powershell.exe", $"-Command \"{psCommand}\"", DevStackConfig.tmpDir);
+            await ProcessManager.ExecuteProcessAsync("powershell.exe", $"-Command \"{psCommand}\"", DevStackConfig.tmpDir);
             System.IO.File.Delete(installerPath);
             Console.WriteLine($"OpenSSL {version} ({arch}) instalado via instalador em {installDir}");
         }

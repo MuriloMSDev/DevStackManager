@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
+using System.Windows.Shapes;
 namespace DevStackManager
 {
     /// <summary>
@@ -809,6 +810,108 @@ namespace DevStackManager
             dialog.Content = border;
             dialog.ShowDialog();
             return result;
+        }
+
+        
+        /// <summary>
+        /// Cria um CheckBox estilizado com tema escuro
+        /// </summary>
+        public static CheckBox CreateStyledCheckBox(string content, bool isBold = false)
+        {
+            var checkBox = new CheckBox
+            {
+                Content = content,
+                Margin = new Thickness(0, 0, 0, 10),
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14,
+                Foreground = CurrentTheme.InputForeground,
+                Background = CurrentTheme.InputBackground,
+                FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal
+            };
+
+            // ControlTemplate para customizar o visual do CheckBox
+            var template = new ControlTemplate(typeof(CheckBox));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.Name = "Border";
+
+            // StackPanel para alinhar box e conteúdo
+            var panel = new FrameworkElementFactory(typeof(StackPanel));
+            panel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+            panel.SetValue(StackPanel.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            // Box do check
+            var boxBorder = new FrameworkElementFactory(typeof(Border));
+            boxBorder.Name = "CheckBoxBox";
+            boxBorder.SetValue(Border.WidthProperty, 18.0);
+            boxBorder.SetValue(Border.HeightProperty, 18.0);
+            boxBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+            boxBorder.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+            boxBorder.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(CheckBox.BorderBrushProperty));
+            boxBorder.SetValue(Border.BackgroundProperty, Brushes.Transparent); // Sem background
+            boxBorder.SetValue(Border.MarginProperty, new Thickness(0, 0, 8, 0));
+            boxBorder.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+            boxBorder.SetValue(Border.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            // Path do check (visível só quando IsChecked)
+            var checkPath = new FrameworkElementFactory(typeof(Path));
+            checkPath.Name = "CheckMark";
+            checkPath.SetValue(Path.DataProperty, Geometry.Parse("M 3 7 L 6 12 L 13 5"));
+            checkPath.SetValue(Path.StrokeThicknessProperty, 2.0);
+            checkPath.SetValue(Path.StrokeProperty, Brushes.White); // Branco para o check
+            checkPath.SetValue(Path.SnapsToDevicePixelsProperty, true);
+            checkPath.SetValue(Path.StrokeEndLineCapProperty, PenLineCap.Round);
+            checkPath.SetValue(Path.StrokeStartLineCapProperty, PenLineCap.Round);
+            checkPath.SetValue(FrameworkElement.VisibilityProperty, Visibility.Collapsed);
+
+            // ContentPresenter para o texto
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            contentPresenter.SetValue(ContentPresenter.RecognizesAccessKeyProperty, true);
+
+            // Monta a árvore
+            boxBorder.AppendChild(checkPath);
+            panel.AppendChild(boxBorder);
+            panel.AppendChild(contentPresenter);
+            border.AppendChild(panel);
+            template.VisualTree = border;
+
+            // Triggers para hover, foco e check
+            // Hover: muda BorderBrush para BorderHover e Foreground para branco
+            var hoverTrigger = new Trigger { Property = CheckBox.IsMouseOverProperty, Value = true };
+            hoverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.BorderHover, "CheckBoxBox"));
+            hoverTrigger.Setters.Add(new Setter(Control.ForegroundProperty, Brushes.White));
+
+            // Foco: muda BorderBrush para InputFocusBorder
+            var focusTrigger = new Trigger { Property = CheckBox.IsFocusedProperty, Value = true };
+            focusTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.InputFocusBorder, "CheckBoxBox"));
+
+            // Checked: mostra o Path e deixa o box com cor de fundo
+            var checkedTrigger = new Trigger { Property = CheckBox.IsCheckedProperty, Value = true };
+            checkedTrigger.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Visible, "CheckMark"));
+            checkedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.ButtonBackground, "CheckBoxBox"));
+            checkedTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.ButtonBackground, "CheckBoxBox"));
+
+            // Disabled: reduz opacidade
+            var disabledTrigger = new Trigger { Property = UIElement.IsEnabledProperty, Value = false };
+            disabledTrigger.Setters.Add(new Setter(UIElement.OpacityProperty, 0.6));
+
+            template.Triggers.Add(hoverTrigger);
+            template.Triggers.Add(focusTrigger);
+            template.Triggers.Add(checkedTrigger);
+            template.Triggers.Add(disabledTrigger);
+
+            // Estilo base
+            var style = new Style(typeof(CheckBox));
+            style.Setters.Add(new Setter(CheckBox.ForegroundProperty, CurrentTheme.InputForeground));
+            style.Setters.Add(new Setter(CheckBox.BackgroundProperty, CurrentTheme.InputBackground));
+            style.Setters.Add(new Setter(CheckBox.BorderBrushProperty, CurrentTheme.InputBorder));
+            style.Setters.Add(new Setter(CheckBox.BorderThicknessProperty, new Thickness(1)));
+            style.Setters.Add(new Setter(CheckBox.PaddingProperty, new Thickness(6, 2, 6, 2)));
+            style.Setters.Add(new Setter(CheckBox.FontSizeProperty, 14.0));
+            style.Setters.Add(new Setter(CheckBox.TemplateProperty, template));
+
+            checkBox.Style = style;
+            return checkBox;
         }
 
         /// <summary>

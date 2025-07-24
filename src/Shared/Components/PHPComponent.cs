@@ -17,13 +17,19 @@ namespace DevStackManager.Components
             string phpDir = System.IO.Path.Combine(DevStackConfig.phpDir, subDir);
             RenameMainExe(phpDir, "php-cgi.exe", version, "php-cgi");
 
-            // Copy php.ini if exists
-            string phpIniSrc = System.IO.Path.Combine("configs", "php", "php.ini");
+            // Copia o php.ini do EmbeddedResource
             string phpIniDst = System.IO.Path.Combine(phpDir, "php.ini");
-
-            if (System.IO.File.Exists(phpIniSrc))
+            var assembly = typeof(PHPComponent).Assembly;
+            string? resourceName = assembly.GetManifestResourceNames()
+                .FirstOrDefault(n => n.Contains("php.ini"));
+            if (!string.IsNullOrEmpty(resourceName))
             {
-                System.IO.File.Copy(phpIniSrc, phpIniDst, true);
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                using (var reader = new System.IO.StreamReader(stream!))
+                {
+                    var iniContent = reader.ReadToEnd();
+                    System.IO.File.WriteAllText(phpIniDst, iniContent, System.Text.Encoding.UTF8);
+                }
                 Console.WriteLine($"Arquivo php.ini copiado para {phpDir}");
 
                 // Add essential extensions
@@ -50,7 +56,7 @@ namespace DevStackManager.Components
             }
             else
             {
-                Console.WriteLine("Arquivo configs\\php\\php.ini não encontrado. Pulei a cópia do php.ini.");
+                Console.WriteLine("Arquivo php.ini não encontrado. Arquivo php.ini não copiado.");
             }
         }
     }

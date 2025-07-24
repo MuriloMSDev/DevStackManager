@@ -300,12 +300,8 @@ namespace DevStackManager
                     {
                         componentCombo.Items.Add(comp.Name);
                     }
-                    
-                    if (componentCombo.Items.Count > 0)
-                    {
-                        componentCombo.SelectedIndex = 0;
-                        mainWindow.SelectedUninstallComponent = componentCombo.SelectedItem?.ToString() ?? "";
-                    }
+
+                    componentCombo.SelectedIndex = -1;
                     
                     mainWindow.StatusMessage = $"{componentCombo.Items.Count} componentes disponíveis para desinstalação";
                 }

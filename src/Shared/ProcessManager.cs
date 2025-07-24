@@ -11,6 +11,56 @@ namespace DevStackManager
         /// <summary>
         /// Executa um comando no terminal e retorna a saída
         /// </summary>
+        public static async Task<string> ExecuteProcessAsync(string fileName, string arguments, string? workingDirectory = null, System.Diagnostics.ProcessWindowStyle? windowStyle = null)
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = workingDirectory ?? "",
+                WindowStyle = windowStyle ?? ProcessWindowStyle.Hidden
+            };
+
+            var output = string.Empty;
+            var error = string.Empty;
+
+            var outputTcs = new TaskCompletionSource<string>();
+            var errorTcs = new TaskCompletionSource<string>();
+
+            process.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data == null)
+                    outputTcs.TrySetResult(output);
+                else
+                    output += e.Data + Environment.NewLine;
+            };
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data == null)
+                    errorTcs.TrySetResult(error);
+                else
+                    error += e.Data + Environment.NewLine;
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            await Task.WhenAll(
+                Task.Run(() => process.WaitForExit()),
+                outputTcs.Task,
+                errorTcs.Task
+            );
+
+            return output.Trim();
+        }
+
+        // Legacy sync version for compatibility
         public static string ExecuteProcess(string fileName, string arguments, string? workingDirectory = null, System.Diagnostics.ProcessWindowStyle? windowStyle = null)
         {
             using var process = new Process();
