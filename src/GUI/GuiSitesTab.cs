@@ -132,6 +132,10 @@ namespace DevStackManager
             LoadNginxVersions(nginxComboBox);
             panel.Children.Add(nginxComboBox);
 
+            // Checkbox SSL
+            var sslCheckBox = GuiTheme.CreateStyledCheckBox("Gerar SSL");
+            panel.Children.Add(sslCheckBox);
+
             // Overlay de loading (spinner)
             var overlay = GuiTheme.CreateLoadingOverlay();
             // Overlay sempre visível se criando site
@@ -157,8 +161,23 @@ namespace DevStackManager
                     var nginxVersion = nginxComboBox.SelectedItem?.ToString() ?? "";
 
                     await CreateSite(mainWindow, domain, root, phpUpstream, nginxVersion);
+
+                    // Se o checkbox SSL estiver marcado, gerar SSL
+                    if (sslCheckBox.IsChecked == true)
+                    {
+                        await GenerateSslCertificate(mainWindow, domain);
+                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                    }
+                    
                     phpComboBox.SelectedIndex = -1;
                     nginxComboBox.SelectedIndex = -1;
+                    sslCheckBox.IsChecked = false;
+                    domainTextBox.Text = "";
+                    rootTextBox.Text = "";
+
+                    // Reiniciar serviços do Nginx após criar a configuração
+                    mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
+                    await RestartNginxServices(mainWindow);
                 }
                 finally
                 {
@@ -201,6 +220,10 @@ namespace DevStackManager
                     var domain = sslDomainTextBox.Text;
                     await GenerateSslCertificate(mainWindow, domain);
                     await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                    
+                    // Reiniciar serviços do Nginx após criar a configuração
+                    mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
+                    await RestartNginxServices(mainWindow);
                 }
                 finally
                 {
@@ -311,19 +334,10 @@ namespace DevStackManager
             try
             {
                 mainWindow.StatusMessage = $"Criando configuração para o site {domain}...";
-                InstallManager.CreateNginxSiteConfig(domain, root, $"127.{phpUpstream}:9000", nginxVersion);
-
-                // Reiniciar serviços do Nginx após criar a configuração
-                mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
-                await RestartNginxServices(mainWindow);
+                // Run heavy config creation in background
+                await Task.Run(() => InstallManager.CreateNginxSiteConfig(domain, root, $"127.{phpUpstream}:9000", nginxVersion));
 
                 mainWindow.StatusMessage = $"Site {domain} criado";
-
-                // Limpar os campos após sucesso
-                var domainTextBox = GuiHelpers.FindChild<TextBox>(mainWindow, "DomainTextBox");
-                var rootTextBox = GuiHelpers.FindChild<TextBox>(mainWindow, "RootTextBox");
-                if (domainTextBox != null) domainTextBox.Text = "";
-                if (rootTextBox != null) rootTextBox.Text = "";
             }
             catch (Exception ex)
             {
@@ -381,7 +395,8 @@ namespace DevStackManager
                 {
                     mainWindow.StatusMessage = $"Gerando certificado SSL para {domain}...";
                     var args = new string[] { domain };
-                    await GenerateManager.GenerateSslCertificate(args);
+                    // Run heavy SSL generation in background
+                    await Task.Run(() => GenerateManager.GenerateSslCertificate(args));
                     mainWindow.StatusMessage = $"Processo de geração de SSL para {domain} finalizado.";
                 }
                 catch (Exception ex)
@@ -430,10 +445,6 @@ namespace DevStackManager
                         if (restartedCount == 0)
                         {
                             progress.Report("ℹ️ Nenhuma versão do Nginx foi reiniciada (podem não estar em execução)");
-                        }
-                        else
-                        {
-                            progress.Report($"✅ {restartedCount} versão(ões) do Nginx reiniciadas");
                         }
                     }
                     else

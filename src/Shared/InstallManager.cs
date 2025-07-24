@@ -51,7 +51,7 @@ namespace DevStackManager
             }
 
             string confPath = Path.Combine(nginxSitesDirFull, $"{domain}.conf");
-            string serverName = $"{domain}.localhost";
+            string serverName = $"{domain}";
 
             string template = $@"server {{
 
