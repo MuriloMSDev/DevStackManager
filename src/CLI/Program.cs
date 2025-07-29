@@ -529,9 +529,6 @@ namespace DevStackManager
                 case "reset":
                     return HandleResetCommand(args);
 
-                case "proxy":
-                    return HandleProxyCommand(args);
-
                 case "ssl":
                     return HandleSslCommand(args).Result;
 
@@ -1018,40 +1015,6 @@ namespace DevStackManager
             UninstallCommands(new[] { comp });
             _ = InstallCommands(new[] { comp });
             WriteInfo($"{comp} resetado.");
-            return 0;
-        }
-
-        private static int HandleProxyCommand(string[] args)
-        {
-            if (args.Length == 0)
-            {
-                Console.WriteLine($"Proxy atual: {Environment.GetEnvironmentVariable("HTTP_PROXY")}");
-                return 0;
-            }
-
-            switch (args[0])
-            {
-                case "set":
-                    if (args.Length < 2)
-                    {
-                        Console.WriteLine("Uso: DevStackManager proxy set <url>");
-                        return 1;
-                    }
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", args[1]);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", args[1]);
-                    WriteInfo($"Proxy definido para {args[1]}");
-                    break;
-
-                case "unset":
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", null);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", null);
-                    WriteInfo("Proxy removido.");
-                    break;
-
-                default:
-                    Console.WriteLine("Uso: DevStackManager proxy [set <url>|unset|show]");
-                    break;
-            }
             return 0;
         }
 
