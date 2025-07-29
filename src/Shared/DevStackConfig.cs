@@ -54,7 +54,6 @@ namespace DevStackManager
             ("disable <serviço>", "Desativa um serviço do Windows."),
             ("config", "Abre o diretório de configuração."),
             ("reset <componente>", "Remove e reinstala uma ferramenta."),
-            ("proxy [set <url>|unset|show]", "Gerencia variáveis de proxy."),
             ("ssl <domínio> [-openssl <versão>]", "Gera certificado SSL autoassinado."),
             ("db <mysql|pgsql|mongo> <comando> [args...]", "Gerencia bancos de dados básicos."),
             ("service", "Lista serviços DevStack (Windows)."),

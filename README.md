@@ -1,4 +1,4 @@
-![DevStackManager Banner](https://img.shields.io/badge/Build-v2.3.3-blue?style=for-the-badge&logo=build)
+![DevStackManager Banner](https://img.shields.io/badge/Build-v2.3.4-blue?style=for-the-badge&logo=build)
 
 <div align="center">
     <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
@@ -12,7 +12,7 @@
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.3.3-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.3.3)
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.3.4-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.3.4)
 
 ---
 
@@ -52,7 +52,6 @@
 | `.\DevStack.exe disable <serviço>`                            | Desativa um serviço do Windows                         |
 | `.\DevStack.exe config`                                       | Abre o diretório de configuração                       |
 | `.\DevStack.exe reset <componente>`                           | Remove e reinstala uma ferramenta                      |
-| `.\DevStack.exe proxy [set <url>\|unset\|show]`               | Gerencia variáveis de proxy                            |
 | `.\DevStack.exe ssl <domínio> [-openssl <versão>]`            | Gera certificado SSL autoassinado                      |
 | `.\DevStack.exe db <mysql\|pgsql\|mongo> <comando> [args...]` | Gerencia bancos de dados básicos                       |
 | `.\DevStack.exe service`                                      | Lista serviços DevStack (Windows)                      |
