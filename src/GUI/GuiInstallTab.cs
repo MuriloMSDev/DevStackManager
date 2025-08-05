@@ -106,6 +106,8 @@ namespace DevStackManager
                 finally
                 {
                     mainWindow.IsInstallingComponent = false;
+                    mainWindow.SelectedComponent = "";
+                    mainWindow.SelectedVersion = "";
                     overlay.Visibility = Visibility.Collapsed;
                 }
             });
