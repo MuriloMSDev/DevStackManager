@@ -110,6 +110,8 @@ namespace DevStackManager
                 }
                 finally
                 {
+                    mainWindow.SelectedUninstallComponent = "";
+                    mainWindow.SelectedUninstallVersion = "";
                     mainWindow.IsUninstallingComponent = false;
                     overlay.Visibility = Visibility.Collapsed;
                 }
@@ -174,16 +176,17 @@ namespace DevStackManager
                     var args = string.IsNullOrEmpty(mainWindow.SelectedUninstallVersion)
                         ? new[] { mainWindow.SelectedUninstallComponent }
                         : new[] { mainWindow.SelectedUninstallComponent, mainWindow.SelectedUninstallVersion };
-                    
+
                     UninstallManager.UninstallCommands(args);
-                    
+
                     mainWindow.StatusMessage = $"{mainWindow.SelectedUninstallComponent} desinstalado com sucesso!";
-                    
+
                     // Recarregar lista de instalados
                     await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-                    
+
                     // Recarregar componentes disponíveis para desinstalação
                     LoadUninstallComponents(mainWindow);
+                    await LoadUninstallVersions(mainWindow);
                 }
                 catch (Exception ex)
                 {

@@ -26,6 +26,7 @@ namespace DevStackManager
         public static string goDir = "";
         public static string openSSLDir = "";
         public static string phpcsfixerDir = "";
+        public static string dbeaverDir = "";
         public static string nginxSitesDir = "";
         public static string tmpDir = "";
         
@@ -66,7 +67,7 @@ namespace DevStackManager
         {
             "php", "nginx", "mysql", "node", "python", "composer", "phpmyadmin", 
             "git", "mongodb", "pgsql", "elasticsearch", "wpcli", "adminer",
-            "go", "openssl", "phpcsfixer"
+            "go", "openssl", "phpcsfixer", "dbeaver"
         };
 
         /// <summary>
@@ -90,6 +91,7 @@ namespace DevStackManager
             goDir = Path.Combine(baseDir, "go");
             openSSLDir = Path.Combine(baseDir, "openssl");
             phpcsfixerDir = Path.Combine(baseDir, "phpcsfixer");
+            dbeaverDir = Path.Combine(baseDir, "dbeaver");
             nginxSitesDir = "conf\\sites-enabled";
             tmpDir = Path.Combine(baseDir, "tmp");
 

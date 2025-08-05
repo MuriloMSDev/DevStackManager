@@ -23,7 +23,8 @@ namespace DevStackManager.Components
             { "adminer", new AdminerComponent() },
             { "go", new GoComponent() },
             { "openssl", new OpenSSLComponent() },
-            { "phpcsfixer", new PHPCsFixerComponent() }
+            { "phpcsfixer", new PHPCsFixerComponent() },
+            { "dbeaver", new DBeaverComponent() }
         };
 
         public static ComponentInterface? GetComponent(string name)
