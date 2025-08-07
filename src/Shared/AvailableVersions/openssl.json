@@ -1,26 +1,22 @@
 [
   {
-    "version": "3.5.1",
-    "url": "https://slproweb.com/download/Win64OpenSSL-3_5_1.exe"
-  },
-  {
-    "version": "3.4.2",
-    "url": "https://slproweb.com/download/Win64OpenSSL-3_4_2.exe"
-  },
-  {
-    "version": "3.3.4",
-    "url": "https://slproweb.com/download/Win64OpenSSL-3_3_4.exe"
-  },
-  {
-    "version": "3.2.5",
-    "url": "https://slproweb.com/download/Win64OpenSSL-3_2_5.exe"
+    "version": "3.0.17",
+    "url": "https://slproweb.com/download/Win64OpenSSL-3_0_17.exe"
   },
   {
     "version": "3.1.8",
     "url": "https://slproweb.com/download/Win64OpenSSL-3_1_8.exe"
   },
   {
-    "version": "3.0.17",
-    "url": "https://slproweb.com/download/Win64OpenSSL-3_0_17.exe"
+    "version": "3.2.5",
+    "url": "https://slproweb.com/download/Win64OpenSSL-3_2_5.exe"
+  },
+  {
+    "version": "3.3.4",
+    "url": "https://slproweb.com/download/Win64OpenSSL-3_3_4.exe"
+  },
+  {
+    "version": "3.4.2",
+    "url": "https://slproweb.com/download/Win64OpenSSL-3_4_2.exe"
   }
 ]

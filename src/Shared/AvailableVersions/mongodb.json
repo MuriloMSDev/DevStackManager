@@ -1,582 +1,582 @@
 [
   {
-    "version": "8.0.11",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.11.zip"
-  },
-  {
-    "version": "8.0.10",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.10.zip"
-  },
-  {
-    "version": "8.0.9",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.9.zip"
-  },
-  {
-    "version": "8.0.8",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.8.zip"
-  },
-  {
-    "version": "8.0.7",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.7.zip"
-  },
-  {
-    "version": "8.0.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.6.zip"
-  },
-  {
-    "version": "8.0.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.5.zip"
-  },
-  {
-    "version": "8.0.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.4.zip"
-  },
-  {
-    "version": "8.0.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.3.zip"
-  },
-  {
-    "version": "8.0.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.1.zip"
-  },
-  {
-    "version": "8.0.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.0.zip"
-  },
-  {
-    "version": "7.3.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.4.zip"
-  },
-  {
-    "version": "7.3.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.3.zip"
-  },
-  {
-    "version": "7.3.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.2.zip"
-  },
-  {
-    "version": "7.3.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.1.zip"
-  },
-  {
-    "version": "7.3.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.0.zip"
-  },
-  {
-    "version": "7.2.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.2.zip"
-  },
-  {
-    "version": "7.2.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.1.zip"
-  },
-  {
-    "version": "7.2.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.0.zip"
-  },
-  {
-    "version": "7.1.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.1.1.zip"
-  },
-  {
-    "version": "7.1.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.1.0.zip"
-  },
-  {
-    "version": "7.0.21",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.21.zip"
-  },
-  {
-    "version": "7.0.20",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.20.zip"
-  },
-  {
-    "version": "7.0.19",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.19.zip"
-  },
-  {
-    "version": "7.0.18",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.18.zip"
-  },
-  {
-    "version": "7.0.17",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.17.zip"
-  },
-  {
-    "version": "7.0.16",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.16.zip"
-  },
-  {
-    "version": "7.0.15",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.15.zip"
-  },
-  {
-    "version": "7.0.14",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.14.zip"
-  },
-  {
-    "version": "7.0.12",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.12.zip"
-  },
-  {
-    "version": "7.0.11",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.11.zip"
-  },
-  {
-    "version": "7.0.9",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.9.zip"
-  },
-  {
-    "version": "7.0.8",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.8.zip"
-  },
-  {
-    "version": "7.0.7",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.7.zip"
-  },
-  {
-    "version": "7.0.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.6.zip"
-  },
-  {
-    "version": "7.0.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.5.zip"
-  },
-  {
-    "version": "7.0.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.4.zip"
-  },
-  {
-    "version": "7.0.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.3.zip"
-  },
-  {
-    "version": "7.0.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.2.zip"
-  },
-  {
-    "version": "7.0.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.1.zip"
-  },
-  {
-    "version": "7.0.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.0.zip"
-  },
-  {
-    "version": "6.3.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.2.zip"
-  },
-  {
-    "version": "6.3.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.1.zip"
-  },
-  {
-    "version": "6.3.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.0.zip"
-  },
-  {
-    "version": "6.2.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.2.1.zip"
-  },
-  {
-    "version": "6.2.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.2.0.zip"
-  },
-  {
-    "version": "6.1.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.1.1.zip"
-  },
-  {
-    "version": "6.1.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.1.0.zip"
-  },
-  {
-    "version": "6.0.24",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.24.zip"
-  },
-  {
-    "version": "6.0.23",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.23.zip"
-  },
-  {
-    "version": "6.0.22",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.22.zip"
-  },
-  {
-    "version": "6.0.21",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.21.zip"
-  },
-  {
-    "version": "6.0.20",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.20.zip"
-  },
-  {
-    "version": "6.0.19",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.19.zip"
-  },
-  {
-    "version": "6.0.18",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.18.zip"
-  },
-  {
-    "version": "6.0.17",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.17.zip"
-  },
-  {
-    "version": "6.0.16",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.16.zip"
-  },
-  {
-    "version": "6.0.15",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.15.zip"
-  },
-  {
-    "version": "6.0.14",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.14.zip"
-  },
-  {
-    "version": "6.0.13",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.13.zip"
-  },
-  {
-    "version": "6.0.12",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.12.zip"
-  },
-  {
-    "version": "6.0.11",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.11.zip"
-  },
-  {
-    "version": "6.0.10",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.10.zip"
-  },
-  {
-    "version": "6.0.9",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.9.zip"
-  },
-  {
-    "version": "6.0.8",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.8.zip"
-  },
-  {
-    "version": "6.0.7",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.7.zip"
-  },
-  {
-    "version": "6.0.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.6.zip"
-  },
-  {
-    "version": "6.0.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.5.zip"
-  },
-  {
-    "version": "6.0.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.4.zip"
-  },
-  {
-    "version": "6.0.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.3.zip"
-  },
-  {
-    "version": "6.0.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.2.zip"
-  },
-  {
-    "version": "6.0.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.1.zip"
-  },
-  {
-    "version": "6.0.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.0.zip"
-  },
-  {
-    "version": "5.3.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.3.2.zip"
-  },
-  {
-    "version": "5.3.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.3.1.zip"
-  },
-  {
-    "version": "5.2.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.2.1.zip"
-  },
-  {
-    "version": "5.2.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.2.0.zip"
-  },
-  {
-    "version": "5.1.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.1.1.zip"
-  },
-  {
-    "version": "5.1.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.1.0.zip"
-  },
-  {
-    "version": "5.0.31",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.31.zip"
-  },
-  {
-    "version": "5.0.30",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.30.zip"
-  },
-  {
-    "version": "5.0.29",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.29.zip"
-  },
-  {
-    "version": "5.0.28",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.28.zip"
-  },
-  {
-    "version": "5.0.27",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.27.zip"
-  },
-  {
-    "version": "5.0.26",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.26.zip"
-  },
-  {
-    "version": "5.0.25",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.25.zip"
-  },
-  {
-    "version": "5.0.24",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.24.zip"
-  },
-  {
-    "version": "5.0.23",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.23.zip"
-  },
-  {
-    "version": "5.0.22",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.22.zip"
-  },
-  {
-    "version": "5.0.21",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.21.zip"
-  },
-  {
-    "version": "5.0.20",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.20.zip"
-  },
-  {
-    "version": "5.0.19",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.19.zip"
-  },
-  {
-    "version": "5.0.18",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.18.zip"
-  },
-  {
-    "version": "5.0.17",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.17.zip"
-  },
-  {
-    "version": "5.0.16",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.16.zip"
-  },
-  {
-    "version": "5.0.15",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.15.zip"
-  },
-  {
-    "version": "5.0.14",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.14.zip"
-  },
-  {
-    "version": "5.0.13",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.13.zip"
-  },
-  {
-    "version": "5.0.12",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.12.zip"
-  },
-  {
-    "version": "5.0.11",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.11.zip"
-  },
-  {
-    "version": "5.0.10",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.10.zip"
-  },
-  {
-    "version": "5.0.9",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.9.zip"
-  },
-  {
-    "version": "5.0.8",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.8.zip"
-  },
-  {
-    "version": "5.0.7",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.7.zip"
-  },
-  {
-    "version": "5.0.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.6.zip"
-  },
-  {
-    "version": "5.0.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.5.zip"
-  },
-  {
-    "version": "5.0.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.4.zip"
-  },
-  {
-    "version": "5.0.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.3.zip"
-  },
-  {
-    "version": "5.0.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.2.zip"
-  },
-  {
-    "version": "5.0.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.1.zip"
-  },
-  {
-    "version": "5.0.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.0.zip"
-  },
-  {
-    "version": "4.4.29",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.29.zip"
-  },
-  {
-    "version": "4.4.28",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.28.zip"
-  },
-  {
-    "version": "4.4.27",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.27.zip"
-  },
-  {
-    "version": "4.4.26",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.26.zip"
-  },
-  {
-    "version": "4.4.25",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.25.zip"
-  },
-  {
-    "version": "4.4.24",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.24.zip"
-  },
-  {
-    "version": "4.4.23",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.23.zip"
-  },
-  {
-    "version": "4.4.22",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.22.zip"
-  },
-  {
-    "version": "4.4.21",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.21.zip"
-  },
-  {
-    "version": "4.4.20",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.20.zip"
-  },
-  {
-    "version": "4.4.19",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.19.zip"
-  },
-  {
-    "version": "4.4.18",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.18.zip"
-  },
-  {
-    "version": "4.4.17",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.17.zip"
-  },
-  {
-    "version": "4.4.16",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16.zip"
-  },
-  {
-    "version": "4.4.15",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.15.zip"
-  },
-  {
-    "version": "4.4.14",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.14.zip"
-  },
-  {
-    "version": "4.4.13",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.13.zip"
-  },
-  {
-    "version": "4.4.12",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.12.zip"
-  },
-  {
-    "version": "4.4.11",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.11.zip"
-  },
-  {
-    "version": "4.4.10",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.10.zip"
-  },
-  {
-    "version": "4.4.9",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.9.zip"
-  },
-  {
-    "version": "4.4.8",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.8.zip"
-  },
-  {
-    "version": "4.4.7",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.7.zip"
-  },
-  {
-    "version": "4.4.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.6.zip"
-  },
-  {
-    "version": "4.4.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.5.zip"
-  },
-  {
-    "version": "4.4.4",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.4.zip"
-  },
-  {
-    "version": "4.4.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.3.zip"
-  },
-  {
-    "version": "4.4.2",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.2.zip"
-  },
-  {
-    "version": "4.4.1",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.1.zip"
-  },
-  {
-    "version": "4.4.0",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.0.zip"
-  },
-  {
-    "version": "4.3.6",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.6.zip"
-  },
-  {
-    "version": "4.3.5",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.5.zip"
+    "version": "4.3.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.3.zip"
   },
   {
     "version": "4.3.4",
     "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.4.zip"
   },
   {
-    "version": "4.3.3",
-    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.3.zip"
+    "version": "4.3.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.5.zip"
+  },
+  {
+    "version": "4.3.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.6.zip"
+  },
+  {
+    "version": "4.4.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.0.zip"
+  },
+  {
+    "version": "4.4.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.1.zip"
+  },
+  {
+    "version": "4.4.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.2.zip"
+  },
+  {
+    "version": "4.4.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.3.zip"
+  },
+  {
+    "version": "4.4.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.4.zip"
+  },
+  {
+    "version": "4.4.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.5.zip"
+  },
+  {
+    "version": "4.4.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.6.zip"
+  },
+  {
+    "version": "4.4.7",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.7.zip"
+  },
+  {
+    "version": "4.4.8",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.8.zip"
+  },
+  {
+    "version": "4.4.9",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.9.zip"
+  },
+  {
+    "version": "4.4.10",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.10.zip"
+  },
+  {
+    "version": "4.4.11",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.11.zip"
+  },
+  {
+    "version": "4.4.12",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.12.zip"
+  },
+  {
+    "version": "4.4.13",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.13.zip"
+  },
+  {
+    "version": "4.4.14",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.14.zip"
+  },
+  {
+    "version": "4.4.15",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.15.zip"
+  },
+  {
+    "version": "4.4.16",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16.zip"
+  },
+  {
+    "version": "4.4.17",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.17.zip"
+  },
+  {
+    "version": "4.4.18",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.18.zip"
+  },
+  {
+    "version": "4.4.19",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.19.zip"
+  },
+  {
+    "version": "4.4.20",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.20.zip"
+  },
+  {
+    "version": "4.4.21",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.21.zip"
+  },
+  {
+    "version": "4.4.22",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.22.zip"
+  },
+  {
+    "version": "4.4.23",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.23.zip"
+  },
+  {
+    "version": "4.4.24",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.24.zip"
+  },
+  {
+    "version": "4.4.25",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.25.zip"
+  },
+  {
+    "version": "4.4.26",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.26.zip"
+  },
+  {
+    "version": "4.4.27",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.27.zip"
+  },
+  {
+    "version": "4.4.28",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.28.zip"
+  },
+  {
+    "version": "4.4.29",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.29.zip"
+  },
+  {
+    "version": "5.0.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.0.zip"
+  },
+  {
+    "version": "5.0.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.1.zip"
+  },
+  {
+    "version": "5.0.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.2.zip"
+  },
+  {
+    "version": "5.0.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.3.zip"
+  },
+  {
+    "version": "5.0.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.4.zip"
+  },
+  {
+    "version": "5.0.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.5.zip"
+  },
+  {
+    "version": "5.0.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.6.zip"
+  },
+  {
+    "version": "5.0.7",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.7.zip"
+  },
+  {
+    "version": "5.0.8",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.8.zip"
+  },
+  {
+    "version": "5.0.9",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.9.zip"
+  },
+  {
+    "version": "5.0.10",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.10.zip"
+  },
+  {
+    "version": "5.0.11",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.11.zip"
+  },
+  {
+    "version": "5.0.12",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.12.zip"
+  },
+  {
+    "version": "5.0.13",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.13.zip"
+  },
+  {
+    "version": "5.0.14",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.14.zip"
+  },
+  {
+    "version": "5.0.15",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.15.zip"
+  },
+  {
+    "version": "5.0.16",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.16.zip"
+  },
+  {
+    "version": "5.0.17",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.17.zip"
+  },
+  {
+    "version": "5.0.18",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.18.zip"
+  },
+  {
+    "version": "5.0.19",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.19.zip"
+  },
+  {
+    "version": "5.0.20",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.20.zip"
+  },
+  {
+    "version": "5.0.21",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.21.zip"
+  },
+  {
+    "version": "5.0.22",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.22.zip"
+  },
+  {
+    "version": "5.0.23",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.23.zip"
+  },
+  {
+    "version": "5.0.24",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.24.zip"
+  },
+  {
+    "version": "5.0.25",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.25.zip"
+  },
+  {
+    "version": "5.0.26",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.26.zip"
+  },
+  {
+    "version": "5.0.27",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.27.zip"
+  },
+  {
+    "version": "5.0.28",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.28.zip"
+  },
+  {
+    "version": "5.0.29",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.29.zip"
+  },
+  {
+    "version": "5.0.30",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.30.zip"
+  },
+  {
+    "version": "5.0.31",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.31.zip"
+  },
+  {
+    "version": "5.1.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.1.0.zip"
+  },
+  {
+    "version": "5.1.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.1.1.zip"
+  },
+  {
+    "version": "5.2.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.2.0.zip"
+  },
+  {
+    "version": "5.2.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.2.1.zip"
+  },
+  {
+    "version": "5.3.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.3.1.zip"
+  },
+  {
+    "version": "5.3.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.3.2.zip"
+  },
+  {
+    "version": "6.0.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.0.zip"
+  },
+  {
+    "version": "6.0.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.1.zip"
+  },
+  {
+    "version": "6.0.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.2.zip"
+  },
+  {
+    "version": "6.0.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.3.zip"
+  },
+  {
+    "version": "6.0.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.4.zip"
+  },
+  {
+    "version": "6.0.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.5.zip"
+  },
+  {
+    "version": "6.0.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.6.zip"
+  },
+  {
+    "version": "6.0.7",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.7.zip"
+  },
+  {
+    "version": "6.0.8",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.8.zip"
+  },
+  {
+    "version": "6.0.9",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.9.zip"
+  },
+  {
+    "version": "6.0.10",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.10.zip"
+  },
+  {
+    "version": "6.0.11",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.11.zip"
+  },
+  {
+    "version": "6.0.12",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.12.zip"
+  },
+  {
+    "version": "6.0.13",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.13.zip"
+  },
+  {
+    "version": "6.0.14",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.14.zip"
+  },
+  {
+    "version": "6.0.15",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.15.zip"
+  },
+  {
+    "version": "6.0.16",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.16.zip"
+  },
+  {
+    "version": "6.0.17",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.17.zip"
+  },
+  {
+    "version": "6.0.18",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.18.zip"
+  },
+  {
+    "version": "6.0.19",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.19.zip"
+  },
+  {
+    "version": "6.0.20",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.20.zip"
+  },
+  {
+    "version": "6.0.21",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.21.zip"
+  },
+  {
+    "version": "6.0.22",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.22.zip"
+  },
+  {
+    "version": "6.0.23",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.23.zip"
+  },
+  {
+    "version": "6.0.24",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.24.zip"
+  },
+  {
+    "version": "6.1.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.1.0.zip"
+  },
+  {
+    "version": "6.1.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.1.1.zip"
+  },
+  {
+    "version": "6.2.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.2.0.zip"
+  },
+  {
+    "version": "6.2.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.2.1.zip"
+  },
+  {
+    "version": "6.3.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.0.zip"
+  },
+  {
+    "version": "6.3.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.1.zip"
+  },
+  {
+    "version": "6.3.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.3.2.zip"
+  },
+  {
+    "version": "7.0.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.0.zip"
+  },
+  {
+    "version": "7.0.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.1.zip"
+  },
+  {
+    "version": "7.0.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.2.zip"
+  },
+  {
+    "version": "7.0.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.3.zip"
+  },
+  {
+    "version": "7.0.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.4.zip"
+  },
+  {
+    "version": "7.0.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.5.zip"
+  },
+  {
+    "version": "7.0.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.6.zip"
+  },
+  {
+    "version": "7.0.7",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.7.zip"
+  },
+  {
+    "version": "7.0.8",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.8.zip"
+  },
+  {
+    "version": "7.0.9",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.9.zip"
+  },
+  {
+    "version": "7.0.11",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.11.zip"
+  },
+  {
+    "version": "7.0.12",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.12.zip"
+  },
+  {
+    "version": "7.0.14",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.14.zip"
+  },
+  {
+    "version": "7.0.15",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.15.zip"
+  },
+  {
+    "version": "7.0.16",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.16.zip"
+  },
+  {
+    "version": "7.0.17",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.17.zip"
+  },
+  {
+    "version": "7.0.18",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.18.zip"
+  },
+  {
+    "version": "7.0.19",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.19.zip"
+  },
+  {
+    "version": "7.0.20",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.20.zip"
+  },
+  {
+    "version": "7.0.21",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.21.zip"
+  },
+  {
+    "version": "7.1.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.1.0.zip"
+  },
+  {
+    "version": "7.1.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.1.1.zip"
+  },
+  {
+    "version": "7.2.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.0.zip"
+  },
+  {
+    "version": "7.2.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.1.zip"
+  },
+  {
+    "version": "7.2.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.2.2.zip"
+  },
+  {
+    "version": "7.3.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.0.zip"
+  },
+  {
+    "version": "7.3.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.1.zip"
+  },
+  {
+    "version": "7.3.2",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.2.zip"
+  },
+  {
+    "version": "7.3.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.3.zip"
+  },
+  {
+    "version": "7.3.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.3.4.zip"
+  },
+  {
+    "version": "8.0.0",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.0.zip"
+  },
+  {
+    "version": "8.0.1",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.1.zip"
+  },
+  {
+    "version": "8.0.3",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.3.zip"
+  },
+  {
+    "version": "8.0.4",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.4.zip"
+  },
+  {
+    "version": "8.0.5",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.5.zip"
+  },
+  {
+    "version": "8.0.6",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.6.zip"
+  },
+  {
+    "version": "8.0.7",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.7.zip"
+  },
+  {
+    "version": "8.0.8",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.8.zip"
+  },
+  {
+    "version": "8.0.9",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.9.zip"
+  },
+  {
+    "version": "8.0.10",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.10.zip"
+  },
+  {
+    "version": "8.0.11",
+    "url": "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.11.zip"
   }
 ]
