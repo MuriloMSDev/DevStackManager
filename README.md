@@ -1,4 +1,4 @@
-![DevStackManager Banner](https://img.shields.io/badge/Build-v2.4.0-blue?style=for-the-badge&logo=build)
+![DevStackManager Banner](https://img.shields.io/badge/Build-v2.5.0-blue?style=for-the-badge&logo=build)
 
 <div align="center">
     <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
@@ -12,7 +12,7 @@
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.4.0-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.4.0)
+* **Baixe e execute o instalador (recomendado):** [DevStack-2.5.0-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.5.0)
 
 ---
 

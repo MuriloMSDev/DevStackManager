@@ -1,1158 +1,1170 @@
 [
   {
-    "version": "3.83.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.83.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.82.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.82.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.82.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.81.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.81.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.80.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.80.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.79.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.79.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.78.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.78.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.78.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.78.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.77.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.77.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.76.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.76.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.75.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.75.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.74.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.74.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.73.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.73.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.73.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.73.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.72.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.72.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.71.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.71.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.70.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.70.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.70.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.69.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.69.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.69.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.69.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.68.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.67.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.67.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.67.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.67.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.66.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.66.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.66.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.65.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.65.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.64.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.64.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.63.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.63.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.63.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.62.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.62.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.61.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.61.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.61.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.61.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.60.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.60.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.59.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.59.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.59.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.59.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.58.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.58.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.58.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.58.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.57.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.57.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.57.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.56.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.56.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.56.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.55.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.55.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.54.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.54.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.53.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.53.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.52.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.52.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.52.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.52.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.51.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.51.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.50.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.50.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.49.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.49.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.48.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.48.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.47.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.47.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.47.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.47.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.46.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.46.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.45.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.45.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.44.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.44.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.43.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.43.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.43.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.43.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.42.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.42.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.41.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.41.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.41.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.41.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.40.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.40.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.40.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.39.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.39.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.39.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.39.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.38.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.38.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.38.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.37.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.37.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.37.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.37.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.36.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.36.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.35.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.35.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.35.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.35.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.34.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.34.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.34.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.34.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.33.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.33.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.33.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.33.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.32.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.32.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.32.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.32.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.31.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.31.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.30.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.30.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.29.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.29.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.28.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.28.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.27.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.27.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.26.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.26.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.26.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.26.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.25.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.25.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.25.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.25.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.24.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.24.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.23.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.23.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.22.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.22.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.21.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.21.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.21.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.21.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.20.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.20.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.19.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.19.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.19.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.18.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.18.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.17.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.17.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.16.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.16.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.15.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.15.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.15.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.15.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.14.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.13.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.13.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.13.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.12.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.12.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.11.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.11.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.10.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.10.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.9.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.8.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.8.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.7.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.7.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.6.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.6.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.5.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.5.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.4.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.4.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.3.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.3.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.3.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.2.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.2.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.2.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.2.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.1.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.1.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.0.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.0.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.0.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "3.0.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.19.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.19.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.19.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.19.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.18.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.17.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.10",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.10/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.9",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.9/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.8",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.8/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.16.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.10",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.10/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.9",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.9/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.8",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.8/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.15.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.14.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.13.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.13.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.13.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.13.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.12",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.12/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.11",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.11/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.10",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.10/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.9",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.9/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.8",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.8/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.12.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.11.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.11.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.11.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.10.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.9.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.9.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.9.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.9.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.8.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.8.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.8.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.8.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.8.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.7.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.6.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.6.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.6.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.6.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.5.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.5.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.5.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.5.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.4.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.4.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.4.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.3.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.3.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.3.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.3.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.20",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.20/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.19",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.19/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.18",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.18/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.17",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.17/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.16",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.16/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.15",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.15/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.14",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.14/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.13",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.13/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.12",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.12/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.11",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.11/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.10",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.10/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.9",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.9/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.6/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.5",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.5/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.2.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.1.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.1.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.1.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.1.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.0.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.0.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "2.0.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.0.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.13.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.13.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.13.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.13.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.12.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.4/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.12.3",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.3/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.12.2",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.2/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.12.1",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.1/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.12.0",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.0/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.11.8",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.8/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.11.7",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.7/php-cs-fixer.phar"
-  },
-  {
-    "version": "1.11.6",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.6/php-cs-fixer.phar"
+    "version": "1.11.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.4/php-cs-fixer.phar"
   },
   {
     "version": "1.11.5",
     "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.5/php-cs-fixer.phar"
   },
   {
-    "version": "1.11.4",
-    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.4/php-cs-fixer.phar"
+    "version": "1.11.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.11.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.11.8",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.8/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.12.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.12.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.12.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.12.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.12.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.12.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.13.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.13.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.13.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "1.13.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.13.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.0.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.0.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.0.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.0.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.1.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.1.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.1.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.1.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.1.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.9",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.9/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.10",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.10/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.11",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.11/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.12",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.12/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.13",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.13/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.14",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.14/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.15",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.15/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.16",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.16/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.17",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.17/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.18",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.18/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.19",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.19/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.2.20",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.2.20/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.3.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.3.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.3.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.3.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.3.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.4.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.4.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.4.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.4.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.5.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.5.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.5.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.5.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.6.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.6.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.6.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.6.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.7.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.7.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.8.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.8.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.8.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.8.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.8.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.8.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.9.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.9.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.9.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.9.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.9.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.10.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.10.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.11.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.11.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.11.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.11.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.8",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.8/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.9",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.9/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.10",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.10/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.11",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.11/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.12.12",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.12.12/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.13.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.13.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.13.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.13.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.13.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.14.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.14.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.8",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.8/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.9",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.9/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.15.10",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.15.10/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.8",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.8/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.9",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.9/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.16.10",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.16.10/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.17.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.17.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.18.7",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.18.7/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.19.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.19.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.19.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "2.19.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v2.19.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.0.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.0.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.0.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.0.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.0.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.1.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.1.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.2.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.2.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.2.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.2.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.3.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.3.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.3.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.3.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.4.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.4.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.5.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.5.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.6.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.6.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.7.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.7.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.8.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.8.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.9.6",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.9.6/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.10.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.10.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.11.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.11.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.12.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.12.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.13.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.13.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.13.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.13.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.14.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.14.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.15.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.15.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.15.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.15.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.16.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.16.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.17.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.17.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.18.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.18.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.19.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.19.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.19.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.19.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.20.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.20.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.21.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.21.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.21.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.21.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.21.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.22.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.22.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.23.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.23.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.24.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.24.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.25.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.25.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.25.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.25.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.26.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.26.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.26.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.26.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.27.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.27.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.28.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.28.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.29.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.29.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.30.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.30.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.31.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.31.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.32.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.32.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.32.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.32.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.33.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.33.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.33.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.33.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.34.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.34.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.34.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.34.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.35.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.35.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.35.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.35.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.36.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.36.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.37.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.37.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.37.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.37.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.38.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.38.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.38.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.38.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.39.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.39.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.39.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.39.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.40.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.40.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.40.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.40.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.41.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.41.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.41.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.41.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.42.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.42.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.43.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.43.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.43.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.43.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.44.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.44.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.45.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.45.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.46.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.46.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.47.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.47.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.47.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.47.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.48.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.48.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.49.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.49.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.50.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.50.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.51.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.51.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.52.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.52.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.52.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.52.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.53.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.53.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.54.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.54.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.55.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.55.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.56.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.56.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.56.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.56.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.57.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.57.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.57.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.57.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.58.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.58.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.58.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.58.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.59.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.59.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.59.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.59.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.59.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.60.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.60.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.61.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.61.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.61.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.61.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.62.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.62.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.63.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.63.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.63.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.63.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.64.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.64.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.65.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.65.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.66.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.66.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.66.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.66.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.67.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.67.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.67.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.67.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.3",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.3/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.4",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.4/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.68.5",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.68.5/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.69.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.69.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.69.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.69.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.70.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.70.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.70.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.70.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.71.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.71.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.72.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.72.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.73.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.73.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.73.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.73.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.74.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.74.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.75.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.75.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.76.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.76.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.77.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.77.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.78.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.78.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.78.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.78.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.79.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.79.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.80.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.80.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.81.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.81.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.82.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.82.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.1/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.82.2",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.82.2/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.83.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.83.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.84.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.84.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.85.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.85.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.85.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.85.1/php-cs-fixer.phar"
   }
 ]

@@ -8,6 +8,7 @@ src/INSTALLER/bin
 src/INSTALLER/obj
 src/UNINSTALLER/bin
 src/UNINSTALLER/obj
+src/Shared/AvailableVersions/backup
 DevStackManager.sln
 installer
 release
