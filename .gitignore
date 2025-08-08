@@ -10,5 +10,5 @@ src/UNINSTALLER/bin
 src/UNINSTALLER/obj
 src/Shared/AvailableVersions/backup
 DevStackManager.sln
-installer
+install
 release

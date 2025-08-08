@@ -402,28 +402,104 @@ namespace DevStackManager
                 textBox.SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255));
             }
 
-            // Create style for focus effects
+            // Create style for focus effects and modern scrollbar
             var textBoxStyle = new Style(typeof(TextBox));
 
-            // Focus trigger
-            var focusTrigger = new Trigger
-            {
-                Property = TextBox.IsFocusedProperty,
-                Value = true
-            };
-            focusTrigger.Setters.Add(new Setter(TextBox.BorderBrushProperty, CurrentTheme.InputFocusBorder));
-            focusTrigger.Setters.Add(new Setter(TextBox.BorderThicknessProperty, new Thickness(2)));
+            // Template XAML para TextBox com scrollbar customizada
+            var templateXaml = @"
+                <ControlTemplate TargetType='TextBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                    <Border Name='Border'
+                            Background='{TemplateBinding Background}'
+                            BorderBrush='{TemplateBinding BorderBrush}'
+                            BorderThickness='{TemplateBinding BorderThickness}'
+                            CornerRadius='3'>
+                        <ScrollViewer Name='PART_ContentHost'
+                                      Focusable='False'
+                                      HorizontalScrollBarVisibility='{TemplateBinding HorizontalScrollBarVisibility}'
+                                      VerticalScrollBarVisibility='{TemplateBinding VerticalScrollBarVisibility}'>
+                            <ScrollViewer.Resources>
+                                <!-- Estilo customizado para ScrollBar -->
+                                <Style TargetType='ScrollBar'>
+                                    <Setter Property='Background' Value='Transparent'/>
+                                    <Setter Property='Width' Value='12'/>
+                                    <Setter Property='Template'>
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType='ScrollBar'>
+                                                <Grid>
+                                                    <Rectangle Fill='#FF1B1F23' Opacity='0.3'/>
+                                                    <Track Name='PART_Track' IsDirectionReversed='True'>
+                                                        <Track.Thumb>
+                                                            <Thumb>
+                                                                <Thumb.Template>
+                                                                    <ControlTemplate TargetType='Thumb'>
+                                                                        <Border Background='#FF555555' 
+                                                                                CornerRadius='6' 
+                                                                                Margin='2'/>
+                                                                    </ControlTemplate>
+                                                                </Thumb.Template>
+                                                            </Thumb>
+                                                        </Track.Thumb>
+                                                    </Track>
+                                                </Grid>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property='IsMouseOver' Value='True'>
+                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType='Thumb'>
+                                                                    <Border Background='#FF777777' 
+                                                                            CornerRadius='6' 
+                                                                            Margin='2'/>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ScrollViewer.Resources>
+                        </ScrollViewer>
+                    </Border>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property='IsFocused' Value='True'>
+                            <Setter TargetName='Border' Property='BorderBrush' Value='#FF2188FF'/>
+                            <Setter TargetName='Border' Property='BorderThickness' Value='2'/>
+                        </Trigger>
+                        <Trigger Property='IsMouseOver' Value='True'>
+                            <Setter TargetName='Border' Property='BorderBrush' Value='#FF2188FF'/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>";
 
-            // Mouse over trigger
-            var hoverTrigger = new Trigger
+            try
             {
-                Property = TextBox.IsMouseOverProperty,
-                Value = true
-            };
-            hoverTrigger.Setters.Add(new Setter(TextBox.BorderBrushProperty, CurrentTheme.BorderHover));
+                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
+                textBoxStyle.Setters.Add(new Setter(TextBox.TemplateProperty, template));
+            }
+            catch
+            {
+                // Fallback - usar triggers básicos se XAML falhar
+                var focusTrigger = new Trigger
+                {
+                    Property = TextBox.IsFocusedProperty,
+                    Value = true
+                };
+                focusTrigger.Setters.Add(new Setter(TextBox.BorderBrushProperty, CurrentTheme.InputFocusBorder));
+                focusTrigger.Setters.Add(new Setter(TextBox.BorderThicknessProperty, new Thickness(2)));
 
-            textBoxStyle.Triggers.Add(focusTrigger);
-            textBoxStyle.Triggers.Add(hoverTrigger);
+                var hoverTrigger = new Trigger
+                {
+                    Property = TextBox.IsMouseOverProperty,
+                    Value = true
+                };
+                hoverTrigger.Setters.Add(new Setter(TextBox.BorderBrushProperty, CurrentTheme.BorderHover));
+
+                textBoxStyle.Triggers.Add(focusTrigger);
+                textBoxStyle.Triggers.Add(hoverTrigger);
+            }
 
             textBox.Style = textBoxStyle;
 
