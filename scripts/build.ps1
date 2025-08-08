@@ -126,8 +126,6 @@ Copy-Item "$cliSourceDir\DevStack.exe" "$releaseDir\DevStack.exe" -Force
 # Copiar DevStackGUI.exe (GUI) e dependências
 Write-Host "Copiando DevStackGUI.exe (GUI)..." -ForegroundColor Cyan
 Copy-Item "$guiSourceDir\DevStackGUI.exe" "$releaseDir\DevStackGUI.exe" -Force
-Copy-Item "$guiSourceDir\PresentationNative_cor3.dll" "$releaseDir\PresentationNative_cor3.dll" -Force
-Copy-Item "$guiSourceDir\wpfgfx_cor3.dll" "$releaseDir\wpfgfx_cor3.dll" -Force
 
 # Copiar ícone
 Write-Host "Copiando ícone..." -ForegroundColor Cyan

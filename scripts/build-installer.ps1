@@ -7,7 +7,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent $scriptDir
 $srcDir = Join-Path $rootDir "src"
 $releaseDir = Join-Path $rootDir "release"
-$installerDir = Join-Path $rootDir "installer"
+$installerDir = Join-Path $rootDir "install"
 
 Write-Host "=== DevStack Installer Build Script ===" -ForegroundColor Green
 Write-Host "Root Directory: $rootDir" -ForegroundColor Yellow
@@ -121,9 +121,6 @@ try {
         $zip.Dispose()
     }
     Write-Host "Installer compactado em: $zipInstallerPath" -ForegroundColor Green
-    # Remove o .exe após zipar para evitar upload acidental
-    Remove-Item $targetInstallerPath -Force
-    Write-Host "Installer .exe removido após compactação." -ForegroundColor Yellow
 } finally {
     Pop-Location
     

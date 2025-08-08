@@ -1,0 +1,111 @@
+{
+  "language_name": "Deutsch (Deutschland)",
+  "window_title": "DevStack Manager v{0} - Installationsassistent",
+  "welcome": {
+    "title": "Willkommen bei DevStack Manager",
+    "description": "Dieser Assistent führt Sie durch die Installation von DevStack Manager auf Ihrem Computer.",
+    "app_name": "DevStack Manager",
+    "version": "Version {0}",
+    "app_description": "DevStack Manager ist ein umfassendes Entwicklungsumgebungs-Verwaltungstool, das Ihnen hilft, verschiedene Entwicklungstools und -dienste zu installieren, zu konfigurieren und zu verwalten.\n\nKlicken Sie auf 'Weiter', um mit der Installation fortzufahren.",
+    "language_label": "Installationssprache:"
+  },
+  "license": {
+    "title": "Lizenzvereinbarung",
+    "description": "Bitte lesen Sie die folgende Lizenzvereinbarung sorgfältig durch.",
+    "label": "Bitte lesen und akzeptieren Sie die Lizenzvereinbarung:",
+    "text": "MIT-Lizenz\n\nCopyright (c) 2025 DevStackManager\n\nHiermit wird unentgeltlich jeder Person, die eine Kopie\ndieser Software und der zugehörigen Dokumentationsdateien (die \"Software\") erhält, die Erlaubnis erteilt,\nmit der Software ohne Einschränkung zu handeln, einschließlich und ohne Beschränkung der Rechte\nzu verwenden, zu kopieren, zu modifizieren, zu fusionieren, zu veröffentlichen, zu verbreiten, zu unterlizenzieren und/oder zu verkaufen\nKopien der Software, und Personen, denen die Software\nbereitgestellt wird, dies zu ermöglichen, vorbehaltlich der folgenden Bedingungen:\n\nDer obige Copyright-Hinweis und dieser Erlaubnishinweis müssen in allen enthalten sein\nKopien oder wesentlichen Teilen der Software.\n\nDIE SOFTWARE WIRD \"WIE BESEHEN\" BEREITGESTELLT, OHNE GEWÄHRLEISTUNG JEGLICHER ART, AUSDRÜCKLICH ODER\nIMPLIZIT, EINSCHLIESSLICH, ABER NICHT BESCHRÄNKT AUF DIE GEWÄHRLEISTUNGEN DER MARKTGÄNGIGKEIT,\nEIGNUNG FÜR EINEN BESTIMMTEN ZWECK UND NICHTVERLETZUNG. IN KEINEM FALL SIND DIE\nAUTOREN ODER COPYRIGHT-INHABER HAFTBAR FÜR JEGLICHE ANSPRÜCHE, SCHÄDEN ODER ANDERE\nHAFTUNG, SEI ES IN EINER VERTRAGSKLAGE, UNERLAUBTER HANDLUNG ODER ANDERWEITIG, DIE SICH AUS,\nAUS ODER IN VERBINDUNG MIT DER SOFTWARE ODER DER NUTZUNG ODER ANDEREN GESCHÄFTEN IN DER\nSOFTWARE."
+  },
+  "installation_path": {
+    "title": "Installationsort wählen",
+    "description": "Wählen Sie den Ordner, in dem DevStack Manager installiert werden soll.",
+    "label": "Zielordner:",
+    "browser": "Durchsuchen...",
+    "space_required": "Benötigter Speicherplatz: {0} MB",
+    "space_available": "Verfügbarer Speicherplatz: {0}",
+    "info": "💡 DevStack Manager wird in diesem Ordner mit allen Komponenten und Konfigurationen installiert."
+  },
+  "components": {
+    "title": "Zusätzliche Optionen auswählen",
+    "description": "Wählen Sie zusätzliche Optionen für Ihre DevStack Manager-Installation.",
+    "label": "Zusätzliche Optionen:",
+    "desktop_shortcuts": "🖥️ Desktop-Verknüpfungen erstellen",
+    "start_menu_shortcuts": "📂 Startmenü-Verknüpfungen erstellen",
+    "add_to_path": "⚡ DevStack zum System-PATH hinzufügen (empfohlen)",
+    "path_info": "⚠️ Das Hinzufügen zum PATH ermöglicht es Ihnen, DevStack-Befehle direkt vom Terminal aus überall zu verwenden."
+  },
+  "ready_to_install": {
+    "title": "Bereit zur Installation",
+    "description": "Der Assistent ist bereit, die Installation zu beginnen. Überprüfen Sie Ihre Einstellungen unten.",
+    "summary_label": "Installationszusammenfassung:",
+    "destination": "Zielordner:",
+    "components_header": "Zu installierende Komponenten:",
+    "cli_component": "• DevStack CLI (Befehlszeilenschnittstelle)",
+    "gui_component": "• DevStack GUI (Grafische Benutzeroberfläche)",
+    "uninstaller_component": "• DevStack Deinstallationsprogramm",
+    "config_component": "• Konfigurationsdateien und Komponenten",
+    "options_header": "Zusätzliche Optionen:",
+    "create_desktop": "• Desktop-Verknüpfungen erstellen",
+    "create_start_menu": "• Startmenü-Verknüpfungen erstellen",
+    "add_path": "• Zum System-PATH hinzufügen",
+    "space_required_summary": "Benötigter Speicherplatz: {0} MB"
+  },
+  "installing": {
+    "title": "DevStack Manager wird installiert",
+    "description": "Bitte warten Sie, während DevStack Manager installiert wird...",
+    "preparing": "Installation wird vorbereitet...",
+    "extracting": "Eingebettete Installationsdateien werden extrahiert...",
+    "creating_directory": "Installationsverzeichnis wird erstellt...",
+    "installing_files": "DevStack-Dateien werden installiert...",
+    "registering": "Installation wird registriert...",
+    "creating_desktop": "Desktop-Verknüpfungen werden erstellt...",
+    "creating_start_menu": "Startmenü-Verknüpfungen werden erstellt...",
+    "adding_path": "Zum System-PATH wird hinzugefügt...",
+    "completed": "Installation erfolgreich abgeschlossen!"
+  },
+  "finished": {
+    "title": "Installation abgeschlossen",
+    "description": "DevStack Manager wurde erfolgreich auf Ihrem Computer installiert.",
+    "success_icon": "✅",
+    "success_title": "Installation erfolgreich abgeschlossen!",
+    "success_message": "DevStack Manager wurde erfolgreich installiert. Sie können die Anwendung jetzt verwenden, um Ihre Entwicklungsumgebung zu verwalten.",
+    "install_location": "Installationsort:",
+    "launch_now": "🚀 DevStack Manager jetzt starten"
+  },
+  "buttons": {
+    "back": "← Zurück",
+    "next": "Weiter →",
+    "accept": "Akzeptieren",
+    "install": "Installieren",
+    "finish": "Fertig",
+    "cancel": "Abbrechen"
+  },
+  "dialogs": {
+    "yes": "Ja",
+    "no": "Nein",
+    "cancel_title": "Installation abbrechen",
+    "cancel_message": "Sind Sie sicher, dass Sie die Installation abbrechen möchten?",
+    "launch_error_title": "Start-Fehler",
+    "launch_error_message": "DevStack GUI konnte nicht gestartet werden: {0}",
+    "installation_error_title": "Fehler",
+    "installation_error_message": "Installation fehlgeschlagen: {0}",
+    "folder_dialog_title": "Installationsordner auswählen"
+  },
+  "log_messages": {
+    "starting": "Installationsprozess wird gestartet",
+    "extracted": "Eingebettete Dateien erfolgreich extrahiert",
+    "creating_dir": "Verzeichnis wird erstellt: {0}",
+    "installing": "Anwendungsdateien werden installiert",
+    "registering": "Installation wird in Windows registriert",
+    "desktop_shortcuts": "Desktop-Verknüpfungen werden erstellt",
+    "start_menu_shortcuts": "Startmenü-Verknüpfungen werden erstellt",
+    "adding_path": "DevStack wird zum System-PATH hinzugefügt",
+    "path_added": "Erfolgreich zum Benutzer-PATH hinzugefügt",
+    "path_exists": "Bereits im PATH vorhanden",
+    "completed_success": "Installation erfolgreich abgeschlossen!",
+    "cleanup": "Temporäre Dateien bereinigt",
+    "cleanup_warning": "Warnung: Temporäre Datei konnte nicht gelöscht werden: {0}",
+    "shortcuts_warning": "Warnung: Desktop-Verknüpfungen konnten nicht erstellt werden: {0}",
+    "start_menu_warning": "Warnung: Startmenü-Verknüpfungen konnten nicht erstellt werden: {0}",
+    "path_warning": "Warnung: Konnte nicht zum PATH hinzufügen: {0}"
+  }
+}
