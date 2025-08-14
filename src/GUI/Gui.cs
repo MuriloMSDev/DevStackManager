@@ -25,7 +25,8 @@ namespace DevStackManager
     public partial class DevStackGui : Window, INotifyPropertyChanged
     {
         #region Private Fields
-        private string _statusMessage = "Pronto";
+        private readonly DevStackShared.LocalizationManager _localizationManager;
+        private string _statusMessage = "";
         private ObservableCollection<ComponentViewModel> _installedComponents = new();
         private ObservableCollection<string> _availableComponents = new();
         private ObservableCollection<string> _availableVersions = new();
@@ -61,10 +62,12 @@ namespace DevStackManager
         }
         public ContentControl? _mainContent;
         private int _selectedNavIndex = 0;
-        private static GuiTheme.ThemeColors CurrentTheme => GuiTheme.DarkTheme;
+        private static DevStackShared.ThemeManager.ThemeColors CurrentTheme => DevStackShared.ThemeManager.DarkTheme;
         #endregion
 
         #region Properties
+        public DevStackShared.LocalizationManager LocalizationManager => _localizationManager;
+        
         public string StatusMessage
         {
             get => _statusMessage;
@@ -149,6 +152,36 @@ namespace DevStackManager
         #region Constructor
         public DevStackGui()
         {
+            // Initialize localization for GUI (carregando idioma persistido se existir)
+            _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+            try
+            {
+                var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
+                if (System.IO.File.Exists(settingsPath))
+                {
+                    using (var sr = new StreamReader(settingsPath))
+                    using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
+                    {
+                        string? lang = null;
+                        while (reader.Read())
+                        {
+                            if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
+                                reader.Value?.ToString() == "language")
+                            {
+                                reader.Read();
+                                lang = reader.Value?.ToString();
+                                break;
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(lang))
+                            _localizationManager.LoadLanguage(lang);
+                    }
+                }
+            }
+            catch { }
+            _statusMessage = _localizationManager.GetString("gui.window.ready_status");
+            _localizationManager.LanguageChanged += OnLanguageChanged;
+            
             InitializeComponent();
             DataContext = this;
             
@@ -162,12 +195,12 @@ namespace DevStackManager
         private void InitializeComponent()
         {
             var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
-            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? "Unknown";
-            Title = $"DevStack Manager v{version}";
+            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("gui.common.unknown");
+            Title = _localizationManager.GetString("gui.window.title", version);
             Width = 1200;
-            Height = 800;
-            MinWidth = 1000;
-            MinHeight = 600;
+            Height = 840;
+            MinWidth = 1200;
+            MinHeight = 840;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Background = CurrentTheme.FormBackground;
             Foreground = CurrentTheme.Foreground;
@@ -194,6 +227,38 @@ namespace DevStackManager
         private void CreateStatusBar(Grid mainGrid)
         {
             GuiStatusBar.CreateStatusBar(mainGrid, this);
+        }
+        
+        private void OnLanguageChanged(object? sender, string newLang)
+        {
+            // Rebuild main window texts and content to reflect new language
+            Dispatcher.Invoke(() =>
+            {
+                var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
+                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("gui.common.unknown");
+                Title = _localizationManager.GetString("gui.window.title", version);
+
+                // Recreate main layout while preserving selected index
+                int currentIndex = SelectedNavIndex;
+                var mainGrid = Content as Grid;
+                if (mainGrid != null)
+                {
+                    mainGrid.Children.Clear();
+                    mainGrid.RowDefinitions.Clear();
+                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                    CreateMainContent(mainGrid);
+                    CreateStatusBar(mainGrid);
+                    SelectedNavIndex = currentIndex;
+                }
+                else
+                {
+                    // Fallback: rebuild the whole content
+                    InitializeComponent();
+                }
+                StatusMessage = _localizationManager.GetString("gui.config_tab.languages.messages.language_changed", _localizationManager.GetLanguageName(newLang));
+            });
         }
         #endregion
 

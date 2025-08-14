@@ -19,8 +19,8 @@ namespace DevStackManager
         {
             var statusBar = new Border
             {
-                Background = GuiTheme.DarkTheme.StatusBackground,
-                BorderBrush = GuiTheme.DarkTheme.Border,
+                Background = DevStackShared.ThemeManager.DarkTheme.StatusBackground,
+                BorderBrush = DevStackShared.ThemeManager.DarkTheme.Border,
                 BorderThickness = new Thickness(0, 1, 0, 0),
                 Height = 30,
                 Padding = new Thickness(5, 0, 0, 0)
@@ -34,7 +34,7 @@ namespace DevStackManager
             var statusLabel = new Label
             {
                 FontSize = 12,
-                Foreground = GuiTheme.DarkTheme.StatusForeground,
+                Foreground = DevStackShared.ThemeManager.DarkTheme.StatusForeground,
                 Padding = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
@@ -45,23 +45,139 @@ namespace DevStackManager
             Grid.SetColumn(statusLabel, 0);
             statusGrid.Children.Add(statusLabel);
 
-            // Create refresh button with only icon
-            var refreshButton = GuiTheme.CreateStyledButton("🔄");
-            refreshButton.Width = 30;
-            refreshButton.Height = 30; // Mesma altura da barra (30 - padding)
-            refreshButton.FontSize = 10;
-            refreshButton.Padding = new Thickness(0);
-            refreshButton.ToolTip = "Atualizar status";
-            refreshButton.VerticalAlignment = VerticalAlignment.Center;
-            refreshButton.HorizontalAlignment = HorizontalAlignment.Right;
-            refreshButton.Click += async (s, e) => {
-                gui.StatusMessage = "Atualizando...";
-                await GuiInstalledTab.LoadInstalledComponents(gui);
-                await GuiServicesTab.LoadServices(gui);
-                gui.StatusMessage = "Status atualizado";
+            // Language selector (substitui o botão de atualizar)
+            var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
+            languageComboBox.Height = 30; // Mesma altura da status bar
+            languageComboBox.MinWidth = 160;
+            languageComboBox.VerticalAlignment = VerticalAlignment.Center;
+            languageComboBox.HorizontalAlignment = HorizontalAlignment.Right;
+            languageComboBox.Margin = new Thickness(0, 0, 0, 0);
+
+            // Substituir o template para remover bordas (mantendo o Background atual via TemplateBinding)
+            try
+            {
+                var templateXaml = @"
+                <ControlTemplate TargetType='ComboBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                    <Border Name='MainBorder'
+                            Background='{TemplateBinding Background}'
+                            BorderBrush='Transparent'
+                            BorderThickness='0'
+                            CornerRadius='3'>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width='*'/>
+                                <ColumnDefinition Width='20'/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Item selecionado -->
+                            <ContentPresenter Name='ContentSite'
+                                              Grid.Column='0'
+                                              Margin='10,5,10,8'
+                                              VerticalAlignment='Top'
+                                              HorizontalAlignment='Left'
+                                              Content='{TemplateBinding SelectionBoxItem}'
+                                              ContentTemplate='{TemplateBinding SelectionBoxItemTemplate}'
+                                              ContentTemplateSelector='{TemplateBinding ItemTemplateSelector}'
+                                              IsHitTestVisible='False'/>
+
+                            <!-- Botão de toggle (seta) -->
+                            <ToggleButton Name='ToggleButton'
+                                          Grid.Column='0'
+                                          Grid.ColumnSpan='2'
+                                          Background='Transparent'
+                                          BorderBrush='Transparent'
+                                          BorderThickness='0'
+                                          Focusable='False'
+                                          ClickMode='Press'
+                                          IsChecked='{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}'>
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType='ToggleButton'>
+                                        <Border Background='Transparent'>
+                                            <Path Name='Arrow'
+                                                  Data='M 0 0 L 4 4 L 8 0 Z'
+                                                  Fill='{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}'
+                                                  HorizontalAlignment='Right'
+                                                  VerticalAlignment='Center'
+                                                  Margin='0,0,8,0'/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <!-- Popup do dropdown -->
+                            <Popup Name='Popup'
+                                   Placement='Bottom'
+                                   IsOpen='{TemplateBinding IsDropDownOpen}'
+                                   AllowsTransparency='True'
+                                   Focusable='False'
+                                   PopupAnimation='Slide'>
+                                <Border Name='DropDownBorder'
+                                        Background='#FF2D2D30'
+                                        BorderBrush='Transparent'
+                                        BorderThickness='0'
+                                        CornerRadius='3'
+                                        MinWidth='{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}'
+                                        MaxHeight='{TemplateBinding MaxDropDownHeight}'>
+                                    <ScrollViewer Name='DropDownScrollViewer'
+                                                  CanContentScroll='True'>
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation='Contained'/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>";
+
+                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
+                languageComboBox.Template = template;
+                // Garantir que nenhuma borda de controle seja aplicada
+                languageComboBox.BorderThickness = new Thickness(0);
+                languageComboBox.BorderBrush = Brushes.Transparent;
+                languageComboBox.FocusVisualStyle = null;
+            }
+            catch { }
+
+            // Popular idiomas
+            var localization = gui.LocalizationManager;
+            var languages = localization.GetAvailableLanguages();
+            foreach (var lang in languages)
+            {
+                var name = localization.GetLanguageName(lang);
+                var item = new ComboBoxItem { Content = name, Tag = lang };
+                languageComboBox.Items.Add(item);
+                if (lang == localization.CurrentLanguage)
+                {
+                    languageComboBox.SelectedItem = item;
+                }
+            }
+
+            // Alterar idioma e persistir
+            languageComboBox.SelectionChanged += (s, e) =>
+            {
+                if (languageComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is string code)
+                {
+                    localization.LoadLanguage(code);
+                    try
+                    {
+                        var baseDir = System.AppContext.BaseDirectory;
+                        var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
+                        // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
+                        using (var sw = new System.IO.StreamWriter(settingsPath))
+                        using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
+                        {
+                            writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+                            writer.WriteStartObject();
+                            writer.WritePropertyName("language");
+                            writer.WriteValue(code);
+                            writer.WriteEndObject();
+                        }
+                    }
+                    catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+                }
             };
-            Grid.SetColumn(refreshButton, 1);
-            statusGrid.Children.Add(refreshButton);
+
+            Grid.SetColumn(languageComboBox, 1);
+            statusGrid.Children.Add(languageComboBox);
 
             statusBar.Child = statusGrid;
             mainGrid.Children.Add(statusBar);

@@ -31,6 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Shared\locale\*.json">
+      <LogicalName>DevStackManager.locale.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\Shared\DevStack.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

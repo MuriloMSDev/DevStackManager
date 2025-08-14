@@ -160,6 +160,21 @@ Write-Host "Executáveis prontos na pasta release:" -ForegroundColor Yellow
 Write-Host "  DevStack.exe     - Interface de linha de comando" -ForegroundColor White
 Write-Host "  DevStackGUI.exe  - Interface gráfica" -ForegroundColor White
 
+# Copy locale files to output directories
+Write-Host ""
+Write-Host "=== Copying Locale Files ===" -ForegroundColor Magenta
+$localeScript = Join-Path $PSScriptRoot "copy-locale-files.ps1"
+if (Test-Path $localeScript) {
+    & $localeScript
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Locale files copied successfully!" -ForegroundColor Green
+    } else {
+        Write-Host "Failed to copy locale files!" -ForegroundColor Red
+    }
+} else {
+    Write-Host "Locale script not found: $localeScript" -ForegroundColor Red
+}
+
 # Build installer if requested
 if ($WithInstaller) {
     Write-Host ""

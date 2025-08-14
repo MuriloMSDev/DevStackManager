@@ -1,0 +1,658 @@
+{
+  "language_name": "Deutsch (Deutschland)",
+  "installer": {
+    "window_title": "DevStack Manager v{0} - Installationsassistent",
+    "welcome": {
+      "title": "Willkommen beim DevStack Manager",
+      "description": "Dieser Assistent führt Sie durch die Installation des DevStack Managers auf Ihrem Computer.",
+      "app_name": "DevStack Manager",
+      "version": "Version {0}",
+      "app_description": "DevStack Manager ist ein umfassendes Tool zur Verwaltung von Entwicklungsumgebungen, das Ihnen hilft, verschiedene Entwicklungswerkzeuge und -dienste zu installieren, konfigurieren und verwalten.\n\nKlicken Sie auf 'Weiter', um mit der Installation fortzufahren.",
+      "language_label": "Installationssprache:"
+    },
+    "license": {
+      "title": "Lizenzvereinbarung",
+      "description": "Bitte lesen Sie die folgende Lizenzvereinbarung sorgfältig durch.",
+      "label": "Bitte lesen und akzeptieren Sie die Lizenzvereinbarung:",
+      "text": "MIT-Lizenz\n\nCopyright (c) 2025 DevStackManager\n\nHiermit wird unentgeltlich jeder Person, die eine Kopie der Software und der zugehörigen Dokumentationsdateien (die \"Software\") erhält, die Erlaubnis erteilt, uneingeschränkt mit der Software zu handeln, einschließlich und ohne Einschränkung des Rechts, sie zu verwenden, zu kopieren, zu ändern, zusammenzuführen, zu veröffentlichen, zu verbreiten, unterzulizenzieren und/oder zu verkaufen, und Personen, denen die Software bereitgestellt wird, dies zu ermöglichen, unter den folgenden Bedingungen:\n\nDer obige Urheberrechtshinweis und dieser Erlaubnishinweis müssen in allen Kopien oder wesentlichen Teilen der Software enthalten sein.\n\nDIE SOFTWARE WIRD OHNE JEGLICHE GARANTIE, WEDER AUSDRÜCKLICH NOCH STILLSCHWEIGEND, BEREITGESTELLT, EINSCHLIESSLICH ABER NICHT BESCHRÄNKT AUF DIE GARANTIEN DER MARKTGÄNGIGKEIT, EIGNUNG FÜR EINEN BESTIMMTEN ZWECK UND NICHTVERLETZUNG. IN KEINEM FALL SIND DIE AUTOREN ODER URHEBERRECHTSINHABER FÜR ANSPRÜCHE, SCHÄDEN ODER SONSTIGE HAFTUNGEN VERANTWORTLICH, OB AUS VERTRAG, UNERLAUBTER HANDLUNG ODER ANDERWEITIG, DIE AUS DER SOFTWARE ODER DER BENUTZUNG ODER SONSTIGEN GESCHÄFTEN MIT DER SOFTWARE ENTSTEHEN."
+    },
+    "installation_path": {
+      "title": "Installationsort wählen",
+      "description": "Wählen Sie den Ordner, in dem DevStack Manager installiert werden soll.",
+      "label": "Zielordner:",
+      "browser": "Durchsuchen...",
+      "space_required": "Benötigter Speicherplatz: {0} MB",
+      "space_available": "Verfügbarer Speicherplatz: {0}",
+      "info": "DevStack Manager wird in diesem Ordner zusammen mit allen Komponenten und Einstellungen installiert."
+    },
+    "components": {
+      "title": "Zusätzliche Optionen auswählen",
+      "description": "Wählen Sie zusätzliche Optionen für Ihre DevStack Manager Installation.",
+      "label": "Zusätzliche Optionen:",
+      "desktop_shortcuts": "🖥️ Desktop-Verknüpfungen erstellen",
+      "start_menu_shortcuts": "📂 Startmenü-Verknüpfungen erstellen",
+      "add_to_path": "⚡ DevStack zum System-PATH hinzufügen (empfohlen)",
+      "path_info": "Das Hinzufügen zum PATH ermöglicht die Verwendung von DevStack-Befehlen direkt im Terminal von jedem Ort aus."
+    },
+    "ready_to_install": {
+      "title": "Bereit zur Installation",
+      "description": "Der Assistent ist bereit, die Installation zu starten. Überprüfen Sie Ihre Einstellungen unten.",
+      "summary_label": "Installationsübersicht:",
+      "destination": "Zielordner:",
+      "components_header": "Zu installierende Komponenten:",
+      "cli_component": "• DevStack CLI (Kommandozeilenschnittstelle)",
+      "gui_component": "• DevStack GUI (Grafische Oberfläche)",
+      "uninstaller_component": "• DevStack Deinstallationsprogramm",
+      "config_component": "• Konfigurationsdateien und Komponenten",
+      "options_header": "Zusätzliche Optionen:",
+      "create_desktop": "• Desktop-Verknüpfungen erstellen",
+      "create_start_menu": "• Startmenü-Verknüpfungen erstellen",
+      "add_path": "• Zum System-PATH hinzufügen",
+      "space_required_summary": "Benötigter Speicherplatz: {0} MB"
+    },
+    "installing": {
+      "title": "DevStack Manager wird installiert",
+      "description": "Bitte warten Sie, während DevStack Manager installiert wird...",
+      "preparing": "Installation wird vorbereitet...",
+      "extracting": "Installationsdateien werden extrahiert...",
+      "creating_directory": "Installationsverzeichnis wird erstellt...",
+      "installing_files": "DevStack-Dateien werden installiert...",
+      "registering": "Installation wird registriert...",
+      "creating_desktop": "Desktop-Verknüpfungen werden erstellt...",
+      "creating_start_menu": "Startmenü-Verknüpfungen werden erstellt...",
+      "adding_path": "Zum System-PATH wird hinzugefügt...",
+      "completed": "Installation erfolgreich abgeschlossen!"
+    },
+    "finished": {
+      "title": "Installation abgeschlossen",
+      "description": "DevStack Manager wurde erfolgreich auf Ihrem Computer installiert.",
+      "success_icon": "✅",
+      "success_title": "Installation erfolgreich abgeschlossen!",
+      "success_message": "DevStack Manager wurde erfolgreich installiert. Sie können die Anwendung jetzt zur Verwaltung Ihrer Entwicklungsumgebung verwenden.",
+      "install_location": "Installationsort:",
+      "launch_now": "🚀 DevStack Manager jetzt starten"
+    },
+    "log_messages": {
+      "starting": "Installationsprozess wird gestartet",
+      "extracted": "Installationsdateien erfolgreich extrahiert",
+      "creating_dir": "Verzeichnis wird erstellt: {0}",
+      "installing": "Anwendungsdateien werden installiert",
+      "registering": "Installation wird unter Windows registriert",
+      "desktop_shortcuts": "Desktop-Verknüpfungen werden erstellt",
+      "start_menu_shortcuts": "Startmenü-Verknüpfungen werden erstellt",
+      "adding_path": "DevStack wird zum System-PATH hinzugefügt",
+      "path_added": "Erfolgreich zum Benutzer-PATH hinzugefügt",
+      "path_exists": "Bereits im PATH vorhanden",
+      "completed_success": "Installation erfolgreich abgeschlossen!",
+      "cleanup": "Temporäre Dateien bereinigt",
+      "cleanup_warning": "Warnung: Temporäre Datei konnte nicht gelöscht werden: {0}",
+      "shortcuts_warning": "Warnung: Desktop-Verknüpfungen konnten nicht erstellt werden: {0}",
+      "start_menu_warning": "Warnung: Startmenü-Verknüpfungen konnten nicht erstellt werden: {0}",
+      "path_warning": "Warnung: PATH konnte nicht hinzugefügt werden: {0}"
+    }
+  },
+  "uninstaller": {
+    "window_title": "DevStack Manager v{0} - Deinstallationsprogramm",
+    "welcome": {
+      "title": "DevStack Deinstallationsprogramm",
+      "description": "Dieser Assistent entfernt DevStack von Ihrem Computer",
+      "app_name": "DevStack Deinstallationsprogramm",
+      "version": "Version {0}",
+      "app_description": "Dieser Assistent führt Sie durch den vollständigen Entfernungsprozess von DevStack von Ihrem System.",
+      "language_label": "Sprache:"
+    },
+    "confirmation": {
+      "title": "Deinstallationsbestätigung",
+      "description": "Bitte bestätigen Sie, dass Sie mit der Entfernung von DevStack fortfahren möchten",
+      "warning_title": "⚠️ Achtung - Diese Aktion kann nicht rückgängig gemacht werden",
+      "warning_text": "Die Deinstallation entfernt DevStack vollständig von Ihrem System, einschließlich:",
+      "items": {
+        "program_files": "• Alle Programmdateien",
+        "user_data": "• Benutzerkonfigurationen und -daten",
+        "shortcuts": "• Desktop- und Startmenü-Verknüpfungen",
+        "registry": "• Windows-Registrierungseinträge",
+        "services": "• Zugehörige Dienste und Prozesse",
+        "path_variables": "• PATH-Umgebungsvariablen"
+      },
+      "install_found": "📁 Installationsordner gefunden:",
+      "install_not_found": "❌ Installationsordner nicht automatisch gefunden",
+      "install_not_found_desc": "DevStack ist möglicherweise nicht korrekt installiert oder wurde bereits entfernt. Die Deinstallation bereinigt nur verbleibende Einträge und Verknüpfungen.",
+      "space_to_free": "📊 Freizugebender Speicherplatz: {0}"
+    },
+    "uninstall_options": {
+      "title": "Deinstallationsoptionen",
+      "description": "Wählen Sie aus, was während der Deinstallation entfernt werden soll",
+      "label": "Wählen Sie die zu entfernenden Komponenten:",
+      "user_data": "🗂️ Benutzerdateien und Einstellungen entfernen",
+      "user_data_desc": "Enthält Einstellungen, Protokolle und vom DevStack gespeicherte Daten",
+      "registry": "🔧 Registrierungseinträge entfernen",
+      "registry_desc": "Entfernt Registrierungsschlüssel und Installationsinformationen",
+      "shortcuts": "🔗 Verknüpfungen entfernen",
+      "shortcuts_desc": "Entfernt Desktop- und Startmenü-Verknüpfungen",
+      "path": "🛤️ Aus dem System-PATH entfernen",
+      "path_desc": "Entfernt den DevStack-Pfad aus den Umgebungsvariablen",
+      "info": "Wir empfehlen, alle Optionen für eine vollständige Entfernung ausgewählt zu lassen."
+    },
+    "ready_to_uninstall": {
+      "title": "Bereit zur Deinstallation",
+      "description": "Überprüfen Sie die Einstellungen und klicken Sie auf Deinstallieren, um fortzufahren",
+      "summary_label": "Deinstallationsübersicht:",
+      "components_header": "ZU ENTFERNENDE KOMPONENTEN:",
+      "installation_location": "📁 Installationsort:",
+      "not_found": "Nicht gefunden",
+      "program_components": "🗂️ Programmkomponenten:",
+      "executables": "  • Ausführbare Dateien (DevStack.exe, DevStackGUI.exe)",
+      "libraries": "  • Bibliotheken und Abhängigkeiten",
+      "config_files": "  • Konfigurationsdateien",
+      "documentation": "  • Dokumentation und Ressourcen",
+      "selected_options": "AUSGEWÄHLTE OPTIONEN:",
+      "user_data_selected": "✓ Benutzerdaten werden entfernt",
+      "user_data_preserved": "✗ Benutzerdaten werden behalten",
+      "registry_selected": "✓ Registrierungseinträge werden entfernt",
+      "registry_preserved": "✗ Registrierungseinträge werden behalten",
+      "shortcuts_selected": "✓ Verknüpfungen werden entfernt",
+      "shortcuts_preserved": "✗ Verknüpfungen werden behalten",
+      "path_selected": "✓ Aus dem System-PATH wird entfernt",
+      "path_preserved": "✗ Bleibt im System-PATH",
+      "space_to_free": "💾 Freizugebender Speicherplatz: {0}"
+    },
+    "uninstalling": {
+      "title": "Deinstallation läuft",
+      "description": "Bitte warten Sie, während DevStack von Ihrem System entfernt wird",
+      "preparing": "Deinstallation wird vorbereitet...",
+      "stopping_services": "Dienste werden gestoppt...",
+      "removing_shortcuts": "Verknüpfungen werden entfernt...",
+      "cleaning_registry": "Registrierung wird bereinigt...",
+      "removing_path": "Aus dem PATH wird entfernt...",
+      "removing_files": "Dateien werden entfernt...",
+      "removing_user_data": "Benutzerdaten werden entfernt...",
+      "finalizing": "Abschluss...",
+      "completed": "Deinstallation abgeschlossen!"
+    },
+    "finished": {
+      "title": "Deinstallation abgeschlossen",
+      "description": "DevStack wurde erfolgreich von Ihrem System entfernt",
+      "success_icon": "✅",
+      "success_title": "Deinstallation abgeschlossen!",
+      "success_message": "DevStack wurde erfolgreich von Ihrem System entfernt. Alle ausgewählten Komponenten wurden bereinigt.",
+      "summary_title": "📊 Deinstallationsübersicht:",
+      "files_removed": "• Dateien entfernt von: {0}",
+      "user_data_removed": "• Benutzerdaten entfernt",
+      "registry_cleaned": "• Registrierungseinträge bereinigt",
+      "shortcuts_removed": "• Verknüpfungen entfernt",
+      "path_removed": "• Aus dem System-PATH entfernt",
+      "system_clean": "Das System ist jetzt frei von DevStack."
+    },
+    "log_messages": {
+      "starting": "Deinstallationsprozess wird gestartet",
+      "stopping_services": "DevStack-Dienste werden gestoppt...",
+      "process_stopped": "Prozess {0} beendet",
+      "process_stop_warning": "Warnung: Prozess {0} konnte nicht beendet werden: {1}",
+      "stop_services_error": "Fehler beim Stoppen der Dienste: {0}",
+      "removing_shortcuts": "Verknüpfungen werden entfernt...",
+      "shortcut_removed": "Verknüpfung entfernt: {0}",
+      "start_menu_removed": "Startmenü-Ordner entfernt: {0}",
+      "shortcuts_error": "Fehler beim Entfernen von Verknüpfungen: {0}",
+      "cleaning_registry": "Registrierungseinträge werden bereinigt...",
+      "user_registry_removed": "Benutzer-Registrierungseinträge entfernt",
+      "machine_registry_removed": "Maschinen-Registrierungseinträge entfernt",
+      "uninstall_registry_removed": "Programme & Features-Eintrag entfernt",
+      "registry_error": "Fehler beim Bereinigen der Registrierung: {0}",
+      "removing_path": "Aus dem System-PATH wird entfernt...",
+      "user_path_removed": "Aus dem Benutzer-PATH entfernt",
+      "system_path_removed": "Aus dem System-PATH entfernt",
+      "system_path_warning": "Warnung: Aus dem System-PATH konnte nicht entfernt werden (Administratorrechte erforderlich)",
+      "path_error": "Fehler beim Entfernen aus dem PATH: {0}",
+      "removing_files": "Dateien werden entfernt aus {0}...",
+      "install_not_found": "Installationsordner nicht gefunden",
+      "files_removed_count": "{0} Dateien entfernt",
+      "dirs_removed_count": "{0} leere Ordner entfernt",
+      "file_remove_warning": "Warnung: {0} konnte nicht entfernt werden: {1}",
+      "files_error": "Fehler beim Entfernen von Dateien: {0}",
+      "removing_user_data": "Benutzerdaten werden entfernt...",
+      "user_data_removed": "Benutzerdaten entfernt: {0}",
+      "user_data_error": "Fehler beim Entfernen von Benutzerdaten: {0}",
+      "self_deletion_scheduled": "Automatische Entfernung des Deinstallers geplant",
+      "self_deletion_warning": "Warnung: Automatische Entfernung konnte nicht geplant werden: {0}",
+      "uninstall_success": "Deinstallation erfolgreich abgeschlossen!"
+    }
+  },
+  "buttons": {
+    "back": "← Zurück",
+    "next": "Weiter →",
+    "accept": "Ich akzeptiere",
+    "install": "Installieren",
+    "finish": "Fertigstellen",
+    "cancel": "Abbrechen",
+    "continue": "Fortfahren",
+    "uninstall": "🗑️ Deinstallieren"
+  },
+  "dialogs": {
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "cancel": "Abbrechen",
+    "default_title": "Nachricht",
+    "cancel_title": "Installation abbrechen",
+    "cancel_message": "Sind Sie sicher, dass Sie die Installation abbrechen möchten?",
+    "launch_error_title": "Fehler beim Starten",
+    "launch_error_message": "DevStack GUI konnte nicht gestartet werden: {0}",
+    "installation_error_title": "Fehler",
+    "installation_error_message": "Installation fehlgeschlagen: {0}",
+    "folder_dialog_title": "Installationsordner auswählen",
+    "uninstall_error_title": "Deinstallationsfehler",
+    "uninstall_error_message": "Fehler während der Deinstallation: {0}",
+    "startup_error_title": "Fehler beim DevStack Deinstallationsprogramm",
+    "startup_error_message": "Fehler beim Starten des Deinstallationsprogramms: {0}\n\nDetails: {1}",
+    "initialization_error_title": "Initialisierungsfehler",
+    "initialization_error_message": "Fehler beim Initialisieren des Deinstallationsfensters: {0}"
+  },
+  "gui": {
+    "window": {
+      "title": "DevStack Manager v{0}",
+      "ready_status": "Bereit",
+      "initialization_error": "Fehler beim Initialisieren der DevStack GUI: {0}",
+      "error_title": "DevStack Manager - Fehler"
+    },
+    "navigation": {
+      "title": "DevStack Manager",
+      "items": {
+        "installed": {
+          "title": "Installiert",
+          "description": "Installierte Werkzeuge"
+        },
+        "install": {
+          "title": "Installieren",
+          "description": "Neue Komponenten installieren"
+        },
+        "uninstall": {
+          "title": "Deinstallieren",
+          "description": "Komponenten entfernen"
+        },
+        "services": {
+          "title": "Dienste",
+          "description": "Dienststeuerung"
+        },
+        "config": {
+          "title": "Einstellungen",
+          "description": "Systemeinstellungen"
+        },
+        "sites": {
+          "title": "Websites",
+          "description": "Nginx-Websites verwalten"
+        },
+        "utilities": {
+          "title": "Dienstprogramme",
+          "description": "Werkzeuge und Konsole"
+        }
+      },
+      "refresh_tooltip": "Alle Daten aktualisieren"
+    },
+    "installed_tab": {
+      "title": "Installierte Werkzeuge",
+      "headers": {
+        "tool": "Werkzeug",
+        "versions": "Installierte Versionen",
+        "status": "Status"
+      },
+      "buttons": {
+        "refresh": "🔄 Liste aktualisieren"
+      },
+      "info": "Verwenden Sie die Registerkarten 'Installieren' und 'Deinstallieren', um Werkzeuge zu verwalten",
+      "loading": "Installierte Komponenten werden geladen...",
+      "loaded": "{0} Komponenten geladen",
+      "error": "Fehler beim Laden der Komponenten: {0}"
+    },
+    "install_tab": {
+      "title": "Neues Werkzeug installieren",
+      "labels": {
+        "select_tool": "Werkzeug auswählen:",
+        "select_version": "Version auswählen (leer für die neueste):"
+      },
+      "buttons": {
+        "install": "📥 Installieren"
+      },
+      "messages": {
+        "select_component": "Wählen Sie eine Komponente zum Installieren aus.",
+        "installing": "{0} wird installiert...",
+        "success": "{0} erfolgreich installiert!",
+        "error": "Fehler bei der Installation von {0}",
+        "loading_versions": "Versionen von {0} werden geladen...",
+        "versions_loaded": "{0} Versionen für {1} geladen",
+        "versions_error": "Fehler beim Laden der Versionen: {0}"
+      }
+    },
+    "uninstall_tab": {
+      "title": "Werkzeug deinstallieren",
+      "labels": {
+        "select_tool": "Werkzeug auswählen:",
+        "select_version": "Version auswählen:"
+      },
+      "buttons": {
+        "uninstall": "🗑️ Deinstallieren",
+        "refresh": "🔄 Liste aktualisieren"
+      },
+      "messages": {
+        "select_component": "Wählen Sie eine Komponente zum Deinstallieren aus.",
+        "select_version": "Wählen Sie eine Version zum Deinstallieren aus.",
+        "confirm": "Sind Sie sicher, dass Sie {0} deinstallieren möchten?",
+        "uninstalling": "{0} wird deinstalliert...",
+        "success": "{0} erfolgreich deinstalliert!",
+        "error": "Fehler bei der Deinstallation von {0}",
+        "no_versions": "{0} hat keine installierten Versionen.",
+        "not_installed": "{0} ist nicht installiert",
+        "loading_components": "Installierte Komponenten werden geladen...",
+        "loading_versions": "Installierte Versionen von {0} werden geladen...",
+        "versions_loaded": "Versionen für {0} geladen",
+        "versions_error": "Fehler beim Laden der Versionen zur Deinstallation: {0}",
+        "components_available": "{0} Komponenten verfügbar zur Deinstallation",
+        "reloading": "Liste der installierten Komponenten wird neu geladen..."
+      },
+      "warning": "Achtung: Diese Aktion kann nicht rückgängig gemacht werden!",
+      "status": {
+        "uninstalling": "{0} wird deinstalliert...",
+        "success": "{0} erfolgreich deinstalliert!",
+        "error": "❌ Fehler bei der Deinstallation von {0}: {1}",
+        "error_short": "Fehler bei der Deinstallation von {0}",
+        "loading_versions": "Installierte Versionen von {0} werden geladen...",
+        "versions_loaded": "Versionen für {0} geladen",
+        "not_installed": "{0} ist nicht installiert",
+        "error_loading_versions": "Fehler beim Laden der Versionen zur Deinstallation: {0}",
+        "loading_components": "Installierte Komponenten werden geladen...",
+        "components_count": "{0} Komponenten verfügbar zur Deinstallation",
+        "reloading": "Liste der installierten Komponenten wird neu geladen...",
+        "error_loading_components": "Fehler beim Laden der Komponenten: {0}"
+      }
+    },
+    "services_tab": {
+      "title": "Dienstverwaltung",
+      "headers": {
+        "component": "Komponente",
+        "version": "Version",
+        "status": "Status",
+        "pid": "PID",
+        "copy_pid": "PID kopieren",
+        "actions": "Aktionen"
+      },
+      "buttons": {
+        "refresh": "🔄 Aktualisieren",
+        "start_all": "▶️ Alle starten",
+        "stop_all": "⏹️ Alle stoppen",
+        "restart_all": "🔄 Alle neu starten",
+        "start": "▶️",
+        "stop": "⏹️",
+        "restart": "🔄",
+        "copy_pid": "📋"
+      },
+      "tooltips": {
+        "start": "Starten",
+        "stop": "Stoppen",
+        "restart": "Neustarten",
+        "copy_pid": "PID kopieren"
+      },
+      "status": {
+        "running": "Läuft",
+        "stopped": "Gestoppt"
+      },
+      "types": {
+        "php_fpm": "PHP-FPM",
+        "web_server": "Webserver",
+        "fastcgi": "FastCGI"
+      },
+      "messages": {
+        "loading": "Dienste werden geladen...",
+        "loaded": "{0} Dienste geladen",
+        "error": "Fehler beim Laden der Dienste: {0}",
+        "starting": "{0} Version {1} wird gestartet...",
+        "started": "{0} erfolgreich gestartet",
+        "stopping": "{0} Version {1} wird gestoppt...",
+        "stopped": "{0} erfolgreich gestoppt",
+        "restarting": "{0} Version {1} wird neu gestartet...",
+        "restarted": "{0} erfolgreich neu gestartet",
+        "starting_all": "Alle Dienste werden gestartet...",
+        "started_all": "Alle Dienste gestartet",
+        "stopping_all": "Alle Dienste werden gestoppt...",
+        "stopped_all": "Alle Dienste gestoppt",
+        "restarting_all": "Alle Dienste werden neu gestartet...",
+        "restarted_all": "Alle Dienste neu gestartet",
+        "pid_copied": "PID {0} in die Zwischenablage kopiert",
+        "no_pid": "Dienst läuft nicht, kein PID zum Kopieren.",
+        "error_copy_pid": "Fehler beim Kopieren des PID: {0}",
+        "error_start": "Fehler beim Starten des Dienstes: {0}",
+        "error_stop": "Fehler beim Stoppen des Dienstes: {0}",
+        "error_restart": "Fehler beim Neustarten des Dienstes: {0}",
+        "error_start_all": "Fehler beim Starten aller Dienste: {0}",
+        "error_stop_all": "Fehler beim Stoppen aller Dienste: {0}",
+        "error_restart_all": "Fehler beim Neustarten aller Dienste: {0}"
+      },
+      "path_manager": {
+        "not_initialized": "⚠️ PathManager wurde nicht initialisiert - PATH wurde nicht aktualisiert"
+      },
+      "debug": {
+        "processes_found": "Gefundene Prozesse für Debug: {0}",
+        "process_info": "  - {0} (PID: {1}) - Pfad: {2}",
+        "process_error": "  - {0} (PID: {1}) - Pfad: Fehler beim Zugriff ({2})",
+        "php_dirs_found": "{0} PHP-Verzeichnisse gefunden: {1}",
+        "checking_php_version": "PHP Version {0} im Verzeichnis {1} wird geprüft",
+        "php_process_found": "  - PHP-Prozess gefunden: {0} (PID: {1}) - Pfad: {2}",
+        "process_check_error": "  - Fehler beim Prüfen des Prozesses {0}: {1}",
+        "php_running": "PHP {0} läuft mit PIDs: {1}",
+        "php_not_running": "PHP {0} läuft nicht",
+        "php_check_error": "Fehler beim Prüfen der PHP-Prozesse: {0}",
+        "nginx_dirs_found": "{0} Nginx-Verzeichnisse gefunden: {1}",
+        "checking_nginx_version": "Nginx Version {0} im Verzeichnis {1} wird geprüft",
+        "nginx_process_found": "  - Nginx-Prozess gefunden: {0} (PID: {1}) - Pfad: {2}",
+        "nginx_running": "Nginx {0} läuft mit PID: {1}",
+        "nginx_not_running": "Nginx {0} läuft nicht",
+        "nginx_check_error": "Fehler beim Prüfen der Nginx-Prozesse: {0}",
+        "load_services_error": "Fehler beim Laden der Dienste in der GUI: {0}",
+        "start_all_services_error": "Fehler beim Starten aller Dienste in der GUI: {0}",
+        "stop_all_services_error": "Fehler beim Stoppen aller Dienste in der GUI: {0}",
+        "restart_all_services_error": "Fehler beim Neustarten aller Dienste in der GUI: {0}"
+      }
+    },
+    "sidebar": {
+      "title": "DevStack Manager",
+      "navigation_items": {
+        "installed": {
+          "title": "Installiert",
+          "description": "Installierte Werkzeuge"
+        },
+        "install": {
+          "title": "Installieren",
+          "description": "Neue Komponenten installieren"
+        },
+        "uninstall": {
+          "title": "Deinstallieren",
+          "description": "Komponenten entfernen"
+        },
+        "services": {
+          "title": "Dienste",
+          "description": "Dienststeuerung"
+        },
+        "config": {
+          "title": "Einstellungen",
+          "description": "Systemeinstellungen"
+        },
+        "sites": {
+          "title": "Websites",
+          "description": "Nginx-Websites verwalten"
+        },
+        "utilities": {
+          "title": "Dienstprogramme",
+          "description": "Werkzeuge und Konsole"
+        }
+      }
+    },
+    "config_tab": {
+      "title": "Einstellungen",
+      "path": {
+        "title": "PATH-Verwaltung",
+        "description": "Werkzeuge zum System-PATH hinzufügen",
+        "buttons": {
+          "add": "➕ Zum PATH hinzufügen",
+          "remove": "➖ Aus PATH entfernen",
+          "list": "📋 Aktuellen PATH anzeigen"
+        },
+        "info": "Änderungen am PATH betreffen das Terminal und das System."
+      },
+      "directories": {
+        "title": "Verzeichnisse",
+        "buttons": {
+          "devstack_manager": "📂 DevStack Manager",
+          "tools": "📂 Werkzeuge"
+        }
+      },
+      "languages": {
+        "title": "Sprachen",
+        "labels": {
+          "interface_language": "Oberflächensprache"
+        },
+        "messages": {
+          "language_changed": "Sprache geändert zu {0}"
+        }
+      },
+      "messages": {
+        "path_updated": "PATH erfolgreich aktualisiert",
+        "path_update_error": "Fehler beim Aktualisieren des PATH",
+        "path_cleaned": "PATH erfolgreich bereinigt",
+        "path_listed": "PATH angezeigt",
+        "path_error": "Fehler beim Hinzufügen zum PATH: {0}",
+        "path_remove_error": "Fehler beim Entfernen aus PATH: {0}",
+        "path_clean_error": "Fehler beim Bereinigen des PATH",
+        "path_list_error": "Fehler beim Anzeigen des PATH: {0}",
+        "exe_folder_opened": "Ausführungsordner geöffnet",
+        "exe_folder_not_found": "Ausführungsordner konnte nicht gefunden werden.",
+        "exe_folder_error": "Fehler beim Öffnen des Ausführungsordners: {0}",
+        "tools_folder_opened": "Werkzeuge-Ordner geöffnet",
+        "tools_folder_not_found": "Werkzeuge-Ordner konnte nicht gefunden werden.",
+        "tools_folder_error": "Fehler beim Öffnen des Werkzeuge-Ordners: {0}"
+      }
+    },
+    "sites_tab": {
+      "title": "Nginx-Website-Konfiguration erstellen",
+      "labels": {
+        "domain": "Domain der Website:",
+        "root_directory": "Stammverzeichnis:",
+        "php_upstream": "PHP Upstream:",
+        "nginx_version": "Nginx-Version:",
+        "ssl_domain": "Domain für SSL:"
+      },
+      "buttons": {
+        "browse": "📁 Durchsuchen",
+        "create_site": "🌐 Website-Konfiguration erstellen",
+        "generate_ssl": "🔒 SSL-Zertifikat generieren"
+      },
+      "ssl": {
+        "title": "SSL-Zertifikate",
+        "generate_ssl": "SSL generieren"
+      },
+      "messages": {
+        "select_folder": "Website-Ordner auswählen",
+        "creating_site": "Konfiguration für die Website {0} wird erstellt...",
+        "site_created": "Website {0} erstellt",
+        "site_error": "Fehler beim Erstellen der Website {0}: {1}",
+        "site_config_error": "Fehler beim Erstellen der Website-Konfiguration: {0}",
+        "enter_domain": "Geben Sie eine Domain für die Website ein.",
+        "enter_root": "Geben Sie ein Stammverzeichnis für die Website ein.",
+        "select_php": "Wählen Sie eine PHP-Version für die Website aus.",
+        "select_nginx": "Wählen Sie eine Nginx-Version für die Website aus.",
+        "enter_ssl_domain": "Geben Sie eine Domain zum Generieren des SSL-Zertifikats ein.",
+        "domain_not_exists": "Die Domain '{0}' existiert nicht oder löst auf keine IP auf.",
+        "generating_ssl": "SSL-Zertifikat für {0} wird generiert...",
+        "ssl_generated": "SSL-Generierung für {0} abgeschlossen.",
+        "ssl_error": "Fehler beim Generieren des SSL-Zertifikats: {0}",
+        "restarting_nginx": "Nginx-Dienste werden neu gestartet...",
+        "nginx_restarted": "Nginx v{0} erfolgreich neu gestartet",
+        "nginx_restart_error": "Fehler beim Neustarten von Nginx v{0}: {1}",
+        "nginx_restart_general_error": "Fehler beim Neustarten von Nginx: {0}",
+        "ssl_generation_completed": "SSL-Generierung für {0} abgeschlossen.",
+        "ssl_generation_error": "❌ Fehler beim Generieren des SSL-Zertifikats: {0}",
+        "ssl_generation_error_status": "Fehler beim Generieren von SSL für {0}",
+        "ssl_generation_error_dialog": "Fehler beim Generieren des SSL-Zertifikats: {0}",
+        "no_nginx_restarted": "ℹ️ Keine Nginx-Version wurde neu gestartet (möglicherweise nicht aktiv)",
+        "no_nginx_found": "❌ Keine installierte Nginx-Version gefunden"
+      },
+      "info": "Die Konfigurationsdateien werden automatisch erstellt"
+    },
+    "utilities_tab": {
+      "title": "DevStack-Konsole - Befehle direkt ausführen",
+      "labels": {
+        "command": "Befehl:"
+      },
+      "buttons": {
+        "execute": "▶️ Ausführen",
+        "clear": "❌",
+        "clear_tooltip": "Konsole leeren"
+      },
+      "console_title": "DevStack-Konsole - Befehle direkt ausführen",
+      "command_label": "Befehl:",
+      "execute_button": "▶️ Ausführen",
+      "clear_console_tooltip": "Konsole leeren",
+      "status_button": "Status",
+      "installed_button": "Installiert",
+      "diagnostic_button": "Diagnose",
+      "test_button": "Testen",
+      "help_button": "Hilfe",
+      "console_header": "DevStack Manager Konsole",
+      "available_commands": "Verfügbare Befehle:",
+      "tip_message": "Tipp: Geben Sie Befehle direkt oben ein oder verwenden Sie die Schnellzugriffstasten",
+      "executing_command": "Wird ausgeführt: {0}",
+      "no_output": "(Befehl ausgeführt, keine Ausgabe erzeugt)",
+      "devstack_not_found": "Fehler: DevStack.exe konnte nicht gestartet werden",
+      "error": "FEHLER",
+      "console_cleared": "Konsole geleert.\n\n",
+      "empty_command": "Leerer Befehl",
+      "command_execution_error": "Fehler beim Ausführen des Befehls: {0}",
+      "status": {
+        "executing": "Wird ausgeführt: {0}",
+        "executed": "Befehl ausgeführt",
+        "error": "Fehler beim Ausführen des Befehls",
+        "cleared": "Konsole geleert"
+      }
+    },
+    "console": {
+      "titles": {
+        "install": "Konsolenausgabe - Installation",
+        "uninstall": "Konsolenausgabe - Deinstallation",
+        "sites": "Konsolenausgabe - Websites",
+        "config": "Konsolenausgabe - Einstellungen",
+        "utilities": "Konsolenausgabe"
+      },
+      "buttons": {
+        "clear": "🗑️ Konsole leeren"
+      }
+    },
+    "common": {
+      "status": {
+        "ok": "✔️",
+        "error": "❌",
+        "na": "N/A"
+      },
+      "buttons": {
+        "yes": "Ja",
+        "no": "Nein",
+        "ok": "OK",
+        "cancel": "Abbrechen"
+      },
+      "dialogs": {
+        "warning": "Warnung",
+        "error": "Fehler",
+        "info": "Information",
+        "confirmation": "Bestätigung"
+      }
+    },
+    "status_bar": {
+      "refresh_tooltip": "Status aktualisieren",
+      "updating": "Aktualisiere...",
+      "updated": "Status aktualisiert"
+    },
+    "unknown": "Unbekannt",
+    "refresh_icon": "🔄",
+    "icon_file": "DevStack.ico",
+    "timestamp_format": "HH:mm:ss"
+  },
+  "common": {
+    "unknown": "Unbekannt"
+  }
+}

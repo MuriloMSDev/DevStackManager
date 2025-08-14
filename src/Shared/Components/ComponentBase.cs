@@ -87,7 +87,7 @@ namespace DevStackManager.Components
         {
             var available = ListAvailable();
             if (available.Any())
-                return available.First();
+                return available.Last();
             throw new System.Exception($"Não foi possível obter a última versão do {Name}.");
         }
         

@@ -208,7 +208,7 @@ namespace DevStackManager
         {
             try
             {
-                string logFile = Path.Combine(baseDir, "devstack.log");
+                var logFile = System.IO.Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string logEntry = $"[{timestamp}] {message}";
                 File.AppendAllText(logFile, logEntry + Environment.NewLine, Encoding.UTF8);
@@ -870,7 +870,7 @@ namespace DevStackManager
         {
             string logDir = Path.Combine(baseDir, "logs");
             string tmpDir = Path.Combine(baseDir, "tmp");
-            string logFile = Path.Combine(baseDir, "devstack.log");
+            var logFile = System.IO.Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
             int count = 0;
 
             if (File.Exists(logFile))
@@ -897,14 +897,14 @@ namespace DevStackManager
 
         private static int HandleBackupCommand()
         {
-            string backupDir = Path.Combine(baseDir, $"backup-{DateTime.Now:yyyyMMdd-HHmmss}");
-            string[] toBackup = { "configs", "devstack.log" };
+            string backupDir = Path.Combine(baseDir, "backups", $"backup-{DateTime.Now:yyyyMMdd-HHmmss}");
+            string[] toBackup = { Path.Combine("tools", "configs"), "devstack.log" };
 
             Directory.CreateDirectory(backupDir);
 
             foreach (string item in toBackup)
             {
-                string src = Path.Combine(baseDir, item);
+                string src = Path.Combine(System.AppContext.BaseDirectory, item);
                 if (File.Exists(src))
                 {
                     File.Copy(src, Path.Combine(backupDir, item));
@@ -921,7 +921,7 @@ namespace DevStackManager
 
         private static int HandleLogsCommand()
         {
-            string logFile = Path.Combine(baseDir, "devstack.log");
+            string logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
             if (File.Exists(logFile))
             {
                 Console.WriteLine($"Últimas 50 linhas de {logFile}:");

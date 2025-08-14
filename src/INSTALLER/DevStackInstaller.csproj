@@ -27,11 +27,14 @@
   <ItemGroup>
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="DevStack.zip" Condition="Exists('DevStack.zip')" />
-    <EmbeddedResource Include="locale\*.json" />
+    <EmbeddedResource Include="..\Shared\locale\*.json">
+      <LogicalName>DevStackInstaller.locale.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +43,11 @@
 
   <ItemGroup>
     <Content Include="..\Shared\AvailableVersions\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\LocalizationManager.cs" Link="LocalizationManager.cs" />
+    <Compile Include="..\Shared\ThemeManager.cs" Link="ThemeManager.cs" />
   </ItemGroup>
 
 </Project>

@@ -63,68 +63,132 @@ namespace DevStackManager
             };
 
             // Gerenciamento do PATH
-            var pathTitleLabel = GuiTheme.CreateStyledLabel("Gerenciamento do PATH", true);
+            var pathTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.title"), true);
             pathTitleLabel.FontSize = 18;
             pathTitleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(pathTitleLabel);
 
             // Descrição
-            var pathLabel = GuiTheme.CreateStyledLabel("Adicionar ferramentas ao PATH do sistema");
+            var pathLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.path.title"));
             pathLabel.FontWeight = FontWeights.Bold;
             panel.Children.Add(pathLabel);
 
             // Botão Adicionar
-            var addPathButton = GuiTheme.CreateStyledButton("➕ Adicionar ao PATH", (s, e) => AddToPath(mainWindow));
+            var addPathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.add"), (s, e) => AddToPath(mainWindow));
             addPathButton.Width = 200;
             addPathButton.Height = 35;
-            addPathButton.Margin = new Thickness(0, 10, 0, 5);
+            addPathButton.Margin = new Thickness(10, 10, 0, 5);
             addPathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(addPathButton);
 
             // Botão Remover
-            var removePathButton = GuiTheme.CreateStyledButton("➖ Remover do PATH", (s, e) => RemoveFromPath(mainWindow));
+            var removePathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.remove"), (s, e) => RemoveFromPath(mainWindow));
             removePathButton.Width = 200;
             removePathButton.Height = 35;
-            removePathButton.Margin = new Thickness(0, 5, 0, 5);
+            removePathButton.Margin = new Thickness(10, 5, 0, 5);
             removePathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(removePathButton);
 
             // Botão Listar
-            var listPathButton = GuiTheme.CreateStyledButton("📋 Listar PATH Atual", (s, e) => ListCurrentPath(mainWindow));
+            var listPathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.list"), (s, e) => ListCurrentPath(mainWindow));
             listPathButton.Width = 200;
             listPathButton.Height = 35;
-            listPathButton.Margin = new Thickness(0, 5, 0, 10);
+            listPathButton.Margin = new Thickness(10, 5, 0, 10);
             listPathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(listPathButton);
 
-            // Info
-            var infoLabel = GuiTheme.CreateStyledLabel("ℹ️ As alterações no PATH afetam o terminal e o sistema.");
-            infoLabel.FontStyle = FontStyles.Italic;
-            infoLabel.Margin = new Thickness(0, 10, 0, 20);
-            panel.Children.Add(infoLabel);
+            // Info usando painel de notificação
+            var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
+                mainWindow.LocalizationManager.GetString("gui.config_tab.path.info"), 
+                DevStackShared.ThemeManager.NotificationType.Info
+            );
+            infoPanel.Margin = new Thickness(0, 10, 0, 20);
+            panel.Children.Add(infoPanel);
 
             // Gerenciamento do PATH
-            var dirsTitleLabel = GuiTheme.CreateStyledLabel("Diretórios", true);
+            var dirsTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.title"), true);
             dirsTitleLabel.FontSize = 18;
             dirsTitleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(dirsTitleLabel);
 
             // Botão Abrir Pasta do Executável
-            var openExeFolderButton = GuiTheme.CreateStyledButton("📂 DevStack Manager", (s, e) => OpenExeFolder(mainWindow));
+            var openExeFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.devstack_manager"), (s, e) => OpenExeFolder(mainWindow));
             openExeFolderButton.Width = 200;
             openExeFolderButton.Height = 35;
-            openExeFolderButton.Margin = new Thickness(0, 5, 0, 10);
+            openExeFolderButton.Margin = new Thickness(10, 5, 0, 10);
             openExeFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(openExeFolderButton);
 
             // Botão Abrir Pasta das Ferramentas
-            var openBaseDirFolderButton = GuiTheme.CreateStyledButton("📂 Ferramentas", (s, e) => OpenBaseDir(mainWindow));
+            var openBaseDirFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.tools"), (s, e) => OpenBaseDir(mainWindow));
             openBaseDirFolderButton.Width = 200;
             openBaseDirFolderButton.Height = 35;
-            openBaseDirFolderButton.Margin = new Thickness(0, 5, 0, 10);
+            openBaseDirFolderButton.Margin = new Thickness(10, 5, 0, 10);
             openBaseDirFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(openBaseDirFolderButton);
-            
+
+            // Gerenciamento da Linguagem
+            var languagesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.title"), true);
+            languagesTitleLabel.FontSize = 18;
+            languagesTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            panel.Children.Add(languagesTitleLabel);
+
+            // Language ComboBox
+            var interfaceLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.labels.interface_language"));
+            panel.Children.Add(interfaceLanguageLabel);
+
+            var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
+            languageComboBox.Height = 30;
+            languageComboBox.Margin = new Thickness(0, 5, 0, 15);
+            languageComboBox.Name = "LanguageComboBox";
+
+            // Popular opções de idioma
+            var localization = mainWindow.LocalizationManager;
+            var availableLanguages = localization.GetAvailableLanguages();
+            foreach (var lang in availableLanguages)
+            {
+                var langName = localization.GetLanguageName(lang);
+                var item = new ComboBoxItem
+                {
+                    Content = langName,
+                    Tag = lang
+                };
+                languageComboBox.Items.Add(item);
+                if (lang == localization.CurrentLanguage)
+                {
+                    languageComboBox.SelectedItem = item;
+                }
+            }
+
+            // Evento para troca de idioma
+            languageComboBox.SelectionChanged += (s, e) =>
+            {
+                if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
+                {
+                    localization.LoadLanguage(languageCode);
+                    // Persistir idioma selecionado no arquivo settings.conf ao lado do executável (formato JSON)
+                    try
+                    {
+                        var baseDir = System.AppContext.BaseDirectory;
+                        var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
+                        // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
+                        using (var sw = new System.IO.StreamWriter(settingsPath))
+                        using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
+                        {
+                            writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+                            writer.WriteStartObject();
+                            writer.WritePropertyName("language");
+                            writer.WriteValue(languageCode);
+                            writer.WriteEndObject();
+                        }
+                    }
+                    catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+                    // A janela principal ouvirá o evento e reconstruirá a UI
+                }
+            };
+
+            panel.Children.Add(languageComboBox);
+
             return panel;
         }
 
@@ -133,17 +197,17 @@ namespace DevStackManager
         /// </summary>
         private static void AddToPath(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
             {
                 try
                 {
                     DevStackConfig.pathManager?.AddBinDirsToPath();
-                    mainWindow.StatusMessage = "PATH atualizado com sucesso";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_updated");
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao adicionar ao PATH: {ex.Message}");
-                    mainWindow.StatusMessage = "Erro ao atualizar PATH";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_update_error");
                 }
                 await Task.CompletedTask;
             });
@@ -154,17 +218,17 @@ namespace DevStackManager
         /// </summary>
         private static void RemoveFromPath(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
             {
                 try
                 {
                     DevStackConfig.pathManager?.RemoveAllDevStackFromPath();
-                    mainWindow.StatusMessage = "PATH limpo com sucesso";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_cleaned");
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao remover do PATH: {ex.Message}");
-                    mainWindow.StatusMessage = "Erro ao limpar PATH";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_remove_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_clean_error");
                 }
                 await Task.CompletedTask;
             });
@@ -175,17 +239,17 @@ namespace DevStackManager
         /// </summary>
         private static void ListCurrentPath(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
             {
                 try
                 {
                     DevStackConfig.pathManager?.ListCurrentPath();
-                    mainWindow.StatusMessage = "PATH listado";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_listed");
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao listar PATH: {ex.Message}");
-                    mainWindow.StatusMessage = "Erro ao listar PATH";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_list_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_list_error");
                 }
                 await Task.CompletedTask;
             });
@@ -196,7 +260,7 @@ namespace DevStackManager
         /// </summary>
         private static void OpenExeFolder(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
             {
                 try
                 {
@@ -209,18 +273,18 @@ namespace DevStackManager
                             UseShellExecute = true,
                             Verb = "open"
                         });
-                        mainWindow.StatusMessage = "Pasta do executável aberta";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_opened");
                     }
                     else
                     {
-                        progress.Report($"❌ Não foi possível localizar a pasta do executável.");
-                        mainWindow.StatusMessage = "Erro ao abrir pasta do executável";
+                        progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_not_found"));
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error");
                     }
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao abrir pasta do executável: {ex.Message}");
-                    mainWindow.StatusMessage = "Erro ao abrir pasta do executável";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error");
                 }
                 await Task.CompletedTask;
             });
@@ -231,7 +295,7 @@ namespace DevStackManager
         /// </summary>
         private static void OpenBaseDir(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
             {
                 try
                 {
@@ -244,18 +308,18 @@ namespace DevStackManager
                             UseShellExecute = true,
                             Verb = "open"
                         });
-                        mainWindow.StatusMessage = "Pasta de ferramentas aberta";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_opened");
                     }
                     else
                     {
-                        progress.Report($"❌ Não foi possível localizar a pasta de ferramentas.");
-                        mainWindow.StatusMessage = "Erro ao abrir pasta de ferramentas";
+                        progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_not_found"));
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error");
                     }
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao abrir pasta de ferramentas: {ex.Message}");
-                    mainWindow.StatusMessage = "Erro ao abrir pasta de ferramentas";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error");
                 }
                 await Task.CompletedTask;
             });

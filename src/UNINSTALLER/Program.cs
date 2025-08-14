@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,7 +9,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Input;
 using Microsoft.Win32;
+using DevStackShared;
 
 namespace DevStackUninstaller
 {
@@ -16,217 +21,379 @@ namespace DevStackUninstaller
         [STAThread]
         public static void Main()
         {
-            var app = new Application();
             try
             {
-                var mainWindow = CreateUninstallerWindow();
-                app.Run(mainWindow);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error starting uninstaller: {ex.Message}", 
-                    "Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                throw;
-            }
-        }
-
-        private static Window CreateUninstallerWindow()
-        {
-            try
-            {
-                var window = new Window
-                {
-                    Title = $"DevStack Uninstaller v{GetVersion()}",
-                    Width = 600,
-                    Height = 450,
-                    MinWidth = 500,
-                    MinHeight = 350,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    ResizeMode = ResizeMode.CanResize,
-                    Background = new SolidColorBrush(Color.FromRgb(240, 240, 240))
-                };
-
-                var mainGrid = new Grid();
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(60) });
-
-                // Header
-                var headerPanel = new StackPanel
-                {
-                    Background = new SolidColorBrush(Color.FromRgb(50, 50, 50)),
-                    Orientation = Orientation.Horizontal
-                };
-                headerPanel.Children.Add(new TextBlock
-                {
-                    Text = "🗑️ DevStack Uninstaller",
-                    Foreground = Brushes.White,
-                    FontSize = 20,
-                    FontWeight = FontWeights.Bold,
-                    Margin = new Thickness(20, 20, 0, 20),
-                    VerticalAlignment = VerticalAlignment.Center
-                });
-                Grid.SetRow(headerPanel, 0);
-                mainGrid.Children.Add(headerPanel);
-
-                // Warning message
-                var warningPanel = new Border
-                {
-                    Background = new SolidColorBrush(Color.FromRgb(255, 245, 200)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
-                    BorderThickness = new Thickness(1),
-                    Margin = new Thickness(20, 10, 20, 10),
-                    Padding = new Thickness(15)
-                };
-
-                var warningStack = new StackPanel();
-                warningStack.Children.Add(new TextBlock
-                {
-                    Text = "⚠️ Atenção",
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 14,
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-                warningStack.Children.Add(new TextBlock
-                {
-                    Text = "Esta ação removerá completamente o DevStack do seu sistema, incluindo:",
-                    TextWrapping = TextWrapping.Wrap,
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-
-                var itemsList = new StackPanel { Margin = new Thickness(20, 5, 0, 5) };
-                itemsList.Children.Add(new TextBlock { Text = "• Todos os arquivos de programa" });
-                itemsList.Children.Add(new TextBlock { Text = "• Configurações e dados do usuário" });
-                itemsList.Children.Add(new TextBlock { Text = "• Atalhos da área de trabalho e menu iniciar" });
-                itemsList.Children.Add(new TextBlock { Text = "• Entradas do registro do Windows" });
-                itemsList.Children.Add(new TextBlock { Text = "• Serviços instalados" });
-                warningStack.Children.Add(itemsList);
-
-                warningPanel.Child = warningStack;
-                Grid.SetRow(warningPanel, 1);
-                mainGrid.Children.Add(warningPanel);
-
-                // Installation details
-                var detailsPanel = new StackPanel { Margin = new Thickness(20, 10, 20, 10) };
+                // Initialize localization for uninstaller
+                var localization = LocalizationManager.Initialize(ApplicationType.Uninstaller);
                 
-                var installPath = GetInstallationPath();
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    detailsPanel.Children.Add(new TextBlock
-                    {
-                        Text = "Pasta de instalação encontrada:",
-                        FontWeight = FontWeights.Bold,
-                        Margin = new Thickness(0, 0, 0, 5)
-                    });
-                    detailsPanel.Children.Add(new TextBlock
-                    {
-                        Text = installPath,
-                        Foreground = new SolidColorBrush(Color.FromRgb(0, 100, 0)),
-                        FontFamily = new FontFamily("Consolas"),
-                        Margin = new Thickness(20, 0, 0, 15)
-                    });
-                }
-
-                // Progress area
-                var progressPanel = new StackPanel { Margin = new Thickness(20, 10, 20, 10) };
-                var progressBar = new ProgressBar
-                {
-                    Height = 20,
-                    Margin = new Thickness(0, 5, 0, 5),
-                    Visibility = Visibility.Collapsed
-                };
-                var statusText = new TextBlock
-                {
-                    Text = "Pronto para desinstalar",
-                    Margin = new Thickness(0, 5, 0, 0),
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                progressPanel.Children.Add(progressBar);
-                progressPanel.Children.Add(statusText);
-                detailsPanel.Children.Add(progressPanel);
-
-                Grid.SetRow(detailsPanel, 2);
-                mainGrid.Children.Add(detailsPanel);
-
-                // Buttons
-                var buttonPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(20, 10, 20, 20)
-                };
-
-                var cancelButton = new Button
-                {
-                    Content = "Cancelar",
-                    Width = 100,
-                    Height = 35,
-                    Margin = new Thickness(0, 0, 10, 0),
-                    Background = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
-                    Foreground = Brushes.White,
-                    BorderThickness = new Thickness(0),
-                    FontWeight = FontWeights.Bold
-                };
-
-                var uninstallButton = new Button
-                {
-                    Content = "🗑️ Desinstalar",
-                    Width = 130,
-                    Height = 35,
-                    Background = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
-                    Foreground = Brushes.White,
-                    BorderThickness = new Thickness(0),
-                    FontWeight = FontWeights.Bold
-                };
-
-                cancelButton.Click += (s, e) => window.Close();
-                uninstallButton.Click += async (s, e) =>
-                {
-                    var result = MessageBox.Show(
-                        "Tem certeza que deseja remover completamente o DevStack?\n\nEsta ação não pode ser desfeita.",
-                        "Confirmar Desinstalação",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        await PerformUninstallation(progressBar, statusText, uninstallButton, cancelButton);
-                    }
-                };
-
-                buttonPanel.Children.Add(cancelButton);
-                buttonPanel.Children.Add(uninstallButton);
-                Grid.SetRow(buttonPanel, 4);
-                mainGrid.Children.Add(buttonPanel);
-
-                window.Content = mainGrid;
-                return window;
+                var app = new Application();
+                app.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                
+                var window = new UninstallerWindow();
+                app.MainWindow = window;
+                
+                app.Run(window);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating uninstaller window: {ex.Message}", 
-                    "Window Creation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(LocalizationManager.Instance?.GetString("dialogs.startup_error_message", ex.Message, ex) ?? $"Error starting uninstaller: {ex.Message}\n\nDetails: {ex}", 
+                    LocalizationManager.Instance?.GetString("dialogs.startup_error_title") ?? "DevStack Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    public enum UninstallerStep
+    {
+        Welcome,
+        Confirmation,
+        UninstallOptions,
+        ReadyToUninstall,
+        Uninstalling,
+        Finished
+    }
+
+    public class UninstallerWindow : Window
+    {
+        private readonly LocalizationManager localization = LocalizationManager.Instance!;
+        private UninstallerStep currentStep = UninstallerStep.Welcome;
+        private Grid mainGrid = null!;
+        private Grid contentGrid = null!;
+        private TextBlock stepTitleText = null!;
+        private TextBlock stepDescriptionText = null!;
+        private Button backButton = null!;
+        private Button nextButton = null!;
+        private Button cancelButton = null!;
+        private ProgressBar stepProgressBar = null!;
+        
+        // Language selector
+        private ComboBox languageComboBox = null!;
+        private Label languageLabel = null!;
+        private StackPanel languagePanel = null!;
+        
+        // Uninstall settings
+        private string installationPath = "";
+        private bool removeUserData = true;
+        private bool removeRegistry = true;
+        private bool removeShortcuts = true;
+        private bool removeFromPath = true;
+        
+        // Step-specific controls
+        private CheckBox removeUserDataCheckBox = null!;
+        private CheckBox removeRegistryCheckBox = null!;
+        private CheckBox removeShortcutsCheckBox = null!;
+        private CheckBox removeFromPathCheckBox = null!;
+        private ProgressBar uninstallProgressBar = null!;
+        private TextBlock uninstallStatusText = null!;
+        private ListBox uninstallLogListBox = null!;
+
+        public UninstallerWindow()
+        {
+            try
+            {
+                var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
+                if (System.IO.File.Exists(settingsPath))
+                {
+                    using (var sr = new StreamReader(settingsPath))
+                    using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
+                    {
+                        string? lang = null;
+                        while (reader.Read())
+                        {
+                            if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
+                                reader.Value?.ToString() == "language")
+                            {
+                                reader.Read();
+                                lang = reader.Value?.ToString();
+                                break;
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(lang))
+                            localization.LoadLanguage(lang);
+                    }
+                }
+                // Assina o evento antes da construção da UI
+                localization.LanguageChanged += Localization_LanguageChanged;
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(localization.GetString("dialogs.initialization_error_message", ex.Message), 
+                    localization.GetString("dialogs.initialization_error_title"), MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
         }
 
-        private static string GetVersion()
+        private string GetVersion()
         {
             try
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                var version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
-                return version ?? "Unknown";
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                var version = assembly.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>()?.Version;
+                return version ?? localization.GetString("common.unknown");
             }
             catch
             {
-                return "Unknown";
+                return localization.GetString("common.unknown");
             }
         }
 
-        private static string GetInstallationPath()
+        private void InitializeComponent()
+        {
+            string version = GetVersion();
+            
+            // Log version info for debugging
+            System.Diagnostics.Debug.WriteLine($"Uninstaller version: {version}");
+            
+            // Get window title with explicit formatting
+            Title = localization.GetString("window_title", version);
+            System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
+            Width = 750;
+            Height = 650;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            ResizeMode = ResizeMode.NoResize;
+            
+            // Apply theme using ThemeManager
+            ThemeManager.ApplyThemeToWindow(this);
+
+            // Initialize installation path
+            installationPath = GetInstallationPath();
+
+            // Add window closing event handler
+            Closing += OnWindowClosing;
+
+            CreateMainLayout();
+            UpdateStepContent();
+        }
+
+        private void CreateMainLayout()
+        {
+            mainGrid = new Grid();
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) }); // Header
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) }); // Buttons
+
+            // Header
+            CreateHeader();
+
+            // Content area
+            contentGrid = new Grid();
+            contentGrid.Margin = new Thickness(20);
+            Grid.SetRow(contentGrid, 1);
+            mainGrid.Children.Add(contentGrid);
+
+            // Buttons
+            CreateButtonBar();
+
+            Content = mainGrid;
+        }
+
+        private void CreateHeader()
+        {
+            var headerBorder = new Border
+            {
+                Background = ThemeManager.CurrentTheme.ControlBackground,
+                BorderBrush = ThemeManager.CurrentTheme.Border,
+                BorderThickness = new Thickness(0, 0, 0, 1)
+            };
+
+            var headerGrid = new Grid();
+            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var headerStackPanel = new StackPanel
+            {
+                Margin = new Thickness(25, 20, 25, 20),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            stepTitleText = new TextBlock
+            {
+                FontSize = 18,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeManager.CurrentTheme.Foreground
+            };
+
+            stepDescriptionText = new TextBlock
+            {
+                FontSize = 13,
+                Foreground = ThemeManager.CurrentTheme.TextSecondary,
+                Margin = new Thickness(0, 6, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            headerStackPanel.Children.Add(stepTitleText);
+            headerStackPanel.Children.Add(stepDescriptionText);
+
+            // Progress indicator
+            stepProgressBar = ThemeManager.CreateStyledProgressBar(0, 5, false);
+            stepProgressBar.Width = 220;
+            stepProgressBar.Height = 6;
+            stepProgressBar.Margin = new Thickness(25, 0, 25, 0);
+            stepProgressBar.VerticalAlignment = VerticalAlignment.Center;
+            stepProgressBar.Foreground = ThemeManager.CurrentTheme.Danger; // Red for uninstall
+
+            stepProgressBar.Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                BlurRadius = 3,
+                ShadowDepth = 1,
+                Opacity = 0.3,
+                Color = Colors.Black
+            };
+
+            Grid.SetColumn(headerStackPanel, 0);
+            Grid.SetColumn(stepProgressBar, 1);
+            headerGrid.Children.Add(headerStackPanel);
+            headerGrid.Children.Add(stepProgressBar);
+
+            headerBorder.Child = headerGrid;
+            Grid.SetRow(headerBorder, 0);
+            mainGrid.Children.Add(headerBorder);
+        }
+
+        private void CreateButtonBar()
+        {
+            var buttonBorder = new Border
+            {
+                Background = ThemeManager.CurrentTheme.PanelBackground,
+                BorderBrush = ThemeManager.CurrentTheme.Border,
+                BorderThickness = new Thickness(0, 1, 0, 0)
+            };
+
+            // Grid para organizar language selector à esquerda e botões à direita
+            var buttonGrid = new Grid();
+            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            // Language selector panel no lado esquerdo
+            languagePanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(25, 18, 25, 18)
+            };
+
+            languageLabel = ThemeManager.CreateStyledLabel(localization.GetString("welcome.language_label"), false, false, ThemeManager.LabelStyle.Secondary);
+            languageLabel.FontSize = 14;
+            languageLabel.VerticalAlignment = VerticalAlignment.Center;
+            languageLabel.Margin = new Thickness(0, 0, 10, 0);
+
+            languageComboBox = ThemeManager.CreateStyledComboBox();
+
+            // Populate language options
+            var languages = localization.GetAvailableLanguages();
+            foreach (var lang in languages)
+            {
+                var langName = localization.GetLanguageName(lang);
+                var item = new ComboBoxItem
+                {
+                    Content = langName,
+                    Tag = lang,
+                    Foreground = ThemeManager.CurrentTheme.Foreground
+                };
+                languageComboBox.Items.Add(item);
+
+                if (lang == localization.CurrentLanguage)
+                {
+                    languageComboBox.SelectedIndex = languageComboBox.Items.Count - 1;
+                }
+            }
+
+            languageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
+
+            languagePanel.Children.Add(languageLabel);
+            languagePanel.Children.Add(languageComboBox);
+
+            // Buttons panel no lado direito
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(25, 18, 25, 18)
+            };
+
+            // Back button
+            backButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.back"), null, ThemeManager.ButtonStyle.Secondary);
+            backButton.Width = 90;
+            backButton.Height = 36;
+            backButton.Margin = new Thickness(0, 0, 12, 0);
+            backButton.IsEnabled = false;
+            backButton.Click += BackButton_Click;
+
+            // Next button - using Danger style for uninstall theme
+            nextButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.next"), null, ThemeManager.ButtonStyle.Danger);
+            nextButton.Width = 130;
+            nextButton.Height = 36;
+            nextButton.Margin = new Thickness(0, 0, 12, 0);
+            nextButton.Click += NextButton_Click;
+
+            // Cancel button
+            cancelButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.cancel"), null, ThemeManager.ButtonStyle.Secondary);
+            cancelButton.Width = 90;
+            cancelButton.Height = 36;
+            cancelButton.Click += CancelButton_Click;
+
+            buttonPanel.Children.Add(backButton);
+            buttonPanel.Children.Add(nextButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            Grid.SetColumn(languagePanel, 0);
+            Grid.SetColumn(buttonPanel, 1);
+            buttonGrid.Children.Add(languagePanel);
+            buttonGrid.Children.Add(buttonPanel);
+
+            buttonBorder.Child = buttonGrid;
+            Grid.SetRow(buttonBorder, 2);
+            mainGrid.Children.Add(buttonBorder);
+        }
+
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
+            {
+                localization.LoadLanguage(languageCode);
+            }
+        }
+
+        private void Localization_LanguageChanged(object? sender, string newLanguage)
+        {
+            // Reconstrói textos e layout principal para refletir o novo idioma
+            Dispatcher.Invoke(() =>
+            {
+                // Atualiza título da janela
+                var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
+                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? localization.GetString("common.unknown");
+                Title = localization.GetString("window_title", version);
+
+                // Recria layout principal preservando o passo atual
+                var mainGridRef = Content as Grid;
+                if (mainGridRef != null)
+                {
+                    mainGridRef.Children.Clear();
+                    mainGridRef.RowDefinitions.Clear();
+                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) });
+                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) });
+
+                    CreateHeader();
+                    contentGrid = new Grid();
+                    contentGrid.Margin = new Thickness(20);
+                    Grid.SetRow(contentGrid, 1);
+                    mainGridRef.Children.Add(contentGrid);
+                    CreateButtonBar();
+                    Content = mainGridRef;
+                    UpdateStepContent();
+                }
+                else
+                {
+                    // Fallback: reconstruir tudo
+                    InitializeComponent();
+                }
+            });
+        }
+
+        private string GetInstallationPath()
         {
             try
             {
@@ -260,102 +427,834 @@ namespace DevStackUninstaller
             }
         }
 
-        private static async Task PerformUninstallation(ProgressBar progressBar, TextBlock statusText, Button uninstallButton, Button cancelButton)
+        private void UpdateStepContent()
+        {
+            // Clear content
+            contentGrid.Children.Clear();
+            contentGrid.RowDefinitions.Clear();
+            contentGrid.ColumnDefinitions.Clear();
+
+            contentGrid.Background = ThemeManager.CurrentTheme.FormBackground;
+            contentGrid.Margin = new Thickness(25);
+
+            // Update progress
+            stepProgressBar.Value = (int)currentStep;
+
+            // Update buttons
+            backButton.IsEnabled = currentStep != UninstallerStep.Welcome;
+            cancelButton.Visibility = Visibility.Visible;
+            
+            // Show/hide language selector (only on Welcome step)
+            languagePanel.Visibility = currentStep == UninstallerStep.Welcome ? Visibility.Visible : Visibility.Collapsed;
+            
+            switch (currentStep)
+            {
+                case UninstallerStep.Welcome:
+                    CreateWelcomeStep();
+                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.IsEnabled = true;
+                    break;
+                case UninstallerStep.Confirmation:
+                    CreateConfirmationStep();
+                    nextButton.Content = localization.GetString("buttons.continue");
+                    nextButton.IsEnabled = true;
+                    break;
+                case UninstallerStep.UninstallOptions:
+                    CreateUninstallOptionsStep();
+                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.IsEnabled = true;
+                    break;
+                case UninstallerStep.ReadyToUninstall:
+                    CreateReadyToUninstallStep();
+                    nextButton.Content = localization.GetString("buttons.uninstall");
+                    nextButton.IsEnabled = true;
+                    break;
+                case UninstallerStep.Uninstalling:
+                    CreateUninstallingStep();
+                    nextButton.IsEnabled = false;
+                    backButton.IsEnabled = false;
+                    break;
+                case UninstallerStep.Finished:
+                    CreateFinishedStep();
+                    nextButton.Content = localization.GetString("buttons.finish");
+                    nextButton.IsEnabled = true;
+                    backButton.IsEnabled = false;
+                    cancelButton.Visibility = Visibility.Collapsed;
+                    break;
+            }
+        }
+
+        private void CreateWelcomeStep()
+        {
+            // Log detailed diagnostic info
+            System.Diagnostics.Debug.WriteLine("=========== CREATING UNINSTALLER WELCOME STEP ===========");
+            
+            var title = localization.GetString("welcome.title");
+            System.Diagnostics.Debug.WriteLine($"welcome.title = \"{title}\"");
+            stepTitleText.Text = title;
+            
+            var description = localization.GetString("welcome.description");
+            System.Diagnostics.Debug.WriteLine($"welcome.description = \"{description}\"");
+            stepDescriptionText.Text = description;
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            var welcomePanel = new StackPanel
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = ThemeManager.CurrentTheme.ControlBackground
+            };
+
+            var welcomeContainer = ThemeManager.CreateStyledCard(new StackPanel(), 12, true);
+            welcomeContainer.Padding = new Thickness(40, 35, 40, 35);
+
+            var innerPanel = new StackPanel
+            {
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var logoImage = new Image
+            {
+                Source = new BitmapImage(new Uri("pack://application:,,,/DevStack.ico")),
+                Width = 80,
+                Height = 80,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+
+            var welcomeText = new TextBlock
+            {
+                Text = localization.GetString("welcome.app_name"),
+                FontSize = 28,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = ThemeManager.CurrentTheme.Danger, // Danger color for uninstall
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            var versionText = new TextBlock
+            {
+                Text = localization.GetString("welcome.version", GetVersion()),
+                FontSize = 15,
+                Foreground = ThemeManager.CurrentTheme.TextSecondary,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 25)
+            };
+
+            var descriptionText = new TextBlock
+            {
+                Text = localization.GetString("welcome.app_description"),
+                TextWrapping = TextWrapping.Wrap,
+                TextAlignment = TextAlignment.Center,
+                FontSize = 14,
+                LineHeight = 22,
+                Foreground = ThemeManager.CurrentTheme.TextSecondary,
+                MaxWidth = 420
+            };
+
+            innerPanel.Children.Add(logoImage);
+            innerPanel.Children.Add(welcomeText);
+            innerPanel.Children.Add(versionText);
+            innerPanel.Children.Add(descriptionText);
+
+            welcomeContainer.Child = innerPanel;
+            welcomePanel.Children.Add(welcomeContainer);
+
+            Grid.SetRow(welcomePanel, 0);
+            contentGrid.Children.Add(welcomePanel);
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentStep > UninstallerStep.Welcome)
+            {
+                currentStep--;
+                UpdateStepContent();
+            }
+        }
+
+        private async void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            switch (currentStep)
+            {
+                case UninstallerStep.Welcome:
+                case UninstallerStep.Confirmation:
+                case UninstallerStep.UninstallOptions:
+                case UninstallerStep.ReadyToUninstall:
+                    if (currentStep == UninstallerStep.ReadyToUninstall)
+                    {
+                        // Start uninstallation
+                        currentStep = UninstallerStep.Uninstalling;
+                        UpdateStepContent();
+                        await PerformUninstallation();
+                    }
+                    else
+                    {
+                        currentStep++;
+                        UpdateStepContent();
+                    }
+                    break;
+                case UninstallerStep.Finished:
+                    Application.Current.Shutdown();
+                    break;
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = ThemeManager.CreateStyledMessageBox(
+                localization.GetString("dialogs.cancel_message"),
+                localization.GetString("dialogs.cancel_title"),
+                MessageBoxButton.YesNo, MessageBoxImage.Question
+            );
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                Application.Current.Shutdown();
+            }
+        }
+
+        private void OnWindowClosing(object? sender, CancelEventArgs e)
+        {
+            if (currentStep != UninstallerStep.Finished)
+            {
+                var result = ThemeManager.CreateStyledMessageBox(
+                    localization.GetString("dialogs.cancel_message"), 
+                    localization.GetString("dialogs.cancel_title"),
+                    MessageBoxButton.YesNo, MessageBoxImage.Question
+                );
+                
+                if (result != MessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
+        // Placeholder methods - will be implemented in next parts
+        private void CreateConfirmationStep()
+        {
+            stepTitleText.Text = localization.GetString("confirmation.title");
+            stepDescriptionText.Text = localization.GetString("confirmation.description");
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            // Warning panel using ThemeManager notification panel
+            var warningContainer = ThemeManager.CreateNotificationPanel(
+                localization.GetString("confirmation.warning_text"), 
+                ThemeManager.NotificationType.Warning, 
+                true);
+            warningContainer.Margin = new Thickness(0, 0, 0, 20);
+
+            // Installation details panel
+            var detailsContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            detailsContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
+            detailsContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
+
+            var detailsPanel = (StackPanel)detailsContainer.Child;
+            detailsPanel.Margin = new Thickness(20, 18, 20, 18);
+
+            if (!string.IsNullOrEmpty(installationPath))
+            {
+                detailsPanel.Children.Add(new TextBlock
+                {
+                    Text = localization.GetString("confirmation.install_found"),
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = ThemeManager.CurrentTheme.Foreground,
+                    FontSize = 14,
+                    Margin = new Thickness(0, 0, 0, 8)
+                });
+
+                detailsPanel.Children.Add(new TextBlock
+                {
+                    Text = installationPath,
+                    Foreground = ThemeManager.CurrentTheme.Accent,
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 13,
+                    Margin = new Thickness(20, 0, 0, 15)
+                });
+
+                // Calculate folder size
+                var sizeText = GetInstallationSizeText();
+                if (!string.IsNullOrEmpty(sizeText))
+                {
+                    detailsPanel.Children.Add(new TextBlock
+                    {
+                        Text = localization.GetString("confirmation.space_to_free", sizeText),
+                        Foreground = ThemeManager.CurrentTheme.TextSecondary,
+                        FontSize = 13,
+                        Margin = new Thickness(0, 0, 0, 0)
+                    });
+                }
+            }
+            else
+            {
+                detailsPanel.Children.Add(new TextBlock
+                {
+                    Text = localization.GetString("confirmation.install_not_found"),
+                    Foreground = ThemeManager.CurrentTheme.Danger,
+                    FontWeight = FontWeights.SemiBold,
+                    FontSize = 14,
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+
+                detailsPanel.Children.Add(new TextBlock
+                {
+                    Text = localization.GetString("confirmation.install_not_found_desc"),
+                    Foreground = ThemeManager.CurrentTheme.TextSecondary,
+                    TextWrapping = TextWrapping.Wrap,
+                    FontSize = 13
+                });
+            }
+
+            detailsContainer.Child = detailsPanel;
+
+            Grid.SetRow(warningContainer, 0);
+            Grid.SetRow(detailsContainer, 1);
+            contentGrid.Children.Add(warningContainer);
+            contentGrid.Children.Add(detailsContainer);
+        }
+
+        private void CreateUninstallOptionsStep()
+        {
+            stepTitleText.Text = localization.GetString("uninstall_options.title");
+            stepDescriptionText.Text = localization.GetString("uninstall_options.description");
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            var optionsLabel = ThemeManager.CreateStyledLabel(
+                localization.GetString("uninstall_options.label"), 
+                false, false, ThemeManager.LabelStyle.Title);
+            optionsLabel.FontSize = 15;
+            optionsLabel.Margin = new Thickness(0, 0, 0, 15);
+
+            var optionsContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            optionsContainer.Padding = new Thickness(20, 18, 20, 18);
+
+            var optionsPanel = (StackPanel)optionsContainer.Child;
+
+            // User data checkbox
+            removeUserDataCheckBox = ThemeManager.CreateStyledCheckBox(
+                localization.GetString("uninstall_options.user_data"), removeUserData);
+            removeUserDataCheckBox.Checked += (s, e) => removeUserData = true;
+            removeUserDataCheckBox.Unchecked += (s, e) => removeUserData = false;
+            removeUserDataCheckBox.Margin = new Thickness(0, 0, 0, 15);
+
+            var userDataDescription = new TextBlock
+            {
+                Text = localization.GetString("uninstall_options.user_data_desc"),
+                FontSize = 12,
+                Foreground = ThemeManager.CurrentTheme.TextMuted,
+                Margin = new Thickness(30, -10, 0, 15)
+            };
+
+            // Registry checkbox
+            removeRegistryCheckBox = ThemeManager.CreateStyledCheckBox(
+                localization.GetString("uninstall_options.registry"), removeRegistry);
+            removeRegistryCheckBox.Checked += (s, e) => removeRegistry = true;
+            removeRegistryCheckBox.Unchecked += (s, e) => removeRegistry = false;
+            removeRegistryCheckBox.Margin = new Thickness(0, 0, 0, 15);
+
+            var registryDescription = new TextBlock
+            {
+                Text = localization.GetString("uninstall_options.registry_desc"),
+                FontSize = 12,
+                Foreground = ThemeManager.CurrentTheme.TextMuted,
+                Margin = new Thickness(30, -10, 0, 15)
+            };
+
+            // Shortcuts checkbox
+            removeShortcutsCheckBox = ThemeManager.CreateStyledCheckBox(
+                localization.GetString("uninstall_options.shortcuts"), removeShortcuts);
+            removeShortcutsCheckBox.Checked += (s, e) => removeShortcuts = true;
+            removeShortcutsCheckBox.Unchecked += (s, e) => removeShortcuts = false;
+            removeShortcutsCheckBox.Margin = new Thickness(0, 0, 0, 15);
+
+            var shortcutsDescription = new TextBlock
+            {
+                Text = localization.GetString("uninstall_options.shortcuts_desc"),
+                FontSize = 12,
+                Foreground = ThemeManager.CurrentTheme.TextMuted,
+                Margin = new Thickness(30, -10, 0, 15)
+            };
+
+            // PATH checkbox
+            removeFromPathCheckBox = ThemeManager.CreateStyledCheckBox(
+                localization.GetString("uninstall_options.path"), removeFromPath);
+            removeFromPathCheckBox.Checked += (s, e) => removeFromPath = true;
+            removeFromPathCheckBox.Unchecked += (s, e) => removeFromPath = false;
+            removeFromPathCheckBox.Margin = new Thickness(0, 0, 0, 15);
+
+            var pathDescription = new TextBlock
+            {
+                Text = localization.GetString("uninstall_options.path_desc"),
+                FontSize = 12,
+                Foreground = ThemeManager.CurrentTheme.TextMuted,
+                Margin = new Thickness(30, -10, 0, 0)
+            };
+
+            optionsPanel.Children.Add(removeUserDataCheckBox);
+            optionsPanel.Children.Add(userDataDescription);
+            optionsPanel.Children.Add(removeRegistryCheckBox);
+            optionsPanel.Children.Add(registryDescription);
+            optionsPanel.Children.Add(removeShortcutsCheckBox);
+            optionsPanel.Children.Add(shortcutsDescription);
+            optionsPanel.Children.Add(removeFromPathCheckBox);
+            optionsPanel.Children.Add(pathDescription);
+
+            // Info panel
+            var infoPanel = ThemeManager.CreateNotificationPanel(
+                localization.GetString("uninstall_options.info"), 
+                ThemeManager.NotificationType.Info
+            );
+            infoPanel.Margin = new Thickness(0, 20, 0, 0);
+
+            Grid.SetRow(optionsLabel, 0);
+            Grid.SetRow(optionsContainer, 1);
+            
+            var containerPanel = new StackPanel();
+            containerPanel.Children.Add(optionsContainer);
+            containerPanel.Children.Add(infoPanel);
+            
+            Grid.SetRow(containerPanel, 1);
+            contentGrid.Children.Add(optionsLabel);
+            contentGrid.Children.Add(containerPanel);
+        }
+
+        private void CreateReadyToUninstallStep()
+        {
+            stepTitleText.Text = localization.GetString("ready_to_uninstall.title");
+            stepDescriptionText.Text = localization.GetString("ready_to_uninstall.description");
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            var summaryLabel = ThemeManager.CreateStyledLabel(
+                localization.GetString("ready_to_uninstall.summary_label"), 
+                false, false, ThemeManager.LabelStyle.Title);
+            summaryLabel.FontSize = 15;
+            summaryLabel.Margin = new Thickness(0, 0, 0, 15);
+
+            var summaryContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            summaryContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
+            summaryContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
+            summaryContainer.Padding = new Thickness(20, 18, 20, 18);
+
+            var summaryTextBox = ThemeManager.CreateStyledTextBox(true);
+            summaryTextBox.Text = GetUninstallationSummary();
+            summaryTextBox.IsReadOnly = true;
+            summaryTextBox.TextWrapping = TextWrapping.Wrap;
+            summaryTextBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            summaryTextBox.FontFamily = new FontFamily("Consolas");
+            summaryTextBox.FontSize = 13;
+            summaryTextBox.BorderThickness = new Thickness(0);
+
+            summaryContainer.Child = summaryTextBox;
+
+            Grid.SetRow(summaryLabel, 0);
+            Grid.SetRow(summaryContainer, 1);
+            contentGrid.Children.Add(summaryLabel);
+            contentGrid.Children.Add(summaryContainer);
+        }
+
+        private void CreateUninstallingStep()
+        {
+            stepTitleText.Text = localization.GetString("uninstalling.title");
+            stepDescriptionText.Text = localization.GetString("uninstalling.description");
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            uninstallStatusText = new TextBlock
+            {
+                Text = localization.GetString("uninstalling.preparing"),
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeManager.CurrentTheme.Foreground,
+                FontSize = 15,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+
+            // Progress bar container
+            var progressContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            progressContainer.Padding = new Thickness(20, 18, 20, 18);
+            progressContainer.Margin = new Thickness(0, 0, 0, 20);
+
+            uninstallProgressBar = ThemeManager.CreateStyledProgressBar(0, 100, false);
+            uninstallProgressBar.Height = 8;
+            uninstallProgressBar.Value = 0; // Start at 0
+            uninstallProgressBar.Foreground = ThemeManager.CurrentTheme.Danger; // Red for uninstall
+
+            ((StackPanel)progressContainer.Child).Children.Add(uninstallProgressBar);
+
+            // Log container
+            var logContainer = ThemeManager.CreateStyledCard(new ListBox(), 8, false);
+            logContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
+            logContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
+            logContainer.Padding = new Thickness(0);
+
+            uninstallLogListBox = (ListBox)logContainer.Child;
+            uninstallLogListBox.FontFamily = new FontFamily("Consolas");
+            uninstallLogListBox.FontSize = 12;
+            uninstallLogListBox.Background = ThemeManager.CurrentTheme.ConsoleBackground;
+            uninstallLogListBox.Foreground = ThemeManager.CurrentTheme.ConsoleForeground;
+            uninstallLogListBox.BorderThickness = new Thickness(0);
+            uninstallLogListBox.Padding = new Thickness(15, 10, 15, 10);
+
+            ScrollViewer.SetHorizontalScrollBarVisibility(uninstallLogListBox, ScrollBarVisibility.Disabled);
+            ScrollViewer.SetVerticalScrollBarVisibility(uninstallLogListBox, ScrollBarVisibility.Auto);
+
+            // Style for log items
+            var logItemStyle = new Style(typeof(ListBoxItem));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.BorderThicknessProperty, new Thickness(0)));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.PaddingProperty, new Thickness(0, 2, 0, 2)));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.MarginProperty, new Thickness(0)));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, ThemeManager.CurrentTheme.ConsoleForeground));
+
+            var hoverTrigger = new Trigger { Property = ListBoxItem.IsMouseOverProperty, Value = true };
+            hoverTrigger.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
+            logItemStyle.Triggers.Add(hoverTrigger);
+
+            var selectedTrigger = new Trigger { Property = ListBoxItem.IsSelectedProperty, Value = true };
+            selectedTrigger.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
+            selectedTrigger.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, ThemeManager.CurrentTheme.ConsoleForeground));
+            logItemStyle.Triggers.Add(selectedTrigger);
+
+            uninstallLogListBox.ItemContainerStyle = logItemStyle;
+
+            Grid.SetRow(uninstallStatusText, 0);
+            Grid.SetRow(progressContainer, 1);
+            Grid.SetRow(logContainer, 2);
+            
+            contentGrid.Children.Add(uninstallStatusText);
+            contentGrid.Children.Add(progressContainer);
+            contentGrid.Children.Add(logContainer);
+        }
+
+        private void CreateFinishedStep()
+        {
+            stepTitleText.Text = localization.GetString("finished.title");
+            stepDescriptionText.Text = localization.GetString("finished.description");
+
+            contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            var finishedPanel = new StackPanel
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var successIcon = new TextBlock
+            {
+                Text = "✅",
+                FontSize = 48,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+
+            var successText = new TextBlock
+            {
+                Text = localization.GetString("finished.success_title"),
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20),
+                Foreground = ThemeManager.CurrentTheme.Success
+            };
+
+            var finishedMessage = new TextBlock
+            {
+                Text = localization.GetString("finished.success_message"),
+                TextWrapping = TextWrapping.Wrap,
+                TextAlignment = TextAlignment.Center,
+                FontSize = 14,
+                Margin = new Thickness(40, 0, 40, 20),
+                Foreground = ThemeManager.CurrentTheme.ConsoleForeground
+            };
+
+            // Info panel with results
+            var resultPanel = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            resultPanel.Margin = new Thickness(20, 10, 20, 20);
+            resultPanel.Padding = new Thickness(15);
+            
+            var resultContent = (StackPanel)resultPanel.Child;
+            resultContent.Children.Add(new TextBlock
+            {
+                Text = localization.GetString("finished.summary_title"),
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeManager.CurrentTheme.Foreground,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+            
+            resultContent.Children.Add(new TextBlock
+            {
+                Text = GetUninstallationResultSummary(),
+                Foreground = ThemeManager.CurrentTheme.ConsoleForeground,
+                FontFamily = new FontFamily("Consolas"),
+                FontSize = 12,
+                LineHeight = 18
+            });
+
+            finishedPanel.Children.Add(successIcon);
+            finishedPanel.Children.Add(successText);
+            finishedPanel.Children.Add(finishedMessage);
+            finishedPanel.Children.Add(resultPanel);
+
+            Grid.SetRow(finishedPanel, 0);
+            contentGrid.Children.Add(finishedPanel);
+        }
+
+        private string GetInstallationSizeText()
         {
             try
             {
-                progressBar.Visibility = Visibility.Visible;
-                uninstallButton.IsEnabled = false;
-                cancelButton.IsEnabled = false;
+                if (string.IsNullOrEmpty(installationPath) || !Directory.Exists(installationPath))
+                    return "";
 
-                var installPath = GetInstallationPath();
+                long totalSize = 0;
+                var files = Directory.GetFiles(installationPath, "*", SearchOption.AllDirectories);
+                
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        var fileInfo = new FileInfo(file);
+                        totalSize += fileInfo.Length;
+                    }
+                    catch { }
+                }
 
+                if (totalSize >= 1024 * 1024 * 1024) // GB
+                {
+                    return $"{totalSize / (1024.0 * 1024.0 * 1024.0):F1} GB";
+                }
+                else if (totalSize >= 1024 * 1024) // MB
+                {
+                    return $"{totalSize / (1024.0 * 1024.0):F1} MB";
+                }
+                else if (totalSize >= 1024) // KB
+                {
+                    return $"{totalSize / 1024.0:F1} KB";
+                }
+                else
+                {
+                    return $"{totalSize} bytes";
+                }
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private string GetUninstallationSummary()
+        {
+            var summary = localization.GetString("ready_to_uninstall.components_header") + "\n\n";
+
+            summary += $"{localization.GetString("ready_to_uninstall.installation_location")}\n  {(!string.IsNullOrEmpty(installationPath) ? installationPath : localization.GetString("ready_to_uninstall.not_found"))}\n\n";
+
+            summary += localization.GetString("ready_to_uninstall.program_components") + "\n";
+            summary += localization.GetString("ready_to_uninstall.executables") + "\n";
+            summary += localization.GetString("ready_to_uninstall.libraries") + "\n";
+            summary += localization.GetString("ready_to_uninstall.config_files") + "\n";
+            summary += localization.GetString("ready_to_uninstall.documentation") + "\n\n";
+
+            summary += localization.GetString("ready_to_uninstall.selected_options") + "\n\n";
+
+            if (removeUserData)
+                summary += localization.GetString("ready_to_uninstall.user_data_selected") + "\n";
+            else
+                summary += localization.GetString("ready_to_uninstall.user_data_preserved") + "\n";
+
+            if (removeRegistry)
+                summary += localization.GetString("ready_to_uninstall.registry_selected") + "\n";
+            else
+                summary += localization.GetString("ready_to_uninstall.registry_preserved") + "\n";
+
+            if (removeShortcuts)
+                summary += localization.GetString("ready_to_uninstall.shortcuts_selected") + "\n";
+            else
+                summary += localization.GetString("ready_to_uninstall.shortcuts_preserved") + "\n";
+
+            if (removeFromPath)
+                summary += localization.GetString("ready_to_uninstall.path_selected") + "\n";
+            else
+                summary += localization.GetString("ready_to_uninstall.path_preserved") + "\n";
+
+            var sizeText = GetInstallationSizeText();
+            if (!string.IsNullOrEmpty(sizeText))
+            {
+                summary += $"\n{localization.GetString("ready_to_uninstall.space_to_free", sizeText)}";
+            }
+
+            return summary;
+        }
+
+        private string GetUninstallationResultSummary()
+        {
+            var summary = "";
+
+            if (!string.IsNullOrEmpty(installationPath))
+                summary += localization.GetString("finished.files_removed", installationPath) + "\n";
+
+            if (removeUserData)
+                summary += localization.GetString("finished.user_data_removed") + "\n";
+
+            if (removeRegistry)
+                summary += localization.GetString("finished.registry_cleaned") + "\n";
+
+            if (removeShortcuts)
+                summary += localization.GetString("finished.shortcuts_removed") + "\n";
+
+            if (removeFromPath)
+                summary += localization.GetString("finished.path_removed") + "\n";
+
+            summary += "\n" + localization.GetString("finished.system_clean");
+
+            return summary;
+        }
+
+        private void AddUninstallationLog(string message)
+        {
+            if (uninstallLogListBox != null)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    uninstallLogListBox.Items.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+                    uninstallLogListBox.ScrollIntoView(uninstallLogListBox.Items[uninstallLogListBox.Items.Count - 1]);
+                });
+            }
+        }
+
+        private async Task PerformUninstallation()
+        {
+            try
+            {
+                // Reset progress bar
+                uninstallProgressBar.Value = 0;
+                
+                uninstallStatusText.Text = localization.GetString("uninstalling.stopping_services");
+                AddUninstallationLog(localization.GetString("log_messages.starting"));
+                
                 // Step 1: Stop services
-                progressBar.Value = 10;
-                statusText.Text = "Parando serviços...";
-                await Task.Delay(500);
+                AddUninstallationLog(localization.GetString("log_messages.stopping_services"));
                 await StopDevStackServices();
+                uninstallProgressBar.Value = 15; // 15% complete
 
+                uninstallStatusText.Text = localization.GetString("uninstalling.removing_shortcuts");
+                uninstallProgressBar.Value = 25; // 25% complete
+                
                 // Step 2: Remove shortcuts
-                progressBar.Value = 30;
-                statusText.Text = "Removendo atalhos...";
-                await Task.Delay(500);
-                await RemoveShortcuts();
+                if (removeShortcuts)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.removing_shortcuts"));
+                    await RemoveShortcuts();
+                }
 
+                uninstallStatusText.Text = localization.GetString("uninstalling.cleaning_registry");
+                uninstallProgressBar.Value = 50; // 50% complete
+                
                 // Step 3: Clean registry
-                progressBar.Value = 50;
-                statusText.Text = "Limpando registro...";
-                await Task.Delay(500);
-                await CleanRegistry();
+                if (removeRegistry)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.cleaning_registry"));
+                    await CleanRegistry();
+                }
 
-                // Step 4: Remove files (except uninstaller)
-                progressBar.Value = 70;
-                statusText.Text = "Removendo arquivos...";
-                await Task.Delay(500);
-                await RemoveFiles(installPath);
+                uninstallStatusText.Text = localization.GetString("uninstalling.removing_path");
+                uninstallProgressBar.Value = 65; // 65% complete
+                
+                // Step 4: Remove from PATH
+                if (removeFromPath)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.removing_path"));
+                    await RemoveFromSystemPath();
+                }
 
-                // Step 5: Schedule uninstaller self-deletion
-                progressBar.Value = 90;
-                statusText.Text = "Finalizando...";
-                await Task.Delay(500);
+                uninstallStatusText.Text = localization.GetString("uninstalling.removing_files");
+                uninstallProgressBar.Value = 75; // 75% complete
+                
+                // Step 5: Remove files
+                if (!string.IsNullOrEmpty(installationPath))
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.removing_files", installationPath));
+                    await RemoveFiles();
+                }
 
-                progressBar.Value = 100;
-                statusText.Text = "Desinstalação concluída!";
+                uninstallStatusText.Text = localization.GetString("uninstalling.finalizing");
+                uninstallProgressBar.Value = 90; // 90% complete
+                
+                // Step 6: Clean user data
+                if (removeUserData)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.removing_user_data"));
+                    await RemoveUserData();
+                }
 
-                MessageBox.Show(
-                    "DevStack foi removido com sucesso do seu sistema.\n\nO uninstaller será fechado agora.",
-                    "Desinstalação Concluída",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                uninstallStatusText.Text = localization.GetString("uninstalling.completed");
+                uninstallProgressBar.Value = 100; // 100% complete
+                AddUninstallationLog(localization.GetString("log_messages.uninstall_success"));
 
-                // Schedule self-deletion
-                await ScheduleSelfDeletion();
+                await Task.Delay(1000);
 
-                Application.Current.Shutdown();
+                currentStep = UninstallerStep.Finished;
+                UpdateStepContent();
             }
             catch (Exception ex)
             {
-                statusText.Text = "Erro durante a desinstalação";
-                MessageBox.Show($"Erro durante a desinstalação: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
-                uninstallButton.IsEnabled = true;
+                AddUninstallationLog($"{localization.GetString("common.unknown")}: {ex.Message}");
+                ThemeManager.CreateStyledMessageBox(
+                    localization.GetString("dialogs.uninstall_error_message", ex.Message), 
+                    localization.GetString("dialogs.uninstall_error_title"),
+                    MessageBoxButton.OK, MessageBoxImage.Error
+                );
+                
+                uninstallStatusText.Text = localization.GetString("common.unknown");
+                uninstallProgressBar.Value = 0;
+                
+                backButton.IsEnabled = true;
                 cancelButton.IsEnabled = true;
             }
         }
 
-        private static async Task StopDevStackServices()
+        private async Task StopDevStackServices()
         {
             await Task.Run(() =>
             {
                 try
                 {
-                    // Stop any DevStack related processes
-                    var processes = Process.GetProcessesByName("DevStack");
-                    foreach (var process in processes)
+                    var processNames = new[] { "DevStack", "DevStackGUI", "DevStackCLI" };
+                    
+                    foreach (var processName in processNames)
                     {
-                        try
+                        var processes = Process.GetProcessesByName(processName);
+                        foreach (var process in processes)
                         {
-                            process.Kill();
-                            process.WaitForExit(5000);
+                            try
+                            {
+                                process.Kill();
+                                process.WaitForExit(5000);
+                                AddUninstallationLog(localization.GetString("log_messages.process_stopped", processName));
+                            }
+                            catch (Exception ex)
+                            {
+                                AddUninstallationLog(localization.GetString("log_messages.process_stop_warning", processName, ex.Message));
+                            }
                         }
-                        catch { }
-                    }
-
-                    processes = Process.GetProcessesByName("DevStackGUI");
-                    foreach (var process in processes)
-                    {
-                        try
-                        {
-                            process.Kill();
-                            process.WaitForExit(5000);
-                        }
-                        catch { }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.stop_services_error", ex.Message));
+                }
             });
         }
 
-        private static async Task RemoveShortcuts()
+        private async Task RemoveShortcuts()
         {
             await Task.Run(() =>
             {
@@ -371,82 +1270,207 @@ namespace DevStackUninstaller
                         if (File.Exists(shortcutPath))
                         {
                             File.Delete(shortcutPath);
+                            AddUninstallationLog(localization.GetString("log_messages.shortcut_removed", shortcut));
                         }
                     }
 
                     // Remove start menu shortcuts
-                    var startMenu = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
-                    var devstackFolder = Path.Combine(startMenu, "Programs", "DevStack");
-                    if (Directory.Exists(devstackFolder))
+                    var startMenuPaths = new[]
                     {
-                        Directory.Delete(devstackFolder, true);
+                        Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                        Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu)
+                    };
+
+                    foreach (var startMenuPath in startMenuPaths)
+                    {
+                        var devstackFolder = Path.Combine(startMenuPath, "Programs", "DevStack Manager");
+                        if (Directory.Exists(devstackFolder))
+                        {
+                            Directory.Delete(devstackFolder, true);
+                            AddUninstallationLog(localization.GetString("log_messages.start_menu_removed", devstackFolder));
+                        }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.shortcuts_error", ex.Message));
+                }
             });
         }
 
-        private static async Task CleanRegistry()
+        private async Task CleanRegistry()
         {
             await Task.Run(() =>
             {
                 try
                 {
                     // Remove DevStack registry entries
-                    Registry.CurrentUser.DeleteSubKeyTree(@"Software\DevStack", false);
+                    try
+                    {
+                        Registry.CurrentUser.DeleteSubKeyTree(@"Software\DevStack", false);
+                        AddUninstallationLog(localization.GetString("log_messages.user_registry_removed"));
+                    }
+                    catch { }
+
+                    try
+                    {
+                        Registry.LocalMachine.DeleteSubKeyTree(@"SOFTWARE\DevStack", false);
+                        AddUninstallationLog(localization.GetString("log_messages.machine_registry_removed"));
+                    }
+                    catch { }
                     
                     // Remove from Programs and Features
-                    var uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DevStack";
-                    Registry.LocalMachine.DeleteSubKeyTree(uninstallKey, false);
+                    try
+                    {
+                        var uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DevStack";
+                        Registry.LocalMachine.DeleteSubKeyTree(uninstallKey, false);
+                        AddUninstallationLog(localization.GetString("log_messages.uninstall_registry_removed"));
+                    }
+                    catch { }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.registry_error", ex.Message));
+                }
             });
         }
 
-        private static async Task RemoveFiles(string installPath)
+        private async Task RemoveFromSystemPath()
         {
             await Task.Run(() =>
             {
                 try
                 {
-                    if (!string.IsNullOrEmpty(installPath) && Directory.Exists(installPath))
+                    // Remove from user PATH
+                    var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? "";
+                    if (userPath.Contains(installationPath))
                     {
-                        var uninstallerPath = Path.Combine(AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
-                        
-                        // Remove all files except the uninstaller
-                        var files = Directory.GetFiles(installPath, "*", SearchOption.AllDirectories);
-                        foreach (var file in files)
-                        {
-                            if (!string.Equals(file, uninstallerPath, StringComparison.OrdinalIgnoreCase))
-                            {
-                                try
-                                {
-                                    File.Delete(file);
-                                }
-                                catch { }
-                            }
-                        }
+                        var paths = userPath.Split(';').Where(p => !string.Equals(p, installationPath, StringComparison.OrdinalIgnoreCase)).ToArray();
+                        var newPath = string.Join(";", paths);
+                        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
+                        AddUninstallationLog(localization.GetString("log_messages.user_path_removed"));
+                    }
 
-                        // Remove empty directories
-                        var directories = Directory.GetDirectories(installPath, "*", SearchOption.AllDirectories);
-                        foreach (var dir in directories.OrderByDescending(d => d.Length))
+                    // Try to remove from system PATH (requires admin rights)
+                    try
+                    {
+                        var systemPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? "";
+                        if (systemPath.Contains(installationPath))
                         {
-                            try
-                            {
-                                if (!Directory.EnumerateFileSystemEntries(dir).Any())
-                                {
-                                    Directory.Delete(dir);
-                                }
-                            }
-                            catch { }
+                            var paths = systemPath.Split(';').Where(p => !string.Equals(p, installationPath, StringComparison.OrdinalIgnoreCase)).ToArray();
+                            var newPath = string.Join(";", paths);
+                            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.Machine);
+                            AddUninstallationLog(localization.GetString("log_messages.system_path_removed"));
                         }
                     }
+                    catch
+                    {
+                        AddUninstallationLog(localization.GetString("log_messages.system_path_warning"));
+                    }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.path_error", ex.Message));
+                }
             });
         }
 
-        private static async Task ScheduleSelfDeletion()
+        private async Task RemoveFiles()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(installationPath) || !Directory.Exists(installationPath))
+                    {
+                        AddUninstallationLog(localization.GetString("log_messages.install_not_found"));
+                        return;
+                    }
+
+                    var uninstallerPath = Path.Combine(AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
+                    
+                    // Remove all files except the uninstaller
+                    var files = Directory.GetFiles(installationPath, "*", SearchOption.AllDirectories);
+                    int removedFiles = 0;
+                    
+                    foreach (var file in files)
+                    {
+                        if (!string.Equals(file, uninstallerPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                removedFiles++;
+                            }
+                            catch (Exception ex)
+                            {
+                                AddUninstallationLog(localization.GetString("log_messages.file_remove_warning", Path.GetFileName(file), ex.Message));
+                            }
+                        }
+                    }
+
+                    AddUninstallationLog(localization.GetString("log_messages.files_removed_count", removedFiles.ToString()));
+
+                    // Remove empty directories
+                    var directories = Directory.GetDirectories(installationPath, "*", SearchOption.AllDirectories);
+                    int removedDirs = 0;
+                    
+                    foreach (var dir in directories.OrderByDescending(d => d.Length))
+                    {
+                        try
+                        {
+                            if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                            {
+                                Directory.Delete(dir);
+                                removedDirs++;
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (removedDirs > 0)
+                        AddUninstallationLog(localization.GetString("log_messages.dirs_removed_count", removedDirs.ToString()));
+
+                    // Schedule removal of installation directory and uninstaller
+                    ScheduleSelfDeletion().Wait();
+                }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.files_error", ex.Message));
+                }
+            });
+        }
+
+        private async Task RemoveUserData()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var userDataPaths = new[]
+                    {
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DevStack"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DevStack"),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".devstack")
+                    };
+
+                    foreach (var dataPath in userDataPaths)
+                    {
+                        if (Directory.Exists(dataPath))
+                        {
+                            Directory.Delete(dataPath, true);
+                            AddUninstallationLog(localization.GetString("log_messages.user_data_removed", dataPath));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.user_data_error", ex.Message));
+                }
+            });
+        }
+
+        private async Task ScheduleSelfDeletion()
         {
             await Task.Run(() =>
             {
@@ -457,9 +1481,9 @@ namespace DevStackUninstaller
                     
                     var batchContent = $@"
 @echo off
-timeout /t 2 /nobreak > nul
+timeout /t 3 /nobreak > nul
 del ""{currentPath}""
-if exist ""{installPath}"" rmdir ""{installPath}"" 2>nul
+if exist ""{installPath}"" rmdir ""{installPath}"" /s /q 2>nul
 del ""%~f0""
 ";
                     var batchPath = Path.Combine(Path.GetTempPath(), "DevStackUninstaller_Cleanup.bat");
@@ -471,8 +1495,13 @@ del ""%~f0""
                         CreateNoWindow = true,
                         UseShellExecute = false
                     });
+
+                    AddUninstallationLog(localization.GetString("log_messages.self_deletion_scheduled"));
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AddUninstallationLog(localization.GetString("log_messages.self_deletion_warning", ex.Message));
+                }
             });
         }
     }

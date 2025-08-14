@@ -36,7 +36,7 @@ namespace DevStackManager
             grid.Children.Add(dataGridContainer);
 
             // Info panel
-            var infoPanel = CreateInstalledInfoPanel();
+            var infoPanel = CreateInstalledInfoPanel(mainWindow);
             Grid.SetRow(infoPanel, 2);
             grid.Children.Add(infoPanel);
 
@@ -54,13 +54,13 @@ namespace DevStackManager
                 Margin = new Thickness(10)
             };
             
-            var titleLabel = GuiTheme.CreateStyledLabel("Ferramentas Instaladas", true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.installed_tab.title"), true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             headerPanel.Children.Add(titleLabel);
 
-            var refreshButton = GuiTheme.CreateStyledButton("🔄 Atualizar Lista", async (s, e) => await LoadInstalledComponents(mainWindow));
-            refreshButton.Width = 130;
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.installed_tab.buttons.refresh"), async (s, e) => await LoadInstalledComponents(mainWindow));
+            refreshButton.Width = 150;
             refreshButton.Height = 35;
             refreshButton.Margin = new Thickness(20, 0, 0, 20);
             headerPanel.Children.Add(refreshButton);
@@ -257,7 +257,7 @@ namespace DevStackManager
             {
                 var nameColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Ferramenta" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.installed_tab.headers.tool") : null,
                     Width = new DataGridLength(200)
                 };
 
@@ -265,6 +265,7 @@ namespace DevStackManager
                 var nameTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 nameTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
                 nameTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
+                nameTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 nameTemplate.VisualTree = nameTextBlockFactory;
                 nameColumn.CellTemplate = nameTemplate;
 
@@ -272,7 +273,7 @@ namespace DevStackManager
 
                 var versionsColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Versões Instaladas" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.installed_tab.headers.versions") : null,
                     Width = new DataGridLength(400)
                 };
 
@@ -280,6 +281,7 @@ namespace DevStackManager
                 var versionsTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 versionsTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("VersionsText"));
                 versionsTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(13, 0, 0, 0));
+                versionsTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 versionsTemplate.VisualTree = versionsTextBlockFactory;
                 versionsColumn.CellTemplate = versionsTemplate;
 
@@ -287,7 +289,7 @@ namespace DevStackManager
 
                 var statusColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Status" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.installed_tab.headers.status") : null,
                     Width = new DataGridLength(100)
                 };
                 
@@ -296,8 +298,8 @@ namespace DevStackManager
                 {
                     var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
                     headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
-                    headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, GuiTheme.CurrentTheme.GridHeaderBackground));
-                    headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, GuiTheme.CurrentTheme.GridHeaderForeground));
+                    headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderBackground));
+                    headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderForeground));
                     headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, FontWeights.SemiBold));
                     headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 14.0));
                     statusColumn.HeaderStyle = headerStyle;
@@ -318,6 +320,7 @@ namespace DevStackManager
                 statusTextBlockFactory.SetBinding(TextBlock.ForegroundProperty, new Binding("StatusColor"));
                 statusTextBlockFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
                 statusTextBlockFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                statusTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 statusTextBlockFactory.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
                 statusTemplate.VisualTree = statusTextBlockFactory;
                 statusColumn.CellTemplate = statusTemplate;
@@ -333,8 +336,8 @@ namespace DevStackManager
             contentDataGrid.SetBinding(DataGrid.ItemsSourceProperty, installedBinding);
 
             // Apply dark theme to both DataGrids
-            GuiTheme.SetDataGridDarkTheme(headerDataGrid);
-            GuiTheme.SetDataGridDarkTheme(contentDataGrid);
+            DevStackShared.ThemeManager.SetDataGridDarkTheme(headerDataGrid);
+            DevStackShared.ThemeManager.SetDataGridDarkTheme(contentDataGrid);
 
             // Colocar DataGrid do conteúdo dentro do ScrollViewer
             scrollViewer.Content = contentDataGrid;
@@ -367,7 +370,7 @@ namespace DevStackManager
         /// <summary>
         /// Cria o painel de informações no rodapé da aba
         /// </summary>
-        private static StackPanel CreateInstalledInfoPanel()
+        private static StackPanel CreateInstalledInfoPanel(DevStackGui mainWindow)
         {
             var infoPanel = new StackPanel
             {
@@ -376,9 +379,11 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            var infoLabel = GuiTheme.CreateStyledLabel("ℹ️ Use as abas 'Instalar' e 'Desinstalar' para gerenciar as ferramentas", false, true);
-            infoLabel.FontStyle = FontStyles.Italic;
-            infoPanel.Children.Add(infoLabel);
+            var infoNotification = DevStackShared.ThemeManager.CreateNotificationPanel(
+                mainWindow.LocalizationManager.GetString("gui.installed_tab.info"),
+                DevStackShared.ThemeManager.NotificationType.Info
+            );
+            infoPanel.Children.Add(infoNotification);
 
             return infoPanel;
         }
@@ -392,7 +397,7 @@ namespace DevStackManager
             {
                 try
                 {
-                    mainWindow.StatusMessage = "Carregando componentes instalados...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.installed_tab.loading");
                     
                     var data = DataManager.GetInstalledVersions();
                     var components = new ObservableCollection<ComponentViewModel>();
@@ -404,23 +409,23 @@ namespace DevStackManager
                             Name = comp.Name,
                             Installed = comp.Installed,
                             Versions = comp.Versions,
-                            Status = comp.Installed ? "✔️" : "❌",
-                            VersionsText = comp.Installed ? string.Join(", ", comp.Versions) : "N/A"
+                            Status = mainWindow.LocalizationManager.GetString("gui.common.status." + (comp.Installed ? "ok" : "error")),
+                            VersionsText = comp.Installed ? string.Join(", ", comp.Versions) : mainWindow.LocalizationManager.GetString("gui.common.status.na")
                         });
                     }
                     
                     mainWindow.Dispatcher.Invoke(() =>
                     {
                         mainWindow.InstalledComponents = components;
-                        mainWindow.StatusMessage = $"Carregados {components.Count} componentes";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.installed_tab.loaded", components.Count);
                     });
                 }
                 catch (Exception ex)
                 {
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.StatusMessage = $"Erro ao carregar componentes: {ex.Message}";
-                        DevStackConfig.WriteLog($"Erro ao carregar componentes na GUI: {ex}");
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.installed_tab.error", ex.Message);
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.installed_tab.error", ex));
                     });
                 }
             });

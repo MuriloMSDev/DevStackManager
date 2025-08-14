@@ -26,10 +26,26 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\Shared\AvailableVersions\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Shared\locale\*.json">
+      <LogicalName>DevStackUninstaller.locale.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\Shared\DevStack.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\LocalizationManager.cs" Link="LocalizationManager.cs" />
+    <Compile Include="..\Shared\ThemeManager.cs" Link="ThemeManager.cs" />
   </ItemGroup>
 
 </Project>

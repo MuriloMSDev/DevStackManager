@@ -56,16 +56,16 @@ namespace DevStackManager
             };
 
             // Título
-            var titleLabel = GuiTheme.CreateStyledLabel("Desinstalar Ferramenta", true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.title"), true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(titleLabel);
 
             // Componente
-            var componentLabel = GuiTheme.CreateStyledLabel("Selecione a ferramenta:");
+            var componentLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.labels.select_tool"));
             panel.Children.Add(componentLabel);
 
-            var componentCombo = GuiTheme.CreateStyledComboBox();
+            var componentCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
             componentCombo.Margin = new Thickness(0, 5, 0, 15);
             componentCombo.Height = 30;
             componentCombo.Name = "UninstallComponentCombo";
@@ -75,10 +75,10 @@ namespace DevStackManager
             panel.Children.Add(componentCombo);
 
             // Versão
-            var versionLabel = GuiTheme.CreateStyledLabel("Selecione a versão:");
+            var versionLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.labels.select_version"));
             panel.Children.Add(versionLabel);
 
-            var versionCombo = GuiTheme.CreateStyledComboBox();
+            var versionCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
             versionCombo.Margin = new Thickness(0, 5, 0, 20);
             versionCombo.Height = 30;
             versionCombo.Name = "UninstallVersionCombo";
@@ -88,7 +88,7 @@ namespace DevStackManager
             panel.Children.Add(versionCombo);
 
             // Overlay de loading (spinner)
-            var overlay = GuiTheme.CreateLoadingOverlay();
+            var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
             // Overlay sempre visível se desinstalando
             overlay.Visibility = mainWindow.IsUninstallingComponent ? Visibility.Visible : Visibility.Collapsed;
             mainWindow.PropertyChanged += (sender, args) =>
@@ -100,7 +100,7 @@ namespace DevStackManager
             };
 
             // Botão Desinstalar
-            var uninstallButton = GuiTheme.CreateStyledButton("🗑️ Desinstalar", async (s, e) =>
+            var uninstallButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.buttons.uninstall"), async (s, e) =>
             {
                 mainWindow.IsUninstallingComponent = true;
                 overlay.Visibility = Visibility.Visible;
@@ -122,17 +122,18 @@ namespace DevStackManager
             panel.Children.Add(uninstallButton);
 
             // Botão Atualizar Lista
-            var refreshButton = GuiTheme.CreateStyledButton("🔄 Atualizar Lista", (s, e) => LoadUninstallComponents(mainWindow));
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.buttons.refresh"), (s, e) => LoadUninstallComponents(mainWindow));
             refreshButton.Height = 35;
             refreshButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(refreshButton);
 
-            // Warning
-            var warningLabel = GuiTheme.CreateStyledLabel("⚠️ Atenção: Esta ação não pode ser desfeita!");
-            warningLabel.Foreground = new SolidColorBrush(Colors.Orange);
-            warningLabel.FontWeight = FontWeights.Bold;
-            warningLabel.Margin = new Thickness(0, 20, 0, 0);
-            panel.Children.Add(warningLabel);
+            // Warning usando painel de notificação
+            var warningPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
+                mainWindow.LocalizationManager.GetString("gui.uninstall_tab.warning"), 
+                DevStackShared.ThemeManager.NotificationType.Warning
+            );
+            warningPanel.Margin = new Thickness(0, 20, 0, 0);
+            panel.Children.Add(warningPanel);
 
             // Adiciona painel e overlay ao grid
             grid.Children.Add(panel);
@@ -148,28 +149,28 @@ namespace DevStackManager
         {
             if (string.IsNullOrEmpty(mainWindow.SelectedUninstallComponent))
             {
-                GuiTheme.CreateStyledMessageBox("Selecione um componente para desinstalar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.messages.select_component"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(mainWindow.SelectedUninstallVersion))
             {
-                GuiTheme.CreateStyledMessageBox("Selecione uma versão para desinstalar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.messages.select_version"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = GuiTheme.CreateStyledMessageBox(
-                $"Tem certeza que deseja desinstalar {mainWindow.SelectedUninstallComponent}?",
-                "Confirmação",
+            var result = DevStackShared.ThemeManager.CreateStyledMessageBox(
+                mainWindow.LocalizationManager.GetString("gui.uninstall_tab.messages.confirm", mainWindow.SelectedUninstallComponent),
+                mainWindow.LocalizationManager.GetString("gui.common.dialogs.confirmation"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (result != MessageBoxResult.Yes)
                 return;
 
-            mainWindow.StatusMessage = $"Desinstalando {mainWindow.SelectedUninstallComponent}...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.uninstalling", mainWindow.SelectedUninstallComponent);
             
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Uninstall, async progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Uninstall, mainWindow, async progress =>
             {
                 try
                 {
@@ -179,7 +180,7 @@ namespace DevStackManager
 
                     UninstallManager.UninstallCommands(args);
 
-                    mainWindow.StatusMessage = $"{mainWindow.SelectedUninstallComponent} desinstalado com sucesso!";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.success", mainWindow.SelectedUninstallComponent);
 
                     // Recarregar lista de instalados
                     await GuiInstalledTab.LoadInstalledComponents(mainWindow);
@@ -190,8 +191,8 @@ namespace DevStackManager
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao desinstalar {mainWindow.SelectedUninstallComponent}: {ex.Message}");
-                    mainWindow.StatusMessage = $"Erro ao desinstalar {mainWindow.SelectedUninstallComponent}";
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.error", mainWindow.SelectedUninstallComponent, ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.error_short", mainWindow.SelectedUninstallComponent);
                     DevStackConfig.WriteLog($"Erro ao desinstalar {mainWindow.SelectedUninstallComponent} na GUI: {ex}");
                 }
             });
@@ -217,7 +218,7 @@ namespace DevStackManager
             {
                 try
                 {
-                    mainWindow.StatusMessage = $"Carregando versões instaladas de {mainWindow.SelectedUninstallComponent}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.loading_versions", mainWindow.SelectedUninstallComponent);
                     var status = DataManager.GetComponentStatus(mainWindow.SelectedUninstallComponent);
                     mainWindow.Dispatcher.Invoke(() =>
                     {
@@ -252,19 +253,23 @@ namespace DevStackManager
                             }
                             else
                             {
-                                GuiTheme.CreateStyledMessageBox($"{mainWindow.SelectedUninstallComponent} não possui versões instaladas.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                                DevStackShared.ThemeManager.CreateStyledMessageBox(
+                                    mainWindow.LocalizationManager.GetString("gui.uninstall_tab.messages.no_versions", mainWindow.SelectedUninstallComponent), 
+                                    mainWindow.LocalizationManager.GetString("gui.common.dialogs.info"), 
+                                    MessageBoxButton.OK, 
+                                    MessageBoxImage.Information);
                             }
                         }
                         mainWindow.StatusMessage = status.Installed ?
-                            $"Versões carregadas para {mainWindow.SelectedUninstallComponent}" :
-                            $"{mainWindow.SelectedUninstallComponent} não está instalado";
+                            mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.versions_loaded", mainWindow.SelectedUninstallComponent) :
+                            mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.not_installed", mainWindow.SelectedUninstallComponent);
                     });
                 }
                 catch (Exception ex)
                 {
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.StatusMessage = $"Erro ao carregar versões para desinstalar: {ex.Message}";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.error_loading_versions", ex.Message);
                         DevStackConfig.WriteLog($"Erro ao carregar versões para desinstalação na GUI: {ex}");
                     });
                 }
@@ -278,7 +283,7 @@ namespace DevStackManager
         {
             try
             {
-                mainWindow.StatusMessage = "Carregando componentes instalados...";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.loading_components");
                 
                 var componentCombo = GuiHelpers.FindChild<ComboBox>(mainWindow, "UninstallComponentCombo");
                 if (componentCombo == null)
@@ -306,23 +311,19 @@ namespace DevStackManager
 
                     componentCombo.SelectedIndex = -1;
                     
-                    mainWindow.StatusMessage = $"{componentCombo.Items.Count} componentes disponíveis para desinstalação";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.components_count", componentCombo.Items.Count);
                 }
                 else
                 {
-                    // Se não há componentes instalados, recarregar a lista de instalados primeiro
-                    mainWindow.StatusMessage = "Recarregando lista de componentes instalados...";
-                    _ = Task.Run(async () =>
-                    {
-                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-                        await Task.Delay(100);
-                        mainWindow.Dispatcher.Invoke(() => LoadUninstallComponents(mainWindow));
-                    });
+                    // Sem componentes instalados: não reagendar carregamento infinito
+                    componentCombo.Items.Clear();
+                    componentCombo.SelectedIndex = -1;
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.components_count", 0);
                 }
             }
             catch (Exception ex)
             {
-                mainWindow.StatusMessage = $"Erro ao carregar componentes: {ex.Message}";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.uninstall_tab.status.error_loading_components", ex.Message);
                 DevStackConfig.WriteLog($"Erro ao carregar componentes para desinstalação na GUI: {ex}");
             }
         }

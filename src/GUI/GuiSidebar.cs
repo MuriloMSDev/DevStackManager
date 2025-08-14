@@ -21,8 +21,8 @@ namespace DevStackManager
         {
             var sidebar = new Border
             {
-                Background = GuiTheme.DarkTheme.SidebarBackground,
-                BorderBrush = GuiTheme.DarkTheme.Border,
+                Background = DevStackShared.ThemeManager.DarkTheme.SidebarBackground,
+                BorderBrush = DevStackShared.ThemeManager.DarkTheme.Border,
                 BorderThickness = new Thickness(0, 0, 1, 0)
             };
             Grid.SetColumn(sidebar, 0);
@@ -34,7 +34,7 @@ namespace DevStackManager
             };
 
             // Criar título e ícone
-            CreateTitlePanel(sidebarContainer);
+            CreateTitlePanel(sidebarContainer, mainWindow);
 
             // Criar separador
             CreateSeparator(sidebarContainer);
@@ -50,7 +50,7 @@ namespace DevStackManager
         /// <summary>
         /// Cria o painel do título com ícone
         /// </summary>
-        private static void CreateTitlePanel(StackPanel sidebarContainer)
+        private static void CreateTitlePanel(StackPanel sidebarContainer, DevStackGui mainWindow)
         {
             var titlePanel = new StackPanel
             {
@@ -64,7 +64,7 @@ namespace DevStackManager
                 titlePanel.Children.Add(iconImage);
 
             // Título
-            var sidebarTitleLabel = GuiTheme.CreateStyledLabel("DevStack Manager");
+            var sidebarTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sidebar.title"));
             sidebarTitleLabel.FontSize = 20;
             sidebarTitleLabel.FontWeight = FontWeights.Bold;
             sidebarTitleLabel.HorizontalAlignment = HorizontalAlignment.Left;
@@ -115,7 +115,7 @@ namespace DevStackManager
             {
                 Height = 1,
                 Margin = new Thickness(10, 0, 10, 10),
-                Background = GuiTheme.DarkTheme.Border
+                Background = DevStackShared.ThemeManager.DarkTheme.Border
             };
             sidebarContainer.Children.Add(separator);
         }
@@ -134,7 +134,7 @@ namespace DevStackManager
             };
 
             // Criar itens de navegação com ícones modernos
-            var navItems = GetNavigationItems();
+            var navItems = GetNavigationItems(mainWindow);
 
             foreach (var item in navItems)
             {
@@ -150,7 +150,7 @@ namespace DevStackManager
             sidebarContainer.Children.Add(navList);
             
             // Apply theme to the navigation list DEPOIS que todos os itens foram adicionados e a lista foi adicionada ao container
-            GuiTheme.ApplySidebarListBoxTheme(navList);
+            DevStackShared.ThemeManager.ApplySidebarListBoxTheme(navList);
             
             // Forçar atualização da UI para garantir que o tema seja aplicado
             navList.UpdateLayout();
@@ -159,17 +159,17 @@ namespace DevStackManager
         /// <summary>
         /// Obtém a lista de itens de navegação
         /// </summary>
-        private static List<GuiNavigation.NavigationItem> GetNavigationItems()
+        private static List<GuiNavigation.NavigationItem> GetNavigationItems(DevStackGui mainWindow)
         {
             return new List<GuiNavigation.NavigationItem>
             {
-                new() { Title = "Instalados", Icon = "📦", Description = "Ferramentas instaladas" },
-                new() { Title = "Instalar", Icon = "📥", Description = "Instalar novos componentes" },
-                new() { Title = "Desinstalar", Icon = "🗑️", Description = "Remover componentes" },
-                new() { Title = "Serviços", Icon = "⚙️", Description = "Controle de serviços" },
-                new() { Title = "Configurações", Icon = "🔧", Description = "Configurações do sistema" },
-                new() { Title = "Sites", Icon = "🌐", Description = "Gerenciar sites Nginx" },
-                new() { Title = "Utilitários", Icon = "🛠️", Description = "Ferramentas e console" }
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.title"), Icon = "📦", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.title"), Icon = "📥", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.title"), Icon = "🗑️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.services.title"), Icon = "⚙️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.services.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.config.title"), Icon = "🔧", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.config.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.sites.title"), Icon = "🌐", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.sites.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.utilities.title"), Icon = "🛠️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.utilities.description") }
             };
         }
 
@@ -191,7 +191,7 @@ namespace DevStackManager
                 FontSize = 18,
                 Margin = new Thickness(0, 0, 12, 0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = GuiTheme.DarkTheme.Foreground,
+                Foreground = DevStackShared.ThemeManager.DarkTheme.Foreground,
                 Background = Brushes.Transparent
             };
             
@@ -203,7 +203,7 @@ namespace DevStackManager
                 Margin = new Thickness(0),
                 Padding = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = GuiTheme.DarkTheme.Foreground,
+                Foreground = DevStackShared.ThemeManager.DarkTheme.Foreground,
                 Background = Brushes.Transparent
             };
             
