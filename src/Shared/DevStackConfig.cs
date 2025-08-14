@@ -75,7 +75,9 @@ namespace DevStackManager
         /// </summary>
         public static void Initialize()
         {
-            baseDir = "C:\\devstack";
+            // Define baseDir como a pasta "tools" no mesmo diretório do executável
+            string exeDirectory = System.AppContext.BaseDirectory;
+            baseDir = Path.Combine(exeDirectory, "tools");
             phpDir = Path.Combine(baseDir, "php");
             nginxDir = Path.Combine(baseDir, "nginx");
             mysqlDir = Path.Combine(baseDir, "mysql");
@@ -106,8 +108,7 @@ namespace DevStackManager
         {
             try
             {
-                var logFile = Path.Combine(baseDir, "devstack.log");
-                Directory.CreateDirectory(Path.GetDirectoryName(logFile) ?? baseDir);
+                var logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
                 File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
             }
             catch

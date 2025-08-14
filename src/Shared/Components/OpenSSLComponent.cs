@@ -16,7 +16,7 @@ namespace DevStackManager.Components
             string versionUnderscore = version.Replace(".", "_");
             string installerName = $"{archPrefix}-{versionUnderscore}.exe";
             string installerUrl = GetUrlForVersion(version);
-            string installDir = System.IO.Path.Combine("C:", "devstack", "openssl", subDir);
+            string installDir = System.IO.Path.Combine(DevStackConfig.openSSLDir, subDir);
             string installerPath = System.IO.Path.Combine(DevStackConfig.tmpDir, installerName);
             if (!System.IO.Directory.Exists(DevStackConfig.tmpDir))
             {

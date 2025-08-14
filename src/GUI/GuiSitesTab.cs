@@ -49,22 +49,22 @@ namespace DevStackManager
             };
 
             // Título
-            var titleLabel = GuiTheme.CreateStyledLabel("Criar Configuração de Site Nginx", true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.title"), true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(titleLabel);
 
             // Domínio
-            var domainLabel = GuiTheme.CreateStyledLabel("Domínio do site:");
+            var domainLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.domain"));
             panel.Children.Add(domainLabel);
 
-            var domainTextBox = GuiTheme.CreateStyledTextBox();
+            var domainTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
             domainTextBox.Height = 30;
             domainTextBox.Name = "DomainTextBox";
             panel.Children.Add(domainTextBox);
 
             // Diretório raiz com botão procurar
-            var rootLabel = GuiTheme.CreateStyledLabel("Diretório raiz:");
+            var rootLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.root_directory"));
             panel.Children.Add(rootLabel);
 
             var rootPanel = new Grid
@@ -74,21 +74,21 @@ namespace DevStackManager
             rootPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             rootPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            var rootTextBox = GuiTheme.CreateStyledTextBox();
+            var rootTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
             rootTextBox.Height = 30;
             rootTextBox.Name = "RootTextBox";
             Grid.SetColumn(rootTextBox, 0);
             rootPanel.Children.Add(rootTextBox);
 
-            var browseButton = GuiTheme.CreateStyledButton("📁 Procurar", (s, e) =>
+            var browseButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.sites_tab.buttons.browse"), (s, e) =>
             {
                 var dialog = new Microsoft.Win32.OpenFileDialog();
                 dialog.ValidateNames = false;
                 dialog.CheckFileExists = false;
                 dialog.CheckPathExists = true;
-                dialog.FileName = "Selecionar Pasta";
+                dialog.FileName = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_folder");
                 dialog.Filter = "Pastas|*.";
-                dialog.Title = "Selecionar Pasta do Site";
+                dialog.Title = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_folder");
 
                 if (dialog.ShowDialog() == true)
                 {
@@ -99,18 +99,43 @@ namespace DevStackManager
                     }
                 }
             });
-            browseButton.Width = 100;
+            browseButton.Width = 120;
             browseButton.Height = 30;
             browseButton.Padding = new Thickness(12, 3, 12, 3);
+
+            // Aplicar cantos arredondados personalizados ao botão browser mantendo o estilo do CreateStyledButton
+            var browseStyle = new Style(typeof(Button), browseButton.Style);
+            var template = new ControlTemplate(typeof(Button));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+            border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(0, 3, 3, 0));
+
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            border.AppendChild(contentPresenter);
+            template.VisualTree = border;
+
+            var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, DevStackShared.ThemeManager.CurrentTheme.ButtonBackground));
+            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, DevStackShared.ThemeManager.CurrentTheme.ButtonBackground));
+
+            template.Triggers.Add(hoverTrigger);
+            browseStyle.Setters.Add(new Setter(Button.TemplateProperty, template));
+            browseButton.Style = browseStyle;
+
             Grid.SetColumn(browseButton, 1);
             rootPanel.Children.Add(browseButton);
             panel.Children.Add(rootPanel);
 
             // PHP Upstream com ComboBox para versões instaladas
-            var phpLabel = GuiTheme.CreateStyledLabel("PHP Upstream:");
+            var phpLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.php_upstream"));
             panel.Children.Add(phpLabel);
 
-            var phpComboBox = GuiTheme.CreateStyledComboBox();
+            var phpComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
             phpComboBox.Height = 30;
             phpComboBox.Margin = new Thickness(0, 5, 0, 15);
             phpComboBox.Name = "PhpComboBox";
@@ -120,10 +145,10 @@ namespace DevStackManager
             panel.Children.Add(phpComboBox);
 
             // Nginx Version ComboBox
-            var nginxLabel = GuiTheme.CreateStyledLabel("Versão Nginx:");
+            var nginxLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.nginx_version"));
             panel.Children.Add(nginxLabel);
 
-            var nginxComboBox = GuiTheme.CreateStyledComboBox();
+            var nginxComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
             nginxComboBox.Height = 30;
             nginxComboBox.Margin = new Thickness(0, 5, 0, 15);
             nginxComboBox.Name = "NginxComboBox";
@@ -133,11 +158,11 @@ namespace DevStackManager
             panel.Children.Add(nginxComboBox);
 
             // Checkbox SSL
-            var sslCheckBox = GuiTheme.CreateStyledCheckBox("Gerar SSL");
+            var sslCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.ssl.generate_ssl"));
             panel.Children.Add(sslCheckBox);
 
             // Overlay de loading (spinner)
-            var overlay = GuiTheme.CreateLoadingOverlay();
+            var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
             // Overlay sempre visível se criando site
             overlay.Visibility = mainWindow.IsCreatingSite ? Visibility.Visible : Visibility.Collapsed;
             mainWindow.PropertyChanged += (sender, args) =>
@@ -149,7 +174,7 @@ namespace DevStackManager
             };
 
             // Botão Criar Site
-            var createButton = GuiTheme.CreateStyledButton("🌐 Criar Configuração de Site", async (s, e) =>
+            var createButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.sites_tab.buttons.create_site"), async (s, e) =>
             {
                 mainWindow.IsCreatingSite = true;
                 overlay.Visibility = Visibility.Visible;
@@ -160,24 +185,29 @@ namespace DevStackManager
                     var phpUpstream = phpComboBox.SelectedItem?.ToString() ?? "";
                     var nginxVersion = nginxComboBox.SelectedItem?.ToString() ?? "";
 
-                    await CreateSite(mainWindow, domain, root, phpUpstream, nginxVersion);
+                    bool siteCreated = await CreateSite(mainWindow, domain, root, phpUpstream, nginxVersion);
 
                     // Se o checkbox SSL estiver marcado, gerar SSL
-                    if (sslCheckBox.IsChecked == true)
+                    bool sslCreated = true;
+                    if (siteCreated && sslCheckBox.IsChecked == true)
                     {
-                        await GenerateSslCertificate(mainWindow, domain);
-                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                        sslCreated = await GenerateSslCertificate(mainWindow, domain);
                     }
-                    
-                    phpComboBox.SelectedIndex = -1;
-                    nginxComboBox.SelectedIndex = -1;
-                    sslCheckBox.IsChecked = false;
-                    domainTextBox.Text = "";
-                    rootTextBox.Text = "";
 
-                    // Reiniciar serviços do Nginx após criar a configuração
-                    mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
-                    await RestartNginxServices(mainWindow);
+                    // Reiniciar serviços do Nginx apenas se o site e SSL foram criados
+                    if (siteCreated && sslCreated)
+                    {
+                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+
+                        phpComboBox.SelectedIndex = -1;
+                        nginxComboBox.SelectedIndex = -1;
+                        sslCheckBox.IsChecked = false;
+                        domainTextBox.Text = "";
+                        rootTextBox.Text = "";
+
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.restarting_nginx");
+                        await RestartNginxServices(mainWindow);
+                    }
                 }
                 finally
                 {
@@ -194,22 +224,22 @@ namespace DevStackManager
             var sslSeparator = new Separator { Margin = new Thickness(0, 20, 0, 10) };
             panel.Children.Add(sslSeparator);
 
-            var sslTitle = GuiTheme.CreateStyledLabel("Certificados SSL", true);
+            var sslTitle = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.ssl.title"), true);
             sslTitle.FontSize = 16;
             sslTitle.Margin = new Thickness(0, 0, 0, 10);
             panel.Children.Add(sslTitle);
 
-            var sslDomainLabel = GuiTheme.CreateStyledLabel("Domínio para SSL:");
+            var sslDomainLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.ssl_domain"));
             panel.Children.Add(sslDomainLabel);
 
-            var sslDomainTextBox = GuiTheme.CreateStyledTextBox();
+            var sslDomainTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
             sslDomainTextBox.Height = 30;
             sslDomainTextBox.Margin = new Thickness(0, 5, 0, 15);
             sslDomainTextBox.Name = "SslDomainTextBox";
             panel.Children.Add(sslDomainTextBox);
 
             Button? generateSslButton = null;
-            generateSslButton = GuiTheme.CreateStyledButton("🔒 Gerar Certificado SSL", async (s, e) =>
+            generateSslButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.sites_tab.buttons.generate_ssl"), async (s, e) =>
             {
                 mainWindow.IsCreatingSite = true;
                 overlay.Visibility = Visibility.Visible;
@@ -218,16 +248,21 @@ namespace DevStackManager
                 try
                 {
                     var domain = sslDomainTextBox.Text;
-                    await GenerateSslCertificate(mainWindow, domain);
-                    await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-                    
-                    // Reiniciar serviços do Nginx após criar a configuração
-                    mainWindow.StatusMessage = $"Reiniciando serviços do Nginx...";
-                    await RestartNginxServices(mainWindow);
+                    var sslCreated = await GenerateSslCertificate(mainWindow, domain);
+
+                    if (sslCreated)
+                    {
+                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                        
+                        sslDomainTextBox.Text = "";
+
+                        // Reiniciar serviços do Nginx após criar a configuração
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.restarting_nginx");
+                        await RestartNginxServices(mainWindow);
+                    }
                 }
                 finally
                 {
-                    sslDomainTextBox.Text = "";
                     if (generateSslButton != null)
                         generateSslButton.IsEnabled = true;
                     overlay.Visibility = Visibility.Collapsed;
@@ -240,10 +275,12 @@ namespace DevStackManager
             panel.Children.Add(generateSslButton);
 
             // Info
-            var infoLabel = GuiTheme.CreateStyledLabel("ℹ️ Os arquivos de configuração serão criados automaticamente");
-            infoLabel.FontStyle = FontStyles.Italic;
-            infoLabel.Margin = new Thickness(0, 20, 0, 0);
-            panel.Children.Add(infoLabel);
+            var infoNotification = DevStackShared.ThemeManager.CreateNotificationPanel(
+                mainWindow.LocalizationManager.GetString("gui.sites_tab.info"),
+                DevStackShared.ThemeManager.NotificationType.Info
+            );
+            infoNotification.Margin = new Thickness(0, 20, 0, 0);
+            panel.Children.Add(infoNotification);
 
             // Adiciona painel e overlay ao grid
             grid.Children.Add(panel);
@@ -259,7 +296,7 @@ namespace DevStackManager
         {
             try
             {
-                var phpDir = Path.Combine("C:\\devstack", "php");
+                var phpDir = DevStackConfig.phpDir;
                 if (Directory.Exists(phpDir))
                 {
                     var phpVersions = Directory.GetDirectories(phpDir)
@@ -284,7 +321,7 @@ namespace DevStackManager
         {
             try
             {
-                var nginxDir = Path.Combine("C:\\devstack", "nginx");
+                var nginxDir = DevStackConfig.nginxDir;
                 if (Directory.Exists(nginxDir))
                 {
                     var nginxVersions = Directory.GetDirectories(nginxDir)
@@ -305,60 +342,62 @@ namespace DevStackManager
         /// <summary>
         /// Cria uma configuração de site Nginx
         /// </summary>
-        private static async Task CreateSite(DevStackGui mainWindow, string domain, string root, string phpUpstream, string nginxVersion)
+        private static async Task<bool> CreateSite(DevStackGui mainWindow, string domain, string root, string phpUpstream, string nginxVersion)
         {
             if (string.IsNullOrEmpty(domain))
             {
-                GuiTheme.CreateStyledMessageBox("Digite um domínio para o site.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_domain"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return await Task.FromResult(false);
             }
 
             if (string.IsNullOrEmpty(root))
             {
-                GuiTheme.CreateStyledMessageBox("Digite um diretório raiz para o site.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_root"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return await Task.FromResult(false);
             }
 
             if (string.IsNullOrEmpty(phpUpstream))
             {
-                GuiTheme.CreateStyledMessageBox("Selecione uma versão do PHP para o site.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_php"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return await Task.FromResult(false);
             }
 
             if (string.IsNullOrEmpty(nginxVersion))
             {
-                GuiTheme.CreateStyledMessageBox("Selecione uma versão do Nginx para o site.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_nginx"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return await Task.FromResult(false);
             }
 
             try
             {
-                mainWindow.StatusMessage = $"Criando configuração para o site {domain}...";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.creating_site", domain);
                 // Run heavy config creation in background
                 await Task.Run(() => InstallManager.CreateNginxSiteConfig(domain, root, $"127.{phpUpstream}:9000", nginxVersion));
 
-                mainWindow.StatusMessage = $"Site {domain} criado";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_created", domain);
+                return await Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao criar site {domain}: {ex.Message}");
-                mainWindow.StatusMessage = $"Erro ao criar site {domain}";
-                GuiTheme.CreateStyledMessageBox($"Erro ao criar configuração do site: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_config_error", ex.Message), mainWindow.LocalizationManager.GetString("gui.common.error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return await Task.FromResult(false);
             }
         }
 
         /// <summary>
         /// Gera um certificado SSL para o domínio especificado
         /// </summary>
-        private static async Task GenerateSslCertificate(DevStackGui mainWindow, string domain)
+        private static async Task<bool> GenerateSslCertificate(DevStackGui mainWindow, string domain)
         {
             if (string.IsNullOrEmpty(domain))
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    GuiTheme.CreateStyledMessageBox("Digite um domínio para gerar o certificado SSL.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_ssl_domain"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
-                return;
+                return false;
             }
 
             // Validação extra: checar se o domínio existe (resolve DNS) em thread separada
@@ -384,28 +423,31 @@ namespace DevStackManager
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    GuiTheme.CreateStyledMessageBox($"O domínio '{domain}' não existe ou não está resolvendo para nenhum IP.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.domain_not_exists", domain), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 });
-                return;
+                return false;
             }
 
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, async progress =>
+            bool success = true;
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, mainWindow, async progress =>
             {
                 try
                 {
-                    mainWindow.StatusMessage = $"Gerando certificado SSL para {domain}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.generating_ssl", domain);
                     var args = new string[] { domain };
                     // Run heavy SSL generation in background
                     await Task.Run(() => GenerateManager.GenerateSslCertificate(args));
-                    mainWindow.StatusMessage = $"Processo de geração de SSL para {domain} finalizado.";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_generated", domain);
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao gerar certificado SSL: {ex.Message}");
-                    mainWindow.StatusMessage = $"Erro ao gerar SSL para {domain}";
-                    GuiTheme.CreateStyledMessageBox($"Erro ao gerar certificado SSL: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    success = false;
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", domain);
+                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message), mainWindow.LocalizationManager.GetString("gui.common.dialogs.error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             });
+            return success;
         }
 
         /// <summary>
@@ -413,11 +455,11 @@ namespace DevStackManager
         /// </summary>
         private static async Task RestartNginxServices(DevStackGui mainWindow)
         {
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, mainWindow, progress =>
             {
                 try
                 {
-                    progress.Report("🔄 Reiniciando serviços do Nginx...");
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.restarting_nginx"));
                     var nginxComponents = mainWindow.InstalledComponents
                         .Where(component => component.Name.Equals("nginx", StringComparison.OrdinalIgnoreCase))
                         .ToList();
@@ -431,30 +473,30 @@ namespace DevStackManager
                             {
                                 try
                                 {
-                                    progress.Report($"🔄 Reiniciando Nginx v{version}...");
+                                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.restarting_nginx", version));
                                     ProcessManager.RestartComponent("nginx", version);
-                                    progress.Report($"✅ Nginx v{version} reiniciado com sucesso");
+                                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.nginx_restarted", version));
                                     restartedCount++;
                                 }
                                 catch (Exception ex)
                                 {
-                                    progress.Report($"❌ Erro ao reiniciar Nginx v{version}: {ex.Message}");
+                                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.nginx_restart_error", version, ex.Message));
                                 }
                             }
                         }
                         if (restartedCount == 0)
                         {
-                            progress.Report("ℹ️ Nenhuma versão do Nginx foi reiniciada (podem não estar em execução)");
+                            progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.no_nginx_restarted"));
                         }
                     }
                     else
                     {
-                        progress.Report("❌ Nenhuma versão do Nginx instalada encontrada");
+                        progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.no_nginx_found"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao reiniciar Nginx: {ex.Message}");
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.nginx_restart_general_error", ex.Message));
                 }
                 return Task.CompletedTask;
             });

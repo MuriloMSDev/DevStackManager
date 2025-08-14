@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Win32;
+using DevStackShared;
 
 namespace DevStackInstaller
 {
@@ -24,6 +25,13 @@ namespace DevStackInstaller
         {
             try
             {
+                // Initialize localization for installer
+                var locManager = LocalizationManager.Initialize(ApplicationType.Installer);
+                
+                // Log available languages
+                var availableLanguages = locManager.GetAvailableLanguages();
+                System.Diagnostics.Debug.WriteLine($"Available languages: {string.Join(", ", availableLanguages)}");
+                
                 var app = new Application();
                 app.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 
@@ -64,9 +72,9 @@ namespace DevStackInstaller
         private ProgressBar stepProgressBar = null!;
         
         // Localization
-        private LocalizationManager localization = LocalizationManager.Instance;
+        private LocalizationManager localization = LocalizationManager.Instance!;
         private ComboBox languageComboBox = null!;
-        private TextBlock languageLabel = null!;
+        private Label languageLabel = null!;
         private StackPanel languagePanel = null!;
         
         // Installation settings
@@ -82,13 +90,15 @@ namespace DevStackInstaller
         private CheckBox startMenuShortcutCheckBox = null!;
         private CheckBox addToPathCheckBox = null!;
         private ProgressBar installProgressBar = null!;
-        private TextBlock installStatusText = null!;
+        private Label installStatusText = null!;
         private ListBox installLogListBox = null!;
 
         public InstallerWindow()
         {
             try
             {
+                // Assinar mudança de idioma antes de construir a UI
+                localization.LanguageChanged += Localization_LanguageChanged;
                 InitializeComponent();
             }
             catch (Exception ex)
@@ -147,15 +157,20 @@ namespace DevStackInstaller
         private void InitializeComponent()
         {
             string version = GetVersion();
+            
+            // Log version info for debugging
+            System.Diagnostics.Debug.WriteLine($"Installer version: {version}");
+            
+            // Get window title with explicit formatting
             Title = localization.GetString("window_title", version);
+            System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
             Width = 750;
             Height = 650;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             ResizeMode = ResizeMode.NoResize;
             
-            // Tema escuro moderno baseado na GUI
-            Background = new SolidColorBrush(Color.FromRgb(22, 27, 34)); // FormBackground
-            Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)); // Foreground
+            // Aplicar tema usando DevStackShared.ThemeManager
+            DevStackShared.ThemeManager.ApplyThemeToWindow(this);
 
             // Initialize installation path
             installationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DevStack");
@@ -193,8 +208,8 @@ namespace DevStackInstaller
         {
             var headerBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(0, 0, 0, 1)
             };
 
@@ -212,13 +227,13 @@ namespace DevStackInstaller
             {
                 FontSize = 18,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)) // Foreground
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground
             };
 
             stepDescriptionText = new TextBlock
             {
                 FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.TextSecondary,
                 Margin = new Thickness(0, 6, 0, 0),
                 TextWrapping = TextWrapping.Wrap
             };
@@ -226,29 +241,12 @@ namespace DevStackInstaller
             headerStackPanel.Children.Add(stepTitleText);
             headerStackPanel.Children.Add(stepDescriptionText);
 
-            // Progress indicator com estilo moderno
-            stepProgressBar = new ProgressBar
-            {
-                Width = 220,
-                Height = 6,
-                Margin = new Thickness(25, 0, 25, 0),
-                VerticalAlignment = VerticalAlignment.Center,
-                Minimum = 0,
-                Maximum = 6, // Total steps - 1
-                Value = 0,
-                Background = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 136, 255)), // ButtonBackground
-                BorderThickness = new Thickness(0)
-            };
-
-            // Adiciona efeito de sombra sutil
-            stepProgressBar.Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                BlurRadius = 3,
-                ShadowDepth = 1,
-                Opacity = 0.3,
-                Color = Colors.Black
-            };
+            // Progress indicator usando ThemeManager
+            stepProgressBar = DevStackShared.ThemeManager.CreateStyledProgressBar(0, 6, false);
+            stepProgressBar.Width = 220;
+            stepProgressBar.Height = 6;
+            stepProgressBar.Margin = new Thickness(25, 0, 25, 0);
+            stepProgressBar.VerticalAlignment = VerticalAlignment.Center;
 
             Grid.SetColumn(headerStackPanel, 0);
             Grid.SetColumn(stepProgressBar, 1);
@@ -264,8 +262,8 @@ namespace DevStackInstaller
         {
             var buttonBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(27, 32, 40)), // PanelBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.PanelBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(0, 1, 0, 0)
             };
 
@@ -283,16 +281,13 @@ namespace DevStackInstaller
                 Margin = new Thickness(25, 18, 25, 18)
             };
 
-            languageLabel = new TextBlock
-            {
-                Text = localization.GetString("welcome.language_label"),
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 10, 0)
-            };
+            languageLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("welcome.language_label"), 
+                false, true, DevStackShared.ThemeManager.LabelStyle.Secondary);
+            languageLabel.VerticalAlignment = VerticalAlignment.Center;
+            languageLabel.Margin = new Thickness(0, 0, 10, 0);
 
-            languageComboBox = CreateStyledComboBox();
+            languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
 
             // Populate language options
             var languages = localization.GetAvailableLanguages();
@@ -303,7 +298,7 @@ namespace DevStackInstaller
                 {
                     Content = langName,
                     Tag = lang,
-                    Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243))
+                    Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground
                 };
                 languageComboBox.Items.Add(item);
 
@@ -327,20 +322,30 @@ namespace DevStackInstaller
                 Margin = new Thickness(25, 18, 25, 18)
             };
 
-            // Botão Back com estilo moderno
-            backButton = CreateStyledButton(localization.GetString("buttons.back"), 90, false);
+            // Botões usando ThemeManager
+            backButton = DevStackShared.ThemeManager.CreateStyledButton(
+                localization.GetString("buttons.back"), 
+                BackButton_Click, 
+                DevStackShared.ThemeManager.ButtonStyle.Secondary);
+            backButton.Width = 90;
+            backButton.Height = 36;
             backButton.Margin = new Thickness(0, 0, 12, 0);
             backButton.IsEnabled = false;
-            backButton.Click += BackButton_Click;
 
-            // Botão Next com estilo de destaque
-            nextButton = CreateStyledButton(localization.GetString("buttons.next"), 90, true);
+            nextButton = DevStackShared.ThemeManager.CreateStyledButton(
+                localization.GetString("buttons.next"), 
+                NextButton_Click, 
+                DevStackShared.ThemeManager.ButtonStyle.Primary);
+            nextButton.Width = 90;
+            nextButton.Height = 36;
             nextButton.Margin = new Thickness(0, 0, 12, 0);
-            nextButton.Click += NextButton_Click;
 
-            // Botão Cancel
-            cancelButton = CreateStyledButton(localization.GetString("buttons.cancel"), 90, false);
-            cancelButton.Click += CancelButton_Click;
+            cancelButton = DevStackShared.ThemeManager.CreateStyledButton(
+                localization.GetString("buttons.cancel"), 
+                CancelButton_Click, 
+                DevStackShared.ThemeManager.ButtonStyle.Secondary);
+            cancelButton.Width = 90;
+            cancelButton.Height = 36;
 
             buttonPanel.Children.Add(backButton);
             buttonPanel.Children.Add(nextButton);
@@ -356,459 +361,6 @@ namespace DevStackInstaller
             mainGrid.Children.Add(buttonBorder);
         }
 
-        private Button CreateStyledButton(string content, double width, bool isPrimary)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = width,
-                Height = 36,
-                FontSize = 14,
-                FontWeight = FontWeights.Medium,
-                BorderThickness = new Thickness(1),
-                Cursor = Cursors.Hand
-            };
-
-            if (isPrimary)
-            {
-                // Botão primário (estilo destaque)
-                button.Background = new SolidColorBrush(Color.FromRgb(33, 136, 255)); // ButtonBackground
-                button.Foreground = new SolidColorBrush(Colors.White);
-                button.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 136, 255));
-                button.FontWeight = FontWeights.SemiBold;
-            }
-            else
-            {
-                // Botão secundário
-                button.Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)); // ControlBackground
-                button.Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)); // Foreground
-                button.BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)); // Border
-            }
-
-            // Estilo simplificado com triggers
-            var buttonStyle = new Style(typeof(Button));
-            
-            // Template básico com cantos arredondados
-            var template = new ControlTemplate(typeof(Button));
-            var border = new FrameworkElementFactory(typeof(Border));
-            border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-            border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
-            border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
-
-            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-            border.AppendChild(contentPresenter);
-            template.VisualTree = border;
-
-            // Triggers para hover e pressed
-            var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            if (isPrimary)
-            {
-                hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(58, 150, 255)))); // ButtonHover
-                hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(58, 150, 255))));
-            }
-            else
-            {
-                hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(45, 55, 68))));
-                hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-            }
-
-            var pressedTrigger = new Trigger { Property = Button.IsPressedProperty, Value = true };
-            pressedTrigger.Setters.Add(new Setter(Button.OpacityProperty, 0.8));
-
-            var disabledTrigger = new Trigger { Property = Button.IsEnabledProperty, Value = false };
-            disabledTrigger.Setters.Add(new Setter(Button.OpacityProperty, 0.5));
-            disabledTrigger.Setters.Add(new Setter(Button.CursorProperty, Cursors.Arrow));
-
-            template.Triggers.Add(hoverTrigger);
-            template.Triggers.Add(pressedTrigger);
-            template.Triggers.Add(disabledTrigger);
-
-            buttonStyle.Setters.Add(new Setter(Button.TemplateProperty, template));
-            button.Style = buttonStyle;
-
-            // Adiciona efeito de sombra sutil
-            button.Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                BlurRadius = 6,
-                ShadowDepth = 2,
-                Opacity = 0.2,
-                Color = Colors.Black
-            };
-
-            return button;
-        }
-
-        private ComboBox CreateStyledComboBox()
-        {
-            var comboBox = new ComboBox
-            {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // InputBackground
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // InputForeground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // InputBorder
-                BorderThickness = new Thickness(1),
-                Padding = new Thickness(10, 8, 10, 8),
-                FontSize = 14,
-                MinHeight = 35,
-                Width = 180
-            };
-
-            // Evento para rolar o dropdown para o início ao abrir
-            comboBox.DropDownOpened += (s, e) =>
-            {
-                // Tenta encontrar o ScrollViewer do dropdown
-                if (comboBox.Template != null)
-                {
-                    comboBox.ApplyTemplate();
-                    var popup = comboBox.Template.FindName("Popup", comboBox) as System.Windows.Controls.Primitives.Popup;
-                    if (popup != null && popup.Child is Border border)
-                    {
-                        var scrollViewer = FindScrollViewer(border);
-                        if (scrollViewer != null)
-                        {
-                            scrollViewer.ScrollToTop();
-                        }
-                    }
-                }
-            };
-
-            // Helper para buscar ScrollViewer dentro do Border
-            static ScrollViewer? FindScrollViewer(DependencyObject parent)
-            {
-                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-                {
-                    var child = VisualTreeHelper.GetChild(parent, i);
-                    if (child is ScrollViewer sv)
-                        return sv;
-                    var result = FindScrollViewer(child);
-                    if (result != null)
-                        return result;
-                }
-                return null;
-            }
-
-            // Create a simplified but effective style for dark theme
-            var comboStyle = new Style(typeof(ComboBox));
-
-            // Basic styling - force dark colors
-            comboStyle.Setters.Add(new Setter(ComboBox.BackgroundProperty, new SolidColorBrush(Color.FromRgb(32, 39, 49))));
-            comboStyle.Setters.Add(new Setter(ComboBox.ForegroundProperty, new SolidColorBrush(Color.FromRgb(230, 237, 243))));
-            comboStyle.Setters.Add(new Setter(ComboBox.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(48, 54, 61))));
-            comboStyle.Setters.Add(new Setter(ComboBox.BorderThicknessProperty, new Thickness(1)));
-            comboStyle.Setters.Add(new Setter(ComboBox.PaddingProperty, new Thickness(10, 8, 10, 8)));
-            comboStyle.Setters.Add(new Setter(ComboBox.FontSizeProperty, 14.0));
-            comboStyle.Setters.Add(new Setter(ComboBox.MinHeightProperty, 35.0));
-
-            // Create simplified template using XAML string
-            var templateXaml = @"
-                <ControlTemplate TargetType='ComboBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                    <Border Name='MainBorder' 
-                            Background='{TemplateBinding Background}'
-                            BorderBrush='{TemplateBinding BorderBrush}'
-                            BorderThickness='{TemplateBinding BorderThickness}'
-                            CornerRadius='3'>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width='*'/>
-                                <ColumnDefinition Width='20'/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <!-- Content presenter for selected item -->
-                            <ContentPresenter Name='ContentSite'
-                                            Grid.Column='0'
-                                            Margin='10,5,10,8'
-                                            VerticalAlignment='Top'
-                                            HorizontalAlignment='Left'
-                                            Content='{TemplateBinding SelectionBoxItem}'
-                                            ContentTemplate='{TemplateBinding SelectionBoxItemTemplate}'
-                                            ContentTemplateSelector='{TemplateBinding ItemTemplateSelector}'
-                                            IsHitTestVisible='False'/>
-                            
-                            <!-- Toggle button for dropdown -->
-                            <ToggleButton Name='ToggleButton'
-                                        Grid.Column='0'
-                                        Grid.ColumnSpan='2'
-                                        Background='Transparent'
-                                        BorderBrush='Transparent'
-                                        BorderThickness='0'
-                                        Focusable='False'
-                                        ClickMode='Press'
-                                        IsChecked='{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}'>
-                                <ToggleButton.Template>
-                                    <ControlTemplate TargetType='ToggleButton'>
-                                        <Border Background='Transparent'>
-                                            <Path Name='Arrow'
-                                                  Data='M 0 0 L 4 4 L 8 0 Z'
-                                                  Fill='{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}'
-                                                  HorizontalAlignment='Right'
-                                                  VerticalAlignment='Center'
-                                                  Margin='0,0,8,0'/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </ToggleButton.Template>
-                            </ToggleButton>
-                            
-                            <!-- Popup for dropdown -->
-                            <Popup Name='Popup'
-                                   Placement='Bottom'
-                                   IsOpen='{TemplateBinding IsDropDownOpen}'
-                                   AllowsTransparency='True'
-                                   Focusable='False'
-                                   PopupAnimation='Slide'>
-                                <Border Name='DropDownBorder'
-                                        Background='#FF2D2D30'
-                                        BorderBrush='#FF3F3F46'
-                                        BorderThickness='1'
-                                        CornerRadius='3'
-                                        MinWidth='{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}'
-                                        MaxHeight='{TemplateBinding MaxDropDownHeight}'>
-                                    <ScrollViewer Name='DropDownScrollViewer'
-                                                  CanContentScroll='True'>
-                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation='Contained'/>
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-                    </Border>
-                    
-                    <ControlTemplate.Triggers>
-                        <Trigger Property='IsMouseOver' Value='True'>
-                            <Setter TargetName='MainBorder' Property='BorderBrush' Value='#FF007ACC'/>
-                        </Trigger>
-                        <Trigger Property='IsFocused' Value='True'>
-                            <Setter TargetName='MainBorder' Property='BorderBrush' Value='#FF007ACC'/>
-                            <Setter TargetName='MainBorder' Property='BorderThickness' Value='2'/>
-                        </Trigger>
-                        <Trigger Property='IsDropDownOpen' Value='True'>
-                            <Setter TargetName='MainBorder' Property='BorderBrush' Value='#FF007ACC'/>
-                            <Setter TargetName='MainBorder' Property='BorderThickness' Value='2'/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>";
-
-            try
-            {
-                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
-                comboStyle.Setters.Add(new Setter(ComboBox.TemplateProperty, template));
-            }
-            catch
-            {
-                // Fallback to basic triggers if XAML parsing fails
-                var hoverTrigger = new Trigger { Property = ComboBox.IsMouseOverProperty, Value = true };
-                hoverTrigger.Setters.Add(new Setter(ComboBox.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-                comboStyle.Triggers.Add(hoverTrigger);
-
-                var focusTrigger = new Trigger { Property = ComboBox.IsFocusedProperty, Value = true };
-                focusTrigger.Setters.Add(new Setter(ComboBox.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-                focusTrigger.Setters.Add(new Setter(ComboBox.BorderThicknessProperty, new Thickness(2)));
-                comboStyle.Triggers.Add(focusTrigger);
-
-                var dropdownTrigger = new Trigger { Property = ComboBox.IsDropDownOpenProperty, Value = true };
-                dropdownTrigger.Setters.Add(new Setter(ComboBox.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-                dropdownTrigger.Setters.Add(new Setter(ComboBox.BorderThicknessProperty, new Thickness(2)));
-                comboStyle.Triggers.Add(dropdownTrigger);
-            }
-
-            comboBox.Style = comboStyle;
-
-            // Style the dropdown items for dark theme
-            var itemStyle = new Style(typeof(ComboBoxItem));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, new SolidColorBrush(Color.FromRgb(27, 32, 40))));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, new SolidColorBrush(Color.FromRgb(230, 237, 243))));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.PaddingProperty, new Thickness(10, 6, 10, 6)));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.BorderThicknessProperty, new Thickness(0)));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.FontSizeProperty, 14.0));
-
-            // Hover trigger for items
-            var itemHoverTrigger = new Trigger
-            {
-                Property = ComboBoxItem.IsMouseOverProperty,
-                Value = true
-            };
-            itemHoverTrigger.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, new SolidColorBrush(Color.FromRgb(45, 55, 68))));
-            itemHoverTrigger.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, new SolidColorBrush(Color.FromRgb(230, 237, 243))));
-
-            // Selected trigger for items
-            var itemSelectedTrigger = new Trigger
-            {
-                Property = ComboBoxItem.IsSelectedProperty,
-                Value = true
-            };
-            itemSelectedTrigger.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-            itemSelectedTrigger.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, new SolidColorBrush(Colors.White)));
-
-            // Highlighted trigger for items
-            var itemHighlightedTrigger = new Trigger
-            {
-                Property = ComboBoxItem.IsHighlightedProperty,
-                Value = true
-            };
-            itemHighlightedTrigger.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-            itemHighlightedTrigger.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, new SolidColorBrush(Colors.White)));
-
-            itemStyle.Triggers.Add(itemHoverTrigger);
-            itemStyle.Triggers.Add(itemSelectedTrigger);
-            itemStyle.Triggers.Add(itemHighlightedTrigger);
-
-            comboBox.ItemContainerStyle = itemStyle;
-
-            // Override system colors to force dark theme
-            comboBox.Resources.Clear();
-            comboBox.Resources.Add(SystemColors.WindowBrushKey, new SolidColorBrush(Color.FromRgb(27, 32, 40)));
-            comboBox.Resources.Add(SystemColors.ControlBrushKey, new SolidColorBrush(Color.FromRgb(32, 39, 49)));
-            comboBox.Resources.Add(SystemColors.ControlTextBrushKey, new SolidColorBrush(Color.FromRgb(230, 237, 243)));
-            comboBox.Resources.Add(SystemColors.HighlightBrushKey, new SolidColorBrush(Color.FromRgb(33, 136, 255)));
-            comboBox.Resources.Add(SystemColors.HighlightTextBrushKey, new SolidColorBrush(Colors.White));
-
-            return comboBox;
-        }
-
-        private MessageBoxResult CreateStyledMessageBox(string message, string title = "Mensagem", MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
-        {
-            // Cria uma janela customizada para garantir tema escuro real
-            var dialog = new Window
-            {
-                Title = title,
-                Width = 400,
-                Height = 180,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                ResizeMode = ResizeMode.NoResize,
-                WindowStyle = WindowStyle.None,
-                ShowInTaskbar = false,
-                Background = Brushes.Transparent, // Para permitir borda arredondada
-                AllowsTransparency = true,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                Owner = this
-            };
-
-            var border = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(22, 27, 34)), // FormBackground
-                CornerRadius = new CornerRadius(12),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
-                BorderThickness = new Thickness(1),
-                SnapsToDevicePixels = true
-            };
-
-            var grid = new Grid { Margin = new Thickness(0) };
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            // Mensagem
-            var msg = new TextBlock
-            {
-                Text = message,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                Background = Brushes.Transparent,
-                FontSize = 16,
-                Margin = new Thickness(55, 15, 30, 10),
-                TextWrapping = TextWrapping.Wrap
-            };
-            Grid.SetRow(msg, 0);
-            grid.Children.Add(msg);
-
-            // Botões
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 10, 20, 20)
-            };
-
-            MessageBoxResult result = MessageBoxResult.None;
-            void CloseAndSetResult(MessageBoxResult r) { result = r; dialog.DialogResult = true; dialog.Close(); }
-
-            void AddButton(string text, MessageBoxResult r, bool isDefault = false, Color? customColor = null)
-            {
-                var btn = CreateStyledButton(text, 80, !isDefault); // Use secondary style for non-default buttons
-                btn.MinWidth = 80;
-                btn.Margin = new Thickness(8, 0, 0, 0);
-                btn.Padding = new Thickness(10, 5, 10, 5);
-                btn.FontWeight = isDefault ? FontWeights.Bold : FontWeights.Normal;
-                
-                // Override styling for default button
-                if (isDefault)
-                {
-                    btn.Background = new SolidColorBrush(Color.FromRgb(33, 136, 255)); // ButtonBackground
-                    btn.Foreground = new SolidColorBrush(Colors.White);
-                    btn.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 136, 255));
-                }
-                
-                // Apply custom color if provided
-                if (customColor.HasValue)
-                {
-                    btn.Background = new SolidColorBrush(customColor.Value);
-                    btn.Foreground = new SolidColorBrush(Colors.White);
-                    btn.BorderBrush = new SolidColorBrush(customColor.Value);
-                }
-                
-                btn.Click += (s, e) => CloseAndSetResult(r);
-                buttonPanel.Children.Add(btn);
-            }
-
-            switch (buttons)
-            {
-                case MessageBoxButton.OK:
-                    AddButton("OK", MessageBoxResult.OK, true);
-                    break;
-                case MessageBoxButton.OKCancel:
-                    AddButton("OK", MessageBoxResult.OK, true);
-                    AddButton(localization.GetString("buttons.cancel"), MessageBoxResult.Cancel);
-                    break;
-                case MessageBoxButton.YesNo:
-                    AddButton(localization.GetString("dialogs.yes"), MessageBoxResult.Yes, true);
-                    AddButton(localization.GetString("dialogs.no"), MessageBoxResult.No, false, Color.FromRgb(248, 81, 73)); // Danger color
-                    break;
-                case MessageBoxButton.YesNoCancel:
-                    AddButton(localization.GetString("dialogs.yes"), MessageBoxResult.Yes, true);
-                    AddButton(localization.GetString("dialogs.no"), MessageBoxResult.No, false, Color.FromRgb(248, 81, 73)); // Danger color
-                    AddButton(localization.GetString("buttons.cancel"), MessageBoxResult.Cancel);
-                    break;
-            }
-
-            Grid.SetRow(buttonPanel, 1);
-            grid.Children.Add(buttonPanel);
-
-            // Ícone
-            if (icon != MessageBoxImage.None)
-            {
-                var iconText = new TextBlock
-                {
-                    Margin = new Thickness(5, 10, 15, 0),
-                    FontSize = 32,
-                    VerticalAlignment = VerticalAlignment.Top
-                };
-                switch (icon)
-                {
-                    case MessageBoxImage.Information:
-                        iconText.Text = "ℹ️";
-                        iconText.Foreground = new SolidColorBrush(Color.FromRgb(56, 211, 159)); // Accent
-                        break;
-                    case MessageBoxImage.Warning:
-                        iconText.Text = "⚠️";
-                        iconText.Foreground = new SolidColorBrush(Color.FromRgb(255, 196, 0)); // Warning
-                        break;
-                    case MessageBoxImage.Error:
-                        iconText.Text = "❌";
-                        iconText.Foreground = new SolidColorBrush(Color.FromRgb(248, 81, 73)); // Danger
-                        break;
-                    case MessageBoxImage.Question:
-                        iconText.Text = "❓";
-                        iconText.Foreground = new SolidColorBrush(Color.FromRgb(56, 211, 159)); // Accent
-                        break;
-                }
-                grid.Children.Add(iconText);
-            }
-
-            border.Child = grid;
-            dialog.Content = border;
-            dialog.ShowDialog();
-            return result;
-        }
-
         private void UpdateStepContent()
         {
             // Clear content
@@ -816,8 +368,8 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Clear();
             contentGrid.ColumnDefinitions.Clear();
 
-            // Atualizar área de conteúdo com tema escuro
-            contentGrid.Background = new SolidColorBrush(Color.FromRgb(22, 27, 34)); // FormBackground
+            // Atualizar área de conteúdo com tema do ThemeManager
+            contentGrid.Background = DevStackShared.ThemeManager.CurrentTheme.FormBackground;
             contentGrid.Margin = new Thickness(25);
 
             // Update progress
@@ -874,35 +426,26 @@ namespace DevStackInstaller
 
         private void CreateWelcomeStep()
         {
-            stepTitleText.Text = localization.GetString("welcome.title");
-            stepDescriptionText.Text = localization.GetString("welcome.description");
+            // Log detailed diagnostic info
+            System.Diagnostics.Debug.WriteLine("=========== CREATING WELCOME STEP ===========");
+            
+            var title = localization.GetString("welcome.title");
+            System.Diagnostics.Debug.WriteLine($"welcome.title = \"{title}\"");
+            stepTitleText.Text = title;
+            
+            var description = localization.GetString("welcome.description");
+            System.Diagnostics.Debug.WriteLine($"welcome.description = \"{description}\"");
+            stepDescriptionText.Text = description;
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // Welcome panel com design moderno
+            // Welcome panel com design moderno usando ThemeManager
             var welcomePanel = new StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
+                Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
                 Margin = new Thickness(0, 20, 0, 20)
-            };
-
-            // Container principal com borda arredondada
-            var welcomeContainer = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(12),
-                Padding = new Thickness(40, 35, 40, 35),
-                Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    BlurRadius = 10,
-                    ShadowDepth = 3,
-                    Opacity = 0.3,
-                    Color = Colors.Black
-                }
             };
 
             var innerPanel = new StackPanel
@@ -919,33 +462,31 @@ namespace DevStackInstaller
                 Margin = new Thickness(0)
             };
 
-            var welcomeText = new TextBlock
-            {
-                Text = localization.GetString("welcome.app_name"),
-                FontSize = 28,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                Margin = new Thickness(0, 0, 0, 8)
-            };
+            var welcomeText = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("welcome.app_name"), 
+                true, false, DevStackShared.ThemeManager.LabelStyle.Title);
+            welcomeText.HorizontalAlignment = HorizontalAlignment.Center;
+            welcomeText.FontSize = 28;
+            welcomeText.Margin = new Thickness(0, 0, 0, 8);
 
-            var versionText = new TextBlock
-            {
-                Text = localization.GetString("welcome.version", GetVersion()),
-                FontSize = 15,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 25)
-            };
+            var versionText = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("welcome.version", GetVersion()),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
+            versionText.HorizontalAlignment = HorizontalAlignment.Center;
+            versionText.FontSize = 15;
+            versionText.Margin = new Thickness(0, 0, 0, 25);
 
-            var descriptionText = new TextBlock
+            var descriptionText = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("welcome.app_description"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
+            descriptionText.Content = new TextBlock
             {
                 Text = localization.GetString("welcome.app_description"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 14,
                 LineHeight = 22,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.TextSecondary,
                 MaxWidth = 420
             };
 
@@ -954,7 +495,10 @@ namespace DevStackInstaller
             innerPanel.Children.Add(versionText);
             innerPanel.Children.Add(descriptionText);
 
-            welcomeContainer.Child = innerPanel;
+            // Container principal com borda arredondada usando ThemeManager
+            var welcomeContainer = DevStackShared.ThemeManager.CreateStyledCard(innerPanel, 12, true);
+            welcomeContainer.Padding = new Thickness(40, 35, 40, 35);
+
             welcomePanel.Children.Add(welcomeContainer);
 
             Grid.SetRow(welcomePanel, 0);
@@ -966,16 +510,26 @@ namespace DevStackInstaller
             if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
             {
                 localization.LoadLanguage(languageCode);
-                
-                // Update window title
+            }
+        }
+
+        private void Localization_LanguageChanged(object? sender, string newLanguage)
+        {
+            try
+            {
+                // Atualizar título e rótulos fixos
                 Title = localization.GetString("window_title", GetVersion());
-                
-                // Update language label
-                languageLabel.Text = localization.GetString("welcome.language_label");
-                
-                // Update all UI text
+                if (languageLabel != null)
+                    languageLabel.Content = localization.GetString("welcome.language_label");
+                if (backButton != null)
+                    backButton.Content = localization.GetString("buttons.back");
+                if (cancelButton != null)
+                    cancelButton.Content = localization.GetString("buttons.cancel");
+
+                // Atualizar conteúdo específico do passo
                 UpdateStepContent();
             }
+            catch { }
         }
 
         private void CreateLicenseStep()
@@ -986,33 +540,29 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            var licenseLabel = new TextBlock
-            {
-                Text = localization.GetString("license.label"),
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            var licenseLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("license.label"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            licenseLabel.FontWeight = FontWeights.SemiBold;
+            licenseLabel.FontSize = 15;
+            licenseLabel.Margin = new Thickness(0, 0, 0, 15);
 
             var licenseContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(13, 17, 23)), // ConsoleBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(0)
             };
 
-            var licenseTextBox = CreateStyledTextBox();
+            var licenseTextBox = DevStackShared.ThemeManager.CreateStyledTextBox(true);
             licenseTextBox.Text = localization.GetString("license.text");
             licenseTextBox.IsReadOnly = true;
             licenseTextBox.TextWrapping = TextWrapping.Wrap;
             licenseTextBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
             licenseTextBox.FontFamily = new FontFamily("Consolas");
             licenseTextBox.FontSize = 12;
-            licenseTextBox.Background = new SolidColorBrush(Color.FromRgb(13, 17, 23)); // ConsoleBackground
-            licenseTextBox.Foreground = new SolidColorBrush(Color.FromRgb(201, 209, 217)); // ConsoleForeground
             licenseTextBox.BorderThickness = new Thickness(0);
             licenseTextBox.Padding = new Thickness(20, 15, 20, 15);
 
@@ -1034,22 +584,20 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            var pathLabel = new TextBlock
-            {
-                Text = localization.GetString("installation_path.label"),
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            var pathLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("installation_path.label"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            pathLabel.FontWeight = FontWeights.SemiBold;
+            pathLabel.FontSize = 15;
+            pathLabel.Margin = new Thickness(0, 0, 0, 15);
 
             var pathContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
-                Padding = new Thickness(0), // Remove padding para integração total
+                Padding = new Thickness(0),
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
@@ -1057,41 +605,30 @@ namespace DevStackInstaller
             pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            pathTextBox = new TextBox
-            {
-                Text = installationPath,
-                Height = 40,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                FontSize = 14,
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                BorderThickness = new Thickness(0),
-                Padding = new Thickness(15, 0, 15, 0),
-                Margin = new Thickness(0),
-                SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 33, 136, 255))
-            };
+            pathTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
+            pathTextBox.Text = installationPath;
+            pathTextBox.Height = 40;
+            pathTextBox.VerticalContentAlignment = VerticalAlignment.Center;
+            pathTextBox.FontSize = 14;
+            pathTextBox.BorderThickness = new Thickness(0);
+            pathTextBox.Padding = new Thickness(15, 0, 15, 0);
+            pathTextBox.Margin = new Thickness(0);
             pathTextBox.TextChanged += (s, e) => installationPath = pathTextBox.Text;
 
-            var browserButton = new Button
-            {
-                Content = localization.GetString("installation_path.browser"),
-                Width = 130,
-                Height = 40, 
-                FontSize = 14,
-                FontWeight = FontWeights.Medium,
-                Background = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)),
-                BorderThickness = new Thickness(1, 0, 0, 0),
-                Cursor = Cursors.Hand,
-                Margin = new Thickness(0)
-            };
-            browserButton.Click += BrowserButton_Click;
+            var browserButton = DevStackShared.ThemeManager.CreateStyledButton(
+                localization.GetString("installation_path.browser"),
+                BrowserButton_Click,
+                DevStackShared.ThemeManager.ButtonStyle.Primary
+            );
+            browserButton.Width = 130;
+            browserButton.Height = 40;
+            browserButton.FontSize = 14;
+            browserButton.FontWeight = FontWeights.Medium;
+            browserButton.BorderThickness = new Thickness(1, 0, 0, 0);
+            browserButton.Margin = new Thickness(0);
 
-            // Adicionar estilo hover ao botão Browse
-            var browseStyle = new Style(typeof(Button));
-            
-            // Template com cantos arredondados
+            // Aplicar cantos arredondados personalizados ao botão browser mantendo o estilo do CreateStyledButton
+            var browseStyle = new Style(typeof(Button), browserButton.Style);
             var template = new ControlTemplate(typeof(Button));
             var border = new FrameworkElementFactory(typeof(Border));
             border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
@@ -1107,8 +644,8 @@ namespace DevStackInstaller
             template.VisualTree = border;
 
             var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
-            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255))));
+            hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, DevStackShared.ThemeManager.CurrentTheme.ButtonBackground));
+            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, DevStackShared.ThemeManager.CurrentTheme.ButtonBackground));
 
             template.Triggers.Add(hoverTrigger);
             browseStyle.Setters.Add(new Setter(Button.TemplateProperty, template));
@@ -1120,34 +657,17 @@ namespace DevStackInstaller
             pathGrid.Children.Add(browserButton);
             pathContainer.Child = pathGrid;
 
-            var spaceLabel = new TextBlock
-            {
-                Text = GetSpaceRequirementText(),
-                FontSize = 12,
-                Foreground = new SolidColorBrush(Color.FromRgb(139, 148, 158)), // TextMuted
-                Margin = new Thickness(0, 0, 0, 20)
-            };
+            var spaceLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                GetSpaceRequirementText(),
+                false, true, DevStackShared.ThemeManager.LabelStyle.Muted);
+            spaceLabel.FontSize = 12;
+            spaceLabel.Margin = new Thickness(0, 0, 0, 20);
 
-            // Adicionar informações adicionais
-            var infoPanel = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(56, 211, 159)), // Accent (para info)
-                BorderThickness = new Thickness(1, 1, 1, 3),
-                CornerRadius = new CornerRadius(6),
-                Padding = new Thickness(15),
-                Margin = new Thickness(0, 10, 0, 0)
-            };
-
-            var infoText = new TextBlock
-            {
-                Text = localization.GetString("installation_path.info"),
-                FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
-                TextWrapping = TextWrapping.Wrap
-            };
-
-            infoPanel.Child = infoText;
+            // Adicionar informações adicionais usando notification panel
+            var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
+                localization.GetString("installation_path.info"), 
+                DevStackShared.ThemeManager.NotificationType.Info);
+            infoPanel.Margin = new Thickness(0, 10, 0, 0);
 
             Grid.SetRow(pathLabel, 0);
             Grid.SetRow(pathContainer, 1);
@@ -1171,20 +691,18 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            var optionsLabel = new TextBlock
-            {
-                Text = localization.GetString("components.label"),
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            var optionsLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("components.label"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            optionsLabel.FontWeight = FontWeights.SemiBold;
+            optionsLabel.FontSize = 15;
+            optionsLabel.Margin = new Thickness(0, 0, 0, 15);
 
             // Container para as opções
             var optionsContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(20, 18, 20, 18)
@@ -1192,18 +710,24 @@ namespace DevStackInstaller
 
             var optionsPanel = new StackPanel();
 
-            // CheckBoxes com estilo moderno
-            desktopShortcutCheckBox = CreateStyledCheckBox(localization.GetString("components.desktop_shortcuts"), createDesktopShortcuts);
+            // CheckBoxes usando ThemeManager
+            desktopShortcutCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
+                localization.GetString("components.desktop_shortcuts"));
+            desktopShortcutCheckBox.IsChecked = createDesktopShortcuts;
             desktopShortcutCheckBox.Checked += (s, e) => createDesktopShortcuts = true;
             desktopShortcutCheckBox.Unchecked += (s, e) => createDesktopShortcuts = false;
             desktopShortcutCheckBox.Margin = new Thickness(0, 0, 0, 15);
 
-            startMenuShortcutCheckBox = CreateStyledCheckBox(localization.GetString("components.start_menu_shortcuts"), createStartMenuShortcuts);
+            startMenuShortcutCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
+                localization.GetString("components.start_menu_shortcuts"));
+            startMenuShortcutCheckBox.IsChecked = createStartMenuShortcuts;
             startMenuShortcutCheckBox.Checked += (s, e) => createStartMenuShortcuts = true;
             startMenuShortcutCheckBox.Unchecked += (s, e) => createStartMenuShortcuts = false;
             startMenuShortcutCheckBox.Margin = new Thickness(0, 0, 0, 15);
 
-            addToPathCheckBox = CreateStyledCheckBox(localization.GetString("components.add_to_path"), addToPath);
+            addToPathCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
+                localization.GetString("components.add_to_path"));
+            addToPathCheckBox.IsChecked = addToPath;
             addToPathCheckBox.Checked += (s, e) => addToPath = true;
             addToPathCheckBox.Unchecked += (s, e) => addToPath = false;
             addToPathCheckBox.Margin = new Thickness(0, 0, 0, 0);
@@ -1214,26 +738,11 @@ namespace DevStackInstaller
 
             optionsContainer.Child = optionsPanel;
 
-            // Adicionar informações sobre PATH
-            var pathInfoPanel = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(255, 196, 0)), // Warning
-                BorderThickness = new Thickness(1, 1, 1, 3),
-                CornerRadius = new CornerRadius(6),
-                Padding = new Thickness(15),
-                Margin = new Thickness(0, 20, 0, 0)
-            };
-
-            var pathInfoText = new TextBlock
-            {
-                Text = localization.GetString("components.path_info"),
-                FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(166, 173, 186)), // TextSecondary
-                TextWrapping = TextWrapping.Wrap
-            };
-
-            pathInfoPanel.Child = pathInfoText;
+            // Adicionar informações sobre PATH usando notification panel
+            var pathInfoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
+                localization.GetString("components.path_info"), 
+                DevStackShared.ThemeManager.NotificationType.Warning);
+            pathInfoPanel.Margin = new Thickness(0, 20, 0, 0);
 
             Grid.SetRow(optionsLabel, 0);
             Grid.SetRow(optionsContainer, 1);
@@ -1244,156 +753,6 @@ namespace DevStackInstaller
             contentGrid.Children.Add(pathInfoPanel);
         }
 
-        private CheckBox CreateStyledCheckBox(string content, bool isChecked)
-        {
-            var checkBox = new CheckBox
-            {
-                Content = content,
-                IsChecked = isChecked,
-                FontSize = 14,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand
-            };
-
-            // Template customizado para o CheckBox
-            var template = new ControlTemplate(typeof(CheckBox));
-            var panel = new FrameworkElementFactory(typeof(StackPanel));
-            panel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
-            panel.SetValue(StackPanel.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-            // Box do check
-            var checkBorder = new FrameworkElementFactory(typeof(Border));
-            checkBorder.Name = "CheckBorder";
-            checkBorder.SetValue(Border.WidthProperty, 20.0);
-            checkBorder.SetValue(Border.HeightProperty, 20.0);
-            checkBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
-            checkBorder.SetValue(Border.BorderThicknessProperty, new Thickness(2));
-            checkBorder.SetValue(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(48, 54, 61))); // Border
-            checkBorder.SetValue(Border.BackgroundProperty, Brushes.Transparent);
-            checkBorder.SetValue(Border.MarginProperty, new Thickness(0, 0, 12, 0));
-
-            // Ícone de check
-            var checkIcon = new FrameworkElementFactory(typeof(TextBlock));
-            checkIcon.Name = "CheckIcon";
-            checkIcon.SetValue(TextBlock.TextProperty, "✓");
-            checkIcon.SetValue(TextBlock.FontSizeProperty, 14.0);
-            checkIcon.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
-            checkIcon.SetValue(TextBlock.ForegroundProperty, Brushes.White);
-            checkIcon.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            checkIcon.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-            checkIcon.SetValue(UIElement.VisibilityProperty, Visibility.Collapsed);
-
-            // Content presenter
-            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-            checkBorder.AppendChild(checkIcon);
-            panel.AppendChild(checkBorder);
-            panel.AppendChild(contentPresenter);
-            template.VisualTree = panel;
-
-            // Triggers
-            var checkedTrigger = new Trigger { Property = CheckBox.IsCheckedProperty, Value = true };
-            checkedTrigger.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Visible, "CheckIcon"));
-            checkedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255)), "CheckBorder")); // ButtonBackground
-            checkedTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255)), "CheckBorder"));
-
-            var hoverTrigger = new Trigger { Property = CheckBox.IsMouseOverProperty, Value = true };
-            hoverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(33, 136, 255)), "CheckBorder")); // ButtonBackground
-
-            template.Triggers.Add(checkedTrigger);
-            template.Triggers.Add(hoverTrigger);
-
-            var style = new Style(typeof(CheckBox));
-            style.Setters.Add(new Setter(CheckBox.TemplateProperty, template));
-            checkBox.Style = style;
-
-            return checkBox;
-        }
-
-        private TextBox CreateStyledTextBox()
-        {
-            var textBox = new TextBox();
-            
-            // Estilo customizado com scrollbar moderna
-            var textBoxStyle = new Style(typeof(TextBox));
-            
-            // Template XAML para TextBox com scrollbar customizada
-            var templateXaml = @"
-                <ControlTemplate TargetType='TextBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                    <Border Name='Border'
-                            Background='{TemplateBinding Background}'
-                            BorderBrush='{TemplateBinding BorderBrush}'
-                            BorderThickness='{TemplateBinding BorderThickness}'
-                            CornerRadius='0'>
-                        <ScrollViewer Name='PART_ContentHost'
-                                      Focusable='False'
-                                      HorizontalScrollBarVisibility='{TemplateBinding HorizontalScrollBarVisibility}'
-                                      VerticalScrollBarVisibility='{TemplateBinding VerticalScrollBarVisibility}'>
-                            <ScrollViewer.Resources>
-                                <!-- Estilo customizado para ScrollBar -->
-                                <Style TargetType='ScrollBar'>
-                                    <Setter Property='Background' Value='Transparent'/>
-                                    <Setter Property='Width' Value='12'/>
-                                    <Setter Property='Template'>
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType='ScrollBar'>
-                                                <Grid>
-                                                    <Rectangle Fill='#FF1B1F23' Opacity='0.3'/>
-                                                    <Track Name='PART_Track' IsDirectionReversed='True'>
-                                                        <Track.Thumb>
-                                                            <Thumb>
-                                                                <Thumb.Template>
-                                                                    <ControlTemplate TargetType='Thumb'>
-                                                                        <Border Background='#FF555555' 
-                                                                                CornerRadius='6' 
-                                                                                Margin='2'/>
-                                                                    </ControlTemplate>
-                                                                </Thumb.Template>
-                                                            </Thumb>
-                                                        </Track.Thumb>
-                                                    </Track>
-                                                </Grid>
-                                                
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property='IsMouseOver' Value='True'>
-                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType='Thumb'>
-                                                                    <Border Background='#FF777777' 
-                                                                            CornerRadius='6' 
-                                                                            Margin='2'/>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ScrollViewer.Resources>
-                        </ScrollViewer>
-                    </Border>
-                </ControlTemplate>";
-
-            try
-            {
-                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
-                textBoxStyle.Setters.Add(new Setter(TextBox.TemplateProperty, template));
-                textBox.Style = textBoxStyle;
-            }
-            catch
-            {
-                // Fallback - usar estilo básico se XAML falhar
-                // Ao menos define algumas propriedades básicas
-            }
-            
-            return textBox;
-        }
-
         private void CreateReadyToInstallStep()
         {
             stepTitleText.Text = localization.GetString("ready_to_install.title");
@@ -1402,19 +761,17 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            var summaryLabel = new TextBlock
-            {
-                Text = localization.GetString("ready_to_install.summary_label"),
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            var summaryLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("ready_to_install.summary_label"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            summaryLabel.FontWeight = FontWeights.SemiBold;
+            summaryLabel.FontSize = 15;
+            summaryLabel.Margin = new Thickness(0, 0, 0, 15);
 
             var summaryContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(13, 17, 23)), // ConsoleBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(0)
@@ -1425,7 +782,7 @@ namespace DevStackInstaller
                 Text = GetInstallationSummary(),
                 FontFamily = new FontFamily("Consolas"),
                 FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(201, 209, 217)), // ConsoleForeground
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground,
                 Padding = new Thickness(20, 18, 20, 18),
                 LineHeight = 22
             };
@@ -1447,42 +804,35 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            installStatusText = new TextBlock
-            {
-                Text = localization.GetString("installing.preparing"),
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)), // Foreground
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            installStatusText = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("installing.preparing"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            installStatusText.FontWeight = FontWeights.SemiBold;
+            installStatusText.FontSize = 15;
+            installStatusText.Margin = new Thickness(0, 0, 0, 15);
 
             // Container para progress bar
             var progressContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(20, 18, 20, 18),
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
-            installProgressBar = new ProgressBar
-            {
-                Height = 8,
-                IsIndeterminate = true,
-                Background = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 136, 255)), // ButtonBackground
-                BorderThickness = new Thickness(0)
-            };
+            installProgressBar = DevStackShared.ThemeManager.CreateStyledProgressBar(0, 100, false);
+            installProgressBar.Height = 8;
+            installProgressBar.Value = 0; // Start at 0
 
             progressContainer.Child = installProgressBar;
 
             // Container para log
             var logContainer = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(13, 17, 23)), // ConsoleBackground
-                BorderBrush = new SolidColorBrush(Color.FromRgb(48, 54, 61)), // Border
+                Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
+                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(0)
@@ -1492,8 +842,8 @@ namespace DevStackInstaller
             {
                 FontFamily = new FontFamily("Consolas"),
                 FontSize = 12,
-                Background = new SolidColorBrush(Color.FromRgb(13, 17, 23)), // ConsoleBackground
-                Foreground = new SolidColorBrush(Color.FromRgb(201, 209, 217)), // ConsoleForeground
+                Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground,
                 BorderThickness = new Thickness(0),
                 Padding = new Thickness(15, 10, 15, 10)
             };
@@ -1508,7 +858,7 @@ namespace DevStackInstaller
             logItemStyle.Setters.Add(new Setter(ListBoxItem.BorderThicknessProperty, new Thickness(0)));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.PaddingProperty, new Thickness(0, 2, 0, 2)));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.MarginProperty, new Thickness(0)));
-            logItemStyle.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, new SolidColorBrush(Color.FromRgb(201, 209, 217))));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground));
 
             // Remove hover e seleção
             var hoverTrigger = new Trigger { Property = ListBoxItem.IsMouseOverProperty, Value = true };
@@ -1517,7 +867,7 @@ namespace DevStackInstaller
 
             var selectedTrigger = new Trigger { Property = ListBoxItem.IsSelectedProperty, Value = true };
             selectedTrigger.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
-            selectedTrigger.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, new SolidColorBrush(Color.FromRgb(201, 209, 217))));
+            selectedTrigger.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground));
             logItemStyle.Triggers.Add(selectedTrigger);
 
             installLogListBox.ItemContainerStyle = logItemStyle;
@@ -1553,54 +903,48 @@ namespace DevStackInstaller
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
-            var successText = new TextBlock
-            {
-                Text = localization.GetString("finished.success_title"),
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20),
-                Foreground = new SolidColorBrush(Color.FromRgb(63, 185, 80)) // SuccessColor
-            };
+            var successText = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("finished.success_title"),
+                true, false, DevStackShared.ThemeManager.LabelStyle.Normal);
+            successText.FontSize = 18;
+            successText.FontWeight = FontWeights.Bold;
+            successText.HorizontalAlignment = HorizontalAlignment.Center;
+            successText.Margin = new Thickness(0, 0, 0, 20);
+            successText.Foreground = DevStackShared.ThemeManager.CurrentTheme.Success;
 
-            var finishedMessage = new TextBlock
+            var finishedMessage = DevStackShared.ThemeManager.CreateStyledLabel(
+                localization.GetString("finished.success_message"),
+                false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
+            finishedMessage.Content = new TextBlock
             {
                 Text = localization.GetString("finished.success_message"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 12,
-                Margin = new Thickness(40, 0, 40, 20),
-                Foreground = new SolidColorBrush(Color.FromRgb(201, 209, 217)) // TextColor
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground
             };
+            finishedMessage.Margin = new Thickness(40, 0, 40, 20);
 
             // Painel de informações da instalação
-            var infoPanel = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(32, 39, 49)), // ControlBackground
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(20, 10, 20, 20),
-                Padding = new Thickness(15),
-                Child = new StackPanel
+            var infoPanel = DevStackShared.ThemeManager.CreateStyledCard(
+                new StackPanel
                 {
                     Children =
                     {
-                        new TextBlock
-                        {
-                            Text = localization.GetString("finished.install_location"),
-                            FontWeight = FontWeights.SemiBold,
-                            Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)), // White
-                            Margin = new Thickness(0, 0, 0, 5)
-                        },
+                        DevStackShared.ThemeManager.CreateStyledLabel(
+                            localization.GetString("finished.install_location"),
+                            false, false, DevStackShared.ThemeManager.LabelStyle.Normal),
                         new TextBlock
                         {
                             Text = installationPath,
-                            Foreground = new SolidColorBrush(Color.FromRgb(201, 209, 217)), // TextColor
+                            Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground,
                             FontFamily = new FontFamily("Consolas"),
                             FontSize = 11
                         }
                     }
-                }
-            };
+                }, 8, false);
+            infoPanel.Margin = new Thickness(20, 10, 20, 20);
+            infoPanel.Padding = new Thickness(15);
 
             var launchPanel = new StackPanel
             {
@@ -1609,7 +953,9 @@ namespace DevStackInstaller
                 Margin = new Thickness(0, 20, 0, 0)
             };
 
-            var launchCheckBox = CreateStyledCheckBox(localization.GetString("finished.launch_now"), launchAfterInstall);
+            var launchCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
+                localization.GetString("finished.launch_now"));
+            launchCheckBox.IsChecked = launchAfterInstall;
             launchCheckBox.Checked += (s, e) => launchAfterInstall = true;
             launchCheckBox.Unchecked += (s, e) => launchAfterInstall = false;
 
@@ -1770,7 +1116,7 @@ namespace DevStackInstaller
                         }
                         catch (Exception ex)
                         {
-                            CreateStyledMessageBox($"Could not launch DevStack GUI: {ex.Message}", 
+                            DevStackShared.ThemeManager.CreateStyledMessageBox($"Could not launch DevStack GUI: {ex.Message}", 
                                 "Launch Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
                     }
@@ -1781,7 +1127,7 @@ namespace DevStackInstaller
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
+            var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
                 localization.GetString("dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
@@ -1795,7 +1141,7 @@ namespace DevStackInstaller
             // Only show confirmation if installation hasn't finished
             if (currentStep != InstallerStep.Finished)
             {
-                var result = CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
+                var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
                     localization.GetString("dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
                 
                 if (result != MessageBoxResult.Yes)
@@ -1810,51 +1156,77 @@ namespace DevStackInstaller
             string? tempZipPath = null;
             try
             {
-                installStatusText.Text = localization.GetString("installing.extracting");
+                // Reset progress bar
+                installProgressBar.Value = 0;
+                
+                installStatusText.Content = localization.GetString("installing.extracting");
                 AddInstallationLog(localization.GetString("log_messages.starting"));
                 
                 tempZipPath = await Task.Run(() => ExtractEmbeddedZip());
+                installProgressBar.Value = 15; // 15% complete
                 AddInstallationLog(localization.GetString("log_messages.extracted"));
 
-                installStatusText.Text = localization.GetString("installing.creating_directory");
+                installStatusText.Content = localization.GetString("installing.creating_directory");
                 AddInstallationLog(localization.GetString("log_messages.creating_dir", installationPath));
                 Directory.CreateDirectory(installationPath);
+                // Criar settings.conf com idioma selecionado
+                try
+                {
+                    var settingsPath = System.IO.Path.Combine(installationPath, "settings.conf");
+                    var languageCode = localization.CurrentLanguage;
+                    // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
+                    using (var sw = new System.IO.StreamWriter(settingsPath))
+                    using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
+                    {
+                        writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+                        writer.WriteStartObject();
+                        writer.WritePropertyName("language");
+                        writer.WriteValue(languageCode);
+                        writer.WriteEndObject();
+                    }
+                }
+                catch { /* silencioso para não travar a instalação */ }
+                installProgressBar.Value = 25; // 25% complete
 
-                installStatusText.Text = localization.GetString("installing.installing_files");
+                installStatusText.Content = localization.GetString("installing.installing_files");
                 AddInstallationLog(localization.GetString("log_messages.installing"));
                 await Task.Run(() => 
                 {
                     ZipFile.ExtractToDirectory(tempZipPath, installationPath, true);
                 });
+                installProgressBar.Value = 60; // 60% complete
 
-                installStatusText.Text = localization.GetString("installing.registering");
+                installStatusText.Content = localization.GetString("installing.registering");
                 AddInstallationLog(localization.GetString("log_messages.registering"));
                 await Task.Run(() => RegisterInstallation(installationPath));
+                installProgressBar.Value = 70; // 70% complete
 
                 if (createDesktopShortcuts)
                 {
-                    installStatusText.Text = localization.GetString("installing.creating_desktop");
+                    installStatusText.Content = localization.GetString("installing.creating_desktop");
                     AddInstallationLog(localization.GetString("log_messages.desktop_shortcuts"));
                     CreateDesktopShortcuts(installationPath);
+                    installProgressBar.Value = 80; // 80% complete
                 }
 
                 if (createStartMenuShortcuts)
                 {
-                    installStatusText.Text = localization.GetString("installing.creating_start_menu");
+                    installStatusText.Content = localization.GetString("installing.creating_start_menu");
                     AddInstallationLog(localization.GetString("log_messages.start_menu_shortcuts"));
                     CreateStartMenuShortcuts(installationPath);
+                    installProgressBar.Value = 85; // 85% complete
                 }
 
                 if (addToPath)
                 {
-                    installStatusText.Text = localization.GetString("installing.adding_path");
+                    installStatusText.Content = localization.GetString("installing.adding_path");
                     AddInstallationLog(localization.GetString("log_messages.adding_path"));
                     AddToSystemPath(installationPath);
+                    installProgressBar.Value = 95; // 95% complete
                 }
 
-                installStatusText.Text = localization.GetString("installing.completed");
-                installProgressBar.IsIndeterminate = false;
-                installProgressBar.Value = 100;
+                installStatusText.Content = localization.GetString("installing.completed");
+                installProgressBar.Value = 100; // 100% complete
                 AddInstallationLog(localization.GetString("log_messages.completed_success"));
 
                 await Task.Delay(1000); // Give user time to see completion
@@ -1865,12 +1237,11 @@ namespace DevStackInstaller
             catch (Exception ex)
             {
                 AddInstallationLog($"ERROR: {ex.Message}");
-                CreateStyledMessageBox(localization.GetString("dialogs.installation_error_message", ex.Message), 
+                DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.installation_error_message", ex.Message), 
                     localization.GetString("dialogs.installation_error_title"), 
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 
-                installStatusText.Text = localization.GetString("dialogs.installation_error_title");
-                installProgressBar.IsIndeterminate = false;
+                installStatusText.Content = localization.GetString("dialogs.installation_error_title");
                 installProgressBar.Value = 0;
                 
                 // Re-enable navigation

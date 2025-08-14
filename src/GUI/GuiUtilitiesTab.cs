@@ -26,7 +26,7 @@ namespace DevStackManager
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Buttons
 
             // Header
-            var headerLabel = GuiTheme.CreateStyledLabel("Console DevStack - Execute comandos diretamente", true);
+            var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.console_title"), true);
             headerLabel.FontSize = 18;
             headerLabel.Margin = new Thickness(10, 10, 10, 0);
             Grid.SetRow(headerLabel, 0);
@@ -49,13 +49,13 @@ namespace DevStackManager
             {
                 Content = "❌",
                 BorderBrush = Brushes.Transparent,
-                Foreground = GuiTheme.CurrentTheme.Danger,
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.Danger,
                 Width = 32,
                 Height = 32,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, 1, 6, 0),
-                ToolTip = "Limpar Console"
+                ToolTip = mainWindow.LocalizationManager.GetString("gui.utilities_tab.clear_console_tooltip")
             };
             // Custom ControlTemplate: always transparent background, even on hover/press
             var buttonTemplate = new ControlTemplate(typeof(Button));
@@ -72,7 +72,7 @@ namespace DevStackManager
             // Remove highlight/hover/pressed background
             var style = new Style(typeof(Button));
             style.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
-            style.Setters.Add(new Setter(Button.ForegroundProperty, GuiTheme.CurrentTheme.Danger));
+            style.Setters.Add(new Setter(Button.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.Danger));
             style.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
             style.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
             style.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
@@ -127,13 +127,13 @@ namespace DevStackManager
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            var commandLabel = GuiTheme.CreateStyledLabel("Comando:");
-            commandLabel.Width = 80;
+            var commandLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.command_label"));
+            commandLabel.Width = 90;
             commandLabel.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(commandLabel, 0);
             inputPanel.Children.Add(commandLabel);
 
-            var commandTextBox = GuiTheme.CreateStyledTextBox();
+            var commandTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
             commandTextBox.Height = 30;
             commandTextBox.Margin = new Thickness(5, 0, 5, 0);
             commandTextBox.Name = "UtilsCommandTextBox";
@@ -151,7 +151,7 @@ namespace DevStackManager
             
             inputPanel.Children.Add(commandTextBox);
 
-            var executeButton = GuiTheme.CreateStyledButton("▶️ Executar", (s, e) =>
+            var executeButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.utilities_tab.execute_button"), (s, e) =>
             {
                 ExecuteCommand(mainWindow, commandTextBox.Text);
                 commandTextBox.Text = "";
@@ -318,8 +318,8 @@ namespace DevStackManager
             {
                 FontFamily = new FontFamily("Consolas"),
                 FontSize = 12,
-                Background = GuiTheme.CurrentTheme.ConsoleBackground,
-                Foreground = GuiTheme.CurrentTheme.ConsoleForeground,
+                Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground,
                 IsReadOnly = true,
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
@@ -352,16 +352,16 @@ namespace DevStackManager
 
             var quickButtons = new[]
             {
-                new { Text = "📊 Status", Command = "status" },
-                new { Text = "📦 Instalados", Command = "list --installed" },
-                new { Text = "🔍 Diagnóstico", Command = "doctor" },
-                new { Text = "🧪 Testar", Command = "test" },
-                new { Text = "❓ Ajuda", Command = "help" }
+                new { Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status_button"), Command = "status" },
+                new { Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.installed_button"), Command = "list --installed" },
+                new { Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.diagnostic_button"), Command = "doctor" },
+                new { Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.test_button"), Command = "test" },
+                new { Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.help_button"), Command = "help" }
             };
 
             foreach (var btn in quickButtons)
             {
-                var button = GuiTheme.CreateStyledButton(btn.Text);
+                var button = DevStackShared.ThemeManager.CreateStyledButton(btn.Text);
                 button.Width = 120;
                 button.Height = 35;
                 button.Margin = new Thickness(5);
@@ -404,7 +404,7 @@ namespace DevStackManager
                 return;
             }
 
-            mainWindow.StatusMessage = $"Executando: {command}";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status.executing", command);
             
             // Adicionar comando ao console
             consoleOutput.AppendText($"\n> {command}\n");
@@ -458,12 +458,12 @@ namespace DevStackManager
                             
                             if (string.IsNullOrEmpty(output))
                             {
-                                output = "(Comando executado, sem saída gerada)";
+                                output = mainWindow.LocalizationManager.GetString("gui.utilities_tab.no_output");
                             }
                         }
                         else
                         {
-                            output = "Erro: Não foi possível iniciar o processo DevStack.exe";
+                            output = mainWindow.LocalizationManager.GetString("gui.utilities_tab.devstack_not_found");
                         }
                     }
                     else
@@ -484,7 +484,7 @@ namespace DevStackManager
                         {
                             consoleOutput.AppendText($"{output}\n\n");
                             consoleOutput.ScrollToEnd();
-                            mainWindow.StatusMessage = "Comando executado";
+                            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status.executed");
                         }
                     });
                 });
@@ -493,9 +493,9 @@ namespace DevStackManager
             {
                 mainWindow.Dispatcher.Invoke(() =>
                 {
-                    consoleOutput.AppendText($"ERRO: {ex.Message}\n\n");
+                    consoleOutput.AppendText($"{mainWindow.LocalizationManager.GetString("gui.utilities_tab.error")}: {ex.Message}\n\n");
                     consoleOutput.ScrollToEnd();
-                    mainWindow.StatusMessage = "Erro ao executar comando";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status.error");
                 });
             }
         }
@@ -508,7 +508,11 @@ namespace DevStackManager
             try
             {
                 var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length == 0) return "Comando vazio";
+                if (parts.Length == 0)
+                {
+                    var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+                    return localizationManager.GetString("gui.utilities_tab.empty_command");
+                }
 
                 switch (parts[0].ToLowerInvariant())
                 {
@@ -548,12 +552,13 @@ namespace DevStackManager
                     case "help":
                         return "help_command_special"; // Sinal especial para limpar console
                     default:
-                        return $"Comando '{parts[0]}' não reconhecido. Use 'help' para ver comandos disponíveis.";
+                        return $"Comando '{parts[0]}' n 3o reconhecido. Use 'help' para ver comandos dispon edveis.";
                 }
             }
             catch (Exception ex)
             {
-                return $"Erro ao executar comando: {ex.Message}";
+                var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+                return localizationManager.GetString("gui.utilities_tab.command_execution_error", ex.Message);
             }
         }
 
@@ -565,8 +570,8 @@ namespace DevStackManager
             var consoleOutput = GuiHelpers.FindChild<TextBox>(mainWindow, "UtilsConsoleOutput");
             if (consoleOutput != null)
             {
-                consoleOutput.Text = "Console limpo.\n\n";
-                mainWindow.StatusMessage = "Console limpo";
+                consoleOutput.Text = mainWindow.LocalizationManager.GetString("gui.utilities_tab.console_cleared");
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status.cleared");
             }
         }
 
@@ -588,12 +593,13 @@ namespace DevStackManager
         /// </summary>
         private static string GetInitialHelpText()
         {
-            var helpText = "DevStack Manager GUI Console\n" +
-                          "COMANDOS DISPONÍVEIS:\n\n";
+            var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+            var helpText = localizationManager.GetString("gui.utilities_tab.console_header") + "\n" +
+                          localizationManager.GetString("gui.utilities_tab.available_commands") + "\n\n";
 
             helpText += DevStackConfig.ShowHelpTable();
 
-            helpText += "\n💡 Dica: Digite um comando acima ou use os botões de atalho\n";
+            helpText += "\n" + localizationManager.GetString("gui.utilities_tab.tip_message") + "\n";
 
             return helpText;
         }

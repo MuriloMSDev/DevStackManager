@@ -71,7 +71,7 @@ namespace DevStackManager
 
 
             // Overlay de loading único cobrindo toda a área de serviços
-            var overlay = GuiTheme.CreateLoadingOverlay();
+            var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
             // Overlay sempre visível se carregando serviços
             overlay.Visibility = mainWindow.IsLoadingServices ? Visibility.Visible : Visibility.Collapsed;
             mainWindow.PropertyChanged += (sender, args) =>
@@ -100,11 +100,11 @@ namespace DevStackManager
                 Margin = new Thickness(10)
             };
 
-            var titleLabel = GuiTheme.CreateStyledLabel("Gerenciamento de Serviços", true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.services_tab.title"), true);
             titleLabel.FontSize = 18;
             panel.Children.Add(titleLabel);
 
-            var refreshButton = GuiTheme.CreateStyledButton("🔄 Atualizar", async (s, e) => await LoadServices(mainWindow));
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await LoadServices(mainWindow));
             refreshButton.Width = 100;
             refreshButton.Height = 35;
             refreshButton.Margin = new Thickness(20, 0, 0, 0);
@@ -304,7 +304,7 @@ namespace DevStackManager
                 // Coluna Componente usando DataTemplate
                 var componentColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Componente" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.component") : null,
                     Width = new DataGridLength(120)
                 };
 
@@ -312,6 +312,7 @@ namespace DevStackManager
                 var componentTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 componentTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
                 componentTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
+                componentTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 componentTemplate.VisualTree = componentTextBlockFactory;
                 componentColumn.CellTemplate = componentTemplate;
 
@@ -320,7 +321,7 @@ namespace DevStackManager
                 // Coluna Versão usando DataTemplate
                 var versionColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Versão" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.version") : null,
                     Width = new DataGridLength(100)
                 };
 
@@ -328,6 +329,7 @@ namespace DevStackManager
                 var versionTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 versionTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Version"));
                 versionTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
+                versionTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 versionTemplate.VisualTree = versionTextBlockFactory;
                 versionColumn.CellTemplate = versionTemplate;
 
@@ -336,7 +338,7 @@ namespace DevStackManager
                 // Coluna Status com colorização usando DataTemplate
                 var statusColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Status" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.status") : null,
                     Width = new DataGridLength(120)
                 };
 
@@ -347,6 +349,7 @@ namespace DevStackManager
                 statusTextBlockFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
                 statusTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
                 statusTextBlockFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                statusTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 statusTextBlockFactory.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
                 statusTemplate.VisualTree = statusTextBlockFactory;
                 statusColumn.CellTemplate = statusTemplate;
@@ -356,7 +359,7 @@ namespace DevStackManager
                 // Coluna PID usando DataTemplate
                 var pidColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "PID" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.pid") : null,
                     Width = new DataGridLength(330)
                 };
 
@@ -364,6 +367,7 @@ namespace DevStackManager
                 var pidTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 pidTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Pid"));
                 pidTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
+                pidTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 pidTemplate.VisualTree = pidTextBlockFactory;
                 pidColumn.CellTemplate = pidTemplate;
 
@@ -371,18 +375,17 @@ namespace DevStackManager
 
                 // Coluna Copiar PID (botão) - Aparece apenas quando executando
                 var copyButtonTemplate = new DataTemplate();
+                
+                // Criar botão usando DevStackShared.ThemeManager.CreateStyledButton
+                var copyButtonStyleTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.copy_pid"), null, DevStackShared.ThemeManager.ButtonStyle.Secondary);
+                
                 var copyButtonFactory = new FrameworkElementFactory(typeof(Button));
-                copyButtonFactory.SetValue(Button.ContentProperty, "📋");
+                copyButtonFactory.SetValue(Button.ContentProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.copy_pid"));
                 copyButtonFactory.SetValue(Button.HeightProperty, 25.0);
                 copyButtonFactory.SetValue(Button.WidthProperty, 35.0);
                 copyButtonFactory.SetValue(Button.FontSizeProperty, 12.0);
-                copyButtonFactory.SetValue(Button.ToolTipProperty, "Copiar PID");
-                copyButtonFactory.SetValue(Button.BackgroundProperty, GuiTheme.CurrentTheme.ButtonBackground);
-                copyButtonFactory.SetValue(Button.ForegroundProperty, GuiTheme.CurrentTheme.ButtonForeground);
-                copyButtonFactory.SetValue(Button.BorderBrushProperty, GuiTheme.CurrentTheme.Border);
-                copyButtonFactory.SetValue(Button.BorderThicknessProperty, new Thickness(1));
-                copyButtonFactory.SetValue(Button.FontWeightProperty, FontWeights.Medium);
-                copyButtonFactory.SetValue(Button.CursorProperty, Cursors.Hand);
+                copyButtonFactory.SetValue(Button.ToolTipProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.tooltips.copy_pid"));
+                copyButtonFactory.SetValue(Button.StyleProperty, copyButtonStyleTemplate.Style);
                 
                 // Usar binding com converter personalizado para visibilidade
                 var visibilityBinding = new Binding("IsRunning");
@@ -394,7 +397,7 @@ namespace DevStackManager
 
                 dataGrid.Columns.Add(new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Copiar PID" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.copy_pid") : null,
                     CellTemplate = copyButtonTemplate,
                     Width = new DataGridLength(100)
                 });
@@ -405,41 +408,41 @@ namespace DevStackManager
                 actionsPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
                 actionsPanel.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Center);
 
-                // Criar estilos personalizados para os botões de ação
-                var startButtonStyle = CreateActionButtonStyle(GuiTheme.CurrentTheme.Success, GuiTheme.CurrentTheme.AccentHover);
-                var stopButtonStyle = CreateActionButtonStyle(GuiTheme.CurrentTheme.Warning, new SolidColorBrush(Color.FromRgb(217, 164, 6)));
-                var restartButtonStyle = CreateActionButtonStyle(GuiTheme.CurrentTheme.ButtonBackground, GuiTheme.CurrentTheme.ButtonHover);
+                // Criar botões usando DevStackShared.ThemeManager.CreateStyledButton diretamente
+                var startButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.start"), null, DevStackShared.ThemeManager.ButtonStyle.Success);
+                var stopButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop"), null, DevStackShared.ThemeManager.ButtonStyle.Warning);
+                var restartButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart"), null, DevStackShared.ThemeManager.ButtonStyle.Info);
 
                 // Botão Start
                 var startButton = new FrameworkElementFactory(typeof(Button));
-                startButton.SetValue(Button.ContentProperty, "▶️");
+                startButton.SetValue(Button.ContentProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.start"));
                 startButton.SetValue(Button.WidthProperty, 30.0);
                 startButton.SetValue(Button.HeightProperty, 25.0);
                 startButton.SetValue(Button.MarginProperty, new Thickness(2));
-                startButton.SetValue(Button.ToolTipProperty, "Iniciar");
-                startButton.SetValue(Button.StyleProperty, startButtonStyle);
+                startButton.SetValue(Button.ToolTipProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.tooltips.start"));
+                startButton.SetValue(Button.StyleProperty, startButtonTemplate.Style);
                 startButton.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => StartServiceButton_Click(sender, e, mainWindow)));
                 actionsPanel.AppendChild(startButton);
 
                 // Botão Stop
                 var stopButton = new FrameworkElementFactory(typeof(Button));
-                stopButton.SetValue(Button.ContentProperty, "⏹️");
+                stopButton.SetValue(Button.ContentProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop"));
                 stopButton.SetValue(Button.WidthProperty, 30.0);
                 stopButton.SetValue(Button.HeightProperty, 25.0);
                 stopButton.SetValue(Button.MarginProperty, new Thickness(2));
-                stopButton.SetValue(Button.ToolTipProperty, "Parar");
-                stopButton.SetValue(Button.StyleProperty, stopButtonStyle);
+                stopButton.SetValue(Button.ToolTipProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.tooltips.stop"));
+                stopButton.SetValue(Button.StyleProperty, stopButtonTemplate.Style);
                 stopButton.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => StopServiceButton_Click(sender, e, mainWindow)));
                 actionsPanel.AppendChild(stopButton);
 
                 // Botão Restart
                 var restartButton = new FrameworkElementFactory(typeof(Button));
-                restartButton.SetValue(Button.ContentProperty, "🔄");
+                restartButton.SetValue(Button.ContentProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart"));
                 restartButton.SetValue(Button.WidthProperty, 30.0);
                 restartButton.SetValue(Button.HeightProperty, 25.0);
                 restartButton.SetValue(Button.MarginProperty, new Thickness(2));
-                restartButton.SetValue(Button.ToolTipProperty, "Reiniciar");
-                restartButton.SetValue(Button.StyleProperty, restartButtonStyle);
+                restartButton.SetValue(Button.ToolTipProperty, mainWindow.LocalizationManager.GetString("gui.services_tab.tooltips.restart"));
+                restartButton.SetValue(Button.StyleProperty, restartButtonTemplate.Style);
                 restartButton.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => RestartServiceButton_Click(sender, e, mainWindow)));
                 actionsPanel.AppendChild(restartButton);
 
@@ -448,7 +451,7 @@ namespace DevStackManager
                 // Coluna Ações usando DataTemplate
                 var actionsColumn = new DataGridTemplateColumn
                 {
-                    Header = isHeader ? "Ações" : null,
+                    Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.services_tab.headers.actions") : null,
                     Width = new DataGridLength(120)
                 };
                 
@@ -462,8 +465,8 @@ namespace DevStackManager
                     var leftHeaderStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
                     leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Left));
                     leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.VerticalContentAlignmentProperty, VerticalAlignment.Center));
-                    leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, GuiTheme.CurrentTheme.GridHeaderBackground));
-                    leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, GuiTheme.CurrentTheme.GridHeaderForeground));
+                    leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderBackground));
+                    leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderForeground));
                     leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, FontWeights.SemiBold));
                     leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 14.0));
                     leftHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, new Thickness(0)));
@@ -474,8 +477,8 @@ namespace DevStackManager
                     var centerHeaderStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
                     centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
                     centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.VerticalContentAlignmentProperty, VerticalAlignment.Center));
-                    centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, GuiTheme.CurrentTheme.GridHeaderBackground));
-                    centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, GuiTheme.CurrentTheme.GridHeaderForeground));
+                    centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderBackground));
+                    centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.GridHeaderForeground));
                     centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, FontWeights.SemiBold));
                     centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 14.0));
                     centerHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, new Thickness(0)));
@@ -512,8 +515,8 @@ namespace DevStackManager
             contentDataGrid.SetBinding(DataGrid.ItemsSourceProperty, servicesBinding);
 
             // Apply dark theme to both DataGrids
-            GuiTheme.SetDataGridDarkTheme(headerDataGrid);
-            GuiTheme.SetDataGridDarkTheme(contentDataGrid);
+            DevStackShared.ThemeManager.SetDataGridDarkTheme(headerDataGrid);
+            DevStackShared.ThemeManager.SetDataGridDarkTheme(contentDataGrid);
 
             // Colocar DataGrid do conteúdo dentro do ScrollViewer
             scrollViewer.Content = contentDataGrid;
@@ -556,18 +559,18 @@ namespace DevStackManager
                     {
                         Clipboard.SetText(service.Pid);
                         
-                        mainWindow.StatusMessage = $"PID {service.Pid} copiado para a área de transferência";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.pid_copied", service.Pid);
                     }
                     else
                     {
-                        GuiTheme.CreateStyledMessageBox("Serviço não está em execução, não há PID para copiar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.no_pid"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao copiar PID: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao copiar PID";
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_copy_pid", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_copy_pid", ex.Message);
             }
         }
 
@@ -582,20 +585,20 @@ namespace DevStackManager
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
-                    mainWindow.StatusMessage = $"Iniciando {service.Name} versão {service.Version}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.starting", service.Name, service.Version);
                     await Task.Run(() =>
                     {
                         ProcessManager.StartComponent(service.Name, service.Version);
                     });
-                    mainWindow.StatusMessage = $"{service.Name} iniciado com sucesso";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started", service.Name);
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao iniciar serviço: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao iniciar serviço";
-                DevStackConfig.WriteLog($"Erro ao iniciar serviço na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex));
             }
             finally
             {
@@ -615,20 +618,20 @@ namespace DevStackManager
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
-                    mainWindow.StatusMessage = $"Parando {service.Name} versão {service.Version}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopping", service.Name, service.Version);
                     await Task.Run(() =>
                     {
                         ProcessManager.StopComponent(service.Name, service.Version);
                     });
-                    mainWindow.StatusMessage = $"{service.Name} parado com sucesso";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped", service.Name);
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao parar serviço: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao parar serviço";
-                DevStackConfig.WriteLog($"Erro ao parar serviço na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex));
             }
             finally
             {
@@ -648,20 +651,20 @@ namespace DevStackManager
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
-                    mainWindow.StatusMessage = $"Reiniciando {service.Name} versão {service.Version}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarting", service.Name, service.Version);
                     await Task.Run(() =>
                     {
                         ProcessManager.RestartComponent(service.Name, service.Version);
                     });
-                    mainWindow.StatusMessage = $"{service.Name} reiniciado com sucesso";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted", service.Name);
                     await LoadServices(mainWindow); // Recarregar lista
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao reiniciar serviço: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao reiniciar serviço";
-                DevStackConfig.WriteLog($"Erro ao reiniciar serviço na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex));
             }
             finally
             {
@@ -683,7 +686,7 @@ namespace DevStackManager
             };
 
             // Botões para todos os serviços
-            var startAllButton = GuiTheme.CreateStyledButton("▶️ Iniciar Todos", async (s, e) =>
+            var startAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.start_all"), async (s, e) =>
             {
                 mainWindow.IsLoadingServices = true;
                 if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
@@ -694,12 +697,12 @@ namespace DevStackManager
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
             });
-            startAllButton.Width = 140;
+            startAllButton.Width = 150;
             startAllButton.Height = 40;
             startAllButton.Margin = new Thickness(10);
             panel.Children.Add(startAllButton);
 
-            var stopAllButton = GuiTheme.CreateStyledButton("⏹️ Parar Todos", async (s, e) =>
+            var stopAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop_all"), async (s, e) =>
             {
                 mainWindow.IsLoadingServices = true;
                 if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
@@ -710,12 +713,12 @@ namespace DevStackManager
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
             });
-            stopAllButton.Width = 140;
+            stopAllButton.Width = 150;
             stopAllButton.Height = 40;
             stopAllButton.Margin = new Thickness(10);
             panel.Children.Add(stopAllButton);
 
-            var restartAllButton = GuiTheme.CreateStyledButton("🔄 Reiniciar Todos", async (s, e) =>
+            var restartAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart_all"), async (s, e) =>
             {
                 mainWindow.IsLoadingServices = true;
                 if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
@@ -726,7 +729,7 @@ namespace DevStackManager
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
             });
-            restartAllButton.Width = 140;
+            restartAllButton.Width = 150;
             restartAllButton.Height = 40;
             restartAllButton.Margin = new Thickness(10);
             panel.Children.Add(restartAllButton);
@@ -743,7 +746,7 @@ namespace DevStackManager
             {
                 try
                 {
-                    mainWindow.StatusMessage = "Carregando serviços...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.loading");
                     
                     var services = new ObservableCollection<ServiceViewModel>();
                     
@@ -757,10 +760,6 @@ namespace DevStackManager
                         devStackPath = DevStackConfig.baseDir;
                     }
                     
-                    DevStackConfig.WriteLog($"DevStack base directory: {devStackPath}");
-                    DevStackConfig.WriteLog($"PHP directory: {DevStackConfig.phpDir}");
-                    DevStackConfig.WriteLog($"Nginx directory: {DevStackConfig.nginxDir}");
-                    
                     // Debug: Listar todos os processos que começam com php ou nginx
                     var allProcesses = Process.GetProcesses();
                     var debugProcesses = allProcesses
@@ -770,17 +769,17 @@ namespace DevStackManager
                                    p.ProcessName.Equals("node", StringComparison.OrdinalIgnoreCase))
                         .ToList();
                     
-                    DevStackConfig.WriteLog($"Processos encontrados para debug: {debugProcesses.Count}");
+                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.processes_found", debugProcesses.Count));
                     foreach (var proc in debugProcesses)
                     {
                         try
                         {
                             var path = proc.MainModule?.FileName ?? "N/A";
-                            DevStackConfig.WriteLog($"  - {proc.ProcessName} (PID: {proc.Id}) - Path: {path}");
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_info", proc.ProcessName, proc.Id, path));
                         }
                         catch (Exception ex)
                         {
-                            DevStackConfig.WriteLog($"  - {proc.ProcessName} (PID: {proc.Id}) - Path: Erro ao acessar ({ex.Message})");
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_error", proc.ProcessName, proc.Id, ex.Message));
                         }
                     }
                     
@@ -788,14 +787,14 @@ namespace DevStackManager
                     if (Directory.Exists(DevStackConfig.phpDir))
                     {
                         var phpDirs = Directory.GetDirectories(DevStackConfig.phpDir);
-                        DevStackConfig.WriteLog($"Encontrados {phpDirs.Length} diretórios PHP: {string.Join(", ", phpDirs.Select(Path.GetFileName))}");
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_dirs_found", phpDirs.Length, string.Join(", ", phpDirs.Select(Path.GetFileName))));
                         
                         foreach (var dir in phpDirs)
                         {
                             var dirName = Path.GetFileName(dir);
                             var versionNumber = dirName.Replace("php-", "");
                             
-                            DevStackConfig.WriteLog($"Verificando PHP versão {versionNumber} no diretório {dirName}");
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_php_version", versionNumber, dirName));
                             
                             try
                             {
@@ -810,7 +809,7 @@ namespace DevStackManager
                                                 var contains = !string.IsNullOrEmpty(processPath) && processPath.Contains(dirName, StringComparison.OrdinalIgnoreCase);
                                                 if (contains)
                                                 {
-                                                    DevStackConfig.WriteLog($"  - Processo PHP encontrado: {p.ProcessName} (PID: {p.Id}) - Path: {processPath}");
+                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_process_found", p.ProcessName, p.Id, processPath ?? "N/A"));
                                                 }
                                                 return contains;
                                             }
@@ -818,7 +817,7 @@ namespace DevStackManager
                                         }
                                         catch (Exception ex)
                                         {
-                                            DevStackConfig.WriteLog($"  - Erro ao verificar processo {p.ProcessName}: {ex.Message}");
+                                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_check_error", p.ProcessName, ex.Message));
                                             return false;
                                         }
                                     })
@@ -827,28 +826,28 @@ namespace DevStackManager
                                 if (phpProcesses.Any())
                                 {
                                     var pids = string.Join(", ", phpProcesses.Select(p => p.Id));
-                                    DevStackConfig.WriteLog($"PHP {versionNumber} está executando com PIDs: {pids}");
+                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_running", versionNumber, pids));
                                     services.Add(new ServiceViewModel 
                                     { 
                                         Name = "php", 
                                         Version = versionNumber,
-                                        Status = "Em execução", 
-                                        Type = "PHP-FPM", 
-                                        Description = $"PHP {versionNumber} FastCGI",
+                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.running"), 
+                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.php_fpm"), 
+                                        Description = $"PHP {versionNumber} {mainWindow.LocalizationManager.GetString("gui.services_tab.types.fastcgi")}",
                                         Pid = pids,
                                         IsRunning = true
                                     });
                                 }
                                 else
                                 {
-                                    DevStackConfig.WriteLog($"PHP {versionNumber} não está executando");
+                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_not_running", versionNumber));
                                     services.Add(new ServiceViewModel 
                                     { 
                                         Name = "php", 
                                         Version = versionNumber,
-                                        Status = "Parado", 
-                                        Type = "PHP-FPM", 
-                                        Description = $"PHP {versionNumber} FastCGI",
+                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
+                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.php_fpm"), 
+                                        Description = $"PHP {versionNumber} {mainWindow.LocalizationManager.GetString("gui.services_tab.types.fastcgi")}",
                                         Pid = "-",
                                         IsRunning = false
                                     });
@@ -856,7 +855,7 @@ namespace DevStackManager
                             }
                             catch (Exception ex)
                             {
-                                DevStackConfig.WriteLog($"Erro ao verificar processos PHP: {ex.Message}");
+                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_check_error", ex.Message));
                             }
                         }
                     }
@@ -865,14 +864,14 @@ namespace DevStackManager
                     if (Directory.Exists(DevStackConfig.nginxDir))
                     {
                         var nginxDirs = Directory.GetDirectories(DevStackConfig.nginxDir);
-                        DevStackConfig.WriteLog($"Encontrados {nginxDirs.Length} diretórios Nginx: {string.Join(", ", nginxDirs.Select(Path.GetFileName))}");
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_dirs_found", nginxDirs.Length, string.Join(", ", nginxDirs.Select(Path.GetFileName))));
                         
                         foreach (var dir in nginxDirs)
                         {
                             var dirName = Path.GetFileName(dir);
                             var versionNumber = dirName.Replace("nginx-", "");
                             
-                            DevStackConfig.WriteLog($"Verificando Nginx versão {versionNumber} no diretório {dirName}");
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_nginx_version", versionNumber, dirName));
                             
                             try
                             {
@@ -887,7 +886,7 @@ namespace DevStackManager
                                                 var contains = !string.IsNullOrEmpty(processPath) && processPath.Contains(dirName, StringComparison.OrdinalIgnoreCase);
                                                 if (contains)
                                                 {
-                                                    DevStackConfig.WriteLog($"  - Processo Nginx encontrado: {p.ProcessName} (PID: {p.Id}) - Path: {processPath}");
+                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_process_found", p.ProcessName, p.Id, processPath ?? "N/A"));
                                                 }
                                                 return contains;
                                             }
@@ -904,13 +903,13 @@ namespace DevStackManager
                                 if (nginxProcesses.Any())
                                 {
                                     var mainProcess = nginxProcesses.First();
-                                    DevStackConfig.WriteLog($"Nginx {versionNumber} está executando com PID: {mainProcess.Id}");
+                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_running", versionNumber, mainProcess.Id));
                                     services.Add(new ServiceViewModel 
                                     { 
                                         Name = "nginx", 
                                         Version = versionNumber,
-                                        Status = "Em execução", 
-                                        Type = "Web Server", 
+                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.running"), 
+                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.web_server"), 
                                         Description = $"Nginx {versionNumber}",
                                         Pid = mainProcess.Id.ToString(),
                                         IsRunning = true
@@ -918,13 +917,13 @@ namespace DevStackManager
                                 }
                                 else
                                 {
-                                    DevStackConfig.WriteLog($"Nginx {versionNumber} não está executando");
+                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_not_running", versionNumber));
                                     services.Add(new ServiceViewModel 
                                     { 
                                         Name = "nginx", 
                                         Version = versionNumber,
-                                        Status = "Parado", 
-                                        Type = "Web Server", 
+                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
+                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.web_server"), 
                                         Description = $"Nginx {versionNumber}",
                                         Pid = "-",
                                         IsRunning = false
@@ -933,7 +932,7 @@ namespace DevStackManager
                             }
                             catch (Exception ex)
                             {
-                                DevStackConfig.WriteLog($"Erro ao verificar processos Nginx: {ex.Message}");
+                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_check_error", ex.Message));
                             }
                         }
                     }
@@ -945,15 +944,15 @@ namespace DevStackManager
                         {
                             mainWindow.Services.Add(service);
                         }
-                        mainWindow.StatusMessage = $"{mainWindow.Services.Count} serviços carregados";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.loaded", new object[] { mainWindow.Services.Count });
                     });
                 }
                 catch (Exception ex)
                 {
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.StatusMessage = $"Erro ao carregar serviços: {ex.Message}";
-                        DevStackConfig.WriteLog($"Erro ao carregar serviços na GUI: {ex}");
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error", ex.Message ?? string.Empty);
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.load_services_error", ex));
                     });
                 }
             });
@@ -964,7 +963,7 @@ namespace DevStackManager
         /// </summary>
         private static async Task StartAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = "Iniciando todos os serviços...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.starting_all");
             
             try
             {
@@ -973,14 +972,14 @@ namespace DevStackManager
                     ProcessManager.StartAllComponents();
                 });
 
-                mainWindow.StatusMessage = "Todos os serviços iniciados";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started_all");
                 await LoadServices(mainWindow); // Recarregar lista
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao iniciar todos os serviços: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao iniciar todos os serviços";
-                DevStackConfig.WriteLog($"Erro ao iniciar todos os serviços na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start_all", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start_all", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.start_all_services_error", ex));
             }
         }
 
@@ -989,7 +988,7 @@ namespace DevStackManager
         /// </summary>
         private static async Task StopAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = "Parando todos os serviços...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopping_all");
             
             try
             {
@@ -998,14 +997,14 @@ namespace DevStackManager
                     ProcessManager.StopAllComponents();
                 });
 
-                mainWindow.StatusMessage = "Todos os serviços parados";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped_all");
                 await LoadServices(mainWindow); // Recarregar lista
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao parar todos os serviços: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao parar todos os serviços";
-                DevStackConfig.WriteLog($"Erro ao parar todos os serviços na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop_all", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop_all", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.stop_all_services_error", ex));
             }
         }
 
@@ -1014,7 +1013,7 @@ namespace DevStackManager
         /// </summary>
         private static async Task RestartAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = "Reiniciando todos os serviços...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarting_all");
             
             try
             {
@@ -1026,91 +1025,15 @@ namespace DevStackManager
                     ProcessManager.StartAllComponents();
                 });
 
-                mainWindow.StatusMessage = "Todos os serviços reiniciados";
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted_all");
                 await LoadServices(mainWindow); // Recarregar lista
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, $"❌ Erro ao reiniciar todos os serviços: {ex.Message}");
-                mainWindow.StatusMessage = "Erro ao reiniciar todos os serviços";
-                DevStackConfig.WriteLog($"Erro ao reiniciar todos os serviços na GUI: {ex}");
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart_all", ex.Message), mainWindow);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart_all", ex.Message);
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.restart_all_services_error", ex));
             }
-        }
-
-        /// <summary>
-        /// Cria um estilo personalizado para botões de ação com hover funcional
-        /// </summary>
-        private static Style CreateActionButtonStyle(SolidColorBrush backgroundColor, SolidColorBrush hoverColor)
-        {
-            var buttonStyle = new Style(typeof(Button));
-            
-            // Set base properties
-            buttonStyle.Setters.Add(new Setter(Button.BackgroundProperty, backgroundColor));
-            buttonStyle.Setters.Add(new Setter(Button.ForegroundProperty, GuiTheme.CurrentTheme.ButtonForeground));
-            buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, GuiTheme.CurrentTheme.Border));
-            buttonStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(1)));
-            buttonStyle.Setters.Add(new Setter(Button.FontWeightProperty, FontWeights.Medium));
-            buttonStyle.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
-            
-            // Template customizado para garantir que triggers funcionem
-            var buttonTemplate = new ControlTemplate(typeof(Button));
-            var borderFactory = new FrameworkElementFactory(typeof(Border));
-            borderFactory.Name = "ButtonBorder";
-            borderFactory.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            borderFactory.SetBinding(Border.BorderBrushProperty, new Binding("BorderBrush") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            borderFactory.SetBinding(Border.BorderThicknessProperty, new Binding("BorderThickness") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
-            
-            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            contentPresenterFactory.SetBinding(ContentPresenter.MarginProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            
-            borderFactory.AppendChild(contentPresenterFactory);
-            buttonTemplate.VisualTree = borderFactory;
-            buttonStyle.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
-            
-            // Add hover trigger
-            var hoverTrigger = new Trigger
-            {
-                Property = Button.IsMouseOverProperty,
-                Value = true
-            };
-            hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, hoverColor));
-            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, GuiTheme.CurrentTheme.BorderHover));
-            hoverTrigger.Setters.Add(new Setter(Button.ForegroundProperty, GuiTheme.CurrentTheme.ButtonForeground));
-            
-            // Add pressed trigger
-            var pressedTrigger = new Trigger
-            {
-                Property = Button.IsPressedProperty,
-                Value = true
-            };
-            
-            var pressedColor = new SolidColorBrush(Color.FromArgb(
-                255,
-                (byte)(hoverColor.Color.R * 0.9),
-                (byte)(hoverColor.Color.G * 0.9),
-                (byte)(hoverColor.Color.B * 0.9)
-            ));
-            
-            pressedTrigger.Setters.Add(new Setter(Button.BackgroundProperty, pressedColor));
-            
-            // Add disabled trigger
-            var disabledTrigger = new Trigger
-            {
-                Property = Button.IsEnabledProperty,
-                Value = false
-            };
-            disabledTrigger.Setters.Add(new Setter(Button.BackgroundProperty, GuiTheme.CurrentTheme.ButtonDisabled));
-            disabledTrigger.Setters.Add(new Setter(Button.ForegroundProperty, GuiTheme.CurrentTheme.TextMuted));
-            disabledTrigger.Setters.Add(new Setter(Button.OpacityProperty, 0.6));
-            
-            buttonStyle.Triggers.Add(hoverTrigger);
-            buttonStyle.Triggers.Add(pressedTrigger);
-            buttonStyle.Triggers.Add(disabledTrigger);
-            
-            return buttonStyle;
         }
     }
 }

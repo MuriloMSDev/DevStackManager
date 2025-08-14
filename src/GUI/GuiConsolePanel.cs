@@ -36,20 +36,21 @@ namespace DevStackManager
         public static StackPanel CreateConsolePanel(ConsoleTab tab)
         {
             var panel = new StackPanel { Margin = new Thickness(10) };
+            var mainWindow = (DevStackGui)Application.Current.MainWindow;
             var title = tab switch
             {
-                ConsoleTab.Install => "Saída do Console - Instalar",
-                ConsoleTab.Uninstall => "Saída do Console - Desinstalar",
-                ConsoleTab.Sites => "Saída do Console - Sites",
-                ConsoleTab.Config => "Saída do Console - Configurações",
-                _ => "Saída do Console"
+                ConsoleTab.Install => mainWindow.LocalizationManager.GetString("gui.console.titles.install"),
+                ConsoleTab.Uninstall => mainWindow.LocalizationManager.GetString("gui.console.titles.uninstall"),
+                ConsoleTab.Sites => mainWindow.LocalizationManager.GetString("gui.console.titles.sites"),
+                ConsoleTab.Config => mainWindow.LocalizationManager.GetString("gui.console.titles.config"),
+                _ => mainWindow.LocalizationManager.GetString("gui.console.titles.utilities")
             };
-            var titleLabel = GuiTheme.CreateStyledLabel(title, true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(title, true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 10);
             panel.Children.Add(titleLabel);
 
-            var outputBox = GuiTheme.CreateStyledTextBox(true);
+            var outputBox = DevStackShared.ThemeManager.CreateStyledTextBox(true);
             outputBox.Height = 600;
             outputBox.IsReadOnly = true;
             outputBox.FontSize = 12;
@@ -63,7 +64,7 @@ namespace DevStackManager
 
             panel.Children.Add(outputBox);
 
-            var clearButton = GuiTheme.CreateStyledButton("🗑️ Limpar Console", (s, e) => Clear(tab));
+            var clearButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.console.buttons.clear"), (s, e) => Clear(tab));
             clearButton.Height = 35;
             clearButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(clearButton);
@@ -89,11 +90,11 @@ namespace DevStackManager
         /// <summary>
         /// Adiciona output ao buffer da aba (thread-safe, pode ser chamado de qualquer thread)
         /// </summary>
-        public static void Append(ConsoleTab tab, string text)
+        public static void Append(ConsoleTab tab, string text, DevStackGui mainWindow)
         {
             lock (_lock)
             {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss");
+                var timestamp = DateTime.Now.ToString(mainWindow.LocalizationManager.GetString("gui.timestamp_format"));
                 Buffers[tab].AppendLine($"[{timestamp}] {text}");
                 // Atualiza textbox se a aba estiver visível
                 if (ActiveTextBoxes.TryGetValue(tab, out var box))
@@ -136,9 +137,9 @@ namespace DevStackManager
         /// <summary>
         /// Permite executar uma ação e enviar output para o buffer correto, mesmo em background
         /// </summary>
-        public static async Task RunWithConsoleOutput(ConsoleTab tab, Func<IProgress<string>, Task> action)
+        public static async Task RunWithConsoleOutput(ConsoleTab tab, DevStackGui mainWindow, Func<IProgress<string>, Task> action)
         {
-            var progress = new Progress<string>(msg => Append(tab, msg));
+            var progress = new Progress<string>(msg => Append(tab, msg, mainWindow));
             var originalOut = Console.Out;
             try
             {

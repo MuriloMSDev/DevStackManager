@@ -1,23 +1,38 @@
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
-
+using System.Windows.Media.Animation;
+using System.Windows.Controls.Primitives;
 using System.Windows.Shapes;
-namespace DevStackManager
+using System.Windows.Threading;
+
+namespace DevStackShared
 {
     /// <summary>
-    /// Sistema de temas e estilos para o DevStackManager GUI
-    /// Contém as definições de cores, estilos e helpers para criação de controles temáticos
+    /// Sistema avançado de temas e estilos para o DevStackManager
+    /// Contém as definições de cores, estilos, animações e helpers para criação de controles temáticos
+    /// Versão melhorada com suporte a múltiplos temas e animações fluidas
     /// </summary>
-    public static class GuiTheme
+    public static class ThemeManager
     {
         #region Theme Classes
         /// <summary>
-        /// Cores do tema
+        /// Enumeração dos temas disponíveis
+        /// </summary>
+        public enum ThemeType
+        {
+            Dark,
+            Light,
+            HighContrast
+        }
+
+        /// <summary>
+        /// Cores do tema com suporte a múltiplos esquemas
         /// </summary>
         public class ThemeColors
         {
@@ -30,14 +45,17 @@ namespace DevStackManager
             public SolidColorBrush ButtonBackground { get; set; } = null!;
             public SolidColorBrush ButtonForeground { get; set; } = null!;
             public SolidColorBrush ButtonHover { get; set; } = null!;
+            public SolidColorBrush ButtonPressed { get; set; } = null!;
             public SolidColorBrush ButtonDisabled { get; set; } = null!;
 
-            // Cores de destaque
+            // Cores de destaque com gradientes
             public SolidColorBrush Accent { get; set; } = null!;
             public SolidColorBrush AccentHover { get; set; } = null!;
+            public SolidColorBrush AccentPressed { get; set; } = null!;
             public SolidColorBrush Warning { get; set; } = null!;
             public SolidColorBrush Danger { get; set; } = null!;
             public SolidColorBrush Success { get; set; } = null!;
+            public SolidColorBrush Info { get; set; } = null!;
 
             // Grid e tabelas
             public SolidColorBrush GridBackground { get; set; } = null!;
@@ -46,6 +64,7 @@ namespace DevStackManager
             public SolidColorBrush GridHeaderForeground { get; set; } = null!;
             public SolidColorBrush GridAlternateRow { get; set; } = null!;
             public SolidColorBrush GridSelectedRow { get; set; } = null!;
+            public SolidColorBrush GridHoverRow { get; set; } = null!;
 
             // Status e navegação
             public SolidColorBrush StatusBackground { get; set; } = null!;
@@ -58,6 +77,7 @@ namespace DevStackManager
             public SolidColorBrush Border { get; set; } = null!;
             public SolidColorBrush BorderHover { get; set; } = null!;
             public SolidColorBrush BorderFocus { get; set; } = null!;
+            public SolidColorBrush BorderActive { get; set; } = null!;
 
             // Áreas de conteúdo
             public SolidColorBrush ContentBackground { get; set; } = null!;
@@ -65,22 +85,49 @@ namespace DevStackManager
             public SolidColorBrush ConsoleBackground { get; set; } = null!;
             public SolidColorBrush ConsoleForeground { get; set; } = null!;
 
-            // Inputs
+            // Inputs com estados melhorados
             public SolidColorBrush InputBackground { get; set; } = null!;
             public SolidColorBrush InputForeground { get; set; } = null!;
             public SolidColorBrush InputBorder { get; set; } = null!;
             public SolidColorBrush InputFocusBorder { get; set; } = null!;
+            public SolidColorBrush InputHoverBorder { get; set; } = null!;
             public SolidColorBrush DropdownBackground { get; set; } = null!;
 
-            // Texto secundário
+            // Texto com hierarquia expandida
             public SolidColorBrush TextMuted { get; set; } = null!;
             public SolidColorBrush TextSecondary { get; set; } = null!;
+            public SolidColorBrush TextDisabled { get; set; } = null!;
+            public SolidColorBrush TextLink { get; set; } = null!;
+            public SolidColorBrush TextLinkHover { get; set; } = null!;
+
+            // Overlays e modais
+            public SolidColorBrush OverlayBackground { get; set; } = null!;
+            public SolidColorBrush TooltipBackground { get; set; } = null!;
+            public SolidColorBrush TooltipForeground { get; set; } = null!;
+
+            // Gradientes para efeitos modernos
+            public LinearGradientBrush ButtonGradient { get; set; } = null!;
+            public LinearGradientBrush AccentGradient { get; set; } = null!;
+            public LinearGradientBrush HeaderGradient { get; set; } = null!;
+        }
+
+        /// <summary>
+        /// Configurações de animação para o tema
+        /// </summary>
+        public class ThemeAnimationSettings
+        {
+            public TimeSpan ButtonHoverDuration { get; set; } = TimeSpan.FromMilliseconds(200);
+            public TimeSpan FadeInDuration { get; set; } = TimeSpan.FromMilliseconds(300);
+            public TimeSpan FadeOutDuration { get; set; } = TimeSpan.FromMilliseconds(200);
+            public TimeSpan SlideInDuration { get; set; } = TimeSpan.FromMilliseconds(400);
+            public IEasingFunction StandardEasing { get; set; } = new CubicEase { EasingMode = EasingMode.EaseOut };
+            public IEasingFunction BounceEasing { get; set; } = new BounceEase { EasingMode = EasingMode.EaseOut };
         }
         #endregion
 
         #region Theme Definition
         /// <summary>
-        /// Tema escuro personalizado
+        /// Tema escuro moderno e otimizado
         /// </summary>
         public static readonly ThemeColors DarkTheme = new()
         {
@@ -89,61 +136,328 @@ namespace DevStackManager
             Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
 
-            // Botões com cores vibrantes para tema escuro
+            // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             ButtonForeground = new SolidColorBrush(Colors.White),
             ButtonHover = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
+            ButtonPressed = new SolidColorBrush(Color.FromRgb(25, 118, 220)),
             ButtonDisabled = new SolidColorBrush(Color.FromRgb(87, 96, 106)),
 
-            // Cores de destaque otimizadas para tema escuro
+            // Cores de destaque com estados expandidos
             Accent = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
             AccentHover = new SolidColorBrush(Color.FromRgb(46, 194, 145)),
+            AccentPressed = new SolidColorBrush(Color.FromRgb(40, 175, 131)),
             Warning = new SolidColorBrush(Color.FromRgb(255, 196, 0)),
             Danger = new SolidColorBrush(Color.FromRgb(248, 81, 73)),
             Success = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
+            Info = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
 
-            // Grid com excelente legibilidade
+            // Grid com excelente legibilidade e hover
             GridBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             GridForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             GridHeaderBackground = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
             GridHeaderForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             GridAlternateRow = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
             GridSelectedRow = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
+            GridHoverRow = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
 
-            // Status e navegação com contraste perfeito
+            // Status e navegação
             StatusBackground = new SolidColorBrush(Color.FromRgb(22, 27, 34)),
             StatusForeground = new SolidColorBrush(Color.FromRgb(139, 148, 158)),
             SidebarBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
             SidebarSelected = new SolidColorBrush(Color.FromRgb(36, 46, 59)),
             SidebarHover = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
 
-            // Bordas bem visíveis
+            // Bordas expandidas
             Border = new SolidColorBrush(Color.FromRgb(48, 54, 61)),
             BorderHover = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             BorderFocus = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
+            BorderActive = new SolidColorBrush(Color.FromRgb(46, 194, 145)),
 
-            // Áreas de conteúdo com hierarquia clara
+            // Áreas de conteúdo
             ContentBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             PanelBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
             ConsoleBackground = new SolidColorBrush(Color.FromRgb(13, 17, 23)),
             ConsoleForeground = new SolidColorBrush(Color.FromRgb(201, 209, 217)),
 
-            // Inputs com excelente contraste
+            // Inputs com estados melhorados
             InputBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             InputForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             InputBorder = new SolidColorBrush(Color.FromRgb(48, 54, 61)),
             InputFocusBorder = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
+            InputHoverBorder = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
             DropdownBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
 
-            // Texto com hierarquia bem definida
+            // Texto expandido
             TextMuted = new SolidColorBrush(Color.FromRgb(139, 148, 158)),
-            TextSecondary = new SolidColorBrush(Color.FromRgb(166, 173, 186))
+            TextSecondary = new SolidColorBrush(Color.FromRgb(166, 173, 186)),
+            TextDisabled = new SolidColorBrush(Color.FromRgb(87, 96, 106)),
+            TextLink = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
+            TextLinkHover = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
+
+            // Overlays e tooltips
+            OverlayBackground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+            TooltipBackground = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
+            TooltipForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
+
+            // Gradientes modernos
+            ButtonGradient = new LinearGradientBrush(
+                Color.FromRgb(33, 136, 255), 
+                Color.FromRgb(58, 150, 255), 
+                90),
+            AccentGradient = new LinearGradientBrush(
+                Color.FromRgb(56, 211, 159), 
+                Color.FromRgb(46, 194, 145), 
+                45),
+            HeaderGradient = new LinearGradientBrush(
+                Color.FromRgb(45, 55, 68), 
+                Color.FromRgb(32, 39, 49), 
+                90)
         };
 
-        public static ThemeColors CurrentTheme => DarkTheme;
+        /// <summary>
+        /// Tema claro moderno (para futuras implementações)
+        /// </summary>
+        public static readonly ThemeColors LightTheme = new()
+        {
+            FormBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+            Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+            ControlBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            
+            ButtonBackground = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            ButtonForeground = new SolidColorBrush(Colors.White),
+            ButtonHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
+            ButtonPressed = new SolidColorBrush(Color.FromRgb(0, 100, 200)),
+            ButtonDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
+            
+            Accent = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
+            AccentHover = new SolidColorBrush(Color.FromRgb(33, 136, 56)),
+            AccentPressed = new SolidColorBrush(Color.FromRgb(25, 105, 43)),
+            Warning = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
+            Danger = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
+            Success = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
+            Info = new SolidColorBrush(Color.FromRgb(23, 162, 184)),
+            
+            GridBackground = new SolidColorBrush(Colors.White),
+            GridForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+            GridHeaderBackground = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+            GridHeaderForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+            GridAlternateRow = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            GridSelectedRow = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            GridHoverRow = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+            
+            StatusBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            StatusForeground = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+            SidebarBackground = new SolidColorBrush(Color.FromRgb(243, 244, 246)),
+            SidebarSelected = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+            SidebarHover = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            
+            Border = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
+            BorderHover = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            BorderFocus = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            BorderActive = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
+            
+            ContentBackground = new SolidColorBrush(Colors.White),
+            PanelBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            ConsoleBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
+            ConsoleForeground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            
+            InputBackground = new SolidColorBrush(Colors.White),
+            InputForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+            InputBorder = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
+            InputFocusBorder = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            InputHoverBorder = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
+            DropdownBackground = new SolidColorBrush(Colors.White),
+            
+            TextMuted = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+            TextSecondary = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
+            TextDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
+            TextLink = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            TextLinkHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
+            
+            OverlayBackground = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
+            TooltipBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
+            TooltipForeground = new SolidColorBrush(Colors.White),
+            
+            ButtonGradient = new LinearGradientBrush(
+                Color.FromRgb(0, 123, 255), 
+                Color.FromRgb(0, 110, 230), 
+                90),
+            AccentGradient = new LinearGradientBrush(
+                Color.FromRgb(40, 167, 69), 
+                Color.FromRgb(33, 136, 56), 
+                45),
+            HeaderGradient = new LinearGradientBrush(
+                Color.FromRgb(233, 236, 239), 
+                Color.FromRgb(248, 249, 250), 
+                90)
+        };
+
+        // Tema atual e configurações
+        private static ThemeType _currentThemeType = ThemeType.Dark;
+        public static ThemeType CurrentThemeType 
+        { 
+            get => _currentThemeType; 
+            set 
+            { 
+                _currentThemeType = value;
+                OnThemeChanged?.Invoke();
+            } 
+        }
+
+        public static ThemeColors CurrentTheme => CurrentThemeType switch
+        {
+            ThemeType.Dark => DarkTheme,
+            ThemeType.Light => LightTheme,
+            ThemeType.HighContrast => DarkTheme, // Por enquanto usa o Dark
+            _ => DarkTheme
+        };
+
+        public static readonly ThemeAnimationSettings AnimationSettings = new();
+
+        /// <summary>
+        /// Evento disparado quando o tema é alterado
+        /// </summary>
+        public static event Action? OnThemeChanged;
         #endregion
 
-        #region UI Helper Methods
+        #region Animation Helpers
+        /// <summary>
+        /// Cria uma animação de fade in para elementos
+        /// </summary>
+        public static void AnimateFadeIn(UIElement element, double from = 0, double to = 1, TimeSpan? duration = null)
+        {
+            var fadeIn = new DoubleAnimation
+            {
+                From = from,
+                To = to,
+                Duration = duration ?? AnimationSettings.FadeInDuration,
+                EasingFunction = AnimationSettings.StandardEasing
+            };
+            
+            element.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+        }
+
+        /// <summary>
+        /// Cria uma animação de fade out para elementos
+        /// </summary>
+        public static void AnimateFadeOut(UIElement element, double from = 1, double to = 0, TimeSpan? duration = null, EventHandler? onCompleted = null)
+        {
+            var fadeOut = new DoubleAnimation
+            {
+                From = from,
+                To = to,
+                Duration = duration ?? AnimationSettings.FadeOutDuration,
+                EasingFunction = AnimationSettings.StandardEasing
+            };
+            
+            if (onCompleted != null)
+                fadeOut.Completed += onCompleted;
+                
+            element.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+        }
+
+        /// <summary>
+        /// Cria uma animação de slide para elementos
+        /// </summary>
+        public static void AnimateSlideIn(FrameworkElement element, double fromX, double toX, TimeSpan? duration = null)
+        {
+            var transform = new TranslateTransform(fromX, 0);
+            element.RenderTransform = transform;
+            
+            var slideIn = new DoubleAnimation
+            {
+                From = fromX,
+                To = toX,
+                Duration = duration ?? AnimationSettings.SlideInDuration,
+                EasingFunction = AnimationSettings.BounceEasing
+            };
+            
+            transform.BeginAnimation(TranslateTransform.XProperty, slideIn);
+        }
+
+        /// <summary>
+        /// Cria uma animação de hover para botões
+        /// </summary>
+        public static void AnimateButtonHover(Button button, bool isEntering)
+        {
+            var scaleTransform = button.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
+            button.RenderTransform = scaleTransform;
+            button.RenderTransformOrigin = new Point(0.5, 0.5);
+            
+            var targetScale = isEntering ? 1.05 : 1.0;
+            var animation = new DoubleAnimation
+            {
+                To = targetScale,
+                Duration = AnimationSettings.ButtonHoverDuration,
+                EasingFunction = AnimationSettings.StandardEasing
+            };
+            
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
+        }
+
+        /// <summary>
+        /// Aplica um efeito de glow nos elementos
+        /// </summary>
+        public static void ApplyGlowEffect(UIElement element, Color color, double radius = 10, double opacity = 0.8)
+        {
+            var glow = new DropShadowEffect
+            {
+                Color = color,
+                BlurRadius = radius,
+                ShadowDepth = 0,
+                Opacity = opacity
+            };
+            element.Effect = glow;
+        }
+
+        /// <summary>
+        /// Remove todos os efeitos visuais de um elemento
+        /// </summary>
+        public static void RemoveEffects(UIElement element)
+        {
+            element.Effect = null;
+        }
+
+        /// <summary>
+        /// Escurece uma cor SolidColorBrush por uma porcentagem específica
+        /// </summary>
+        public static SolidColorBrush DarkenColor(SolidColorBrush brush, double percentage)
+        {
+            var color = brush.Color;
+            var factor = 1.0 - percentage;
+            
+            var newColor = Color.FromArgb(
+                color.A,
+                (byte)(color.R * factor),
+                (byte)(color.G * factor),
+                (byte)(color.B * factor)
+            );
+            
+            return new SolidColorBrush(newColor);
+        }
+
+        /// <summary>
+        /// Clareia uma cor SolidColorBrush por uma porcentagem específica
+        /// </summary>
+        public static SolidColorBrush LightenColor(SolidColorBrush brush, double percentage)
+        {
+            var color = brush.Color;
+            var factor = percentage;
+            
+            var newColor = Color.FromArgb(
+                color.A,
+                (byte)(color.R + (255 - color.R) * factor),
+                (byte)(color.G + (255 - color.G) * factor),
+                (byte)(color.B + (255 - color.B) * factor)
+            );
+            
+            return new SolidColorBrush(newColor);
+        }
+        #endregion
+
+        #region Advanced UI Helper Methods
         /// <summary>
         /// Aplica o tema escuro a um DataGrid
         /// </summary>
@@ -252,9 +566,9 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um botão estilizado com tema escuro
+        /// Cria um botão estilizado com tema e animações avançadas
         /// </summary>
-        public static Button CreateStyledButton(string content, RoutedEventHandler? clickHandler = null)
+        public static Button CreateStyledButton(string content, RoutedEventHandler? clickHandler = null, ButtonStyle style = ButtonStyle.Primary)
         {
             var button = new Button
             {
@@ -264,49 +578,102 @@ namespace DevStackManager
             if (clickHandler != null)
                 button.Click += clickHandler;
 
-            // Determine colors based on button type
-            SolidColorBrush backgroundColor, hoverColor;
+            // Determinar cores baseado no estilo do botão
+            SolidColorBrush backgroundColor, hoverColor, pressedColor, borderColor, borderHoverColor;
 
+            switch (style)
+            {
+                case ButtonStyle.Success:
+                    backgroundColor = CurrentTheme.Success;
+                    hoverColor = CurrentTheme.AccentHover;
+                    pressedColor = CurrentTheme.AccentPressed;
+                    borderColor = DarkenColor(CurrentTheme.Success, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.AccentHover, 0.3);
+                    break;
+                case ButtonStyle.Danger:
+                    backgroundColor = CurrentTheme.Danger;
+                    hoverColor = new SolidColorBrush(Color.FromRgb(200, 35, 51));
+                    pressedColor = new SolidColorBrush(Color.FromRgb(180, 25, 41));
+                    borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
+                    borderHoverColor = DarkenColor(hoverColor, 0.3);
+                    break;
+                case ButtonStyle.Warning:
+                    backgroundColor = CurrentTheme.Warning;
+                    hoverColor = new SolidColorBrush(Color.FromRgb(217, 164, 6));
+                    pressedColor = new SolidColorBrush(Color.FromRgb(195, 147, 5));
+                    borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
+                    borderHoverColor = DarkenColor(hoverColor, 0.3);
+                    break;
+                case ButtonStyle.Info:
+                    backgroundColor = CurrentTheme.Info;
+                    hoverColor = CurrentTheme.ButtonHover;
+                    pressedColor = CurrentTheme.ButtonPressed;
+                    borderColor = DarkenColor(CurrentTheme.Info, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, 0.3);
+                    break;
+                case ButtonStyle.Secondary:
+                    backgroundColor = CurrentTheme.TextMuted;
+                    hoverColor = CurrentTheme.TextSecondary;
+                    pressedColor = CurrentTheme.TextDisabled;
+                    borderColor = DarkenColor(CurrentTheme.TextMuted, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.TextSecondary, 0.3);
+                    break;
+                default: // Primary
+                    backgroundColor = CurrentTheme.ButtonBackground;
+                    hoverColor = CurrentTheme.ButtonHover;
+                    pressedColor = CurrentTheme.ButtonPressed;
+                    borderColor = DarkenColor(CurrentTheme.ButtonBackground, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, 0.3);
+                    break;
+            }
+
+            // Detectar botões por conteúdo (retrocompatibilidade)
             if (content.Contains("Instalar") || content.Contains("▶") || content.Contains("⬇"))
             {
                 backgroundColor = CurrentTheme.Success;
                 hoverColor = CurrentTheme.AccentHover;
+                pressedColor = CurrentTheme.AccentPressed;
+                borderColor = DarkenColor(CurrentTheme.Success, 0.3);
+                borderHoverColor = DarkenColor(CurrentTheme.AccentHover, 0.3);
             }
-            else if (content.Contains("Não") ||content.Contains("Desinstalar") || content.Contains("🗑") || content.Contains("❌"))
+            else if (content.Contains("Não") || content.Contains("Desinstalar") || content.Contains("🗑") || content.Contains("❌"))
             {
                 backgroundColor = CurrentTheme.Danger;
                 hoverColor = new SolidColorBrush(Color.FromRgb(200, 35, 51));
+                pressedColor = new SolidColorBrush(Color.FromRgb(180, 25, 41));
+                borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
+                borderHoverColor = DarkenColor(hoverColor, 0.3);
             }
             else if (content.Contains("Parar") || content.Contains("⏹"))
             {
                 backgroundColor = CurrentTheme.Warning;
                 hoverColor = new SolidColorBrush(Color.FromRgb(217, 164, 6));
-            }
-            else
-            {
-                backgroundColor = CurrentTheme.ButtonBackground;
-                hoverColor = CurrentTheme.ButtonHover;
+                pressedColor = new SolidColorBrush(Color.FromRgb(195, 147, 5));
+                borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
+                borderHoverColor = DarkenColor(hoverColor, 0.3);
             }
 
-            // Create style for hover and pressed effects
+            // Criar estilo com template customizado
             var buttonStyle = new Style(typeof(Button));
 
-            // Set base properties to override default template
+            // Propriedades base
             buttonStyle.Setters.Add(new Setter(Button.BackgroundProperty, backgroundColor));
             buttonStyle.Setters.Add(new Setter(Button.ForegroundProperty, CurrentTheme.ButtonForeground));
-            buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, CurrentTheme.Border));
+            buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, borderColor));
             buttonStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(1)));
-            buttonStyle.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(12, 8, 12, 8)));
+            buttonStyle.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
             buttonStyle.Setters.Add(new Setter(Button.FontWeightProperty, FontWeights.Medium));
+            buttonStyle.Setters.Add(new Setter(Button.FontSizeProperty, 14.0));
+            buttonStyle.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
 
-            // Template customizado para garantir que triggers funcionem
+            // Template melhorado com gradientes
             var buttonTemplate = new ControlTemplate(typeof(Button));
             var borderFactory = new FrameworkElementFactory(typeof(Border));
             borderFactory.Name = "ButtonBorder";
             borderFactory.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
             borderFactory.SetBinding(Border.BorderBrushProperty, new Binding("BorderBrush") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
             borderFactory.SetBinding(Border.BorderThicknessProperty, new Binding("BorderThickness") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
 
             var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
@@ -317,61 +684,54 @@ namespace DevStackManager
             buttonTemplate.VisualTree = borderFactory;
             buttonStyle.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
 
-            // Add hover trigger - força override do template padrão
-            var hoverTrigger = new Trigger
-            {
-                Property = Button.IsMouseOverProperty,
-                Value = true
-            };
+            // Triggers com animações
+            var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, hoverColor));
-            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, CurrentTheme.BorderHover));
-            hoverTrigger.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
-            // Força a cor de foreground para garantir contraste
+            hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, borderHoverColor));
             hoverTrigger.Setters.Add(new Setter(Button.ForegroundProperty, CurrentTheme.ButtonForeground));
 
-            // Add pressed trigger
-            var pressedTrigger = new Trigger
-            {
-                Property = Button.IsPressedProperty,
-                Value = true
-            };
-
-            var pressedColor = new SolidColorBrush(Color.FromArgb(
-                255,
-                (byte)(((SolidColorBrush)hoverColor).Color.R * 0.9),
-                (byte)(((SolidColorBrush)hoverColor).Color.G * 0.9),
-                (byte)(((SolidColorBrush)hoverColor).Color.B * 0.9)
-            ));
-
+            var pressedTrigger = new Trigger { Property = Button.IsPressedProperty, Value = true };
             pressedTrigger.Setters.Add(new Setter(Button.BackgroundProperty, pressedColor));
 
-            // Add disabled trigger
-            var disabledTrigger = new Trigger
-            {
-                Property = Button.IsEnabledProperty,
-                Value = false
-            };
+            var disabledTrigger = new Trigger { Property = Button.IsEnabledProperty, Value = false };
             disabledTrigger.Setters.Add(new Setter(Button.BackgroundProperty, CurrentTheme.ButtonDisabled));
             disabledTrigger.Setters.Add(new Setter(Button.ForegroundProperty, CurrentTheme.TextMuted));
             disabledTrigger.Setters.Add(new Setter(Button.OpacityProperty, 0.6));
+            disabledTrigger.Setters.Add(new Setter(Button.CursorProperty, Cursors.No));
 
             buttonStyle.Triggers.Add(hoverTrigger);
             buttonStyle.Triggers.Add(pressedTrigger);
             buttonStyle.Triggers.Add(disabledTrigger);
 
-            // Aplica o estilo ao botão
             button.Style = buttonStyle;
 
-            // Add subtle shadow effect for visual depth
+            // Adicionar eventos para animações
+            button.MouseEnter += (s, e) => AnimateButtonHover(button, true);
+            button.MouseLeave += (s, e) => AnimateButtonHover(button, false);
+
+            // Efeito de sombra sutil
             button.Effect = new DropShadowEffect
             {
-                BlurRadius = 4,
-                ShadowDepth = 2,
-                Opacity = 0.6,
+                BlurRadius = 6,
+                ShadowDepth = 3,
+                Opacity = 0.3,
                 Color = Colors.Black
             };
 
             return button;
+        }
+
+        /// <summary>
+        /// Enum para estilos de botão
+        /// </summary>
+        public enum ButtonStyle
+        {
+            Primary,
+            Secondary,
+            Success,
+            Danger,
+            Warning,
+            Info
         }
 
         /// <summary>
@@ -733,15 +1093,538 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um Label estilizado com tema escuro
+        /// Cria um tooltip estilizado com tema escuro
         /// </summary>
-        public static Label CreateStyledLabel(string content, bool isTitle = false, bool isMuted = false)
+        public static ToolTip CreateStyledToolTip(string content)
+        {
+            var tooltip = new ToolTip
+            {
+                Content = content,
+                Background = CurrentTheme.TooltipBackground,
+                Foreground = CurrentTheme.TooltipForeground,
+                BorderBrush = CurrentTheme.Border,
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(12, 8, 12, 8),
+                FontSize = 13,
+                HasDropShadow = true
+            };
+
+            // Estilo customizado para bordas arredondadas
+            var style = new Style(typeof(ToolTip));
+            var template = new ControlTemplate(typeof(ToolTip));
+            
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderBrushProperty, new Binding("BorderBrush") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderThicknessProperty, new Binding("BorderThickness") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetBinding(ContentPresenter.MarginProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            
+            border.AppendChild(contentPresenter);
+            template.VisualTree = border;
+            style.Setters.Add(new Setter(ToolTip.TemplateProperty, template));
+            
+            tooltip.Style = style;
+            return tooltip;
+        }
+
+        /// <summary>
+        /// Adiciona um tooltip a qualquer elemento
+        /// </summary>
+        public static void AddToolTip(FrameworkElement element, string content)
+        {
+            element.ToolTip = CreateStyledToolTip(content);
+        }
+
+    /// <summary>
+    /// Cria uma barra de progresso estilizada
+    /// </summary>
+    /// <param name="value">Valor inicial.</param>
+    /// <param name="maximum">Valor máximo.</param>
+    /// <param name="isIndeterminate">Se true, o progresso é indeterminado.</param>
+    /// <param name="animateValueChanges">Se true (default), mudanças no Value serão animadas progressivamente em 1.2s.</param>
+    public static ProgressBar CreateStyledProgressBar(double value = 0, double maximum = 100, bool isIndeterminate = false, bool animateValueChanges = true)
+        {
+            var progressBar = new ProgressBar
+            {
+                Value = value,
+                Maximum = maximum,
+                IsIndeterminate = isIndeterminate,
+                Height = 6,
+                Background = CurrentTheme.PanelBackground,
+                Foreground = CurrentTheme.Accent,
+                BorderThickness = new Thickness(0)
+            };
+
+            // Template customizado usando XAML simplificado para garantir comportamento da esquerda para direita
+            var style = new Style(typeof(ProgressBar));
+            
+            var templateXaml = @"
+                <ControlTemplate TargetType='ProgressBar' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                    <Border Name='PART_Track'
+                            Background='{TemplateBinding Background}'
+                            BorderBrush='{TemplateBinding BorderBrush}'
+                            BorderThickness='{TemplateBinding BorderThickness}'
+                            CornerRadius='3'>
+                        <Grid ClipToBounds='True'>
+                            <Rectangle Name='PART_Indicator'
+                                       Fill='{TemplateBinding Foreground}'
+                                       HorizontalAlignment='Left'
+                                       RadiusX='3'
+                                       RadiusY='3'/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>";
+
+            try
+            {
+                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
+                style.Setters.Add(new Setter(ProgressBar.TemplateProperty, template));
+            }
+            catch
+            {
+                // Fallback: usar template WPF padrão com modificações mínimas
+                var template = new ControlTemplate(typeof(ProgressBar));
+                
+                var border = new FrameworkElementFactory(typeof(Border));
+                border.Name = "PART_Track";
+                border.SetValue(Border.BackgroundProperty, CurrentTheme.PanelBackground);
+                border.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+                border.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+                border.SetValue(Border.BorderBrushProperty, CurrentTheme.Border);
+                
+                var grid = new FrameworkElementFactory(typeof(Grid));
+                grid.SetValue(Panel.ClipToBoundsProperty, true);
+                
+                var indicator = new FrameworkElementFactory(typeof(Rectangle));
+                indicator.Name = "PART_Indicator";
+                indicator.SetValue(Rectangle.FillProperty, CurrentTheme.AccentGradient);
+                indicator.SetValue(Rectangle.RadiusXProperty, 3.0);
+                indicator.SetValue(Rectangle.RadiusYProperty, 3.0);
+                indicator.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                
+                grid.AppendChild(indicator);
+                border.AppendChild(grid);
+                template.VisualTree = border;
+                style.Setters.Add(new Setter(ProgressBar.TemplateProperty, template));
+            }
+            
+            progressBar.Style = style;
+
+            // Animação visual do indicador (evita recursão de ValueChanged)
+            // Sempre prepara handlers; respeita 'animateValueChanges' ao decidir animar ou setar direto
+            // Captura mudanças de valor antes do Loaded para animar a primeira alteração
+            double? queuedValueBeforeLoaded = null;
+            double initialValue = progressBar.Value;
+            bool hasAnimatedInitialValue = false;
+            
+            progressBar.ValueChanged += (s0, e0) =>
+            {
+                if (!progressBar.IsLoaded)
+                {
+                    queuedValueBeforeLoaded = e0.NewValue;
+                }
+            };
+
+            progressBar.Loaded += (s, e) =>
+            {
+                // Garante que o template esteja aplicado e peças nomeadas disponíveis
+                progressBar.ApplyTemplate();
+                var track = progressBar.Template.FindName("PART_Track", progressBar) as Border;
+                var indicator = progressBar.Template.FindName("PART_Indicator", progressBar) as Rectangle;
+
+                if (track == null || indicator == null)
+                    return;
+
+                // Mantém uma animação pendente caso o track ainda não tenha tamanho definido
+                double? pendingValueForAnimation = null;
+
+                void UpdateIndicator(double v, bool animate)
+                {
+                    if (progressBar.Maximum <= 0)
+                        return;
+
+                    if (track.ActualWidth <= 0)
+                    {
+                        // Deferir até medição
+                        if (animate)
+                            pendingValueForAnimation = v;
+                        return;
+                    }
+
+                    var clamped = Math.Max(0, Math.Min(v, progressBar.Maximum));
+                    double targetWidth = track.ActualWidth * (clamped / progressBar.Maximum);
+
+                    if (double.IsNaN(indicator.Width))
+                        indicator.Width = 0;
+
+                    if (!animate)
+                    {
+                        indicator.BeginAnimation(FrameworkElement.WidthProperty, null);
+                        indicator.Width = targetWidth;
+                        return;
+                    }
+
+                    // Para animação, garantir que comece do valor atual
+                    var currentWidth = double.IsNaN(indicator.Width) ? 0 : indicator.Width;
+                    var widthAnim = new DoubleAnimation
+                    {
+                        From = currentWidth,
+                        To = targetWidth,
+                        Duration = TimeSpan.FromSeconds(1.2),
+                        EasingFunction = AnimationSettings.StandardEasing
+                    };
+                    indicator.BeginAnimation(FrameworkElement.WidthProperty, widthAnim, HandoffBehavior.SnapshotAndReplace);
+                }
+
+                // Ajusta ao iniciar: se houve mudança antes do Loaded, anima essa primeira mudança
+                if (queuedValueBeforeLoaded.HasValue && animateValueChanges)
+                {
+                    UpdateIndicator(queuedValueBeforeLoaded.Value, true);
+                    queuedValueBeforeLoaded = null;
+                    hasAnimatedInitialValue = true;
+                }
+                else
+                {
+                    // Define o valor inicial sem animação
+                    UpdateIndicator(progressBar.Value, false);
+                }
+
+                // Garante animação da primeira mudança quando track só obtém tamanho após o Loaded
+                progressBar.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (track.ActualWidth > 0)
+                    {
+                        if (pendingValueForAnimation.HasValue && animateValueChanges)
+                        {
+                            UpdateIndicator(pendingValueForAnimation.Value, true);
+                            pendingValueForAnimation = null;
+                        }
+                    }
+                }), DispatcherPriority.Render);
+
+                // Recalcula em mudanças de tamanho do track
+                track.SizeChanged += (o, args) =>
+                {
+                    if (pendingValueForAnimation.HasValue && animateValueChanges)
+                    {
+                        UpdateIndicator(pendingValueForAnimation.Value, true);
+                        pendingValueForAnimation = null;
+                    }
+                    else
+                    {
+                        UpdateIndicator(progressBar.Value, false);
+                    }
+                };
+
+                // Caso o container do ProgressBar dimensione após o Loaded
+                progressBar.SizeChanged += (o, args) =>
+                {
+                    if (track.ActualWidth > 0)
+                    {
+                        if (pendingValueForAnimation.HasValue && animateValueChanges)
+                        {
+                            UpdateIndicator(pendingValueForAnimation.Value, true);
+                            pendingValueForAnimation = null;
+                        }
+                        else
+                        {
+                            UpdateIndicator(progressBar.Value, false);
+                        }
+                    }
+                };
+
+                // Anima a cada alteração de Value (inclusive diminuições)
+                progressBar.ValueChanged += (o, args) =>
+                {
+                    if (progressBar.IsIndeterminate)
+                        return;
+                    
+                    // Se ainda não animou o valor inicial e esta é a primeira mudança significativa, anima
+                    bool shouldAnimate = animateValueChanges;
+                    if (!hasAnimatedInitialValue && Math.Abs(args.NewValue - initialValue) > 0.001)
+                    {
+                        hasAnimatedInitialValue = true;
+                        shouldAnimate = animateValueChanges; // Força animação na primeira mudança
+                    }
+                    
+                    UpdateIndicator(args.NewValue, shouldAnimate);
+                };
+            };
+            return progressBar;
+        }
+
+        /// <summary>
+        /// Cria um separador visual estilizado
+        /// </summary>
+        public static Separator CreateStyledSeparator(Orientation orientation = Orientation.Horizontal)
+        {
+            var separator = new Separator
+            {
+                Background = CurrentTheme.Border,
+                Opacity = 0.6
+            };
+
+            if (orientation == Orientation.Horizontal)
+            {
+                separator.Height = 1;
+                separator.Margin = new Thickness(0, 8, 0, 8);
+            }
+            else
+            {
+                separator.Width = 1;
+                separator.Margin = new Thickness(8, 0, 8, 0);
+            }
+
+            return separator;
+        }
+
+        /// <summary>
+        /// Cria um painel de notificação moderno
+        /// </summary>
+        public static Border CreateNotificationPanel(string message, NotificationType type = NotificationType.Info, bool showIcon = true)
+        {
+            var border = new Border
+            {
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(16, 12, 16, 12),
+                Margin = new Thickness(0, 4, 0, 4)
+            };
+
+            // Definir cores baseado no tipo
+            switch (type)
+            {
+                case NotificationType.Success:
+                    border.Background = new SolidColorBrush(Color.FromArgb(25, 56, 211, 159));
+                    border.BorderBrush = CurrentTheme.Success;
+                    break;
+                case NotificationType.Warning:
+                    border.Background = new SolidColorBrush(Color.FromArgb(25, 255, 196, 0));
+                    border.BorderBrush = CurrentTheme.Warning;
+                    break;
+                case NotificationType.Error:
+                    border.Background = new SolidColorBrush(Color.FromArgb(25, 248, 81, 73));
+                    border.BorderBrush = CurrentTheme.Danger;
+                    break;
+                default: // Info
+                    border.Background = new SolidColorBrush(Color.FromArgb(25, 58, 150, 255));
+                    border.BorderBrush = CurrentTheme.Info;
+                    break;
+            }
+
+            border.BorderThickness = new Thickness(1, 1, 1, 1);
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); // Para o ícone
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Para o texto
+
+            // Adicionar ícone se solicitado
+            if (showIcon)
+            {
+                var icon = new TextBlock
+                {
+                    FontSize = 16,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 12, 0)
+                };
+
+                switch (type)
+                {
+                    case NotificationType.Success:
+                        icon.Text = "✅";
+                        icon.Foreground = CurrentTheme.Success;
+                        break;
+                    case NotificationType.Warning:
+                        icon.Text = "⚠️";
+                        icon.Foreground = CurrentTheme.Warning;
+                        break;
+                    case NotificationType.Error:
+                        icon.Text = "❌";
+                        icon.Foreground = CurrentTheme.Danger;
+                        break;
+                    default:
+                        icon.Text = "ℹ️";
+                        icon.Foreground = CurrentTheme.Info;
+                        break;
+                }
+
+                Grid.SetColumn(icon, 0);
+                grid.Children.Add(icon);
+            }
+
+            // Adicionar texto da mensagem
+            var messageText = new TextBlock
+            {
+                Text = message,
+                Foreground = CurrentTheme.Foreground,
+                FontSize = 14,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 20
+            };
+
+            Grid.SetColumn(messageText, showIcon ? 1 : 0);
+            if (!showIcon)
+            {
+                Grid.SetColumnSpan(messageText, 2);
+            }
+            grid.Children.Add(messageText);
+            border.Child = grid;
+
+            // Animação de entrada
+            AnimateFadeIn(border);
+
+            return border;
+        }
+
+        /// <summary>
+        /// Enum para tipos de notificação
+        /// </summary>
+        public enum NotificationType
+        {
+            Info,
+            Success,
+            Warning,
+            Error
+        }
+
+        /// <summary>
+        /// Cria um toggle switch estilizado
+        /// </summary>
+        public static CheckBox CreateStyledToggleSwitch(string content, bool isChecked = false)
+        {
+            var toggle = new CheckBox
+            {
+                Content = content,
+                IsChecked = isChecked,
+                Foreground = CurrentTheme.Foreground,
+                FontSize = 14,
+                Margin = new Thickness(0, 4, 0, 4)
+            };
+
+            // Template customizado para aparência de switch
+            var style = new Style(typeof(CheckBox));
+            var template = new ControlTemplate(typeof(CheckBox));
+
+            var grid = new FrameworkElementFactory(typeof(Grid));
+            
+            // Adicionar definições de coluna
+            var col1 = new FrameworkElementFactory(typeof(ColumnDefinition));
+            col1.SetValue(ColumnDefinition.WidthProperty, GridLength.Auto);
+            var col2 = new FrameworkElementFactory(typeof(ColumnDefinition));
+            col2.SetValue(ColumnDefinition.WidthProperty, new GridLength(1, GridUnitType.Star));
+
+            // Switch track
+            var track = new FrameworkElementFactory(typeof(Border));
+            track.Name = "SwitchTrack";
+            track.SetValue(Border.WidthProperty, 44.0);
+            track.SetValue(Border.HeightProperty, 24.0);
+            track.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
+            track.SetValue(Border.BackgroundProperty, CurrentTheme.PanelBackground);
+            track.SetValue(Border.BorderBrushProperty, CurrentTheme.Border);
+            track.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+            track.SetValue(Grid.ColumnProperty, 0);
+            track.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 8, 0));
+
+            // Switch thumb
+            var thumb = new FrameworkElementFactory(typeof(Ellipse));
+            thumb.Name = "SwitchThumb";
+            thumb.SetValue(Ellipse.WidthProperty, 18.0);
+            thumb.SetValue(Ellipse.HeightProperty, 18.0);
+            thumb.SetValue(Ellipse.FillProperty, CurrentTheme.ButtonForeground);
+            thumb.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+            thumb.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            thumb.SetValue(FrameworkElement.MarginProperty, new Thickness(3, 0, 0, 0));
+
+            // Transform para animação
+            var translateTransform = new FrameworkElementFactory(typeof(TranslateTransform));
+            thumb.SetValue(UIElement.RenderTransformProperty, translateTransform);
+
+            track.AppendChild(thumb);
+
+            // Content
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetValue(Grid.ColumnProperty, 1);
+            contentPresenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            grid.AppendChild(track);
+            grid.AppendChild(contentPresenter);
+            template.VisualTree = grid;
+
+            // Triggers para animação
+            var checkedTrigger = new Trigger { Property = CheckBox.IsCheckedProperty, Value = true };
+            checkedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.Accent) { TargetName = "SwitchTrack" });
+            checkedTrigger.Setters.Add(new Setter(TranslateTransform.XProperty, 20.0) { TargetName = "SwitchThumb" });
+
+            var hoverTrigger = new Trigger { Property = CheckBox.IsMouseOverProperty, Value = true };
+            hoverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.BorderHover) { TargetName = "SwitchTrack" });
+
+            template.Triggers.Add(checkedTrigger);
+            template.Triggers.Add(hoverTrigger);
+
+            style.Setters.Add(new Setter(CheckBox.TemplateProperty, template));
+            toggle.Style = style;
+
+            return toggle;
+        }
+
+        /// <summary>
+        /// Cria um Label estilizado com tema moderno
+        /// </summary>
+        public static Label CreateStyledLabel(string content, bool isTitle = false, bool isMuted = false, LabelStyle style = LabelStyle.Normal)
         {
             var label = new Label
             {
                 Content = content
             };
 
+            // Aplicar estilo baseado no parâmetro
+            switch (style)
+            {
+                case LabelStyle.Title:
+                    label.FontWeight = FontWeights.Bold;
+                    label.FontSize = 18;
+                    label.Foreground = CurrentTheme.Foreground;
+                    break;
+                case LabelStyle.Subtitle:
+                    label.FontWeight = FontWeights.SemiBold;
+                    label.FontSize = 16;
+                    label.Foreground = CurrentTheme.Foreground;
+                    break;
+                case LabelStyle.Muted:
+                    label.FontWeight = FontWeights.Normal;
+                    label.FontSize = 14;
+                    label.Foreground = CurrentTheme.TextMuted;
+                    break;
+                case LabelStyle.Secondary:
+                    label.FontWeight = FontWeights.Normal;
+                    label.FontSize = 14;
+                    label.Foreground = CurrentTheme.TextSecondary;
+                    break;
+                case LabelStyle.Link:
+                    label.FontWeight = FontWeights.Normal;
+                    label.FontSize = 14;
+                    label.Foreground = CurrentTheme.TextLink;
+                    label.Cursor = Cursors.Hand;
+                    
+                    // Adicionar efeito hover para links
+                    label.MouseEnter += (s, e) => {
+                        label.Foreground = CurrentTheme.TextLinkHover;
+                    };
+                    label.MouseLeave += (s, e) => {
+                        label.Foreground = CurrentTheme.TextLink;
+                    };
+                    break;
+                default: // Normal
+                    label.FontWeight = FontWeights.Normal;
+                    label.FontSize = 14;
+                    label.Foreground = CurrentTheme.Foreground;
+                    break;
+            }
+
+            // Manter retrocompatibilidade com parâmetros antigos
             if (isTitle)
             {
                 label.FontWeight = FontWeights.Bold;
@@ -752,19 +1635,31 @@ namespace DevStackManager
             {
                 label.Foreground = CurrentTheme.TextMuted;
             }
-            else
-            {
-                label.Foreground = CurrentTheme.Foreground;
-            }
 
             return label;
         }
 
         /// <summary>
+        /// Enum para estilos de label
+        /// </summary>
+        public enum LabelStyle
+        {
+            Normal,
+            Title,
+            Subtitle,
+            Muted,
+            Secondary,
+            Link
+        }
+
+        /// <summary>
         /// Exibe uma MessageBox estilizada com tema escuro
         /// </summary>
-        public static MessageBoxResult CreateStyledMessageBox(string message, string title = "Mensagem", MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
+        public static MessageBoxResult CreateStyledMessageBox(string message, string? title = null, MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
         {
+            // Use localized default title if none provided
+            title ??= LocalizationManager.Instance?.GetString("dialogs.default_title") ?? "Mensagem";
+            
             // Cria uma janela customizada para garantir tema escuro real
             var dialog = new Window
             {
@@ -818,9 +1713,9 @@ namespace DevStackManager
             MessageBoxResult result = MessageBoxResult.None;
             void CloseAndSetResult(MessageBoxResult r) { result = r; dialog.DialogResult = true; dialog.Close(); }
 
-            void AddButton(string text, MessageBoxResult r, bool isDefault = false)
+            void AddButton(string text, MessageBoxResult r, bool isDefault = false, ButtonStyle style = ButtonStyle.Primary)
             {
-                var btn = CreateStyledButton(text, (s, e) => CloseAndSetResult(r));
+                var btn = CreateStyledButton(text, (s, e) => CloseAndSetResult(r), style);
                 btn.MinWidth = 80;
                 btn.Margin = new Thickness(8, 0, 0, 0);
                 btn.Padding = new Thickness(10, 5, 10, 5);
@@ -831,20 +1726,20 @@ namespace DevStackManager
             switch (buttons)
             {
                 case MessageBoxButton.OK:
-                    AddButton("OK", MessageBoxResult.OK, true);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.ok") ?? "OK", MessageBoxResult.OK, true);
                     break;
                 case MessageBoxButton.OKCancel:
-                    AddButton("OK", MessageBoxResult.OK, true);
-                    AddButton("Cancelar", MessageBoxResult.Cancel);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.ok") ?? "OK", MessageBoxResult.OK, true);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
                     break;
                 case MessageBoxButton.YesNo:
-                    AddButton("Sim", MessageBoxResult.Yes, true);
-                    AddButton("Não", MessageBoxResult.No);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.yes") ?? "Sim", MessageBoxResult.Yes, true);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
                     break;
                 case MessageBoxButton.YesNoCancel:
-                    AddButton("Sim", MessageBoxResult.Yes, true);
-                    AddButton("Não", MessageBoxResult.No);
-                    AddButton("Cancelar", MessageBoxResult.Cancel);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.yes") ?? "Sim", MessageBoxResult.Yes, true);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
+                    AddButton(LocalizationManager.Instance?.GetString("dialogs.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
                     break;
             }
 
@@ -856,7 +1751,7 @@ namespace DevStackManager
             {
                 var iconText = new TextBlock
                 {
-                    Margin = new Thickness(5, 5, 0, 0),
+                    Margin = new Thickness(10, 10, 0, 0),
                     FontSize = 32,
                     VerticalAlignment = VerticalAlignment.Top
                 };
@@ -1136,6 +2031,120 @@ namespace DevStackManager
                 rotate.BeginAnimation(System.Windows.Media.RotateTransform.AngleProperty, animation);
             };
             return canvas;
+        }
+
+        /// <summary>
+        /// Aplica o tema atual a uma janela e seus controles filhos
+        /// </summary>
+        public static void ApplyThemeToWindow(Window window)
+        {
+            window.Background = CurrentTheme.FormBackground;
+            window.Foreground = CurrentTheme.Foreground;
+            
+            // Aplicar tema a todos os controles filhos
+            ApplyThemeToContainer(window);
+        }
+
+        /// <summary>
+        /// Aplica o tema recursivamente a todos os controles filhos de um container
+        /// </summary>
+        public static void ApplyThemeToContainer(DependencyObject container)
+        {
+            var childrenCount = VisualTreeHelper.GetChildrenCount(container);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(container, i);
+                
+                // Aplicar tema baseado no tipo do controle
+                switch (child)
+                {
+                    case DataGrid dataGrid:
+                        SetDataGridDarkTheme(dataGrid);
+                        break;
+                        
+                    case TextBox textBox:
+                        if (textBox.Style == null)
+                        {
+                            textBox.Background = CurrentTheme.InputBackground;
+                            textBox.Foreground = CurrentTheme.InputForeground;
+                            textBox.BorderBrush = CurrentTheme.InputBorder;
+                        }
+                        break;
+                        
+                    case ComboBox comboBox:
+                        if (comboBox.Style == null)
+                        {
+                            comboBox.Background = CurrentTheme.InputBackground;
+                            comboBox.Foreground = CurrentTheme.InputForeground;
+                            comboBox.BorderBrush = CurrentTheme.InputBorder;
+                        }
+                        break;
+                        
+                    case Label label:
+                        if (label.Style == null)
+                        {
+                            label.Foreground = CurrentTheme.Foreground;
+                        }
+                        break;
+                }
+                
+                // Aplicar recursivamente aos filhos
+                ApplyThemeToContainer(child);
+            }
+        }
+
+        /// <summary>
+        /// Método utilitário para alterar o tema em tempo de execução
+        /// </summary>
+        public static void SwitchTheme(ThemeType newTheme)
+        {
+            CurrentThemeType = newTheme;
+            
+            // Aplicar novo tema a todas as janelas abertas
+            foreach (Window window in Application.Current.Windows)
+            {
+                ApplyThemeToWindow(window);
+            }
+        }
+
+        /// <summary>
+        /// Cria um card container estilizado
+        /// </summary>
+        public static Border CreateStyledCard(UIElement content, double cornerRadius = 8, bool hasShadow = true)
+        {
+            var card = new Border
+            {
+                Background = CurrentTheme.ContentBackground,
+                BorderBrush = CurrentTheme.Border,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(cornerRadius),
+                Padding = new Thickness(16),
+                Child = content
+            };
+
+            if (hasShadow)
+            {
+                card.Effect = new DropShadowEffect
+                {
+                    BlurRadius = 10,
+                    ShadowDepth = 4,
+                    Opacity = 0.2,
+                    Color = Colors.Black
+                };
+            }
+
+            return card;
+        }
+
+        /// <summary>
+        /// Retorna informações sobre o tema atual
+        /// </summary>
+        public static string GetThemeInfo()
+        {
+            return $"Tema Atual: {CurrentThemeType}\n" +
+                   $"Cor Principal: {CurrentTheme.FormBackground}\n" +
+                   $"Cor de Destaque: {CurrentTheme.Accent}\n" +
+                   $"Modo Escuro: {(CurrentThemeType == ThemeType.Dark ? "Sim" : "Não")}";
         }
         #endregion
     }

@@ -51,16 +51,16 @@ namespace DevStackManager
             };
 
             // Título
-            var titleLabel = GuiTheme.CreateStyledLabel("Instalar Nova Ferramenta", true);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.title"), true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(titleLabel);
 
             // Componente
-            var componentLabel = GuiTheme.CreateStyledLabel("Selecione a ferramenta:");
+            var componentLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_tool"));
             panel.Children.Add(componentLabel);
 
-            var componentCombo = GuiTheme.CreateStyledComboBox();
+            var componentCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
             componentCombo.Margin = new Thickness(0, 5, 0, 15);
             componentCombo.Height = 30;
             var componentBinding = new Binding("AvailableComponents") { Source = mainWindow };
@@ -70,10 +70,10 @@ namespace DevStackManager
             panel.Children.Add(componentCombo);
 
             // Versão
-            var versionLabel = GuiTheme.CreateStyledLabel("Selecione a versão (deixe vazio para a mais recente):");
+            var versionLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_version"));
             panel.Children.Add(versionLabel);
 
-            var versionCombo = GuiTheme.CreateStyledComboBox();
+            var versionCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
             versionCombo.Margin = new Thickness(0, 5, 0, 20);
             versionCombo.Height = 30;
             var versionBinding = new Binding("AvailableVersions") { Source = mainWindow };
@@ -83,7 +83,7 @@ namespace DevStackManager
             panel.Children.Add(versionCombo);
 
             // Overlay de loading (spinner)
-            var overlay = GuiTheme.CreateLoadingOverlay();
+            var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
             // Overlay sempre visível se instalando
             overlay.Visibility = mainWindow.IsInstallingComponent ? Visibility.Visible : Visibility.Collapsed;
             mainWindow.PropertyChanged += (sender, args) =>
@@ -95,7 +95,7 @@ namespace DevStackManager
             };
 
             // Botão Instalar
-            var installButton = GuiTheme.CreateStyledButton("📥 Instalar", async (s, e) =>
+            var installButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.install_tab.buttons.install"), async (s, e) =>
             {
                 mainWindow.IsInstallingComponent = true;
                 overlay.Visibility = Visibility.Visible;
@@ -130,13 +130,13 @@ namespace DevStackManager
         {
             if (string.IsNullOrEmpty(mainWindow.SelectedComponent))
             {
-                GuiTheme.CreateStyledMessageBox("Selecione um componente para instalar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.select_component"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            mainWindow.StatusMessage = $"Instalando {mainWindow.SelectedComponent}...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.installing", mainWindow.SelectedComponent);
 
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, async progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, mainWindow, async progress =>
             {
                 try
                 {
@@ -153,19 +153,19 @@ namespace DevStackManager
                     }
                     else
                     {
-                        progress.Report("⚠️ PathManager não foi inicializado - PATH não foi atualizado");
+                        progress.Report(mainWindow.LocalizationManager.GetString("gui.services_tab.path_manager.not_initialized"));
                     }
 
-                    mainWindow.StatusMessage = $"{mainWindow.SelectedComponent} instalado com sucesso!";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.success", mainWindow.SelectedComponent);
 
                     // Recarregar lista de instalados
                     await GuiInstalledTab.LoadInstalledComponents(mainWindow);
                 }
                 catch (Exception ex)
                 {
-                    progress.Report($"❌ Erro ao instalar {mainWindow.SelectedComponent}: {ex.Message}");
-                    mainWindow.StatusMessage = $"Erro ao instalar {mainWindow.SelectedComponent}";
-                    DevStackConfig.WriteLog($"Erro ao instalar {mainWindow.SelectedComponent} na GUI: {ex}");
+                    progress.Report(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.error", mainWindow.SelectedComponent));
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.error", mainWindow.SelectedComponent);
+                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.error", ex));
                 }
             });
         }
@@ -186,9 +186,14 @@ namespace DevStackManager
             {
                 try
                 {
-                    mainWindow.StatusMessage = $"Carregando versões de {mainWindow.SelectedComponent}...";
+                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.loading_versions", mainWindow.SelectedComponent);
 
-                    var versionData = GetVersionDataForComponent(mainWindow.SelectedComponent);
+                    var selectedComponent = mainWindow.SelectedComponent; // capture safely
+                    var versionData = GetVersionDataForComponent(selectedComponent);
+                    if (versionData.Status != "ok")
+                    {
+                        throw new Exception(string.IsNullOrWhiteSpace(versionData.Message) ? "Failed to load versions" : versionData.Message);
+                    }
 
                     mainWindow.Dispatcher.Invoke(() =>
                     {
@@ -200,15 +205,15 @@ namespace DevStackManager
                             mainWindow.AvailableVersions.Add(version);
                         }
 
-                        mainWindow.StatusMessage = $"{mainWindow.AvailableVersions.Count} versões carregadas para {mainWindow.SelectedComponent}";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_loaded", mainWindow.AvailableVersions.Count, selectedComponent);
                     });
                 }
                 catch (Exception ex)
                 {
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.StatusMessage = $"Erro ao carregar versões: {ex.Message}";
-                        DevStackConfig.WriteLog($"Erro ao carregar versões na GUI: {ex}");
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_error", ex.Message);
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_error", ex));
                     });
                 }
             });
@@ -241,17 +246,17 @@ namespace DevStackManager
                     {
                         Status = "ok",
                         Versions = versions,
-                        Message = $"{versions.Count} versões encontradas para {component}"
+                        Message = string.Empty
                     };
                 }
                 else
                 {
-                    return new VersionData { Status = "error", Message = $"Componente '{component}' não suportado" };
+                    return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = $"Component '{component}' not found" };
                 }
             }
             catch (Exception ex)
             {
-                return new VersionData { Status = "error", Message = $"Erro ao obter versões: {ex.Message}" };
+                return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = ex.Message };
             }
         }
     }

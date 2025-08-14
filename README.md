@@ -1,4 +1,4 @@
-![DevStackManager Banner](https://img.shields.io/badge/Build-v2.6.0-blue?style=for-the-badge&logo=build)
+![DevStackManager Banner](https://img.shields.io/badge/Build-v3.0.0-blue?style=for-the-badge&logo=build)
 
 <div align="center">
     <img src="src/Shared/DevStack.ico" alt="DevStack Icon" width="100" height="100"/>
@@ -12,7 +12,7 @@
 
 ## 📥 Como Instalar
 
-* **Baixe e execute o instalador (recomendado):** [DevStack-2.6.0-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v2.6.0)
+* **Baixe e execute o instalador (recomendado):** [DevStack-3.0.0-Installer.exe](https://github.com/MuriloMSDev/DevStackManager/releases/tag/v3.0.0)
 
 ---
 
@@ -65,7 +65,7 @@
 
 - Execute sempre como **administrador** para garantir permissões de PATH e hosts.
 - Se um download falhar, tente novamente ou verifique sua conexão.
-- O arquivo de log `C:\devstack\devstack.log` registra todas as operações.
+- O arquivo de log `devstack.log` será gerado na pasta onde o DevStack foi instalado.
 - Se PATH não atualizar, reinicie o terminal.
 
 ---

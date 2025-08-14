@@ -533,7 +533,7 @@ namespace DevStackManager
         {
             try
             {
-                string logFile = Path.Combine(DevStackConfig.baseDir, "devstack.log");
+                string logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string logEntry = $"[{timestamp}] {message}";
                 File.AppendAllText(logFile, logEntry + Environment.NewLine);

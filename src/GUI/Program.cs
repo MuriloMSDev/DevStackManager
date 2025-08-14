@@ -33,10 +33,12 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                GuiTheme.CreateStyledMessageBox($"Erro ao inicializar DevStack GUI: {ex.Message}",
-                              "DevStack Manager - Erro",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
+                var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(
+                    localizationManager.GetString("gui.window.initialization_error", ex.Message),
+                    localizationManager.GetString("gui.window.error_title"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 return 1;
             }
         }
