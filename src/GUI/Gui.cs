@@ -62,7 +62,7 @@ namespace DevStackManager
         }
         public ContentControl? _mainContent;
         private int _selectedNavIndex = 0;
-        private static DevStackShared.ThemeManager.ThemeColors CurrentTheme => DevStackShared.ThemeManager.DarkTheme;
+        public DevStackShared.ThemeManager.ThemeColors CurrentTheme => DevStackShared.ThemeManager.CurrentTheme;
         #endregion
 
         #region Properties
@@ -163,6 +163,7 @@ namespace DevStackManager
                     using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
                     {
                         string? lang = null;
+                        string? theme = null;
                         while (reader.Read())
                         {
                             if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
@@ -170,17 +171,28 @@ namespace DevStackManager
                             {
                                 reader.Read();
                                 lang = reader.Value?.ToString();
-                                break;
+                            }
+                            else if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
+                                     reader.Value?.ToString() == "theme")
+                            {
+                                reader.Read();
+                                theme = reader.Value?.ToString();
                             }
                         }
                         if (!string.IsNullOrWhiteSpace(lang))
                             _localizationManager.LoadLanguage(lang);
+
+                        if (!string.IsNullOrWhiteSpace(theme))
+                            DevStackShared.ThemeManager.ApplyTheme(theme.Equals("light", StringComparison.OrdinalIgnoreCase) ? DevStackShared.ThemeManager.ThemeType.Light : DevStackShared.ThemeManager.ThemeType.Dark);
                     }
                 }
             }
             catch { }
             _statusMessage = _localizationManager.GetString("gui.window.ready_status");
             _localizationManager.LanguageChanged += OnLanguageChanged;
+
+            // Listener para troca de tema em tempo real
+            DevStackShared.ThemeManager.OnThemeChanged += OnThemeChanged;
             
             InitializeComponent();
             DataContext = this;
@@ -258,6 +270,37 @@ namespace DevStackManager
                     InitializeComponent();
                 }
                 StatusMessage = _localizationManager.GetString("gui.config_tab.languages.messages.language_changed", _localizationManager.GetLanguageName(newLang));
+            });
+        }
+
+        private void OnThemeChanged()
+        {
+            // Atualiza o tema da interface em tempo real
+            Dispatcher.Invoke(() =>
+            {
+                Background = CurrentTheme.FormBackground;
+                Foreground = CurrentTheme.Foreground;
+
+                // Recria layout principal para aplicar novas cores
+                int currentIndex = SelectedNavIndex;
+                var mainGrid = Content as Grid;
+                if (mainGrid != null)
+                {
+                    mainGrid.Children.Clear();
+                    mainGrid.RowDefinitions.Clear();
+                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                    CreateMainContent(mainGrid);
+                    CreateStatusBar(mainGrid);
+                    SelectedNavIndex = currentIndex;
+                }
+                else
+                {
+                    // Fallback: rebuild the whole content
+                    InitializeComponent();
+                }
+                StatusMessage = _localizationManager.GetString("common.themes.messages.theme_changed", _localizationManager.GetString("common.themes." + DevStackShared.ThemeManager.CurrentThemeType.ToString().ToLower()));
             });
         }
         #endregion

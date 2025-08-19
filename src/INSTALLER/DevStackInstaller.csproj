@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="DevStack.zip" Condition="Exists('DevStack.zip')" />
+    <EmbeddedResource Include="..\..\install\DevStack.zip" Condition="Exists('..\..\install\DevStack.zip')" />
     <EmbeddedResource Include="..\Shared\locale\*.json">
       <LogicalName>DevStackInstaller.locale.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>

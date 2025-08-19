@@ -17,10 +17,11 @@ namespace DevStackManager
         /// <param name="gui">Instância da interface principal para binding</param>
         public static void CreateStatusBar(Grid mainGrid, DevStackGui gui)
         {
+            var localization = gui.LocalizationManager;
             var statusBar = new Border
             {
-                Background = DevStackShared.ThemeManager.DarkTheme.StatusBackground,
-                BorderBrush = DevStackShared.ThemeManager.DarkTheme.Border,
+                Background = gui.CurrentTheme.StatusBackground,
+                BorderBrush = gui.CurrentTheme.Border,
                 BorderThickness = new Thickness(0, 1, 0, 0),
                 Height = 30,
                 Padding = new Thickness(5, 0, 0, 0)
@@ -30,11 +31,12 @@ namespace DevStackManager
             var statusGrid = new Grid();
             statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             var statusLabel = new Label
             {
                 FontSize = 12,
-                Foreground = DevStackShared.ThemeManager.DarkTheme.StatusForeground,
+                Foreground = gui.CurrentTheme.StatusForeground,
                 Padding = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
@@ -44,6 +46,14 @@ namespace DevStackManager
             statusLabel.SetBinding(Label.ContentProperty, statusBinding);
             Grid.SetColumn(statusLabel, 0);
             statusGrid.Children.Add(statusLabel);
+
+            // ComboBox para seleção de tema (Light/Dark) com estilo do ThemeManager
+            var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
+            themeComboBox.Height = 30;
+            themeComboBox.MinWidth = 120;
+            themeComboBox.VerticalAlignment = VerticalAlignment.Center;
+            themeComboBox.HorizontalAlignment = HorizontalAlignment.Right;
+            themeComboBox.Margin = new Thickness(0);
 
             // Language selector (substitui o botão de atualizar)
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -129,6 +139,13 @@ namespace DevStackManager
                 </ControlTemplate>";
 
                 var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
+
+                themeComboBox.Template = template;
+                // Garantir que nenhuma borda de controle seja aplicada
+                themeComboBox.BorderThickness = new Thickness(0);
+                themeComboBox.BorderBrush = Brushes.Transparent;
+                themeComboBox.FocusVisualStyle = null;
+
                 languageComboBox.Template = template;
                 // Garantir que nenhuma borda de controle seja aplicada
                 languageComboBox.BorderThickness = new Thickness(0);
@@ -137,8 +154,24 @@ namespace DevStackManager
             }
             catch { }
 
+            var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
+
+            // Popular temas
+            var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
+            var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
+            themeComboBox.Items.Add(darkItem);
+            themeComboBox.Items.Add(lightItem);
+            themeComboBox.SelectedItem = DevStackShared.ThemeManager.CurrentThemeType == DevStackShared.ThemeManager.ThemeType.Light ? lightItem : darkItem;
+            themeComboBox.SelectionChanged += (s, e) =>
+            {
+                if (themeComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is DevStackShared.ThemeManager.ThemeType type)
+                {
+                    DevStackShared.ThemeManager.ApplyTheme(type);
+                    DevStackConfig.PersistSetting("theme", type == DevStackShared.ThemeManager.ThemeType.Light ? "light" : "dark");
+                }
+            };
+
             // Popular idiomas
-            var localization = gui.LocalizationManager;
             var languages = localization.GetAvailableLanguages();
             foreach (var lang in languages)
             {
@@ -157,26 +190,13 @@ namespace DevStackManager
                 if (languageComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is string code)
                 {
                     localization.LoadLanguage(code);
-                    try
-                    {
-                        var baseDir = System.AppContext.BaseDirectory;
-                        var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
-                        // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
-                        using (var sw = new System.IO.StreamWriter(settingsPath))
-                        using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
-                        {
-                            writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-                            writer.WriteStartObject();
-                            writer.WritePropertyName("language");
-                            writer.WriteValue(code);
-                            writer.WriteEndObject();
-                        }
-                    }
-                    catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+                    DevStackConfig.PersistSetting("language", code);
                 }
             };
 
-            Grid.SetColumn(languageComboBox, 1);
+            Grid.SetColumn(themeComboBox, 1);
+            statusGrid.Children.Add(themeComboBox);
+            Grid.SetColumn(languageComboBox, 2);
             statusGrid.Children.Add(languageComboBox);
 
             statusBar.Child = statusGrid;

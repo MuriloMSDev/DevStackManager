@@ -65,7 +65,7 @@ namespace DevStackManager
             // Gerenciamento do PATH
             var pathTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.title"), true);
             pathTitleLabel.FontSize = 18;
-            pathTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            pathTitleLabel.Margin = new Thickness(0, 0, 0, 10);
             panel.Children.Add(pathTitleLabel);
 
             // Descrição
@@ -99,23 +99,23 @@ namespace DevStackManager
 
             // Info usando painel de notificação
             var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
-                mainWindow.LocalizationManager.GetString("gui.config_tab.path.info"), 
+                mainWindow.LocalizationManager.GetString("gui.config_tab.path.info"),
                 DevStackShared.ThemeManager.NotificationType.Info
             );
-            infoPanel.Margin = new Thickness(0, 10, 0, 20);
+            infoPanel.Margin = new Thickness(0, 5, 0, 10);
             panel.Children.Add(infoPanel);
 
             // Gerenciamento do PATH
             var dirsTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.title"), true);
             dirsTitleLabel.FontSize = 18;
-            dirsTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            dirsTitleLabel.Margin = new Thickness(0, 10, 0, 5);
             panel.Children.Add(dirsTitleLabel);
 
             // Botão Abrir Pasta do Executável
             var openExeFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.devstack_manager"), (s, e) => OpenExeFolder(mainWindow));
             openExeFolderButton.Width = 200;
             openExeFolderButton.Height = 35;
-            openExeFolderButton.Margin = new Thickness(10, 5, 0, 10);
+            openExeFolderButton.Margin = new Thickness(10, 5, 0, 5);
             openExeFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(openExeFolderButton);
 
@@ -123,14 +123,14 @@ namespace DevStackManager
             var openBaseDirFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.tools"), (s, e) => OpenBaseDir(mainWindow));
             openBaseDirFolderButton.Width = 200;
             openBaseDirFolderButton.Height = 35;
-            openBaseDirFolderButton.Margin = new Thickness(10, 5, 0, 10);
+            openBaseDirFolderButton.Margin = new Thickness(10, 10, 0, 10);
             openBaseDirFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(openBaseDirFolderButton);
 
             // Gerenciamento da Linguagem
             var languagesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.title"), true);
             languagesTitleLabel.FontSize = 18;
-            languagesTitleLabel.Margin = new Thickness(0, 0, 0, 20);
+            languagesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
             panel.Children.Add(languagesTitleLabel);
 
             // Language ComboBox
@@ -139,7 +139,7 @@ namespace DevStackManager
 
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
             languageComboBox.Height = 30;
-            languageComboBox.Margin = new Thickness(0, 5, 0, 15);
+            languageComboBox.Margin = new Thickness(0, 5, 0, 5);
             languageComboBox.Name = "LanguageComboBox";
 
             // Popular opções de idioma
@@ -166,28 +166,46 @@ namespace DevStackManager
                 if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
                 {
                     localization.LoadLanguage(languageCode);
-                    // Persistir idioma selecionado no arquivo settings.conf ao lado do executável (formato JSON)
-                    try
-                    {
-                        var baseDir = System.AppContext.BaseDirectory;
-                        var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
-                        // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
-                        using (var sw = new System.IO.StreamWriter(settingsPath))
-                        using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
-                        {
-                            writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-                            writer.WriteStartObject();
-                            writer.WritePropertyName("language");
-                            writer.WriteValue(languageCode);
-                            writer.WriteEndObject();
-                        }
-                    }
-                    catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+                    DevStackConfig.PersistSetting("language", languageCode);
                     // A janela principal ouvirá o evento e reconstruirá a UI
                 }
             };
 
             panel.Children.Add(languageComboBox);
+
+            // Gerenciamento da Linguagem
+            var themesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.title"), true);
+            themesTitleLabel.FontSize = 18;
+            themesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
+            panel.Children.Add(themesTitleLabel);
+
+            // Language ComboBox
+            var themeLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.labels.interface_theme"));
+            panel.Children.Add(themeLanguageLabel);
+
+            var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
+            themeComboBox.Height = 30;
+            themeComboBox.Margin = new Thickness(0, 5, 0, 5);
+            themeComboBox.Name = "ThemeComboBox";
+
+            // Popular opções de tema
+            var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
+            var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
+            themeComboBox.Items.Add(darkItem);
+            themeComboBox.Items.Add(lightItem);
+            themeComboBox.SelectedItem = DevStackShared.ThemeManager.CurrentThemeType == DevStackShared.ThemeManager.ThemeType.Light ? lightItem : darkItem;
+
+            // Evento para troca de tema
+            themeComboBox.SelectionChanged += (s, e) =>
+            {
+                if (themeComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is DevStackShared.ThemeManager.ThemeType type)
+                {
+                    DevStackShared.ThemeManager.ApplyTheme(type);
+                    DevStackConfig.PersistSetting("theme", type);
+                }
+            };
+
+            panel.Children.Add(themeComboBox);
 
             return panel;
         }

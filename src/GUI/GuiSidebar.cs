@@ -21,8 +21,8 @@ namespace DevStackManager
         {
             var sidebar = new Border
             {
-                Background = DevStackShared.ThemeManager.DarkTheme.SidebarBackground,
-                BorderBrush = DevStackShared.ThemeManager.DarkTheme.Border,
+                Background = mainWindow.CurrentTheme.SidebarBackground,
+                BorderBrush = mainWindow.CurrentTheme.Border,
                 BorderThickness = new Thickness(0, 0, 1, 0)
             };
             Grid.SetColumn(sidebar, 0);
@@ -37,7 +37,7 @@ namespace DevStackManager
             CreateTitlePanel(sidebarContainer, mainWindow);
 
             // Criar separador
-            CreateSeparator(sidebarContainer);
+            CreateSeparator(sidebarContainer, mainWindow);
 
             // Criar navegação
             CreateNavigationList(mainWindow, sidebarContainer);
@@ -109,13 +109,13 @@ namespace DevStackManager
         /// <summary>
         /// Cria o separador visual
         /// </summary>
-        private static void CreateSeparator(StackPanel sidebarContainer)
+        private static void CreateSeparator(StackPanel sidebarContainer, DevStackGui mainWindow)
         {
             var separator = new Border
             {
                 Height = 1,
                 Margin = new Thickness(10, 0, 10, 10),
-                Background = DevStackShared.ThemeManager.DarkTheme.Border
+                Background = mainWindow.CurrentTheme.Border
             };
             sidebarContainer.Children.Add(separator);
         }
@@ -138,7 +138,7 @@ namespace DevStackManager
 
             foreach (var item in navItems)
             {
-                var listItem = CreateNavigationItem(item);
+                var listItem = CreateNavigationItem(item, mainWindow);
                 navList.Items.Add(listItem);
             }
 
@@ -176,7 +176,7 @@ namespace DevStackManager
         /// <summary>
         /// Cria um item de navegação individual
         /// </summary>
-        private static ListBoxItem CreateNavigationItem(GuiNavigation.NavigationItem item)
+        private static ListBoxItem CreateNavigationItem(GuiNavigation.NavigationItem item, DevStackGui mainWindow)
         {
             var listItem = new ListBoxItem();
             
@@ -191,7 +191,7 @@ namespace DevStackManager
                 FontSize = 18,
                 Margin = new Thickness(0, 0, 12, 0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = DevStackShared.ThemeManager.DarkTheme.Foreground,
+                Foreground = mainWindow.CurrentTheme.Foreground,
                 Background = Brushes.Transparent
             };
             
@@ -203,7 +203,7 @@ namespace DevStackManager
                 Margin = new Thickness(0),
                 Padding = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = DevStackShared.ThemeManager.DarkTheme.Foreground,
+                Foreground = mainWindow.CurrentTheme.Foreground,
                 Background = Brushes.Transparent
             };
             

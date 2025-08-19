@@ -1170,19 +1170,25 @@ namespace DevStackInstaller
                 AddInstallationLog(localization.GetString("log_messages.creating_dir", installationPath));
                 Directory.CreateDirectory(installationPath);
                 // Criar settings.conf com idioma selecionado
+                var settingsPath = System.IO.Path.Combine(installationPath, "settings.conf");
+                var languageCode = localization.CurrentLanguage;
                 try
                 {
-                    var settingsPath = System.IO.Path.Combine(installationPath, "settings.conf");
-                    var languageCode = localization.CurrentLanguage;
-                    // Use Newtonsoft.Json's JsonTextWriter for writing JSON in a structured way
-                    using (var sw = new System.IO.StreamWriter(settingsPath))
-                    using (var writer = new Newtonsoft.Json.JsonTextWriter(sw))
+                    Newtonsoft.Json.Linq.JObject settingsObj;
+                    if (System.IO.File.Exists(settingsPath))
                     {
-                        writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-                        writer.WriteStartObject();
-                        writer.WritePropertyName("language");
-                        writer.WriteValue(languageCode);
-                        writer.WriteEndObject();
+                        var json = System.IO.File.ReadAllText(settingsPath);
+                        settingsObj = Newtonsoft.Json.Linq.JObject.Parse(json);
+                    }
+                    else
+                    {
+                        settingsObj = new Newtonsoft.Json.Linq.JObject();
+                    }
+                    settingsObj["language"] = languageCode;
+                    using (var sw = new System.IO.StreamWriter(settingsPath))
+                    using (var writer = new Newtonsoft.Json.JsonTextWriter(sw) { Formatting = Newtonsoft.Json.Formatting.Indented })
+                    {
+                        settingsObj.WriteTo(writer);
                     }
                 }
                 catch { /* silencioso para não travar a instalação */ }

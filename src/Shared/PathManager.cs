@@ -224,8 +224,11 @@ namespace DevStackManager
                                      .Where(p => !string.IsNullOrEmpty(p))
                                      .ToList();
 
-            DevStackConfig.WriteColoredLine("Diretórios atualmente no PATH do usuário:", ConsoleColor.Cyan);
-            foreach (var path in pathList)
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+            var filteredPaths = pathList.Where(p => p != null && p.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            DevStackConfig.WriteColoredLine("Diretórios do DevStack no PATH do usuário:", ConsoleColor.Cyan);
+            foreach (var path in filteredPaths)
             {
                 var exists = Directory.Exists(path) ? "✓" : "✗";
                 var color = Directory.Exists(path) ? ConsoleColor.Green : ConsoleColor.Red;

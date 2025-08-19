@@ -1,193 +1,129 @@
-# Script para compilar DevStack CLI e GUI
-# Execute este script a partir da pasta scripts
+# DevStackManager Unified Build Script
+# This script consolidates build, installer, uninstaller and locale operations for performance and efficiency.
+# Usage: .\build.ps1 [-WithInstaller]
+
 param(
     [switch]$WithInstaller = $false
 )
 
-Write-Host "=== DevStack Build Script ===" -ForegroundColor Green
-Write-Host ""
+$ErrorActionPreference = "Stop"
 
-# Verificar se estamos na pasta correta
-if (!(Test-Path "src\CLI\DevStackCLI.csproj") -or !(Test-Path "src\GUI\DevStackGUI.csproj")) {
-    Write-Host "Erro: Não foi possível encontrar os arquivos .csproj nas pastas src/CLI e src/GUI" -ForegroundColor Red
-    Write-Host "Certifique-se de que a estrutura de pastas está correta e execute o script a partir da raiz do projeto." -ForegroundColor Yellow
-    exit 1
-}
+# Directories
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rootDir = Split-Path -Parent $scriptDir
+$srcDir = Join-Path $rootDir "src"
+$releaseDir = Join-Path $rootDir "release"
+$installDir = Join-Path $rootDir "install"
+$versionFile = Join-Path $rootDir "VERSION"
 
-# Parar execução do GUI se estiver rodando
-Write-Host "Verificando se DevStackGUI está em execução..." -ForegroundColor Yellow
-$guiProcesses = Get-Process -Name "DevStackGUI" -ErrorAction SilentlyContinue
-if ($guiProcesses) {
-    Write-Host "Encontrado(s) $($guiProcesses.Count) processo(s) DevStackGUI em execução. Finalizando..." -ForegroundColor Yellow
-    $guiProcesses | Stop-Process -Force
-    Start-Sleep -Seconds 2
-    Write-Host "DevStackGUI finalizado." -ForegroundColor Green
-} else {
-    Write-Host "DevStackGUI não está em execução." -ForegroundColor Gray
-}
-
-# Parar execução do CLI se estiver rodando
-Write-Host "Verificando se DevStack CLI está em execução..." -ForegroundColor Yellow
-$cliProcesses = Get-Process -Name "DevStack" -ErrorAction SilentlyContinue
-if ($cliProcesses) {
-    Write-Host "Encontrado(s) $($cliProcesses.Count) processo(s) DevStack CLI em execução. Finalizando..." -ForegroundColor Yellow
-    $cliProcesses | Stop-Process -Force
-    Start-Sleep -Seconds 2
-    Write-Host "DevStack CLI finalizado." -ForegroundColor Green
-} else {
-    Write-Host "DevStack CLI não está em execução." -ForegroundColor Gray
-}
-
-# Limpar builds anteriores
-Write-Host "Limpando builds anteriores..." -ForegroundColor Yellow
-if (Test-Path "bin") {
-    Remove-Item -Recurse -Force "bin"
-}
-if (Test-Path "obj") {
-    Remove-Item -Recurse -Force "obj"
-}
-
-Write-Host ""
-
-# Compilar DevStack CLI (Exe)
-Write-Host "Compilando DevStack CLI (DevStack.exe)..." -ForegroundColor Cyan
-dotnet publish "src\CLI\DevStackCLI.csproj" -c Release -r win-x64 --self-contained true
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Erro ao compilar DevStack CLI!" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host ""
-
-# Compilar DevStack GUI (WinExe)
-Write-Host "Compilando DevStack GUI (DevStackGUI.exe)..." -ForegroundColor Cyan
-dotnet publish "src\GUI\DevStackGUI.csproj" -c Release -r win-x64 --self-contained true
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Erro ao compilar DevStack GUI!" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host ""
-Write-Host "=== Build Concluído com Sucesso! ===" -ForegroundColor Green
-Write-Host ""
-Write-Host "Arquivos gerados:" -ForegroundColor Yellow
-Write-Host "  • DevStack.exe     (CLI - Console Application)" -ForegroundColor White
-Write-Host "  • DevStackGUI.exe  (GUI - Windows Application)" -ForegroundColor White
-Write-Host ""
-Write-Host "Localizados em:" -ForegroundColor Gray
-Write-Host "  CLI: src\CLI\bin\Release\net9.0-windows\win-x64\publish\" -ForegroundColor Gray
-Write-Host "  GUI: src\GUI\bin\Release\net9.0-windows\win-x64\publish\" -ForegroundColor Gray
-Write-Host ""
-
-# Mostrar informações dos arquivos gerados
-$cliPath = "src\CLI\bin\Release\net9.0-windows\win-x64\publish\DevStack.exe"
-$guiPath = "src\GUI\bin\Release\net9.0-windows\win-x64\publish\DevStackGUI.exe"
-
-if (Test-Path $cliPath) {
-    $cliInfo = Get-Item $cliPath
-    Write-Host "DevStack.exe:    $($cliInfo.Length) bytes - $($cliInfo.LastWriteTime)" -ForegroundColor Green
-}
-
-if (Test-Path $guiPath) {
-    $guiInfo = Get-Item $guiPath
-    Write-Host "DevStackGUI.exe: $($guiInfo.Length) bytes - $($guiInfo.LastWriteTime)" -ForegroundColor Green
-}
-
-Write-Host ""
-Write-Host "Uso:" -ForegroundColor Yellow
-Write-Host "  DevStack.exe [comando] [argumentos]    # Interface de linha de comando" -ForegroundColor White
-Write-Host "  DevStackGUI.exe                        # Interface gráfica" -ForegroundColor White
-
-# Deploy to release folder
-Write-Host ""
-Write-Host "=== Iniciando Deploy para Pasta Release ===" -ForegroundColor Magenta
-
-# Caminhos
-$cliSourceDir = "src\CLI\bin\Release\net9.0-windows\win-x64\publish"
-$guiSourceDir = "src\GUI\bin\Release\net9.0-windows\win-x64\publish"
-$releaseDir = "release"
-
-# Criar pasta release se não existir
-if (!(Test-Path $releaseDir)) {
-    New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
-    Write-Host "Pasta release criada." -ForegroundColor Green
-}
-
-# Limpar pasta release
-Write-Host "Limpando pasta release" -ForegroundColor Yellow
-Get-ChildItem $releaseDir | Remove-Item -Recurse -Force
-
-Write-Host ""
-
-# Copiar DevStack.exe (CLI) e dependências
-Write-Host "Copiando DevStack.exe (CLI) e dependências..." -ForegroundColor Cyan
-Copy-Item "$cliSourceDir\DevStack.exe" "$releaseDir\DevStack.exe" -Force
-
-# Copiar DevStackGUI.exe (GUI) e dependências
-Write-Host "Copiando DevStackGUI.exe (GUI)..." -ForegroundColor Cyan
-Copy-Item "$guiSourceDir\DevStackGUI.exe" "$releaseDir\DevStackGUI.exe" -Force
-
-# Copiar ícone
-Write-Host "Copiando ícone..." -ForegroundColor Cyan
-Copy-Item "src\Shared\DevStack.ico" "$releaseDir\DevStack.ico" -Force
-
-# Verificar se a pasta configs já existe (foi movida anteriormente)
-if (!(Test-Path "$releaseDir\configs")) {
-    Write-Host "Movendo pasta configs..." -ForegroundColor Cyan
-    if (Test-Path "configs") {
-        Copy-Item "configs" "$releaseDir\configs" -Recurse -Force
-    } else {
-        Write-Host "Aviso: Pasta configs não encontrada" -ForegroundColor Yellow
+function Build-Projects {
+    Write-Host "=== DevStack Build ===" -ForegroundColor Green
+    # Stop running processes
+    foreach ($proc in @("DevStackGUI", "DevStack")) {
+        $running = Get-Process -Name $proc -ErrorAction SilentlyContinue
+        if ($running) { $running | Stop-Process -Force }
     }
-} else {
-    Write-Host "Pasta configs já existe no release." -ForegroundColor Gray
-}
-
-Write-Host ""
-Write-Host "=== Deploy Concluído! ===" -ForegroundColor Green
-Write-Host ""
-Write-Host "Arquivos na pasta release:" -ForegroundColor Yellow
-Get-ChildItem "$releaseDir" | ForEach-Object {
-    if ($_.PSIsContainer) {
-        Write-Host "  📁 $($_.Name)\" -ForegroundColor Blue
-    } else {
-        Write-Host "  📄 $($_.Name)" -ForegroundColor White
+    # Clean previous builds
+    foreach ($dir in @("bin", "obj")) {
+        if (Test-Path $dir) { Remove-Item -Recurse -Force $dir }
     }
+    # Build CLI & GUI
+    dotnet publish "$srcDir\CLI\DevStackCLI.csproj" -c Release -r win-x64 --self-contained true
+    if ($LASTEXITCODE -ne 0) { throw "DevStack CLI build failed" }
+    dotnet publish "$srcDir\GUI\DevStackGUI.csproj" -c Release -r win-x64 --self-contained true
+    if ($LASTEXITCODE -ne 0) { throw "DevStack GUI build failed" }
+    # Deploy to release
+    if (!(Test-Path $releaseDir)) { New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null }
+    Get-ChildItem $releaseDir | Remove-Item -Recurse -Force
+    Copy-Item "$srcDir\CLI\bin\Release\net9.0-windows\win-x64\publish\DevStack.exe" "$releaseDir\DevStack.exe" -Force
+    Copy-Item "$srcDir\GUI\bin\Release\net9.0-windows\win-x64\publish\DevStackGUI.exe" "$releaseDir\DevStackGUI.exe" -Force
+    Copy-Item "$srcDir\Shared\DevStack.ico" "$releaseDir\DevStack.ico" -Force
+    if (Test-Path "configs") { Copy-Item "configs" "$releaseDir\configs" -Recurse -Force }
+    Write-Host "Build and deploy complete." -ForegroundColor Green
 }
 
-Write-Host ""
-Write-Host "Executáveis prontos na pasta release:" -ForegroundColor Yellow
-Write-Host "  DevStack.exe     - Interface de linha de comando" -ForegroundColor White
-Write-Host "  DevStackGUI.exe  - Interface gráfica" -ForegroundColor White
+function Build-Uninstaller {
+    Write-Host "Building Uninstaller..." -ForegroundColor Yellow
+    $uninstallerSrcPath = Join-Path $srcDir "UNINSTALLER"
+    Push-Location $uninstallerSrcPath
+    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64
+    if ($LASTEXITCODE -ne 0) { throw "Uninstaller build failed" }
+    $uninstallerBinPath = "$uninstallerSrcPath\bin\Release\net9.0-windows\win-x64\publish"
+    $uninstallerExeName = "DevStack-Uninstaller.exe"
+    $exeFiles = Get-ChildItem $uninstallerBinPath -Filter "*.exe" -ErrorAction SilentlyContinue
+    if ($exeFiles.Count -eq 0) { throw "No uninstaller executable found" }
+    Copy-Item $exeFiles[0].FullName "$releaseDir\$uninstallerExeName" -Force
+    Pop-Location
+    Write-Host "Uninstaller built and copied." -ForegroundColor Green
+}
 
-# Copy locale files to output directories
-Write-Host ""
-Write-Host "=== Copying Locale Files ===" -ForegroundColor Magenta
-$localeScript = Join-Path $PSScriptRoot "copy-locale-files.ps1"
-if (Test-Path $localeScript) {
-    & $localeScript
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Locale files copied successfully!" -ForegroundColor Green
-    } else {
-        Write-Host "Failed to copy locale files!" -ForegroundColor Red
+function Build-Installer {
+    Write-Host "Building Installer..." -ForegroundColor Yellow
+    # Clean installer dir
+    if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
+    New-Item -Path $installDir -ItemType Directory -Force | Out-Null
+    if (!(Test-Path $versionFile)) { throw "VERSION file not found" }
+    $version = (Get-Content $versionFile).Trim()
+    if (!(Test-Path $releaseDir)) { throw "Release directory not found. Build projects first." }
+    $releaseFiles = Get-ChildItem $releaseDir -File
+    if ($releaseFiles.Count -eq 0) { throw "No files in release directory. Build projects first." }
+    Build-Uninstaller
+    $zipPath = Join-Path $installDir "DevStack.zip"
+    if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($releaseDir, $zipPath)
+    $installerSrcPath = Join-Path $srcDir "INSTALLER"
+    Push-Location $installerSrcPath
+    dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64
+    if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }
+    $installerBinPath = "$installerSrcPath\bin\Release\net9.0-windows\win-x64\publish"
+    $installerExeName = "DevStack-$version-Installer.exe"
+    $exeFiles = Get-ChildItem $installerBinPath -Filter "*.exe" -ErrorAction SilentlyContinue
+    if ($exeFiles.Count -eq 0) { throw "No installer executable found" }
+    $targetInstallerPath = Join-Path $installDir $installerExeName
+    Copy-Item $exeFiles[0].FullName $targetInstallerPath -Force
+    $zipInstallerPath = $targetInstallerPath.Replace('.exe', '.zip')
+    if (Test-Path $zipInstallerPath) { Remove-Item $zipInstallerPath -Force }
+    $zip = [System.IO.Compression.ZipFile]::Open($zipInstallerPath, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $targetInstallerPath, [System.IO.Path]::GetFileName($targetInstallerPath)) | Out-Null
+    } finally {
+        $zip.Dispose()
     }
-} else {
-    Write-Host "Locale script not found: $localeScript" -ForegroundColor Red
+    Pop-Location
+    if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+    Write-Host "Installer built and compacted." -ForegroundColor Green
 }
 
-# Build installer if requested
-if ($WithInstaller) {
-    Write-Host ""
-    Write-Host "=== Building Installer ===" -ForegroundColor Magenta
-    $installerScript = Join-Path $PSScriptRoot "build-installer.ps1"
-    if (Test-Path $installerScript) {
-        & $installerScript
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Installer created successfully!" -ForegroundColor Green
-        } else {
-            Write-Host "Failed to create installer!" -ForegroundColor Red
-        }
-    } else {
-        Write-Host "Installer script not found: $installerScript" -ForegroundColor Red
+function Copy-LocaleFiles {
+    Write-Host "Copying locale files..." -ForegroundColor Magenta
+    $SharedLocaleDir = Join-Path $srcDir "Shared\locale"
+    $InstallerBuildDir = Join-Path $srcDir "INSTALLER\bin\Release\net9.0-windows\win-x64\publish"
+    $UninstallerBuildDir = Join-Path $srcDir "UNINSTALLER\bin\Release\net9.0-windows\win-x64\publish"
+    $InstallerInstallDir = $installDir
+    $InstallerLocaleDir = Join-Path $InstallerBuildDir "locale"
+    $UninstallerLocaleDir = Join-Path $UninstallerBuildDir "locale"
+    foreach ($dir in @($InstallerLocaleDir, $UninstallerLocaleDir)) {
+        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
     }
+    $LocaleFiles = Get-ChildItem -Path $SharedLocaleDir -Filter "*.json"
+    foreach ($file in $LocaleFiles) {
+        Copy-Item -Path $file.FullName -Destination (Join-Path $InstallerLocaleDir $file.Name) -Force | Out-Null
+        Copy-Item -Path $file.FullName -Destination (Join-Path $UninstallerLocaleDir $file.Name) -Force | Out-Null
+    }
+    $InstallerLocaleDir = Join-Path $InstallerInstallDir "locale"
+    if (-not (Test-Path $InstallerLocaleDir)) { New-Item -ItemType Directory -Path $InstallerLocaleDir -Force | Out-Null }
+    foreach ($file in $LocaleFiles) {
+        Copy-Item -Path $file.FullName -Destination (Join-Path $InstallerLocaleDir $file.Name) -Force | Out-Null
+    }
+    Write-Host "Locale files copied." -ForegroundColor Green
 }
+
+# Main execution
+${startTime} = Get-Date
+Build-Projects
+Copy-LocaleFiles
+if ($WithInstaller) { Build-Installer }
+${endTime} = Get-Date
+$elapsed = ($endTime - $startTime).TotalSeconds
+Write-Host ("All operations complete. ({0:N1}s)" -f $elapsed) -ForegroundColor Green
