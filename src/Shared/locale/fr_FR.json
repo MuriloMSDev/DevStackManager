@@ -512,6 +512,12 @@
           "language_changed": "Langue changée en {0}"
         }
       },
+      "themes": {
+        "title": "Thèmes",
+        "labels": {
+          "interface_theme": "Thème de l'interface"
+        }
+      },
       "messages": {
         "path_updated": "PATH mis à jour avec succès",
         "path_update_error": "Erreur lors de la mise à jour du PATH",
@@ -653,6 +659,13 @@
     "timestamp_format": "HH:mm:ss"
   },
   "common": {
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "themes": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "messages": {
+        "theme_changed": "Thème changé en {0}"
+      }
+    }
   }
 }

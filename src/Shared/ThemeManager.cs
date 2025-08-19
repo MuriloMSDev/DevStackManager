@@ -37,9 +37,26 @@ namespace DevStackShared
         public class ThemeColors
         {
             // Backgrounds principais
+            // Cores hardcoded utilizadas em controles
+            public SolidColorBrush PureWhite { get; set; } = null!;
+            public SolidColorBrush PureBlack { get; set; } = null!;
+            public SolidColorBrush DangerHover { get; set; } = null!;
+            public SolidColorBrush DangerPressed { get; set; } = null!;
+            public SolidColorBrush WarningHover { get; set; } = null!;
+            public SolidColorBrush WarningPressed { get; set; } = null!;
+            public SolidColorBrush SelectionBrush { get; set; } = null!;
+            public SolidColorBrush OverlayWhite { get; set; } = null!;
+            public SolidColorBrush ConsoleSelectionBrush { get; set; } = null!;
+            public SolidColorBrush RowSelectedForeground { get; set; } = null!;
             public SolidColorBrush FormBackground { get; set; } = null!;
             public SolidColorBrush Foreground { get; set; } = null!;
             public SolidColorBrush ControlBackground { get; set; } = null!;
+
+            // Backgrounds para notificações
+            public SolidColorBrush SuccessBackground { get; set; } = null!;
+            public SolidColorBrush WarningBackground { get; set; } = null!;
+            public SolidColorBrush DangerBackground { get; set; } = null!;
+            public SolidColorBrush InfoBackground { get; set; } = null!;
 
             // Botões
             public SolidColorBrush ButtonBackground { get; set; } = null!;
@@ -131,10 +148,25 @@ namespace DevStackShared
         /// </summary>
         public static readonly ThemeColors DarkTheme = new()
         {
-            // Backgrounds principais - tons mais equilibrados e modernos
+            PureWhite = new SolidColorBrush(Colors.White),
+            PureBlack = new SolidColorBrush(Colors.Black),
+            DangerHover = new SolidColorBrush(Color.FromRgb(200, 35, 51)),
+            DangerPressed = new SolidColorBrush(Color.FromRgb(180, 25, 41)),
+            WarningHover = new SolidColorBrush(Color.FromRgb(217, 164, 6)),
+            WarningPressed = new SolidColorBrush(Color.FromRgb(195, 147, 5)),
+            SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255)),
+            OverlayWhite = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
+            ConsoleSelectionBrush = new SolidColorBrush(Color.FromRgb(201, 209, 217)),
+            RowSelectedForeground = new SolidColorBrush(Colors.White),
             FormBackground = new SolidColorBrush(Color.FromRgb(22, 27, 34)),
             Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
+
+            // Notificações
+            SuccessBackground = new SolidColorBrush(Color.FromArgb(25, 56, 211, 159)),
+            WarningBackground = new SolidColorBrush(Color.FromArgb(25, 255, 196, 0)),
+            DangerBackground = new SolidColorBrush(Color.FromArgb(25, 248, 81, 73)),
+            InfoBackground = new SolidColorBrush(Color.FromArgb(25, 58, 150, 255)),
 
             // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
@@ -220,16 +252,34 @@ namespace DevStackShared
         /// </summary>
         public static readonly ThemeColors LightTheme = new()
         {
-            FormBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+            PureWhite = new SolidColorBrush(Colors.White),
+            PureBlack = new SolidColorBrush(Colors.Black),
+            DangerHover = new SolidColorBrush(Color.FromRgb(255, 102, 102)),
+            DangerPressed = new SolidColorBrush(Color.FromRgb(255, 51, 51)),
+            WarningHover = new SolidColorBrush(Color.FromRgb(255, 223, 99)),
+            WarningPressed = new SolidColorBrush(Color.FromRgb(255, 213, 49)),
+            SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255)),
+            OverlayWhite = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
+            ConsoleSelectionBrush = new SolidColorBrush(Color.FromRgb(220, 220, 220)),
+            RowSelectedForeground = new SolidColorBrush(Colors.Black),
+            FormBackground = new SolidColorBrush(Color.FromRgb(245, 247, 250)),
             Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
-            ControlBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-            
+            ControlBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+
+            // Notificações
+            SuccessBackground = new SolidColorBrush(Color.FromArgb(25, 40, 167, 69)),
+            WarningBackground = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)),
+            DangerBackground = new SolidColorBrush(Color.FromArgb(25, 220, 53, 69)),
+            InfoBackground = new SolidColorBrush(Color.FromArgb(25, 23, 162, 184)),
+
+            // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             ButtonForeground = new SolidColorBrush(Colors.White),
             ButtonHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
             ButtonPressed = new SolidColorBrush(Color.FromRgb(0, 100, 200)),
             ButtonDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
-            
+
+            // Cores de destaque com estados expandidos
             Accent = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
             AccentHover = new SolidColorBrush(Color.FromRgb(33, 136, 56)),
             AccentPressed = new SolidColorBrush(Color.FromRgb(25, 105, 43)),
@@ -237,7 +287,8 @@ namespace DevStackShared
             Danger = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
             Success = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
             Info = new SolidColorBrush(Color.FromRgb(23, 162, 184)),
-            
+
+            // Grid com excelente legibilidade e hover
             GridBackground = new SolidColorBrush(Colors.White),
             GridForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
             GridHeaderBackground = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
@@ -245,56 +296,63 @@ namespace DevStackShared
             GridAlternateRow = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
             GridSelectedRow = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             GridHoverRow = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
-            
+
+            // Status e navegação
             StatusBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
             StatusForeground = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
             SidebarBackground = new SolidColorBrush(Color.FromRgb(243, 244, 246)),
             SidebarSelected = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
             SidebarHover = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-            
+
+            // Bordas expandidas
             Border = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
             BorderHover = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             BorderFocus = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             BorderActive = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
-            
+
+            // Áreas de conteúdo
             ContentBackground = new SolidColorBrush(Colors.White),
             PanelBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
             ConsoleBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             ConsoleForeground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-            
+
+            // Inputs com estados melhorados
             InputBackground = new SolidColorBrush(Colors.White),
             InputForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
             InputBorder = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
             InputFocusBorder = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             InputHoverBorder = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
             DropdownBackground = new SolidColorBrush(Colors.White),
-            
+
+            // Texto expandido
             TextMuted = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
             TextSecondary = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
             TextDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
             TextLink = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             TextLinkHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
-            
+
+            // Overlays e tooltips
             OverlayBackground = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
             TooltipBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             TooltipForeground = new SolidColorBrush(Colors.White),
-            
+
+            // Gradientes modernos
             ButtonGradient = new LinearGradientBrush(
-                Color.FromRgb(0, 123, 255), 
-                Color.FromRgb(0, 110, 230), 
+                Color.FromRgb(0, 123, 255),
+                Color.FromRgb(0, 110, 230),
                 90),
             AccentGradient = new LinearGradientBrush(
-                Color.FromRgb(40, 167, 69), 
-                Color.FromRgb(33, 136, 56), 
+                Color.FromRgb(40, 167, 69),
+                Color.FromRgb(33, 136, 56),
                 45),
             HeaderGradient = new LinearGradientBrush(
-                Color.FromRgb(233, 236, 239), 
-                Color.FromRgb(248, 249, 250), 
+                Color.FromRgb(233, 236, 239),
+                Color.FromRgb(245, 247, 250),
                 90)
         };
 
         // Tema atual e configurações
-        private static ThemeType _currentThemeType = ThemeType.Dark;
+        private static ThemeType _currentThemeType;
         public static ThemeType CurrentThemeType 
         { 
             get => _currentThemeType; 
@@ -303,6 +361,34 @@ namespace DevStackShared
                 _currentThemeType = value;
                 OnThemeChanged?.Invoke();
             } 
+        }
+
+        /// <summary>
+        /// Aplica o tema em tempo real, dispara evento e faz fallback se necessário
+        /// </summary>
+        public static void ApplyTheme(ThemeType themeType)
+        {
+            string logMessage = $"[ApplyTheme] Applying theme: {themeType}\n";
+            try
+            {
+                if (_currentThemeType != themeType)
+                {
+                    _currentThemeType = themeType;
+                    logMessage += $"[ApplyTheme] Theme set to: {_currentThemeType}\n";
+                    OnThemeChanged?.Invoke();
+                }
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                // Opcional: salvar log em arquivo
+                // AppendToLogFile(logMessage);
+            }
+            catch (Exception ex)
+            {
+                logMessage += $"[ApplyTheme] Failed to apply theme: {ex.Message}\n";
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                // Fallback para tema padrão
+                _currentThemeType = ThemeType.Dark;
+                OnThemeChanged?.Invoke();
+            }
         }
 
         public static ThemeColors CurrentTheme => CurrentThemeType switch
@@ -538,7 +624,7 @@ namespace DevStackShared
                 Value = true
             };
             selectedTrigger.Setters.Add(new Setter(DataGridRow.BackgroundProperty, CurrentTheme.GridSelectedRow));
-            selectedTrigger.Setters.Add(new Setter(DataGridRow.ForegroundProperty, new SolidColorBrush(Colors.White)));
+            selectedTrigger.Setters.Add(new Setter(DataGridRow.ForegroundProperty, CurrentTheme.RowSelectedForeground));
 
             rowStyle.Triggers.Add(hoverTrigger);
             rowStyle.Triggers.Add(selectedTrigger);
@@ -559,7 +645,7 @@ namespace DevStackShared
                 Value = true
             };
             cellSelectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, Brushes.Transparent));
-            cellSelectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, new SolidColorBrush(Colors.White)));
+            cellSelectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, CurrentTheme.RowSelectedForeground));
             cellStyle.Triggers.Add(cellSelectedTrigger);
 
             dataGrid.CellStyle = cellStyle;
@@ -592,17 +678,17 @@ namespace DevStackShared
                     break;
                 case ButtonStyle.Danger:
                     backgroundColor = CurrentTheme.Danger;
-                    hoverColor = new SolidColorBrush(Color.FromRgb(200, 35, 51));
-                    pressedColor = new SolidColorBrush(Color.FromRgb(180, 25, 41));
+                    hoverColor = CurrentTheme.DangerHover;
+                    pressedColor = CurrentTheme.DangerPressed;
                     borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
-                    borderHoverColor = DarkenColor(hoverColor, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.DangerHover, 0.3);
                     break;
                 case ButtonStyle.Warning:
                     backgroundColor = CurrentTheme.Warning;
-                    hoverColor = new SolidColorBrush(Color.FromRgb(217, 164, 6));
-                    pressedColor = new SolidColorBrush(Color.FromRgb(195, 147, 5));
+                    hoverColor = CurrentTheme.WarningHover;
+                    pressedColor = CurrentTheme.WarningPressed;
                     borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
-                    borderHoverColor = DarkenColor(hoverColor, 0.3);
+                    borderHoverColor = DarkenColor(CurrentTheme.WarningHover, 0.3);
                     break;
                 case ButtonStyle.Info:
                     backgroundColor = CurrentTheme.Info;
@@ -639,18 +725,18 @@ namespace DevStackShared
             else if (content.Contains("Não") || content.Contains("Desinstalar") || content.Contains("🗑") || content.Contains("❌"))
             {
                 backgroundColor = CurrentTheme.Danger;
-                hoverColor = new SolidColorBrush(Color.FromRgb(200, 35, 51));
-                pressedColor = new SolidColorBrush(Color.FromRgb(180, 25, 41));
+                hoverColor = CurrentTheme.DangerHover;
+                pressedColor = CurrentTheme.DangerPressed;
                 borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
-                borderHoverColor = DarkenColor(hoverColor, 0.3);
+                borderHoverColor = DarkenColor(CurrentTheme.DangerHover, 0.3);
             }
             else if (content.Contains("Parar") || content.Contains("⏹"))
             {
                 backgroundColor = CurrentTheme.Warning;
-                hoverColor = new SolidColorBrush(Color.FromRgb(217, 164, 6));
-                pressedColor = new SolidColorBrush(Color.FromRgb(195, 147, 5));
+                hoverColor = CurrentTheme.WarningHover;
+                pressedColor = CurrentTheme.WarningPressed;
                 borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
-                borderHoverColor = DarkenColor(hoverColor, 0.3);
+                borderHoverColor = DarkenColor(CurrentTheme.WarningHover, 0.3);
             }
 
             // Criar estilo com template customizado
@@ -715,7 +801,7 @@ namespace DevStackShared
                 BlurRadius = 6,
                 ShadowDepth = 3,
                 Opacity = 0.3,
-                Color = Colors.Black
+                Color = CurrentTheme.PureBlack.Color
             };
 
             return button;
@@ -752,14 +838,14 @@ namespace DevStackShared
                 textBox.Foreground = CurrentTheme.ConsoleForeground;
                 textBox.BorderBrush = CurrentTheme.Border;
                 textBox.FontFamily = new FontFamily("Consolas");
-                textBox.SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255));
+                textBox.SelectionBrush = CurrentTheme.SelectionBrush;
             }
             else
             {
                 textBox.Background = CurrentTheme.InputBackground;
                 textBox.Foreground = CurrentTheme.InputForeground;
                 textBox.BorderBrush = CurrentTheme.InputBorder;
-                textBox.SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255));
+                textBox.SelectionBrush = CurrentTheme.SelectionBrush;
             }
 
             // Create style for focus effects and modern scrollbar
@@ -1393,23 +1479,23 @@ namespace DevStackShared
                 Margin = new Thickness(0, 4, 0, 4)
             };
 
-            // Definir cores baseado no tipo
+            // Definir cores baseado no tipo usando propriedades do tema
             switch (type)
             {
                 case NotificationType.Success:
-                    border.Background = new SolidColorBrush(Color.FromArgb(25, 56, 211, 159));
+                    border.Background = CurrentTheme.SuccessBackground;
                     border.BorderBrush = CurrentTheme.Success;
                     break;
                 case NotificationType.Warning:
-                    border.Background = new SolidColorBrush(Color.FromArgb(25, 255, 196, 0));
+                    border.Background = CurrentTheme.WarningBackground;
                     border.BorderBrush = CurrentTheme.Warning;
                     break;
                 case NotificationType.Error:
-                    border.Background = new SolidColorBrush(Color.FromArgb(25, 248, 81, 73));
+                    border.Background = CurrentTheme.DangerBackground;
                     border.BorderBrush = CurrentTheme.Danger;
                     break;
                 default: // Info
-                    border.Background = new SolidColorBrush(Color.FromArgb(25, 58, 150, 255));
+                    border.Background = CurrentTheme.InfoBackground;
                     border.BorderBrush = CurrentTheme.Info;
                     break;
             }

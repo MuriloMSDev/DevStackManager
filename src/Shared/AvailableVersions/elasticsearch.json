@@ -608,6 +608,10 @@
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.17.9-windows-x86_64.zip"
   },
   {
+    "version": "8.17.10",
+    "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.17.10-windows-x86_64.zip"
+  },
+  {
     "version": "8.18.0",
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.18.0-windows-x86_64.zip"
   },
@@ -628,12 +632,20 @@
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.18.4-windows-x86_64.zip"
   },
   {
+    "version": "8.18.5",
+    "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.18.5-windows-x86_64.zip"
+  },
+  {
     "version": "8.19.0",
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.0-windows-x86_64.zip"
   },
   {
     "version": "8.19.1",
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.1-windows-x86_64.zip"
+  },
+  {
+    "version": "8.19.2",
+    "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.2-windows-x86_64.zip"
   },
   {
     "version": "9.0.0",
@@ -656,11 +668,19 @@
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.4-windows-x86_64.zip"
   },
   {
+    "version": "9.0.5",
+    "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.5-windows-x86_64.zip"
+  },
+  {
     "version": "9.1.0",
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.0-windows-x86_64.zip"
   },
   {
     "version": "9.1.1",
     "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.1-windows-x86_64.zip"
+  },
+  {
+    "version": "9.1.2",
+    "url": "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.2-windows-x86_64.zip"
   }
 ]

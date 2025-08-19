@@ -172,5 +172,35 @@ namespace DevStackManager
             
             return result.ToString();
         }
+
+        /// <summary>
+        /// Persistir configuração genérica em settings.conf
+        /// </summary>
+        public static void PersistSetting(string key, object value)
+        {
+            var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
+            try
+            {
+                Newtonsoft.Json.Linq.JObject settingsObj;
+                if (System.IO.File.Exists(settingsPath))
+                {
+                    var json = System.IO.File.ReadAllText(settingsPath);
+                    settingsObj = Newtonsoft.Json.Linq.JObject.Parse(json);
+                }
+                else
+                {
+                    settingsObj = new Newtonsoft.Json.Linq.JObject();
+                }
+                settingsObj[key] = value is Enum
+                    ? (value != null ? value.ToString().ToLower() : string.Empty)
+                    : Newtonsoft.Json.Linq.JToken.FromObject(value ?? string.Empty);
+                using (var sw = new System.IO.StreamWriter(settingsPath))
+                using (var writer = new Newtonsoft.Json.JsonTextWriter(sw) { Formatting = Newtonsoft.Json.Formatting.Indented })
+                {
+                    settingsObj.WriteTo(writer);
+                }
+            }
+            catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+        }
     }
 }
