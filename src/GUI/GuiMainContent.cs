@@ -20,13 +20,8 @@ namespace DevStackManager
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(250) }); // Sidebar
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Content
 
-            // Criar sidebar
-            GuiSidebar.CreateSidebar(contentGrid, mainWindow);
-
-            // Criar área de conteúdo principal
-            CreateContentArea(contentGrid, mainWindow);
-
-            mainGrid.Children.Add(contentGrid);
+            // Criar sidebar e área de conteúdo principal (unificado)
+            GuiNavigation.CreateMainContent(mainWindow, mainGrid);
         }
 
         /// <summary>

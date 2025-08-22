@@ -192,7 +192,7 @@ namespace DevStackManager
                     settingsObj = new Newtonsoft.Json.Linq.JObject();
                 }
                 settingsObj[key] = value is Enum
-                    ? (value != null ? value.ToString().ToLower() : string.Empty)
+                    ? (value as Enum)?.ToString()?.ToLower() ?? string.Empty
                     : Newtonsoft.Json.Linq.JToken.FromObject(value ?? string.Empty);
                 using (var sw = new System.IO.StreamWriter(settingsPath))
                 using (var writer = new Newtonsoft.Json.JsonTextWriter(sw) { Formatting = Newtonsoft.Json.Formatting.Indented })
