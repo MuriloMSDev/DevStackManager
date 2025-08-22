@@ -24,7 +24,7 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o conteúdo principal com sidebar
+    /// Cria o conteúdo principal com sidebar
         /// </summary>
         public static void CreateMainContent(DevStackGui mainWindow, Grid mainGrid)
         {
@@ -36,7 +36,28 @@ namespace DevStackManager
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Content
 
             // Criar sidebar
-            CreateSidebar(mainWindow, contentGrid);
+            var sidebar = new Border
+            {
+                Background = mainWindow.CurrentTheme.SidebarBackground,
+                BorderBrush = mainWindow.CurrentTheme.Border,
+                BorderThickness = new Thickness(0, 0, 1, 0)
+            };
+            Grid.SetColumn(sidebar, 0);
+
+            var sidebarContainer = new StackPanel
+            {
+                Orientation = Orientation.Vertical
+            };
+
+            // Título e ícone
+            sidebarContainer.Children.Add(CreateSidebarTitleUnified(mainWindow));
+            // Separador
+            sidebarContainer.Children.Add(CreateSeparatorUnified(mainWindow));
+            // Lista de navegação
+            sidebarContainer.Children.Add(CreateNavigationListUnified(mainWindow));
+
+            sidebar.Child = sidebarContainer;
+            contentGrid.Children.Add(sidebar);
 
             // Criar área de conteúdo principal
             mainWindow._mainContent = new ContentControl
@@ -52,45 +73,116 @@ namespace DevStackManager
             mainGrid.Children.Add(contentGrid);
         }
 
-        /// <summary>
-        /// Cria a sidebar de navegação
-        /// </summary>
-        private static void CreateSidebar(DevStackGui mainWindow, Grid contentGrid)
+        // Métodos unificados da sidebar
+        private static StackPanel CreateSidebarTitleUnified(DevStackGui mainWindow)
         {
-            var sidebar = new Border
+            var titlePanel = new StackPanel
             {
-                Background = DevStackShared.ThemeManager.CurrentTheme.SidebarBackground,
-                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
-                BorderThickness = new Thickness(0, 0, 1, 0)
-            };
-            Grid.SetColumn(sidebar, 0);
-
-            // Container principal da sidebar com o título no topo
-            var sidebarContainer = new StackPanel
-            {
-                Orientation = Orientation.Vertical
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(5, 15, 5, 10)
             };
 
-            // Título no topo da sidebar com ícone
-            var titlePanel = CreateSidebarTitle(mainWindow);
-            sidebarContainer.Children.Add(titlePanel);
+            // Ícone DevStack
+            var iconImage = new Image
+            {
+                Width = 50,
+                Height = 50,
+                Margin = new Thickness(0, 6, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            try
+            {
+                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DevStack.ico");
+                if (File.Exists(iconPath))
+                {
+                    iconImage.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
+                    titlePanel.Children.Add(iconImage);
+                }
+            }
+            catch { }
 
-            // Separador sutil
-            var separator = new Border
+            var sidebarTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sidebar.title"));
+            sidebarTitleLabel.FontSize = 20;
+            sidebarTitleLabel.FontWeight = FontWeights.Bold;
+            sidebarTitleLabel.HorizontalAlignment = HorizontalAlignment.Left;
+            sidebarTitleLabel.VerticalAlignment = VerticalAlignment.Center;
+            sidebarTitleLabel.Margin = new Thickness(0);
+            sidebarTitleLabel.Padding = new Thickness(0);
+            titlePanel.Children.Add(sidebarTitleLabel);
+
+            return titlePanel;
+        }
+
+        private static Border CreateSeparatorUnified(DevStackGui mainWindow)
+        {
+            return new Border
             {
                 Height = 1,
                 Margin = new Thickness(10, 0, 10, 10),
-                Background = DevStackShared.ThemeManager.CurrentTheme.Border
+                Background = mainWindow.CurrentTheme.Border
             };
-            sidebarContainer.Children.Add(separator);
+        }
 
-            // Lista de navegação
-            var navList = CreateNavigationList(mainWindow);
-            sidebarContainer.Children.Add(navList);
-            
-            // Adicionar o container à sidebar
-            sidebar.Child = sidebarContainer;
-            contentGrid.Children.Add(sidebar);
+        private static ListBox CreateNavigationListUnified(DevStackGui mainWindow)
+        {
+            var navList = new ListBox
+            {
+                BorderThickness = new Thickness(0),
+                Background = System.Windows.Media.Brushes.Transparent,
+                Margin = new Thickness(8, 5, 8, 5),
+                SelectedIndex = 0
+            };
+
+            var navItems = new List<NavigationItem>
+            {
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.title"), Icon = "📦", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.title"), Icon = "📥", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.title"), Icon = "🗑️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.services.title"), Icon = "⚙️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.services.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.sites.title"), Icon = "🌐", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.sites.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.utilities.title"), Icon = "🛠️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.utilities.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.config.title"), Icon = "🔧", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.config.description") }
+            };
+
+            foreach (var item in navItems)
+            {
+                var listItem = new ListBoxItem();
+                listItem.ClearValue(ListBoxItem.StyleProperty);
+                var panel = new StackPanel { Orientation = Orientation.Horizontal };
+                var iconLabel = new Label
+                {
+                    Content = item.Icon,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 12, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = mainWindow.CurrentTheme.Foreground,
+                    Background = System.Windows.Media.Brushes.Transparent
+                };
+                var titleLabel = new Label
+                {
+                    Content = item.Title,
+                    FontWeight = FontWeights.SemiBold,
+                    FontSize = 14,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = mainWindow.CurrentTheme.Foreground,
+                    Background = System.Windows.Media.Brushes.Transparent
+                };
+                panel.Children.Add(iconLabel);
+                panel.Children.Add(titleLabel);
+                listItem.Content = panel;
+                navList.Items.Add(listItem);
+            }
+
+            // Bind da seleção
+            var binding = new Binding("SelectedNavIndex") { Source = mainWindow };
+            navList.SetBinding(ListBox.SelectedIndexProperty, binding);
+
+            // Apply theme to the navigation list
+            DevStackShared.ThemeManager.ApplySidebarListBoxTheme(navList);
+            navList.UpdateLayout();
+            return navList;
         }
 
         /// <summary>
@@ -163,9 +255,9 @@ namespace DevStackManager
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.install.title"), Icon = "📥", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.install.description") },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.uninstall.title"), Icon = "🗑️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.uninstall.description") },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.services.title"), Icon = "⚙️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.services.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.title"), Icon = "🔧", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.description") },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.sites.title"), Icon = "🌐", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.sites.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.title"), Icon = "🛠️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.description") }
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.title"), Icon = "🛠️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.description") },
+                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.title"), Icon = "🔧", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.description") }
             };
 
             foreach (var item in navItems)
@@ -248,13 +340,13 @@ namespace DevStackManager
                     mainWindow._mainContent.Content = GuiServicesTab.CreateServicesContent(mainWindow);
                     break;
                 case 4:
-                    mainWindow._mainContent.Content = GuiConfigTab.CreateConfigContent(mainWindow);
-                    break;
-                case 5:
                     mainWindow._mainContent.Content = GuiSitesTab.CreateSitesContent(mainWindow);
                     break;
-                case 6:
+                case 5:
                     mainWindow._mainContent.Content = GuiUtilitiesTab.CreateUtilitiesContent(mainWindow);
+                    break;
+                case 6:
+                    mainWindow._mainContent.Content = GuiConfigTab.CreateConfigContent(mainWindow);
                     break;
                 default:
                     mainWindow._mainContent.Content = GuiInstalledTab.CreateInstalledContent(mainWindow);
