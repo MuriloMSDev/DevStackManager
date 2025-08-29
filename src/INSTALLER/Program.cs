@@ -15,6 +15,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Win32;
 using DevStackShared;
+using SharpCompress.Archives.Zip;
+using SharpCompress.Common;
 
 namespace DevStackInstaller
 {
@@ -1198,7 +1200,7 @@ namespace DevStackInstaller
                 AddInstallationLog(localization.GetString("log_messages.installing"));
                 await Task.Run(() => 
                 {
-                    ZipFile.ExtractToDirectory(tempZipPath, installationPath, true);
+                    ExtractZipWithLZMA(tempZipPath, installationPath);
                 });
                 installProgressBar.Value = 60; // 60% complete
 
@@ -1462,6 +1464,51 @@ $Shortcut.Save()
             catch
             {
                 // Registry operations failed, continue anyway
+            }
+        }
+
+        private void ExtractZipWithLZMA(string zipPath, string extractPath)
+        {
+            try
+            {
+                // Use SharpCompress which supports LZMA-compressed ZIP entries
+                using (var archive = SharpCompress.Archives.Zip.ZipArchive.Open(zipPath))
+                {
+                    var entries = archive.Entries.Where(e => !e.IsDirectory);
+                    foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in entries)
+                    {
+                        string entryPath = entry.Key.Replace('/', Path.DirectorySeparatorChar);
+                        string fullZipToPath = Path.Combine(extractPath, entryPath);
+                        string? directoryName = Path.GetDirectoryName(fullZipToPath);
+
+                        if (!string.IsNullOrEmpty(directoryName))
+                            Directory.CreateDirectory(directoryName);
+
+                        // Extract entry to file, preserving full path and overwriting existing files
+                        using (var entryStream = entry.OpenEntryStream())
+                        using (var fileStream = File.Create(fullZipToPath))
+                        {
+                            entryStream.CopyTo(fileStream);
+                        }
+                    }
+                }
+                AddInstallationLog("Successfully extracted ZIP with LZMA support (SharpCompress)");
+            }
+            catch (Exception lzmaEx)
+            {
+                AddInstallationLog($"LZMA extraction failed: {lzmaEx.Message}, trying fallback method...");
+
+                try
+                {
+                    // Fallback to standard .NET extraction (for non-LZMA ZIPs)
+                    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+                    AddInstallationLog("Successfully extracted ZIP with fallback method (System.IO.Compression)");
+                }
+                catch (Exception deflateEx)
+                {
+                    AddInstallationLog($"Both extraction methods failed. LZMA error: {lzmaEx.Message}, Deflate error: {deflateEx.Message}");
+                    throw new Exception($"Failed to extract ZIP file. LZMA error: {lzmaEx.Message}, Fallback error: {deflateEx.Message}");
+                }
             }
         }
 
