@@ -6,27 +6,23 @@ namespace DevStackManager.Components
     public class PHPCsFixerComponent : ComponentBase
     {
         public override string Name => "phpcsfixer";
+        public override string ToolDir => DevStackConfig.phpcsfixerDir;
+        public override bool IsArchive => false;
 
-        public override async Task Install(string? version = null)
+        public override Task PostInstall(string version, string targetDir)
         {
-            version ??= GetLatestVersion();
             string phpCsFixerSubDir = $"phpcsfixer-{version}";
             string toolDir = System.IO.Path.Combine(DevStackConfig.phpcsfixerDir, phpCsFixerSubDir);
             if (System.IO.Directory.Exists(toolDir))
             {
                 Console.WriteLine($"PHP CS Fixer {version} já está instalado.");
-                return;
+                return Task.CompletedTask;
             }
-            Console.WriteLine($"Baixando PHP CS Fixer {version}...");
             System.IO.Directory.CreateDirectory(toolDir);
-            string url = GetUrlForVersion(version);
-            string pharPath = System.IO.Path.Combine(toolDir, $"php-cs-fixer-{version}.phar");
-            using var response = await httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            await using var fileStream = System.IO.File.Create(pharPath);
-            await response.Content.CopyToAsync(fileStream);
-            Console.WriteLine($"PHP CS Fixer {version} instalado em {toolDir}");
-            DevStackConfig.WriteLog($"PHP CS Fixer {version} instalado em {toolDir}");
+            // No remote download here; InstallGenericTool handled the fetch.
+            Console.WriteLine($"PHP CS Fixer {version} post-install in {toolDir}");
+            DevStackConfig.WriteLog($"PHP CS Fixer {version} post-install in {toolDir}");
+            return Task.CompletedTask;
         }
     }
 }

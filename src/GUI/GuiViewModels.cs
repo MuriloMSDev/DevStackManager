@@ -11,6 +11,7 @@ namespace DevStackManager
     {
         public string Name { get; set; } = "";
         public bool Installed { get; set; }
+        public bool IsExecutable { get; set; }
         public List<string> Versions { get; set; } = new();
         public string Status { get; set; } = "";
         public string VersionsText { get; set; } = "";

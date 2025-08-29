@@ -6,15 +6,11 @@ namespace DevStackManager.Components
     public class NodeComponent : ComponentBase
     {
         public override string Name => "node";
+        public override string ToolDir => DevStackConfig.nodeDir;
 
-        public override async Task Install(string? version = null)
+        public override Task PostInstall(string version, string targetDir)
         {
-            version ??= GetLatestVersion();
-            string subDir = $"node-{version}";
-            string zipUrl = GetUrlForVersion(version);
-            await InstallGenericTool(DevStackConfig.nodeDir, version, zipUrl, subDir, "node.exe", "node", false);
-
-            string nodePath = System.IO.Path.Combine(DevStackConfig.nodeDir, subDir);
+            string nodePath = System.IO.Path.Combine(DevStackConfig.nodeDir, $"node-{version}");
             string binDir = System.IO.Path.Combine(DevStackConfig.nodeDir, "bin");
             if (!System.IO.Directory.Exists(binDir))
             {
@@ -70,6 +66,7 @@ namespace DevStackManager.Components
             {
                 Console.WriteLine("Arquivo package.json do npm não encontrado.");
             }
+            return Task.CompletedTask;
         }
     }
 }

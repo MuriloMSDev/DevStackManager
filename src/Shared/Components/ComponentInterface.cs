@@ -10,6 +10,12 @@ namespace DevStackManager.Components
         List<string> ListInstalled();
         List<string> ListAvailable();
         string Name { get; }
+        string ToolDir { get; }
         string GetLatestVersion();
+        bool IsService { get; }
+        bool IsExecutable { get; }
+        bool IsCommandLine { get; }
+        string? ExecutableFolder { get; }
+        string? ExecutablePattern { get; }
     }
 }

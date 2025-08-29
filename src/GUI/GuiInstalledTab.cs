@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -271,20 +272,72 @@ namespace DevStackManager
 
                 dataGrid.Columns.Add(nameColumn);
 
+                // Coluna Versões Instaladas
                 var versionsColumn = new DataGridTemplateColumn
                 {
                     Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.installed_tab.headers.versions") : null,
                     Width = new DataGridLength(400)
                 };
-
                 var versionsTemplate = new DataTemplate();
+                // StackPanel para botões ou texto
+                var versionsPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
+                versionsPanelFactory.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+                versionsPanelFactory.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                // MultiBinding para visibilidade dos botões
+                var multiBinding = new System.Windows.Data.MultiBinding { Converter = new InstalledAndExecutableToVisibilityConverter() };
+                multiBinding.Bindings.Add(new Binding("Installed"));
+                multiBinding.Bindings.Add(new Binding("IsExecutable"));
+                // Botões para cada versão
+                var versionsBinding = new Binding("Versions");
+                versionsPanelFactory.SetBinding(FrameworkElement.TagProperty, versionsBinding);
+                // ItemsControl para botões
+                var itemTemplate = new DataTemplate();
+                var buttonFactory = new FrameworkElementFactory(typeof(Button));
+                buttonFactory.SetValue(Button.WidthProperty, 80.0);
+                buttonFactory.SetValue(Button.HeightProperty, 25.0);
+                buttonFactory.SetValue(Button.MarginProperty, new Thickness(2));
+                buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Success).Style);
+                // StackPanel para versão + ícone
+                var btnStackPanel = new FrameworkElementFactory(typeof(StackPanel));
+                btnStackPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+                btnStackPanel.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                // Texto da versão
+                var btnTextBlock = new FrameworkElementFactory(typeof(TextBlock));
+                btnTextBlock.SetBinding(TextBlock.TextProperty, new Binding("."));
+                btnTextBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                btnStackPanel.AppendChild(btnTextBlock);
+                // Ícone ▶️
+                var btnIconBlock = new FrameworkElementFactory(typeof(TextBlock));
+                btnIconBlock.SetValue(TextBlock.TextProperty, " ▶️");
+                btnIconBlock.SetValue(TextBlock.MarginProperty, new Thickness(4, 0, 0, 0));
+                btnIconBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                btnStackPanel.AppendChild(btnIconBlock);
+                buttonFactory.AppendChild(btnStackPanel);
+                buttonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => ExecuteComponentVersionButton_Click(sender, e, mainWindow)));
+                itemTemplate.VisualTree = buttonFactory;
+                // ItemsControl para botões horizontalmente
+                var itemsControlFactory = new FrameworkElementFactory(typeof(ItemsControl));
+                itemsControlFactory.SetBinding(ItemsControl.ItemsSourceProperty, versionsBinding);
+                itemsControlFactory.SetValue(ItemsControl.ItemTemplateProperty, itemTemplate);
+                // WrapPanel para layout horizontal dos botões
+                var itemsPanelTemplate = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(WrapPanel)));
+                itemsControlFactory.SetValue(ItemsControl.ItemsPanelProperty, itemsPanelTemplate);
+                // Visibilidade dos botões
+                itemsControlFactory.SetBinding(ItemsControl.VisibilityProperty, multiBinding);
+                versionsPanelFactory.AppendChild(itemsControlFactory);
+                // TextBlock para texto das versões
                 var versionsTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 versionsTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("VersionsText"));
                 versionsTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(13, 0, 0, 0));
                 versionsTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-                versionsTemplate.VisualTree = versionsTextBlockFactory;
+                // Visibilidade do texto: inverso do MultiBinding
+                var inverseMultiBinding = new System.Windows.Data.MultiBinding { Converter = new InstalledAndExecutableToCollapsedConverter() };
+                inverseMultiBinding.Bindings.Add(new Binding("Installed"));
+                inverseMultiBinding.Bindings.Add(new Binding("IsExecutable"));
+                versionsTextBlockFactory.SetBinding(TextBlock.VisibilityProperty, inverseMultiBinding);
+                versionsPanelFactory.AppendChild(versionsTextBlockFactory);
+                versionsTemplate.VisualTree = versionsPanelFactory;
                 versionsColumn.CellTemplate = versionsTemplate;
-
                 dataGrid.Columns.Add(versionsColumn);
 
                 var statusColumn = new DataGridTemplateColumn
@@ -408,16 +461,19 @@ namespace DevStackManager
                         {
                             Name = comp.Name,
                             Installed = comp.Installed,
+                            IsExecutable = comp.IsExecutable,
                             Versions = comp.Versions,
                             Status = mainWindow.LocalizationManager.GetString("gui.common.status." + (comp.Installed ? "ok" : "error")),
                             VersionsText = comp.Installed ? string.Join(", ", comp.Versions) : mainWindow.LocalizationManager.GetString("gui.common.status.na")
                         });
                     }
                     
+                    // Ordena: instalados primeiro
+                    var ordered = components.OrderByDescending(c => c.Installed).ThenBy(c => c.Name).ToList();
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        mainWindow.InstalledComponents = components;
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.installed_tab.loaded", components.Count);
+                        mainWindow.InstalledComponents = new ObservableCollection<ComponentViewModel>(ordered);
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.installed_tab.loaded", ordered.Count);
                     });
                 }
                 catch (Exception ex)
@@ -429,6 +485,200 @@ namespace DevStackManager
                     });
                 }
             });
+        }
+
+        /// <summary>
+        /// Executa o componente na versão selecionada ao clicar no botão
+        /// </summary>
+        private static void ExecuteComponentVersionButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
+        {
+            try
+            {
+                if (sender is Button btn && btn.DataContext is string version)
+                {
+                    // Buscar o ItemsControl e seu DataContext (ComponentViewModel) usando VisualTreeHelper
+                    DependencyObject parent = btn;
+                    ComponentViewModel? vm = null;
+                    for (int i = 0; i < 10 && parent != null; i++)
+                    {
+                        parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+                        if (parent is ItemsControl ic && ic.DataContext is ComponentViewModel model)
+                        {
+                            vm = model;
+                            break;
+                        }
+                    }
+                    if (vm != null)
+                    {
+                        var comp = DevStackManager.Components.ComponentsFactory.GetComponent(vm.Name);
+                        if (comp != null && comp.IsExecutable && vm.Installed)
+                        {
+                            // local helper: procura executável no PATH
+                            string? FindOnPath(string name)
+                            {
+                                try
+                                {
+                                    var p = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+                                    var parts = p.Split(';');
+                                    foreach (var part in parts)
+                                    {
+                                        if (string.IsNullOrWhiteSpace(part)) continue;
+                                        try
+                                        {
+                                            var cand = System.IO.Path.Combine(part.Trim(), name);
+                                            if (System.IO.File.Exists(cand)) return cand;
+                                        }
+                                        catch { }
+                                    }
+                                }
+                                catch { }
+                                return null;
+                            }
+                            // Compute base tool dir and target (installed) directory following ComponentBase semantics
+                            string baseToolDir = !string.IsNullOrEmpty(comp.ToolDir) ? comp.ToolDir! : System.IO.Path.Combine(DevStackConfig.baseDir, comp.Name);
+                            // Try to read SubDirectory from ComponentBase when available, otherwise fall back to default
+                            string subDir = (comp is DevStackManager.Components.ComponentBase cb && !string.IsNullOrEmpty(cb.SubDirectory)) ? cb.SubDirectory! : $"{comp.Name}-{version}";
+                            string installDir;
+
+                            if (!string.IsNullOrEmpty(comp.ExecutableFolder))
+                            {
+                                if (System.IO.Path.IsPathRooted(comp.ExecutableFolder))
+                                {
+                                    // legacy: ExecutableFolder contained the absolute tool directory
+                                    var toolDirArg = comp.ExecutableFolder!;
+                                    installDir = System.IO.Path.Combine(toolDirArg, subDir);
+                                }
+                                else
+                                {
+                                    installDir = System.IO.Path.Combine(baseToolDir, subDir, comp.ExecutableFolder);
+                                }
+                            }
+                            else
+                            {
+                                installDir = System.IO.Path.Combine(baseToolDir, subDir);
+                            }
+
+                            if (System.IO.Directory.Exists(installDir))
+                            {
+                                var exeFiles = System.IO.Directory.GetFiles(installDir, "*.exe", System.IO.SearchOption.TopDirectoryOnly);
+                                // Busca pelo padrão configurado
+                                string? exePath = null;
+                                if (!string.IsNullOrEmpty(comp.ExecutablePattern))
+                                {
+                                    var pattern = comp.ExecutablePattern.Replace("{version}", version);
+                                    var patternPath = System.IO.Path.Combine(installDir, pattern);
+                                    if (System.IO.File.Exists(patternPath))
+                                    {
+                                        exePath = patternPath;
+                                    }
+                                }
+                                // Fallback: pega o primeiro .exe
+                                if (exePath == null && exeFiles.Length > 0)
+                                {
+                                    exePath = exeFiles[0];
+                                }
+                                if (exePath != null && comp.IsExecutable)
+                                {
+                                    if (comp.IsCommandLine)
+                                    {
+                                        var wt = FindOnPath("wt.exe");
+                                        if (!string.IsNullOrEmpty(wt))
+                                        {
+                                            var p = new System.Diagnostics.Process();
+                                            p.StartInfo.FileName = wt;
+                                            p.StartInfo.Arguments = $"new-tab pwsh -NoExit -Command \"& '{exePath}'\"";
+                                            p.StartInfo.WorkingDirectory = installDir;
+                                            p.StartInfo.UseShellExecute = true;
+                                            p.Start();
+                                        }
+                                        else
+                                        {
+                                            var ps = new System.Diagnostics.Process();
+                                            ps.StartInfo.FileName = "pwsh.exe";
+                                            ps.StartInfo.Arguments = $"-NoExit -Command \"& '{exePath}'\"";
+                                            ps.StartInfo.WorkingDirectory = installDir;
+                                            ps.StartInfo.UseShellExecute = true;
+                                            ps.Start();
+                                        }
+                                        mainWindow.StatusMessage = $"Abrindo shell interativo para {vm.Name} versão {version}";
+                                    }
+                                    else
+                                    {
+                                        var process = new System.Diagnostics.Process();
+                                        process.StartInfo.FileName = exePath;
+                                        process.StartInfo.WorkingDirectory = installDir;
+                                        process.StartInfo.UseShellExecute = true;
+                                        process.Start();
+                                        mainWindow.StatusMessage = $"Executando {vm.Name} versão {version}: {exePath}";
+                                    }
+                                }
+                                else
+                                {
+                                    mainWindow.StatusMessage = $"Nenhum executável encontrado em {installDir}";
+                                }
+                            }
+                            else
+                            {
+                                mainWindow.StatusMessage = $"Pasta da versão não encontrada: {installDir}";
+                            }
+                        }
+                        else
+                        {
+                            mainWindow.StatusMessage = $"Componente {vm.Name} não é executável ou não está instalado.";
+                        }
+                    }
+                    else
+                    {
+                        mainWindow.StatusMessage = $"Não foi possível obter o componente para execução.";
+                    }
+                }
+                else
+                {
+                    mainWindow.StatusMessage = $"Não foi possível obter a versão para execução.";
+                }
+            }
+            catch (Exception ex)
+            {
+                mainWindow.StatusMessage = $"Erro ao executar componente: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Converter para mostrar o painel de execução apenas se Installed e IsExecutable forem verdadeiros
+        /// </summary>
+        public class InstalledAndExecutableToVisibilityConverter : System.Windows.Data.IMultiValueConverter
+        {
+            public object Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                if (values.Length == 2 && values[0] is bool installed && values[1] is bool isExecutable)
+                {
+                    return (installed && isExecutable) ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+                }
+                return System.Windows.Visibility.Collapsed;
+            }
+            public object[] ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Converter para mostrar o texto das versões apenas se NÃO for executável ou não estiver instalado
+        /// </summary>
+        public class InstalledAndExecutableToCollapsedConverter : System.Windows.Data.IMultiValueConverter
+        {
+            public object Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                if (values.Length == 2 && values[0] is bool installed && values[1] is bool isExecutable)
+                {
+                    return (installed && isExecutable) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+                }
+                return System.Windows.Visibility.Visible;
+            }
+            public object[] ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }
