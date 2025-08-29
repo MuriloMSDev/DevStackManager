@@ -1992,6 +1992,10 @@
     "url": "https://nodejs.org/dist/v22.18.0/node-v22.18.0-win-x64.zip"
   },
   {
+    "version": "22.19.0",
+    "url": "https://nodejs.org/dist/v22.19.0/node-v22.19.0-win-x64.zip"
+  },
+  {
     "version": "23.0.0",
     "url": "https://nodejs.org/dist/v23.0.0/node-v23.0.0-win-x64.zip"
   },
@@ -2086,5 +2090,9 @@
   {
     "version": "24.6.0",
     "url": "https://nodejs.org/dist/v24.6.0/node-v24.6.0-win-x64.zip"
+  },
+  {
+    "version": "24.7.0",
+    "url": "https://nodejs.org/dist/v24.7.0/node-v24.7.0-win-x64.zip"
   }
 ]

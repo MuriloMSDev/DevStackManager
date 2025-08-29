@@ -6,30 +6,26 @@ namespace DevStackManager.Components
     public class ComposerComponent : ComponentBase
     {
         public override string Name => "composer";
+        public override string ToolDir => DevStackConfig.composerDir;
+        public override bool IsArchive => false;
 
-        public override async Task Install(string? version = null)
+    public override Task PostInstall(string version, string targetDir)
         {
-            version ??= GetLatestVersion();
             string composerSubDir = $"composer-{version}";
             string composerPhar = $"composer-{version}.phar";
             string composerPharPath = System.IO.Path.Combine(DevStackConfig.composerDir, composerSubDir);
             if (System.IO.Directory.Exists(composerPharPath))
             {
                 Console.WriteLine($"Composer {version} já está instalado.");
-                return;
+                return Task.CompletedTask;
             }
-            Console.WriteLine($"Baixando Composer {version}...");
             System.IO.Directory.CreateDirectory(composerPharPath);
             string composerUrl = GetUrlForVersion(version);
             string pharPath = System.IO.Path.Combine(composerPharPath, composerPhar);
-            using var response = await httpClient.GetAsync(composerUrl);
-            response.EnsureSuccessStatusCode();
-            using (var fileStream = System.IO.File.Create(pharPath))
-            {
-                await response.Content.CopyToAsync(fileStream);
-            }
-            Console.WriteLine($"Composer {version} instalado.");
-            DevStackConfig.WriteLog($"Composer {version} instalado em {composerPharPath}");
+                // No remote download in PostInstall; InstallGenericTool already downloaded the file into targetDir.
+                Console.WriteLine($"Composer {version} post-install actions completed.");
+                DevStackConfig.WriteLog($"Composer {version} post-install in {composerPharPath}");
+                return Task.CompletedTask;
         }
     }
 }

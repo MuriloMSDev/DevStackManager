@@ -1242,5 +1242,9 @@
   {
     "version": "1.29.0",
     "url": "https://nginx.org/download/nginx-1.29.0.zip"
+  },
+  {
+    "version": "1.29.1",
+    "url": "https://nginx.org/download/nginx-1.29.1.zip"
   }
 ]

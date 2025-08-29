@@ -10,14 +10,7 @@ namespace DevStackManager.Components
     public class NginxComponent : ComponentBase
     {
         public override string Name => "nginx";
-
-        public override async Task Install(string? version = null)
-        {
-            version ??= GetLatestVersion();
-            var subDir = $"nginx-{version}";
-            var zipUrl = GetUrlForVersion(version);
-            Console.WriteLine(DevStackConfig.nginxDir);
-            await InstallGenericTool(DevStackConfig.nginxDir, version, zipUrl, subDir, "nginx.exe", "nginx");
-        }
+        public override string ToolDir => DevStackConfig.nginxDir;
+        public override bool IsService => true;
     }
 }

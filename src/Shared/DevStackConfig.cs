@@ -24,6 +24,7 @@ namespace DevStackManager
         public static string wpcliDir = "";
         public static string adminerDir = "";
         public static string goDir = "";
+        public static string gitDir = "";
         public static string openSSLDir = "";
         public static string phpcsfixerDir = "";
         public static string dbeaverDir = "";
@@ -79,6 +80,7 @@ namespace DevStackManager
             string exeDirectory = System.AppContext.BaseDirectory;
             baseDir = Path.Combine(exeDirectory, "tools");
             phpDir = Path.Combine(baseDir, "php");
+            gitDir = Path.Combine(baseDir, "git");
             nginxDir = Path.Combine(baseDir, "nginx");
             mysqlDir = Path.Combine(baseDir, "mysql");
             nodeDir = Path.Combine(baseDir, "node");

@@ -1379,38 +1379,20 @@ namespace DevStackManager
             }
 
             // Serviços monitorados pela aba Serviços
-            var serviceComponents = new[] { "php", "nginx" };
-            if (serviceComponents.Contains(component.ToLowerInvariant()))
+            var comp = Components.ComponentsFactory.GetComponent(component);
+            if (comp != null && comp.IsService)
             {
                 var processList = System.Diagnostics.Process.GetProcesses();
                 var versionsWithStatus = versions.Select(version => {
                     string dirName = version;
                     string status = "parado";
-                    if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Exemplo: dirName = "php-8.2.12"; version = "php-8.2.12" ou "8.2.12"
-                        string search = dirName;
-                        var running = processList.Any(p => {
-                            try
-                            {
-                                if (p.ProcessName.StartsWith("php", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    var processPath = p.MainModule?.FileName;
-                                    return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
-                                }
-                            }
-                            catch { }
-                            return false;
-                        });
-                        if (running) status = "executando";
-                    }
-                    else if (component.Equals("nginx", StringComparison.OrdinalIgnoreCase))
+                    if (component.Equals(comp.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         string search = dirName;
                         var running = processList.Any(p => {
                             try
                             {
-                                if (p.ProcessName.StartsWith("nginx", StringComparison.OrdinalIgnoreCase))
+                                if (p.ProcessName.StartsWith(comp.Name, StringComparison.OrdinalIgnoreCase))
                                 {
                                     var processPath = p.MainModule?.FileName;
                                     return !string.IsNullOrEmpty(processPath) && processPath.Contains(search, StringComparison.OrdinalIgnoreCase);
