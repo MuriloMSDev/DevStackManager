@@ -115,7 +115,7 @@ namespace DevStackManager
                     mainWindow.IsUninstallingComponent = false;
                     overlay.Visibility = Visibility.Collapsed;
                 }
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Danger);
             uninstallButton.Height = 40;
             uninstallButton.FontSize = 14;
             uninstallButton.Margin = new Thickness(0, 10, 0, 0);
@@ -184,6 +184,7 @@ namespace DevStackManager
 
                     // Recarregar lista de instalados
                     await GuiInstalledTab.LoadInstalledComponents(mainWindow);
+                    await GuiInstallTab.LoadShortcutComponents(mainWindow);
 
                     // Recarregar componentes disponíveis para desinstalação
                     LoadUninstallComponents(mainWindow);

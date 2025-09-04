@@ -85,29 +85,12 @@ namespace DevStackManager
             var removePathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.remove"), (s, e) => RemoveFromPath(mainWindow));
             removePathButton.Width = 200;
             removePathButton.Height = 35;
-            removePathButton.Margin = new Thickness(10, 5, 0, 5);
+            removePathButton.Margin = new Thickness(10, 5, 0, 10);
             removePathButton.HorizontalAlignment = HorizontalAlignment.Left;
             panel.Children.Add(removePathButton);
 
-            // Botão Listar
-            var listPathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.list"), (s, e) => ListCurrentPath(mainWindow));
-            listPathButton.Width = 200;
-            listPathButton.Height = 35;
-            listPathButton.Margin = new Thickness(10, 5, 0, 10);
-            listPathButton.HorizontalAlignment = HorizontalAlignment.Left;
-            panel.Children.Add(listPathButton);
-
-            // Info usando painel de notificação
-            var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
-                mainWindow.LocalizationManager.GetString("gui.config_tab.path.info"),
-                DevStackShared.ThemeManager.NotificationType.Info
-            );
-            infoPanel.Margin = new Thickness(0, 5, 0, 10);
-            panel.Children.Add(infoPanel);
-
-            // Gerenciamento do PATH
+            // Gerenciamento dos Diretórios
             var dirsTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.title"), true);
-            dirsTitleLabel.FontSize = 18;
             dirsTitleLabel.Margin = new Thickness(0, 10, 0, 5);
             panel.Children.Add(dirsTitleLabel);
 
@@ -129,7 +112,6 @@ namespace DevStackManager
 
             // Gerenciamento da Linguagem
             var languagesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.title"), true);
-            languagesTitleLabel.FontSize = 18;
             languagesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
             panel.Children.Add(languagesTitleLabel);
 
@@ -173,13 +155,12 @@ namespace DevStackManager
 
             panel.Children.Add(languageComboBox);
 
-            // Gerenciamento da Linguagem
+            // Gerenciamento dos temas
             var themesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.title"), true);
-            themesTitleLabel.FontSize = 18;
             themesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
             panel.Children.Add(themesTitleLabel);
 
-            // Language ComboBox
+            // tema ComboBox
             var themeLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.labels.interface_theme"));
             panel.Children.Add(themeLanguageLabel);
 
@@ -247,27 +228,6 @@ namespace DevStackManager
                 {
                     progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_remove_error", ex.Message));
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_clean_error");
-                }
-                await Task.CompletedTask;
-            });
-        }
-
-        /// <summary>
-        /// Lista o PATH atual do sistema
-        /// </summary>
-        private static void ListCurrentPath(DevStackGui mainWindow)
-        {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
-            {
-                try
-                {
-                    DevStackConfig.pathManager?.ListCurrentPath();
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_listed");
-                }
-                catch (Exception ex)
-                {
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_list_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_list_error");
                 }
                 await Task.CompletedTask;
             });

@@ -51,8 +51,8 @@ namespace DevStackManager
         {
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // Header
             var headerPanel = CreateServicesHeader(mainWindow);
@@ -61,12 +61,12 @@ namespace DevStackManager
 
             // DataGrid de Serviços
             var servicesGrid = CreateServicesDataGrid(mainWindow);
-            Grid.SetRow(servicesGrid, 1);
+            Grid.SetRow(servicesGrid, 2);
             grid.Children.Add(servicesGrid);
 
             // Botões de controle
             var controlPanel = CreateServicesControlPanel(mainWindow);
-            Grid.SetRow(controlPanel, 2);
+            Grid.SetRow(controlPanel, 1);
             grid.Children.Add(controlPanel);
 
 
@@ -103,12 +103,6 @@ namespace DevStackManager
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.services_tab.title"), true);
             titleLabel.FontSize = 18;
             panel.Children.Add(titleLabel);
-
-            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await LoadServices(mainWindow));
-            refreshButton.Width = 100;
-            refreshButton.Height = 35;
-            refreshButton.Margin = new Thickness(20, 0, 0, 0);
-            panel.Children.Add(refreshButton);
 
             return panel;
         }
@@ -410,8 +404,8 @@ namespace DevStackManager
 
                 // Criar botões usando DevStackShared.ThemeManager.CreateStyledButton diretamente
                 var startButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.start"), null, DevStackShared.ThemeManager.ButtonStyle.Success);
-                var stopButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop"), null, DevStackShared.ThemeManager.ButtonStyle.Warning);
-                var restartButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart"), null, DevStackShared.ThemeManager.ButtonStyle.Info);
+                var stopButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop"), null, DevStackShared.ThemeManager.ButtonStyle.Danger);
+                var restartButtonTemplate = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart"), null, DevStackShared.ThemeManager.ButtonStyle.Warning);
 
                 // Botão Start
                 var startButton = new FrameworkElementFactory(typeof(Button));
@@ -696,7 +690,7 @@ namespace DevStackManager
                     mainWindow.IsLoadingServices = false;
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Success);
             startAllButton.Width = 150;
             startAllButton.Height = 40;
             startAllButton.Margin = new Thickness(10);
@@ -712,7 +706,7 @@ namespace DevStackManager
                     mainWindow.IsLoadingServices = false;
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Danger);
             stopAllButton.Width = 150;
             stopAllButton.Height = 40;
             stopAllButton.Margin = new Thickness(10);
@@ -728,11 +722,17 @@ namespace DevStackManager
                     mainWindow.IsLoadingServices = false;
                     if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
                 }
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Warning);
             restartAllButton.Width = 150;
             restartAllButton.Height = 40;
             restartAllButton.Margin = new Thickness(10);
             panel.Children.Add(restartAllButton);
+
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await LoadServices(mainWindow));
+            refreshButton.Width = 150;
+            refreshButton.Height = 40;
+            refreshButton.Margin = new Thickness(10);
+            panel.Children.Add(refreshButton);
 
             return panel;
         }
@@ -760,13 +760,18 @@ namespace DevStackManager
                         devStackPath = DevStackConfig.baseDir;
                     }
                     
-                    // Debug: Listar todos os processos que começam com php ou nginx
+                    // Obter todos os componentes que são serviços
+                    var serviceComponents = Components.ComponentsFactory.GetAll()
+                        .Where(c => c.IsService)
+                        .ToList();
+                    
+                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.found_service_components", serviceComponents.Count));
+                    
+                    // Debug: Listar todos os processos relevantes
                     var allProcesses = Process.GetProcesses();
                     var debugProcesses = allProcesses
-                        .Where(p => p.ProcessName.StartsWith("php", StringComparison.OrdinalIgnoreCase) ||
-                                   p.ProcessName.StartsWith("nginx", StringComparison.OrdinalIgnoreCase) ||
-                                   p.ProcessName.StartsWith("mysql", StringComparison.OrdinalIgnoreCase) ||
-                                   p.ProcessName.Equals("node", StringComparison.OrdinalIgnoreCase))
+                        .Where(p => serviceComponents.Any(sc => 
+                            p.ProcessName.StartsWith(sc.Name, StringComparison.OrdinalIgnoreCase)))
                         .ToList();
                     
                     DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.processes_found", debugProcesses.Count));
@@ -783,156 +788,83 @@ namespace DevStackManager
                         }
                     }
                     
-                    // Detectar serviços PHP-FPM
-                    if (Directory.Exists(DevStackConfig.phpDir))
+                    // Detectar serviços para cada componente de serviço
+                    foreach (var component in serviceComponents)
                     {
-                        var phpDirs = Directory.GetDirectories(DevStackConfig.phpDir);
-                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_dirs_found", phpDirs.Length, string.Join(", ", phpDirs.Select(Path.GetFileName))));
-                        
-                        foreach (var dir in phpDirs)
+                        if (!Directory.Exists(component.ToolDir))
                         {
-                            var dirName = Path.GetFileName(dir);
-                            var versionNumber = dirName.Replace("php-", "");
-                            
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_php_version", versionNumber, dirName));
-                            
-                            try
-                            {
-                                // Buscar processos PHP usando wildcards como no PowerShell
-                                var phpProcesses = allProcesses
-                                    .Where(p => {
-                                        try
-                                        {
-                                            if (p.ProcessName.StartsWith("php", StringComparison.OrdinalIgnoreCase))
-                                            {
-                                                var processPath = p.MainModule?.FileName;
-                                                var contains = !string.IsNullOrEmpty(processPath) && processPath.Contains(dirName, StringComparison.OrdinalIgnoreCase);
-                                                if (contains)
-                                                {
-                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_process_found", p.ProcessName, p.Id, processPath ?? "N/A"));
-                                                }
-                                                return contains;
-                                            }
-                                            return false;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_check_error", p.ProcessName, ex.Message));
-                                            return false;
-                                        }
-                                    })
-                                    .ToList();
-                                
-                                if (phpProcesses.Any())
-                                {
-                                    var pids = string.Join(", ", phpProcesses.Select(p => p.Id));
-                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_running", versionNumber, pids));
-                                    services.Add(new ServiceViewModel 
-                                    { 
-                                        Name = "php", 
-                                        Version = versionNumber,
-                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.running"), 
-                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.php_fpm"), 
-                                        Description = $"PHP {versionNumber} {mainWindow.LocalizationManager.GetString("gui.services_tab.types.fastcgi")}",
-                                        Pid = pids,
-                                        IsRunning = true
-                                    });
-                                }
-                                else
-                                {
-                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_not_running", versionNumber));
-                                    services.Add(new ServiceViewModel 
-                                    { 
-                                        Name = "php", 
-                                        Version = versionNumber,
-                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
-                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.php_fpm"), 
-                                        Description = $"PHP {versionNumber} {mainWindow.LocalizationManager.GetString("gui.services_tab.types.fastcgi")}",
-                                        Pid = "-",
-                                        IsRunning = false
-                                    });
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.php_check_error", ex.Message));
-                            }
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_dir_not_found", component.Name, component.ToolDir));
+                            continue;
                         }
-                    }
-                    
-                    // Detectar serviços Nginx
-                    if (Directory.Exists(DevStackConfig.nginxDir))
-                    {
-                        var nginxDirs = Directory.GetDirectories(DevStackConfig.nginxDir);
-                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_dirs_found", nginxDirs.Length, string.Join(", ", nginxDirs.Select(Path.GetFileName))));
                         
-                        foreach (var dir in nginxDirs)
+                        var installedVersions = component.ListInstalled();
+                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_versions_found", component.Name, installedVersions.Count, string.Join(", ", installedVersions)));
+                        
+                        foreach (var version in installedVersions)
                         {
-                            var dirName = Path.GetFileName(dir);
-                            var versionNumber = dirName.Replace("nginx-", "");
-                            
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_nginx_version", versionNumber, dirName));
+                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_component_version", component.Name, version));
                             
                             try
                             {
-                                // Buscar processos Nginx usando wildcards como no PowerShell
-                                var nginxProcesses = allProcesses
-                                    .Where(p => {
-                                        try
-                                        {
-                                            if (p.ProcessName.StartsWith("nginx", StringComparison.OrdinalIgnoreCase))
+                                bool isRunning = false;
+                                string pids = "-";
+                                
+                                if (!string.IsNullOrEmpty(component.ServicePattern))
+                                {
+                                    var serviceExePath = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
+                                    
+                                    // Buscar processos do serviço
+                                    var serviceProcesses = allProcesses
+                                        .Where(p => {
+                                            try
                                             {
                                                 var processPath = p.MainModule?.FileName;
-                                                var contains = !string.IsNullOrEmpty(processPath) && processPath.Contains(dirName, StringComparison.OrdinalIgnoreCase);
-                                                if (contains)
+                                                var matches = !string.IsNullOrEmpty(processPath) && 
+                                                            processPath.Equals(serviceExePath, StringComparison.OrdinalIgnoreCase);
+                                                if (matches)
                                                 {
-                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_process_found", p.ProcessName, p.Id, processPath ?? "N/A"));
+                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_process_found", component.Name, p.ProcessName, p.Id, processPath ?? "N/A"));
                                                 }
-                                                return contains;
+                                                return matches;
                                             }
-                                            return false;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            DevStackConfig.WriteLog($"  - Erro ao verificar processo {p.ProcessName}: {ex.Message}");
-                                            return false;
-                                        }
-                                    })
-                                    .ToList();
-                                
-                                if (nginxProcesses.Any())
-                                {
-                                    var mainProcess = nginxProcesses.First();
-                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_running", versionNumber, mainProcess.Id));
-                                    services.Add(new ServiceViewModel 
-                                    { 
-                                        Name = "nginx", 
-                                        Version = versionNumber,
-                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.running"), 
-                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.web_server"), 
-                                        Description = $"Nginx {versionNumber}",
-                                        Pid = mainProcess.Id.ToString(),
-                                        IsRunning = true
-                                    });
+                                            catch (Exception ex)
+                                            {
+                                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_check_error", p.ProcessName, ex.Message));
+                                                return false;
+                                            }
+                                        })
+                                        .ToList();
+                                    
+                                    if (serviceProcesses.Any())
+                                    {
+                                        isRunning = true;
+                                        pids = string.Join(", ", serviceProcesses.Select(p => p.Id));
+                                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_running", component.Name, version, pids));
+                                    }
+                                    else
+                                    {
+                                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_not_running", component.Name, version));
+                                    }
                                 }
                                 else
                                 {
-                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_not_running", versionNumber));
-                                    services.Add(new ServiceViewModel 
-                                    { 
-                                        Name = "nginx", 
-                                        Version = versionNumber,
-                                        Status = mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
-                                        Type = mainWindow.LocalizationManager.GetString("gui.services_tab.types.web_server"), 
-                                        Description = $"Nginx {versionNumber}",
-                                        Pid = "-",
-                                        IsRunning = false
-                                    });
+                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.no_service_pattern", component.Name));
                                 }
+                                
+                                services.Add(new ServiceViewModel 
+                                { 
+                                    Name = component.Name, 
+                                    Version = version,
+                                    Status = isRunning ? mainWindow.LocalizationManager.GetString("gui.services_tab.status.running") : mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
+                                    Type = component.GetServiceType(mainWindow.LocalizationManager), 
+                                    Description = component.GetServiceDescription(version, mainWindow.LocalizationManager),
+                                    Pid = pids,
+                                    IsRunning = isRunning
+                                });
                             }
                             catch (Exception ex)
                             {
-                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.nginx_check_error", ex.Message));
+                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_check_error", component.Name, ex.Message));
                             }
                         }
                     }

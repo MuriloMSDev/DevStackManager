@@ -64,7 +64,7 @@ namespace DevStackManager
 
             panel.Children.Add(outputBox);
 
-            var clearButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.console.buttons.clear"), (s, e) => Clear(tab));
+            var clearButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.console.buttons.clear"), (s, e) => Clear(tab), DevStackShared.ThemeManager.ButtonStyle.Danger);
             clearButton.Height = 35;
             clearButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(clearButton);
@@ -94,7 +94,7 @@ namespace DevStackManager
         {
             lock (_lock)
             {
-                var timestamp = DateTime.Now.ToString(mainWindow.LocalizationManager.GetString("gui.timestamp_format"));
+                var timestamp = DateTime.Now.ToString("HH:mm:ss");
                 Buffers[tab].AppendLine($"[{timestamp}] {text}");
                 // Atualiza textbox se a aba estiver visível
                 if (ActiveTextBoxes.TryGetValue(tab, out var box))

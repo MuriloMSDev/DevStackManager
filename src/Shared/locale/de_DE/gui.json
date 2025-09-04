@@ -1,0 +1,411 @@
+{
+  "window": {
+    "title": "DevStack Manager v{0}",
+    "ready_status": "Bereit",
+    "initialization_error": "Fehler beim Initialisieren der DevStack GUI: {0}",
+    "error_title": "DevStack Manager - Fehler"
+  },
+  "navigation": {
+    "title": "DevStack Manager",
+    "items": {
+      "installed": {
+        "title": "Installiert",
+        "description": "Installierte Werkzeuge"
+      },
+      "install": {
+        "title": "Installieren",
+        "description": "Neue Komponenten installieren"
+      },
+      "uninstall": {
+        "title": "Deinstallieren",
+        "description": "Komponenten entfernen"
+      },
+      "services": {
+        "title": "Dienste",
+        "description": "Dienststeuerung"
+      },
+      "config": {
+        "title": "Einstellungen",
+        "description": "Systemeinstellungen"
+      },
+      "sites": {
+        "title": "Websites",
+        "description": "Nginx-Websites verwalten"
+      },
+      "utilities": {
+        "title": "Dienstprogramme",
+        "description": "Werkzeuge und Konsole"
+      }
+    },
+    "refresh_tooltip": "Alle Daten aktualisieren"
+  },
+  "installed_tab": {
+    "title": "Installierte Werkzeuge",
+    "headers": {
+      "tool": "Werkzeug",
+      "versions": "Installierte Versionen",
+      "status": "Status"
+    },
+    "buttons": {
+      "refresh": "🔄 Liste aktualisieren"
+    },
+    "info": "Verwenden Sie die Registerkarten 'Installieren' und 'Deinstallieren', um Werkzeuge zu verwalten",
+    "loading": "Installierte Komponenten werden geladen...",
+    "loaded": "{0} Komponenten geladen",
+    "error": "Fehler beim Laden der Komponenten: {0}"
+  },
+  "install_tab": {
+    "title": "Neues Werkzeug installieren",
+    "labels": {
+      "select_tool": "Werkzeug auswählen:",
+      "select_version": "Version auswählen (leer für die neueste):"
+    },
+    "buttons": {
+      "install": "📥 Installieren"
+    },
+    "messages": {
+      "select_component": "Wählen Sie eine Komponente zum Installieren aus.",
+      "installing": "{0} wird installiert...",
+      "success": "{0} erfolgreich installiert!",
+      "error": "Fehler bei der Installation von {0}",
+      "loading_versions": "Versionen von {0} werden geladen...",
+      "versions_loaded": "{0} Versionen für {1} geladen",
+      "versions_error": "Fehler beim Laden der Versionen: {0}"
+    }
+  },
+  "uninstall_tab": {
+    "title": "Werkzeug deinstallieren",
+    "labels": {
+      "select_tool": "Werkzeug auswählen:",
+      "select_version": "Version auswählen:"
+    },
+    "buttons": {
+      "uninstall": "🗑️ Deinstallieren",
+      "refresh": "🔄 Liste aktualisieren"
+    },
+    "messages": {
+      "select_component": "Wählen Sie eine Komponente zum Deinstallieren aus.",
+      "select_version": "Wählen Sie eine Version zum Deinstallieren aus.",
+      "confirm": "Sind Sie sicher, dass Sie {0} deinstallieren möchten?",
+      "uninstalling": "{0} wird deinstalliert...",
+      "success": "{0} erfolgreich deinstalliert!",
+      "error": "Fehler bei der Deinstallation von {0}",
+      "no_versions": "{0} hat keine installierten Versionen.",
+      "not_installed": "{0} ist nicht installiert",
+      "loading_components": "Installierte Komponenten werden geladen...",
+      "loading_versions": "Installierte Versionen von {0} werden geladen...",
+      "versions_loaded": "Versionen für {0} geladen",
+      "versions_error": "Fehler beim Laden der Versionen zur Deinstallation: {0}",
+      "components_available": "{0} Komponenten verfügbar zur Deinstallation",
+      "reloading": "Liste der installierten Komponenten wird neu geladen..."
+    },
+    "warning": "Achtung: Diese Aktion kann nicht rückgängig gemacht werden!",
+    "status": {
+      "uninstalling": "{0} wird deinstalliert...",
+      "success": "{0} erfolgreich deinstalliert!",
+      "error": "❌ Fehler bei der Deinstallation von {0}: {1}",
+      "error_short": "Fehler bei der Deinstallation von {0}",
+      "loading_versions": "Installierte Versionen von {0} werden geladen...",
+      "versions_loaded": "Versionen für {0} geladen",
+      "not_installed": "{0} ist nicht installiert",
+      "error_loading_versions": "Fehler beim Laden der Versionen zur Deinstallation: {0}",
+      "loading_components": "Installierte Komponenten werden geladen...",
+      "components_count": "{0} Komponenten verfügbar zur Deinstallation",
+      "reloading": "Liste der installierten Komponenten wird neu geladen...",
+      "error_loading_components": "Fehler beim Laden der Komponenten: {0}"
+    }
+  },
+  "services_tab": {
+    "title": "Dienstverwaltung",
+    "headers": {
+      "component": "Komponente",
+      "version": "Version",
+      "status": "Status",
+      "pid": "PID",
+      "copy_pid": "PID kopieren",
+      "actions": "Aktionen"
+    },
+    "buttons": {
+      "refresh": "🔄 Aktualisieren",
+      "start_all": "▶️ Alle starten",
+      "stop_all": "⏹️ Alle stoppen",
+      "restart_all": "🔄 Alle neu starten",
+      "start": "▶️",
+      "stop": "⏹️",
+      "restart": "🔄",
+      "copy_pid": "📋"
+    },
+    "tooltips": {
+      "start": "Starten",
+      "stop": "Stoppen",
+      "restart": "Neustarten",
+      "copy_pid": "PID kopieren"
+    },
+    "status": {
+      "running": "Läuft",
+      "stopped": "Gestoppt"
+    },
+    "types": {
+      "php_fpm": "PHP-FPM",
+      "web_server": "Webserver",
+      "database": "Datenbank",
+      "search_engine": "Suchmaschine",
+      "service": "Dienst",
+      "fastcgi": "FastCGI"
+    },
+    "messages": {
+      "loading": "Dienste werden geladen...",
+      "loaded": "{0} Dienste geladen",
+      "error": "Fehler beim Laden der Dienste: {0}",
+      "starting": "{0} Version {1} wird gestartet...",
+      "started": "{0} erfolgreich gestartet",
+      "stopping": "{0} Version {1} wird gestoppt...",
+      "stopped": "{0} erfolgreich gestoppt",
+      "restarting": "{0} Version {1} wird neu gestartet...",
+      "restarted": "{0} erfolgreich neu gestartet",
+      "starting_all": "Alle Dienste werden gestartet...",
+      "started_all": "Alle Dienste gestartet",
+      "stopping_all": "Alle Dienste werden gestoppt...",
+      "stopped_all": "Alle Dienste gestoppt",
+      "restarting_all": "Alle Dienste werden neu gestartet...",
+      "restarted_all": "Alle Dienste neu gestartet",
+      "pid_copied": "PID {0} in die Zwischenablage kopiert",
+      "no_pid": "Dienst läuft nicht, kein PID zum Kopieren.",
+      "error_copy_pid": "Fehler beim Kopieren des PID: {0}",
+      "error_start": "Fehler beim Starten des Dienstes: {0}",
+      "error_stop": "Fehler beim Stoppen des Dienstes: {0}",
+      "error_restart": "Fehler beim Neustarten des Dienstes: {0}",
+      "error_start_all": "Fehler beim Starten aller Dienste: {0}",
+      "error_stop_all": "Fehler beim Stoppen aller Dienste: {0}",
+      "error_restart_all": "Fehler beim Neustarten aller Dienste: {0}"
+    },
+    "path_manager": {
+      "not_initialized": "⚠️ PathManager wurde nicht initialisiert - PATH wurde nicht aktualisiert"
+    },
+    "debug": {
+      "processes_found": "Gefundene Prozesse für Debug: {0}",
+      "process_info": "  - {0} (PID: {1}) - Pfad: {2}",
+      "process_error": "  - {0} (PID: {1}) - Pfad: Fehler beim Zugriff ({2})",
+      "found_service_components": "{0} Dienstkomponenten gefunden",
+      "component_dir_not_found": "Komponentenverzeichnis {0} nicht gefunden: {1}",
+      "component_versions_found": "Komponente {0}: {1} Versionen gefunden: {2}",
+      "checking_component_version": "{0} Version {1} wird geprüft",
+      "service_process_found": "  - {0} Prozess gefunden: {1} (PID: {2}) - Pfad: {3}",
+      "service_running": "{0} {1} läuft mit PIDs: {2}",
+      "service_not_running": "{0} {1} läuft nicht",
+      "no_service_pattern": "Kein Dienstmuster für {0} definiert",
+      "component_check_error": "Fehler beim Prüfen der {0} Prozesse: {1}",
+      "php_dirs_found": "{0} PHP-Verzeichnisse gefunden: {1}",
+      "checking_php_version": "PHP Version {0} im Verzeichnis {1} wird geprüft",
+      "php_process_found": "  - PHP-Prozess gefunden: {0} (PID: {1}) - Pfad: {2}",
+      "process_check_error": "  - Fehler beim Prüfen des Prozesses {0}: {1}",
+      "php_running": "PHP {0} läuft mit PIDs: {1}",
+      "php_not_running": "PHP {0} läuft nicht",
+      "php_check_error": "Fehler beim Prüfen der PHP-Prozesse: {0}",
+      "nginx_dirs_found": "{0} Nginx-Verzeichnisse gefunden: {1}",
+      "checking_nginx_version": "Nginx Version {0} im Verzeichnis {1} wird geprüft",
+      "nginx_process_found": "  - Nginx-Prozess gefunden: {0} (PID: {1}) - Pfad: {2}",
+      "nginx_running": "Nginx {0} läuft mit PID: {1}",
+      "nginx_not_running": "Nginx {0} läuft nicht",
+      "nginx_check_error": "Fehler beim Prüfen der Nginx-Prozesse: {0}",
+      "load_services_error": "Fehler beim Laden der Dienste in der GUI: {0}",
+      "start_all_services_error": "Fehler beim Starten aller Dienste in der GUI: {0}",
+      "stop_all_services_error": "Fehler beim Stoppen aller Dienste in der GUI: {0}",
+      "restart_all_services_error": "Fehler beim Neustarten aller Dienste in der GUI: {0}"
+    }
+  },
+  "sidebar": {
+    "title": "DevStack Manager",
+    "navigation_items": {
+      "installed": {
+        "title": "Installiert",
+        "description": "Installierte Werkzeuge"
+      },
+      "install": {
+        "title": "Installieren",
+        "description": "Neue Komponenten installieren"
+      },
+      "uninstall": {
+        "title": "Deinstallieren",
+        "description": "Komponenten entfernen"
+      },
+      "services": {
+        "title": "Dienste",
+        "description": "Dienststeuerung"
+      },
+      "config": {
+        "title": "Einstellungen",
+        "description": "Systemeinstellungen"
+      },
+      "sites": {
+        "title": "Websites",
+        "description": "Nginx-Websites verwalten"
+      },
+      "utilities": {
+        "title": "Dienstprogramme",
+        "description": "Werkzeuge und Konsole"
+      }
+    }
+  },
+  "config_tab": {
+    "title": "Einstellungen",
+    "path": {
+      "title": "PATH-Verwaltung",
+      "description": "Werkzeuge zum System-PATH hinzufügen",
+      "buttons": {
+        "add": "➕ Zum PATH hinzufügen",
+        "remove": "➖ Aus PATH entfernen"
+      }
+    },
+    "directories": {
+      "title": "Verzeichnisse",
+      "buttons": {
+        "devstack_manager": "📂 DevStack Manager",
+        "tools": "📂 Werkzeuge"
+      }
+    },
+    "languages": {
+      "title": "Sprachen",
+      "labels": {
+        "interface_language": "Oberflächensprache"
+      },
+      "messages": {
+        "language_changed": "Sprache geändert zu {0}"
+      }
+    },
+    "themes": {
+      "title": "Themen",
+      "labels": {
+        "interface_theme": "Thema der Benutzeroberfläche"
+      }
+    },
+    "messages": {
+      "path_updated": "PATH erfolgreich aktualisiert",
+      "path_update_error": "Fehler beim Aktualisieren des PATH",
+      "path_cleaned": "PATH erfolgreich bereinigt",
+      "path_listed": "PATH angezeigt",
+      "path_error": "Fehler beim Hinzufügen zum PATH: {0}",
+      "path_remove_error": "Fehler beim Entfernen aus PATH: {0}",
+      "path_clean_error": "Fehler beim Bereinigen des PATH",
+      "path_list_error": "Fehler beim Anzeigen des PATH: {0}",
+      "exe_folder_opened": "Ausführungsordner geöffnet",
+      "exe_folder_not_found": "Ausführungsordner konnte nicht gefunden werden.",
+      "exe_folder_error": "Fehler beim Öffnen des Ausführungsordners: {0}",
+      "tools_folder_opened": "Werkzeuge-Ordner geöffnet",
+      "tools_folder_not_found": "Werkzeuge-Ordner konnte nicht gefunden werden.",
+      "tools_folder_error": "Fehler beim Öffnen des Werkzeuge-Ordners: {0}"
+    }
+  },
+  "sites_tab": {
+    "title": "Nginx-Website-Konfiguration erstellen",
+    "labels": {
+      "domain": "Domain der Website:",
+      "root_directory": "Stammverzeichnis:",
+      "php_upstream": "PHP Upstream:",
+      "nginx_version": "Nginx-Version:",
+      "ssl_domain": "Domain für SSL:"
+    },
+    "buttons": {
+      "browse": "📁 Durchsuchen",
+      "create_site": "🌐 Website-Konfiguration erstellen",
+      "generate_ssl": "🔒 SSL-Zertifikat generieren"
+    },
+    "ssl": {
+      "title": "SSL-Zertifikate",
+      "generate_ssl": "SSL generieren"
+    },
+    "messages": {
+      "select_folder": "Website-Ordner auswählen",
+      "creating_site": "Konfiguration für die Website {0} wird erstellt...",
+      "site_created": "Website {0} erstellt",
+      "site_error": "Fehler beim Erstellen der Website {0}: {1}",
+      "site_config_error": "Fehler beim Erstellen der Website-Konfiguration: {0}",
+      "enter_domain": "Geben Sie eine Domain für die Website ein.",
+      "enter_root": "Geben Sie ein Stammverzeichnis für die Website ein.",
+      "select_php": "Wählen Sie eine PHP-Version für die Website aus.",
+      "select_nginx": "Wählen Sie eine Nginx-Version für die Website aus.",
+      "enter_ssl_domain": "Geben Sie eine Domain zum Generieren des SSL-Zertifikats ein.",
+      "domain_not_exists": "Die Domain '{0}' existiert nicht oder löst auf keine IP auf.",
+      "generating_ssl": "SSL-Zertifikat für {0} wird generiert...",
+      "ssl_generated": "SSL-Generierung für {0} abgeschlossen.",
+      "ssl_error": "Fehler beim Generieren des SSL-Zertifikats: {0}",
+      "restarting_nginx": "Nginx-Dienste werden neu gestartet...",
+      "nginx_restarted": "Nginx v{0} erfolgreich neu gestartet",
+      "nginx_restart_error": "Fehler beim Neustarten von Nginx v{0}: {1}",
+      "nginx_restart_general_error": "Fehler beim Neustarten von Nginx: {0}",
+      "ssl_generation_completed": "SSL-Generierung für {0} abgeschlossen.",
+      "ssl_generation_error": "❌ Fehler beim Generieren des SSL-Zertifikats: {0}",
+      "ssl_generation_error_status": "Fehler beim Generieren von SSL für {0}",
+      "ssl_generation_error_dialog": "Fehler beim Generieren des SSL-Zertifikats: {0}",
+      "no_nginx_restarted": "ℹ️ Keine Nginx-Version wurde neu gestartet (möglicherweise nicht aktiv)",
+      "no_nginx_found": "❌ Keine installierte Nginx-Version gefunden"
+    },
+    "info": "Die Konfigurationsdateien werden automatisch erstellt"
+  },
+  "utilities_tab": {
+    "title": "DevStack-Konsole - Befehle direkt ausführen",
+    "labels": {
+      "command": "Befehl:"
+    },
+    "buttons": {
+      "execute": "▶️ Ausführen",
+      "clear": "❌",
+      "clear_tooltip": "Konsole leeren"
+    },
+    "console_title": "DevStack-Konsole - Befehle direkt ausführen",
+    "command_label": "Befehl:",
+    "execute_button": "▶️ Ausführen",
+    "clear_console_tooltip": "Konsole leeren",
+    "status_button": "Status",
+    "installed_button": "Installiert",
+    "diagnostic_button": "Diagnose",
+    "test_button": "Testen",
+    "help_button": "Hilfe",
+    "console_header": "DevStack Manager Konsole",
+    "available_commands": "Verfügbare Befehle:",
+    "tip_message": "Tipp: Geben Sie Befehle direkt oben ein oder verwenden Sie die Schnellzugriffstasten",
+    "executing_command": "Wird ausgeführt: {0}",
+    "no_output": "(Befehl ausgeführt, keine Ausgabe erzeugt)",
+    "devstack_not_found": "Fehler: DevStack.exe konnte nicht gestartet werden",
+    "error": "FEHLER",
+    "console_cleared": "Konsole geleert.\n\n",
+    "empty_command": "Leerer Befehl",
+    "command_execution_error": "Fehler beim Ausführen des Befehls: {0}",
+    "status": {
+      "executing": "Wird ausgeführt: {0}",
+      "executed": "Befehl ausgeführt",
+      "error": "Fehler beim Ausführen des Befehls",
+      "cleared": "Konsole geleert"
+    }
+  },
+  "console": {
+    "titles": {
+      "install": "Konsolenausgabe - Installation",
+      "uninstall": "Konsolenausgabe - Deinstallation",
+      "sites": "Konsolenausgabe - Websites",
+      "config": "Konsolenausgabe - Einstellungen",
+      "utilities": "Konsolenausgabe"
+    },
+    "buttons": {
+      "clear": "🗑️ Konsole leeren"
+    }
+  },
+  "common": {
+    "status": {
+      "ok": "✔️",
+      "error": "❌",
+      "na": "N/A"
+    },
+    "dialogs": {
+      "warning": "Warnung",
+      "error": "Fehler",
+      "info": "Information",
+      "confirmation": "Bestätigung"
+    }
+  },
+  "status_bar": {
+    "refresh_tooltip": "Status aktualisieren",
+    "updating": "Aktualisiere...",
+    "updated": "Status aktualisiert"
+  }
+}

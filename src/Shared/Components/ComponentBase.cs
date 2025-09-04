@@ -76,12 +76,46 @@ namespace DevStackManager.Components
         public virtual bool IsCommandLine => false;
         public virtual string? ExecutableFolder => "";
         public virtual string? ExecutablePattern => "";
+        public virtual string? ServicePattern => "";
         public virtual string? SubDirectory => null;
         public virtual bool IsArchive => true;
         public virtual bool RunInstaller => false;
         public virtual string? GetInstallerArgs(string version) => null;
-        public virtual bool CreateBinShortcut => true;
-        public virtual bool RenameExeAfterInstall => true;
+        public virtual string? CreateBinShortcut => null;
+
+        /// <summary>
+        /// Obtém o tipo de serviço baseado no nome do componente
+        /// </summary>
+        public virtual string GetServiceType(DevStackShared.LocalizationManager localizationManager)
+        {
+            return Name.ToLowerInvariant() switch
+            {
+                "nginx" => localizationManager.GetString("gui.services_tab.types.web_server"),
+                "php" => localizationManager.GetString("gui.services_tab.types.php_fpm"),
+                "mysql" => localizationManager.GetString("gui.services_tab.types.database"),
+                "mongodb" => localizationManager.GetString("gui.services_tab.types.database"),
+                "pgsql" => localizationManager.GetString("gui.services_tab.types.database"),
+                "elasticsearch" => localizationManager.GetString("gui.services_tab.types.search_engine"),
+                _ => localizationManager.GetString("gui.services_tab.types.service")
+            };
+        }
+
+        /// <summary>
+        /// Obtém a descrição do serviço
+        /// </summary>
+        public virtual string GetServiceDescription(string version, DevStackShared.LocalizationManager localizationManager)
+        {
+            return Name.ToLowerInvariant() switch
+            {
+                "php" => $"PHP {version} {localizationManager.GetString("gui.services_tab.types.fastcgi")}",
+                "nginx" => $"Nginx {version}",
+                "mysql" => $"MySQL {version}",
+                "mongodb" => $"MongoDB {version}",
+                "pgsql" => $"PostgreSQL {version}",
+                "elasticsearch" => $"Elasticsearch {version}",
+                _ => $"{Name} {version}"
+            };
+        }
 
         public virtual Task PostInstall(string version, string targetDir)
         {
@@ -192,11 +226,9 @@ namespace DevStackManager.Components
             string? subDir = null,
             string? exeRelativePath = null,
             string? prefix = null,
-            bool renameExe = true,
             bool isArchive = true,
             bool runInstaller = false,
-            string? installerArgs = null,
-            bool createBinShortcut = false)
+            string? installerArgs = null)
         {
             prefix ??= Path.GetFileNameWithoutExtension(toolDir)?.ToLowerInvariant() ?? "tool";
             subDir ??= $"{prefix}-{version}";
@@ -207,7 +239,7 @@ namespace DevStackManager.Components
             {
                 if (Directory.Exists(targetDir))
                 {
-                    Console.WriteLine($"{prefix} {version} já está instalado.");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.already_installed", prefix, version) ?? $"{prefix} {version} já está instalado.");
                     return true;
                 }
                 if (!Directory.Exists(toolDir))
@@ -215,7 +247,7 @@ namespace DevStackManager.Components
                     Directory.CreateDirectory(toolDir);
                 }
 
-                Console.WriteLine($"Baixando {prefix} {version}...");
+                Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.downloading", prefix, version) ?? $"Baixando {prefix} {version}...");
 
                 // Normalize url
                 if (string.IsNullOrEmpty(url)) throw new ArgumentException("URL inválida para download.", nameof(url));
@@ -243,13 +275,13 @@ namespace DevStackManager.Components
 
                     // Run installer with provided args (powershell wrapper to keep compatibility)
                     string args = installerArgs ?? string.Empty;
-                    Console.WriteLine($"Executando instalador {downloadFileName} {args}...");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.running_installer", downloadFileName, args) ?? $"Executando instalador {downloadFileName} {args}...");
                     await ProcessManager.ExecuteProcessAsync(downloadPath, args, toolDir);
 
                     // Try to delete installer
                     try { File.Delete(downloadPath); } catch { }
 
-                    Console.WriteLine($"{prefix} {version} instalado via instalador em {targetDir}");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.installed_via_installer", prefix, version, targetDir) ?? $"{prefix} {version} instalado via instalador em {targetDir}");
                     rollback = true;
                 }
                 else if (isArchive || lowerUrl.EndsWith(".zip"))
@@ -264,7 +296,7 @@ namespace DevStackManager.Components
                         }
                     }
 
-                    Console.WriteLine("Extraindo...");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.extracting") ?? "Extraindo...");
                     string? topFolder = null;
                     using (var archive = ZipFile.OpenRead(zipPath))
                     {
@@ -313,7 +345,7 @@ namespace DevStackManager.Components
                         }
                     }
 
-                    Console.WriteLine($"{prefix} {version} instalado.");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.installed", prefix, version) ?? $"{prefix} {version} instalado.");
                     rollback = true;
                 }
                 else
@@ -326,47 +358,15 @@ namespace DevStackManager.Components
                     {
                         await response.Content.CopyToAsync(fs);
                     }
-                    Console.WriteLine($"{prefix} {version} instalado em {targetDir}.");
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.installed_in", prefix, version, targetDir) ?? $"{prefix} {version} instalado em {targetDir}.");
                     rollback = true;
-                }
-
-                if (renameExe && !string.IsNullOrEmpty(exeRelativePath))
-                {
-                    string exePath = exeRelativePath.Replace("{version}", version);
-                    Console.WriteLine("Renomeando executável principal...");
-                    try
-                    {
-                        RenameMainExe(targetDir, exePath, version, prefix);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Aviso: falha ao renomear executável: {e.Message}");
-                    }
-                }
-
-                if (createBinShortcut && !string.IsNullOrEmpty(exeRelativePath))
-                {
-                    try
-                    {
-                        string exePath = exeRelativePath.Replace("{version}", version);
-                        string fullExe = Path.Combine(targetDir, exePath);
-                        if (File.Exists(fullExe))
-                        {
-                            string binDir = Path.Combine(toolDir, "bin");
-                            if (!Directory.Exists(binDir)) Directory.CreateDirectory(binDir);
-                            string dst = Path.Combine(binDir, $"{prefix}-{version}{Path.GetExtension(fullExe)}");
-                            File.Copy(fullExe, dst, true);
-                            Console.WriteLine($"Atalho {prefix}-{version}{Path.GetExtension(fullExe)} criado em {binDir}");
-                        }
-                    }
-                    catch { }
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao instalar {prefix} {version}: {ex.Message}");
+                Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.error_installing", prefix, version, ex.Message) ?? $"Erro ao instalar {prefix} {version}: {ex.Message}");
                 if (rollback && Directory.Exists(targetDir))
                 {
                     try { Directory.Delete(targetDir, true); } catch { }
@@ -410,29 +410,107 @@ namespace DevStackManager.Components
                     exeRel = ExecutablePattern.Replace("{version}", version);
             }
 
-            bool renameExe = IsExecutable ? RenameExeAfterInstall : false;
-            bool createBinShortcut = IsExecutable ? CreateBinShortcut : false;
-
             bool isArchive = IsArchive;
             bool runInstaller = RunInstaller;
             string? installerArgs = GetInstallerArgs(version);
 
-            await InstallGenericTool(toolDirArg, version, url, subDir, exeRel, Name, renameExe, isArchive, runInstaller, installerArgs, createBinShortcut);
+            await InstallGenericTool(toolDirArg, version, url, subDir, exeRel, Name, isArchive, runInstaller, installerArgs);
 
             string targetDir = System.IO.Path.Combine(toolDirArg, subDir);
             await PostInstall(version, targetDir);
 
-            Console.WriteLine($"{Name} {version} instalado.");
+            bool createBinShortcutFlag = IsExecutable && !string.IsNullOrEmpty(CreateBinShortcut);
+            // Handle CreateBinShortcut if specified - usar ExecutablePattern se definido
+            if (createBinShortcutFlag && !string.IsNullOrEmpty(CreateBinShortcut))
+            {
+                try
+                {
+                    string shortcutName = CreateBinShortcut.Replace("{version}", version);
+                    string sourceDir = targetDir;
+                    string sourcePattern;
+                    
+                    // Se ExecutablePattern estiver definido, usar ele como source file
+                    if (!string.IsNullOrEmpty(ExecutablePattern))
+                    {
+                        sourcePattern = ExecutablePattern; // ExecutablePattern já está sem {version}
+                        
+                        // Se ExecutableFolder estiver definido, usar ele como source directory
+                        if (!string.IsNullOrEmpty(ExecutableFolder))
+                        {
+                            if (Path.IsPathRooted(ExecutableFolder))
+                            {
+                                sourceDir = ExecutableFolder;
+                            }
+                            else
+                            {
+                                sourceDir = Path.Combine(targetDir, ExecutableFolder);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Fallback para usar o próprio CreateBinShortcut como source
+                        sourcePattern = shortcutName;
+                    }
+                    
+                    CreateGlobalBinShortcut(sourceDir, sourcePattern, version, Name, shortcutName);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.shortcut_creation_failed", e.Message) ?? $"Aviso: falha ao criar atalho: {e.Message}");
+                }
+            }
+
+            Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.install.component_installed", Name, version) ?? $"{Name} {version} instalado.");
         }
 
-        public static void RenameMainExe(string dir, string exeName, string version, string prefix)
+        public static void CreateGlobalBinShortcut(string sourceDir, string sourcePattern, string version, string componentName, string? shortcutName = null)
         {
-            string exePath = Path.Combine(dir, exeName);
-            string exeVersionPath = Path.Combine(dir, $"{prefix}-{version}.exe");
-            if (File.Exists(exePath))
+            string sourceFile = Path.Combine(sourceDir, sourcePattern);
+            if (File.Exists(sourceFile))
             {
-                File.Move(exePath, exeVersionPath);
-                Console.WriteLine($"Renomeado {exeName} para {prefix}-{version}.exe");
+                // Usar pasta bin geral no DevStackConfig.baseDir
+                string globalBinDir = Path.Combine(DevStackConfig.baseDir, "bin");
+                if (!Directory.Exists(globalBinDir)) Directory.CreateDirectory(globalBinDir);
+                
+                // Determinar o nome do atalho (com extensão .cmd)
+                string shortcutName_final;
+                if (!string.IsNullOrEmpty(shortcutName))
+                {
+                    // Remove extensão se fornecida no shortcutName e adiciona .cmd
+                    shortcutName_final = Path.GetFileNameWithoutExtension(shortcutName.Replace("{version}", version)) + ".cmd";
+                }
+                else
+                {
+                    shortcutName_final = $"{componentName}-{version}.cmd";
+                }
+                
+                string shortcutPath = Path.Combine(globalBinDir, shortcutName_final);
+                
+                try
+                {
+                    // Remover atalho existente se houver
+                    if (File.Exists(shortcutPath))
+                    {
+                        File.Delete(shortcutPath);
+                    }
+                    
+                    // Criar script .cmd (funciona no Windows quando está no PATH e pode ser chamado sem extensão)
+                    string cmdContent = $"@echo off\nsetlocal\n\"{sourceFile}\" %*\nendlocal";
+                    
+                    File.WriteAllText(shortcutPath, cmdContent, System.Text.Encoding.ASCII);
+                    
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(shortcutPath);
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.created", nameWithoutExt, sourceFile) ?? $"Atalho {nameWithoutExt} criado apontando para {sourceFile}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.error_creating", ex.Message) ?? $"Erro ao criar atalho: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.file_not_found", sourcePattern) ?? $"Aviso: arquivo {sourcePattern} não encontrado para criar atalho");
             }
         }
         
@@ -448,6 +526,46 @@ namespace DevStackManager.Components
             else
             {
                 DevStackConfig.WriteColoredLine($"{subDir} não está instalado.", ConsoleColor.Yellow);
+            }
+        }
+
+        /// <summary>
+        /// Remove um atalho global criado anteriormente
+        /// </summary>
+        public static void RemoveGlobalBinShortcut(string componentName, string version, string shortcutPattern)
+        {
+            try
+            {
+                string globalBinDir = Path.Combine(DevStackConfig.baseDir, "bin");
+                
+                if (!Directory.Exists(globalBinDir))
+                {
+                    return; // Não há diretório bin, não há atalhos para remover
+                }
+
+                // Processar o padrão do atalho (com extensão .cmd)
+                string finalShortcutName = shortcutPattern.Replace("{version}", version);
+                
+                // Remove extensão se tiver e adiciona .cmd
+                finalShortcutName = Path.GetFileNameWithoutExtension(finalShortcutName) + ".cmd";
+                
+                string shortcutPath = Path.Combine(globalBinDir, finalShortcutName);
+                
+                // Remover atalho se existir
+                if (File.Exists(shortcutPath))
+                {
+                    File.Delete(shortcutPath);
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.removed", finalShortcutName) ?? $"Atalho {finalShortcutName} removido");
+                }
+                else
+                {
+                    Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.not_found", finalShortcutName) ?? $"Atalho {finalShortcutName} não encontrado para remoção");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DevStackShared.LocalizationManager.Instance?.GetString("shared.shortcuts.error_removing", ex.Message) ?? $"Erro ao remover atalho: {ex.Message}");
+                DevStackConfig.WriteLog($"Erro ao remover atalho global: {ex}");
             }
         }
     }

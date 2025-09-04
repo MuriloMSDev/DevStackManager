@@ -34,8 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Shared\locale\*.json">
-      <LogicalName>DevStackUninstaller.locale.%(Filename)%(Extension)</LogicalName>
+    <!-- Localização -->
+    <EmbeddedResource Include="..\Shared\locale\**\*.json">
+      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

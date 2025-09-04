@@ -1,0 +1,29 @@
+{
+  "uninstall": {
+    "no_component": "No component specified for uninstall.",
+    "removing_shortcut": "Removing shortcut for {0}...",
+    "unknown_component": "Unknown component: {0}",
+    "finished": "Uninstall finished."
+  },
+  "shortcuts": {
+    "created": "Shortcut {0} created pointing to {1}",
+    "error_creating": "Error creating symbolic link: {0}",
+    "fallback_copy": "Fallback: Copy {0} created in {1}",
+    "file_not_found": "Warning: file {0} not found to create shortcut",
+    "removed": "Shortcut {0} removed",
+    "not_found": "Shortcut {0} not found for removal",
+    "error_removing": "Error removing shortcut: {0}"
+  },
+  "install": {
+    "already_installed": "{0} {1} is already installed.",
+    "downloading": "Downloading {0} {1}...",
+    "running_installer": "Running installer {0} {1}...",
+    "installed_via_installer": "{0} {1} installed via installer in {2}",
+    "extracting": "Extracting...",
+    "installed": "{0} {1} installed.",
+    "installed_in": "{0} {1} installed in {2}.",
+    "error_installing": "Error installing {0} {1}: {2}",
+    "shortcut_creation_failed": "Warning: failed to create shortcut: {0}",
+    "component_installed": "{0} {1} installed."
+  }
+}

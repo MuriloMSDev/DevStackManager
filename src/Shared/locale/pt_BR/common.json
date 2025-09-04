@@ -1,0 +1,26 @@
+{
+  "unknown": "Desconhecido",
+  "themes": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "messages": {
+      "theme_changed": "Tema alterado para {0}"
+    }
+  },
+  "buttons": {
+    "back": "← Voltar",
+    "next": "Avançar →",
+    "accept": "Eu Aceito",
+    "install": "Instalar",
+    "finish": "Concluir",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "uninstall": "🗑️ Desinstalar",
+    "yes": "Sim",
+    "no": "Não",
+    "ok": "OK"
+  },
+  "dialogs": {
+    "default_title": "Mensagem"
+  }
+}

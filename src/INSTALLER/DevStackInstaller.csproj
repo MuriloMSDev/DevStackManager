@@ -28,13 +28,13 @@
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SharpCompress" Version="0.30.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\install\DevStack.zip" Condition="Exists('..\..\install\DevStack.zip')" />
-    <EmbeddedResource Include="..\Shared\locale\*.json">
-      <LogicalName>DevStackInstaller.locale.%(Filename)%(Extension)</LogicalName>
+    <EmbeddedResource Include="..\..\install\DevStackSource.zip" Condition="Exists('..\..\install\DevStackSource.zip')" />
+    <!-- Localização -->
+    <EmbeddedResource Include="..\Shared\locale\**\*.json">
+      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

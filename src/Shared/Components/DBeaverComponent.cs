@@ -8,6 +8,7 @@ namespace DevStackManager.Components
         public override string Name => "dbeaver";
         public override string ToolDir => DevStackConfig.dbeaverDir;
         public override bool IsExecutable => true;
-        public override string? ExecutablePattern => $"dbeaver-{{version}}.exe";
+        public override string? ExecutablePattern => "dbeaver.exe";
+        public override string? CreateBinShortcut => "dbeaver-{version}.exe";
     }
 }

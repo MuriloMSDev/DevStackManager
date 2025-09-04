@@ -10,13 +10,10 @@ namespace DevStackManager.Components
     {
         public override string Name => "git";
         public override string ToolDir => DevStackConfig.gitDir;
-
-        public override Task PostInstall(string version, string targetDir)
-        {
-            // Log install location
-            DevStackConfig.WriteLog($"Git {version} instalado em {targetDir}");
-            Console.WriteLine($"Git {version} instalado em {targetDir}");
-            return Task.CompletedTask;
-        }
+        public override bool IsExecutable => true;
+        public override bool IsCommandLine => true;
+        public override string? ExecutablePattern => "git.exe";
+        public override string? ExecutableFolder => Path.Combine("mingw64", "bin");
+        public override string? CreateBinShortcut => "git-{version}.exe";
     }
 }

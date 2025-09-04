@@ -19,12 +19,5 @@ namespace DevStackManager.Components
             // Return installer args; InstallGenericTool will download and execute the installer
             return $"/VERYSILENT /DIR=\"{installDir}\"";
         }
-
-        public override async Task PostInstall(string version, string targetDir)
-        {
-            // Nothing else required; installer already placed files into requested dir
-            Console.WriteLine($"OpenSSL {version} instalado em {targetDir}");
-            await Task.CompletedTask;
-        }
     }
 }

@@ -208,7 +208,7 @@ namespace DevStackManager
             // Tentar carregar o ícone com fallback para erro
             try
             {
-                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, mainWindow.LocalizationManager.GetString("gui.common.icon_file"));
+                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DevStack.ico");
                 if (File.Exists(iconPath))
                 {
                     iconImage.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
@@ -392,7 +392,7 @@ namespace DevStackManager
             statusLabel.SetBinding(Label.ContentProperty, statusBinding);
             
             // Create refresh button with only icon
-            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.refresh_icon"));
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton("🔄");
             refreshButton.Width = 45;
             refreshButton.Height = 35;
             refreshButton.FontSize = 14;

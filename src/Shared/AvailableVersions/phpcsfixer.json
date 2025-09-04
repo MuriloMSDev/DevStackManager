@@ -1170,5 +1170,13 @@
   {
     "version": "3.86.0",
     "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.86.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.87.0",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.87.0/php-cs-fixer.phar"
+  },
+  {
+    "version": "3.87.1",
+    "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.87.1/php-cs-fixer.phar"
   }
 ]

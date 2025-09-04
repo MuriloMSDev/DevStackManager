@@ -5,7 +5,6 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
     <ApplicationIcon>..\Shared\DevStack.ico</ApplicationIcon>
     <AssemblyTitle>DevStack CLI</AssemblyTitle>
     <AssemblyDescription>DevStack Manager Tool - Command Line Interface</AssemblyDescription>
@@ -18,6 +17,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,13 +27,28 @@
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Localização -->
+    <EmbeddedResource Include="..\Shared\locale\**\*.json">
+      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\Shared\DevStack.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shared\*.cs" />
+    <Compile Include="..\Shared\DataManager.cs" />
+    <Compile Include="..\Shared\DevStackConfig.cs" />
+    <Compile Include="..\Shared\GenerateManager.cs" />
+    <Compile Include="..\Shared\InstallManager.cs" />
+    <Compile Include="..\Shared\ListManager.cs" />
+    <Compile Include="..\Shared\LocalizationManager.cs" />
+    <Compile Include="..\Shared\PathManager.cs" />
+    <Compile Include="..\Shared\ProcessManager.cs" />
+    <Compile Include="..\Shared\UninstallManager.cs" />
     <Compile Include="..\Shared\Components\*.cs" />
     <Compile Include="..\Shared\Models\*.cs" />
     <EmbeddedResource Include="..\Shared\AvailableVersions\*.json" />

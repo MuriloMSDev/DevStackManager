@@ -21,9 +21,9 @@ namespace DevStackManager
         {
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Command input
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Console output
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Buttons
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Console output
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Command input
 
             // Header
             var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.console_title"), true);
@@ -34,7 +34,7 @@ namespace DevStackManager
 
             // Command input panel
             var inputPanel = CreateCommandInputPanel(mainWindow);
-            Grid.SetRow(inputPanel, 1);
+            Grid.SetRow(inputPanel, 3);
             grid.Children.Add(inputPanel);
 
             // Console output (with overlay Clear button)
@@ -106,7 +106,7 @@ namespace DevStackManager
 
             // Buttons panel (without Clear button)
             var buttonsPanel = CreateQuickButtonsPanel(mainWindow, includeClearButton: false);
-            Grid.SetRow(buttonsPanel, 3);
+            Grid.SetRow(buttonsPanel, 1);
             grid.Children.Add(buttonsPanel);
 
             return grid;
@@ -119,7 +119,7 @@ namespace DevStackManager
         {
             var inputPanel = new Grid
             {
-                Margin = new Thickness(10, 10, 10, 5)
+                Margin = new Thickness(10, 5, 10, 10)
             };
             
             // Definir colunas: Label (auto) | TextBox (star) | Button (auto)
@@ -155,7 +155,7 @@ namespace DevStackManager
             {
                 ExecuteCommand(mainWindow, commandTextBox.Text);
                 commandTextBox.Text = "";
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Success);
             executeButton.Width = 100;
             executeButton.Height = 30;
             executeButton.Margin = new Thickness(5, 0, 0, 0);
@@ -346,7 +346,7 @@ namespace DevStackManager
         {
             var buttonsPanel = new WrapPanel
             {
-                Margin = new Thickness(10, 5, 10, 10),
+                Margin = new Thickness(10, 10, 10, 5),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 

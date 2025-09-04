@@ -43,46 +43,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Adiciona diretórios de executáveis das ferramentas instaladas ao PATH do usuário
+        /// Adiciona o diretório bin global das ferramentas ao PATH do usuário
         /// </summary>
         public void AddBinDirsToPath()
         {
+            // Adicionar apenas a pasta bin global do DevStack
+            var globalBinDir = Path.Combine(baseDir, "bin");
             var pathsToAdd = new List<string>();
 
-            // Para cada componente, buscar todas as versões instaladas e montar o caminho do binário
-            foreach (var component in Components.ComponentsFactory.GetAll())
+            if (Directory.Exists(globalBinDir))
             {
-                try
-                {
-                    var installedVersions = component.ListInstalled(); // agora retorna versões
-                    if (installedVersions != null && installedVersions.Count > 0)
-                    {
-                        foreach (var version in installedVersions)
-                        {
-                            // Montar caminho do binário: baseDir\Components\<NomeComponente>\<Versao>\bin
-                            var componentDir = Path.Combine(baseDir, component.Name, $"{component.Name}-{version}");
-                            var binDir1 = Path.Combine(componentDir, "bin");
-                            var binDir2 = Path.Combine(baseDir, component.Name, "bin");
-                            if (Directory.Exists(binDir1) && !pathsToAdd.Contains(binDir1) && Directory.GetFiles(binDir1, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
-                            {
-                                pathsToAdd.Add(binDir1);
-                            }
-                            else if (Directory.Exists(componentDir) && !pathsToAdd.Contains(componentDir) && Directory.GetFiles(componentDir, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
-                            {
-                                pathsToAdd.Add(componentDir);
-                            }
-                            
-                            if (Directory.Exists(binDir2) && !pathsToAdd.Contains(binDir2) && Directory.GetFiles(binDir2, "*.exe", SearchOption.TopDirectoryOnly).Length > 0)
-                            {
-                                pathsToAdd.Add(binDir2);
-                            }
-                        }
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    DevStackConfig.WriteLog($"Erro ao obter versões instaladas para o componente {component.Name}: {ex.Message}");
-                }
+                pathsToAdd.Add(globalBinDir);
             }
 
             // Obter PATH atual do usuário
@@ -108,7 +79,7 @@ namespace DevStackManager
                 // Atualizar PATH da sessão atual (processo)
                 UpdateProcessPath();
 
-                DevStackConfig.WriteColoredLine("Os seguintes diretórios foram adicionados ao PATH do usuário:", ConsoleColor.Green);
+                DevStackConfig.WriteColoredLine("O diretório bin global foi adicionado ao PATH do usuário:", ConsoleColor.Green);
                 foreach (var path in newPaths)
                 {
                     DevStackConfig.WriteColoredLine($"  {path}", ConsoleColor.Yellow);
@@ -119,7 +90,7 @@ namespace DevStackManager
             {
                 // Mesmo sem novos paths, garantir que o processo está sincronizado
                 UpdateProcessPath();
-                DevStackConfig.WriteColoredLine("Nenhum novo diretório foi adicionado ao PATH.", ConsoleColor.Yellow);
+                DevStackConfig.WriteColoredLine("O diretório bin global já está no PATH.", ConsoleColor.Yellow);
             }
         }
 
@@ -166,50 +137,27 @@ namespace DevStackManager
         /// </summary>
         public void RemoveAllDevStackFromPath()
         {
+            // Remover apenas a pasta bin global do DevStack
+            var globalBinDir = Path.Combine(baseDir, "bin");
             var dirsToRemove = new List<string>();
 
             var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
             var currentPathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
                                             .Select(NormalizePath)
                                             .Where(p => !string.IsNullOrEmpty(p));
-            // Para cada componente, buscar todas as versões instaladas e montar o caminho do binário
-            foreach (var component in Components.ComponentsFactory.GetAll())
+
+            if (Directory.Exists(globalBinDir) && currentPathList.Any(p => p == NormalizePath(globalBinDir)))
             {
-                try
-                {
-                    var installedVersions = component.ListInstalled(); // agora retorna versões
-                    if (installedVersions != null && installedVersions.Count > 0)
-                    {
-                        foreach (var version in installedVersions)
-                        {
-                            // Montar caminho do binário: baseDir\Components\<NomeComponente>\<Versao>\bin
-                            var componentDir = Path.Combine(baseDir, component.Name, $"{component.Name}-{version}");
-                            var binDir1 = Path.Combine(componentDir, "bin");
-                            var binDir2 = Path.Combine(baseDir, component.Name, "bin");
-                            if (Directory.Exists(binDir1) && currentPathList.Any(p => p == NormalizePath(binDir1)))
-                            {
-                                dirsToRemove.Add(binDir1);
-                            }
-                            if (Directory.Exists(binDir2) && currentPathList.Any(p => p == NormalizePath(binDir2)))
-                            {
-                                dirsToRemove.Add(binDir2);
-                            }
-                            if (Directory.Exists(componentDir) && currentPathList.Any(p => p == NormalizePath(componentDir)))
-                            {
-                                dirsToRemove.Add(componentDir);
-                            }
-                        }
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    DevStackConfig.WriteLog($"Erro ao obter versões instaladas para o componente {component.Name}: {ex.Message}");
-                }
+                dirsToRemove.Add(globalBinDir);
             }
 
             if (dirsToRemove.Count > 0)
             {
                 RemoveFromPath(dirsToRemove.ToArray());
+            }
+            else
+            {
+                DevStackConfig.WriteColoredLine("Nenhum diretório DevStack encontrado no PATH.", ConsoleColor.Yellow);
             }
         }
 
@@ -224,15 +172,22 @@ namespace DevStackManager
                                      .Where(p => !string.IsNullOrEmpty(p))
                                      .ToList();
 
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
-            var filteredPaths = pathList.Where(p => p != null && p.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase)).ToList();
+            var globalBinDir = NormalizePath(Path.Combine(baseDir, "bin"));
+            var filteredPaths = pathList.Where(p => p != null && p.Equals(globalBinDir, StringComparison.OrdinalIgnoreCase)).ToList();
 
             DevStackConfig.WriteColoredLine("Diretórios do DevStack no PATH do usuário:", ConsoleColor.Cyan);
-            foreach (var path in filteredPaths)
+            if (filteredPaths.Count > 0)
             {
-                var exists = Directory.Exists(path) ? "✓" : "✗";
-                var color = Directory.Exists(path) ? ConsoleColor.Green : ConsoleColor.Red;
-                DevStackConfig.WriteColoredLine($"  {exists} {path}", color);
+                foreach (var path in filteredPaths)
+                {
+                    var exists = Directory.Exists(path) ? "✓" : "✗";
+                    var color = Directory.Exists(path) ? ConsoleColor.Green : ConsoleColor.Red;
+                    DevStackConfig.WriteColoredLine($"  {exists} {path}", color);
+                }
+            }
+            else
+            {
+                DevStackConfig.WriteColoredLine("  Nenhum diretório DevStack encontrado no PATH.", ConsoleColor.Yellow);
             }
         }
 
