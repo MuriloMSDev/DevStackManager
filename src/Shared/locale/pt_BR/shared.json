@@ -1,0 +1,29 @@
+{
+  "uninstall": {
+    "no_component": "Nenhum componente especificado para desinstalar.",
+    "removing_shortcut": "Removendo atalho para {0}...",
+    "unknown_component": "Componente desconhecido: {0}",
+    "finished": "Uninstall finalizado."
+  },
+  "shortcuts": {
+    "created": "Atalho {0} criado apontando para {1}",
+    "error_creating": "Erro ao criar atalho simbólico: {0}",
+    "fallback_copy": "Fallback: Cópia {0} criada em {1}",
+    "file_not_found": "Aviso: arquivo {0} não encontrado para criar atalho",
+    "removed": "Atalho {0} removido",
+    "not_found": "Atalho {0} não encontrado para remoção",
+    "error_removing": "Erro ao remover atalho: {0}"
+  },
+  "install": {
+    "already_installed": "{0} {1} já está instalado.",
+    "downloading": "Baixando {0} {1}...",
+    "running_installer": "Executando instalador {0} {1}...",
+    "installed_via_installer": "{0} {1} instalado via instalador em {2}",
+    "extracting": "Extraindo...",
+    "installed": "{0} {1} instalado.",
+    "installed_in": "{0} {1} instalado em {2}.",
+    "error_installing": "Erro ao instalar {0} {1}: {2}",
+    "shortcut_creation_failed": "Aviso: falha ao criar atalho: {0}",
+    "component_installed": "{0} {1} instalado."
+  }
+}

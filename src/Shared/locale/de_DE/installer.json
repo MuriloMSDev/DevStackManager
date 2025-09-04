@@ -1,0 +1,98 @@
+{
+  "window_title": "DevStack Manager v{0} - Installationsassistent",
+  "dialogs": {
+    "cancel_title": "Installation abbrechen",
+    "cancel_message": "Sind Sie sicher, dass Sie die Installation abbrechen möchten?",
+    "installation_error_title": "Fehler",
+    "installation_error_message": "Installation fehlgeschlagen: {0}",
+    "folder_dialog_title": "Installationsordner auswählen"
+  },
+  "welcome": {
+    "title": "Willkommen beim DevStack Manager",
+    "description": "Dieser Assistent führt Sie durch die Installation des DevStack Managers auf Ihrem Computer.",
+    "app_name": "DevStack Manager",
+    "version": "Version {0}",
+    "app_description": "DevStack Manager ist ein umfassendes Tool zur Verwaltung von Entwicklungsumgebungen, das Ihnen hilft, verschiedene Entwicklungswerkzeuge und -dienste zu installieren, konfigurieren und verwalten.\n\nKlicken Sie auf 'Weiter', um mit der Installation fortzufahren.",
+    "language_label": "Installationssprache:"
+  },
+  "license": {
+    "title": "Lizenzvereinbarung",
+    "description": "Bitte lesen Sie die folgende Lizenzvereinbarung sorgfältig durch.",
+    "label": "Bitte lesen und akzeptieren Sie die Lizenzvereinbarung:",
+    "text": "MIT-Lizenz\n\nCopyright (c) 2025 DevStackManager\n\nHiermit wird unentgeltlich jeder Person, die eine Kopie der Software und der zugehörigen Dokumentationsdateien (die \"Software\") erhält, die Erlaubnis erteilt, uneingeschränkt mit der Software zu handeln, einschließlich und ohne Einschränkung des Rechts, sie zu verwenden, zu kopieren, zu ändern, zusammenzuführen, zu veröffentlichen, zu verbreiten, unterzulizenzieren und/oder zu verkaufen, und Personen, denen die Software bereitgestellt wird, dies zu ermöglichen, unter den folgenden Bedingungen:\n\nDer obige Urheberrechtshinweis und dieser Erlaubnishinweis müssen in allen Kopien oder wesentlichen Teilen der Software enthalten sein.\n\nDIE SOFTWARE WIRD OHNE JEGLICHE GARANTIE, WEDER AUSDRÜCKLICH NOCH STILLSCHWEIGEND, BEREITGESTELLT, EINSCHLIESSLICH ABER NICHT BESCHRÄNKT AUF DIE GARANTIEN DER MARKTGÄNGIGKEIT, EIGNUNG FÜR EINEN BESTIMMTEN ZWECK UND NICHTVERLETZUNG. IN KEINEM FALL SIND DIE AUTOREN ODER URHEBERRECHTSINHABER FÜR ANSPRÜCHE, SCHÄDEN ODER SONSTIGE HAFTUNGEN VERANTWORTLICH, OB AUS VERTRAG, UNERLAUBTER HANDLUNG ODER ANDERWEITIG, DIE AUS DER SOFTWARE ODER DER BENUTZUNG ODER SONSTIGEN GESCHÄFTEN MIT DER SOFTWARE ENTSTEHEN."
+  },
+  "installation_path": {
+    "title": "Installationsort wählen",
+    "description": "Wählen Sie den Ordner, in dem DevStack Manager installiert werden soll.",
+    "label": "Zielordner:",
+    "browser": "Durchsuchen...",
+    "space_required": "Benötigter Speicherplatz: {0} MB",
+    "space_available": "Verfügbarer Speicherplatz: {0}",
+    "info": "DevStack Manager wird in diesem Ordner zusammen mit allen Komponenten und Einstellungen installiert."
+  },
+  "components": {
+    "title": "Zusätzliche Optionen auswählen",
+    "description": "Wählen Sie zusätzliche Optionen für Ihre DevStack Manager Installation.",
+    "label": "Zusätzliche Optionen:",
+    "desktop_shortcuts": "🖥️ Desktop-Verknüpfungen erstellen",
+    "start_menu_shortcuts": "📂 Startmenü-Verknüpfungen erstellen",
+    "add_to_path": "⚡ DevStack zum System-PATH hinzufügen (empfohlen)",
+    "path_info": "Das Hinzufügen zum PATH ermöglicht die Verwendung von DevStack-Befehlen direkt im Terminal von jedem Ort aus."
+  },
+  "ready_to_install": {
+    "title": "Bereit zur Installation",
+    "description": "Der Assistent ist bereit, die Installation zu starten. Überprüfen Sie Ihre Einstellungen unten.",
+    "summary_label": "Installationsübersicht:",
+    "destination": "Zielordner:",
+    "components_header": "Zu installierende Komponenten:",
+    "cli_component": "• DevStack CLI (Kommandozeilenschnittstelle)",
+    "gui_component": "• DevStack GUI (Grafische Oberfläche)",
+    "uninstaller_component": "• DevStack Deinstallationsprogramm",
+    "config_component": "• Konfigurationsdateien und Komponenten",
+    "options_header": "Zusätzliche Optionen:",
+    "create_desktop": "• Desktop-Verknüpfungen erstellen",
+    "create_start_menu": "• Startmenü-Verknüpfungen erstellen",
+    "add_path": "• Zum System-PATH hinzufügen",
+    "space_required_summary": "Benötigter Speicherplatz: {0} MB"
+  },
+  "installing": {
+    "title": "DevStack Manager wird installiert",
+    "description": "Bitte warten Sie, während DevStack Manager installiert wird...",
+    "preparing": "Installation wird vorbereitet...",
+    "extracting": "Installationsdateien werden extrahiert...",
+    "creating_directory": "Installationsverzeichnis wird erstellt...",
+    "installing_files": "DevStack-Dateien werden installiert...",
+    "registering": "Installation wird registriert...",
+    "creating_desktop": "Desktop-Verknüpfungen werden erstellt...",
+    "creating_start_menu": "Startmenü-Verknüpfungen werden erstellt...",
+    "adding_path": "Zum System-PATH wird hinzugefügt...",
+    "completed": "Installation erfolgreich abgeschlossen!"
+  },
+  "finished": {
+    "title": "Installation abgeschlossen",
+    "description": "DevStack Manager wurde erfolgreich auf Ihrem Computer installiert.",
+    "success_icon": "✅",
+    "success_title": "Installation erfolgreich abgeschlossen!",
+    "success_message": "DevStack Manager wurde erfolgreich installiert. Sie können die Anwendung jetzt zur Verwaltung Ihrer Entwicklungsumgebung verwenden.",
+    "install_location": "Installationsort:",
+    "launch_now": "🚀 DevStack Manager jetzt starten"
+  },
+  "log_messages": {
+    "starting": "Installationsprozess wird gestartet",
+    "extracted": "Installationsdateien erfolgreich extrahiert",
+    "creating_dir": "Verzeichnis wird erstellt: {0}",
+    "installing": "Anwendungsdateien werden installiert",
+    "registering": "Installation wird unter Windows registriert",
+    "desktop_shortcuts": "Desktop-Verknüpfungen werden erstellt",
+    "start_menu_shortcuts": "Startmenü-Verknüpfungen werden erstellt",
+    "adding_path": "DevStack wird zum System-PATH hinzugefügt",
+    "path_added": "Erfolgreich zum Benutzer-PATH hinzugefügt",
+    "path_exists": "Bereits im PATH vorhanden",
+    "completed_success": "Installation erfolgreich abgeschlossen!",
+    "cleanup": "Temporäre Dateien bereinigt",
+    "cleanup_warning": "Warnung: Temporäre Datei konnte nicht gelöscht werden: {0}",
+    "shortcuts_warning": "Warnung: Desktop-Verknüpfungen konnten nicht erstellt werden: {0}",
+    "start_menu_warning": "Warnung: Startmenü-Verknüpfungen konnten nicht erstellt werden: {0}",
+    "path_warning": "Warnung: PATH konnte nicht hinzugefügt werden: {0}"
+  }
+}

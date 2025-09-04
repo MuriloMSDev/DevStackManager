@@ -88,6 +88,13 @@ namespace DevStackManager
         /// </summary>
         public static void StartComponent(string component, string version)
         {
+            var comp = Components.ComponentsFactory.GetComponent(component);
+            if (comp == null || !comp.IsService)
+            {
+                DevStackConfig.WriteColoredLine($"Componente desconhecido ou não é um serviço: {component}", ConsoleColor.Red);
+                return;
+            }
+
             switch (component.ToLowerInvariant())
             {
                 case "nginx":
@@ -97,7 +104,7 @@ namespace DevStackManager
                     StartPhp(version);
                     break;
                 default:
-                    DevStackConfig.WriteColoredLine($"Componente desconhecido: {component}", ConsoleColor.Red);
+                    StartGenericService(comp, version);
                     break;
             }
         }
@@ -107,6 +114,13 @@ namespace DevStackManager
         /// </summary>
         public static void StopComponent(string component, string version)
         {
+            var comp = Components.ComponentsFactory.GetComponent(component);
+            if (comp == null || !comp.IsService)
+            {
+                DevStackConfig.WriteColoredLine($"Componente desconhecido ou não é um serviço: {component}", ConsoleColor.Red);
+                return;
+            }
+
             switch (component.ToLowerInvariant())
             {
                 case "nginx":
@@ -116,7 +130,7 @@ namespace DevStackManager
                     StopPhp(version);
                     break;
                 default:
-                    DevStackConfig.WriteColoredLine($"Componente desconhecido: {component}", ConsoleColor.Red);
+                    StopGenericService(comp, version);
                     break;
             }
         }
@@ -126,7 +140,7 @@ namespace DevStackManager
         /// </summary>
         private static void StartNginx(string version)
         {
-            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
+            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx.exe");
             var nginxWorkDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}");
 
             if (!File.Exists(nginxExe))
@@ -182,7 +196,7 @@ namespace DevStackManager
         /// </summary>
         private static void StopNginx(string version)
         {
-            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe");
+            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx.exe");
 
             if (!File.Exists(nginxExe))
             {
@@ -243,7 +257,7 @@ namespace DevStackManager
         /// </summary>
         private static void StartPhp(string version)
         {
-            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe");
+            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi.exe");
             var phpWorkDir = Path.Combine(DevStackConfig.phpDir, $"php-{version}");
 
             if (!File.Exists(phpExe))
@@ -305,7 +319,7 @@ namespace DevStackManager
         /// </summary>
         private static void StopPhp(string version)
         {
-            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe");
+            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi.exe");
 
             try
             {
@@ -356,27 +370,156 @@ namespace DevStackManager
         }
 
         /// <summary>
+        /// Inicia um serviço genérico
+        /// </summary>
+        private static void StartGenericService(Components.ComponentInterface component, string version)
+        {
+            if (string.IsNullOrEmpty(component.ServicePattern))
+            {
+                DevStackConfig.WriteColoredLine($"Padrão de serviço não definido para {component.Name}.", ConsoleColor.Red);
+                return;
+            }
+
+            var serviceExe = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
+            var workDir = Path.Combine(component.ToolDir, $"{component.Name}-{version}");
+
+            if (!File.Exists(serviceExe))
+            {
+                DevStackConfig.WriteColoredLine($"{component.Name} {version} não encontrado.", ConsoleColor.Red);
+                return;
+            }
+
+            try
+            {
+                var runningProcesses = Process.GetProcesses()
+                    .Where(p => 
+                    {
+                        try
+                        {
+                            return p.MainModule?.FileName?.Equals(serviceExe, StringComparison.OrdinalIgnoreCase) == true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    })
+                    .ToList();
+
+                if (runningProcesses.Any())
+                {
+                    DevStackConfig.WriteColoredLine($"{component.Name} {version} já está em execução.", ConsoleColor.Yellow);
+                    return;
+                }
+
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = serviceExe,
+                    WorkingDirectory = workDir,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+
+                Process.Start(startInfo);
+                DevStackConfig.WriteColoredLine($"{component.Name} {version} iniciado.", ConsoleColor.Green);
+                WriteLog($"{component.Name} {version} iniciado.");
+            }
+            catch (Exception ex)
+            {
+                DevStackConfig.WriteColoredLine($"Erro ao iniciar {component.Name} {version}: {ex.Message}", ConsoleColor.Red);
+                WriteLog($"Erro ao iniciar {component.Name} {version}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Para um serviço genérico
+        /// </summary>
+        private static void StopGenericService(Components.ComponentInterface component, string version)
+        {
+            if (string.IsNullOrEmpty(component.ServicePattern))
+            {
+                DevStackConfig.WriteColoredLine($"Padrão de serviço não definido para {component.Name}.", ConsoleColor.Red);
+                return;
+            }
+
+            var serviceExe = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
+
+            if (!File.Exists(serviceExe))
+            {
+                DevStackConfig.WriteColoredLine($"{component.Name} {version} não encontrado.", ConsoleColor.Red);
+                return;
+            }
+
+            try
+            {
+                var runningProcesses = Process.GetProcesses()
+                    .Where(p => 
+                    {
+                        try
+                        {
+                            return p.MainModule?.FileName?.Equals(serviceExe, StringComparison.OrdinalIgnoreCase) == true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    })
+                    .ToList();
+
+                if (runningProcesses.Any())
+                {
+                    foreach (var process in runningProcesses)
+                    {
+                        try
+                        {
+                            process.Kill();
+                            process.WaitForExit(5000); // Aguarda até 5 segundos
+                        }
+                        catch (Exception ex)
+                        {
+                            DevStackConfig.WriteColoredLine($"Erro ao parar processo {component.Name} {process.Id}: {ex.Message}", ConsoleColor.Yellow);
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                        }
+                    }
+                    DevStackConfig.WriteColoredLine($"{component.Name} {version} parado.", ConsoleColor.Green);
+                    WriteLog($"{component.Name} {version} parado.");
+                }
+                else
+                {
+                    DevStackConfig.WriteColoredLine($"{component.Name} {version} não está em execução.", ConsoleColor.Yellow);
+                }
+            }
+            catch (Exception ex)
+            {
+                DevStackConfig.WriteColoredLine($"Erro ao verificar processos {component.Name}: {ex.Message}", ConsoleColor.Red);
+            }
+        }
+
+        /// <summary>
         /// Executa uma ação para cada versão de um componente
         /// </summary>
         public static void ForEachVersion(string component, Action<string> action)
         {
-            var dir = component.ToLowerInvariant() switch
+            var comp = Components.ComponentsFactory.GetComponent(component);
+            if (comp == null)
             {
-                "nginx" => DevStackConfig.nginxDir,
-                "php" => DevStackConfig.phpDir,
-                _ => null
-            };
+                DevStackConfig.WriteColoredLine($"Componente desconhecido: {component}", ConsoleColor.Red);
+                return;
+            }
 
-            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+            if (!Directory.Exists(comp.ToolDir))
             {
                 return;
             }
 
-            var prefix = $"{component}-";
+            var prefix = $"{comp.Name}-";
             
             try
             {
-                var directories = Directory.GetDirectories(dir, $"{prefix}*");
+                var directories = Directory.GetDirectories(comp.ToolDir, $"{prefix}*");
                 
                 foreach (var directory in directories)
                 {
@@ -399,14 +542,15 @@ namespace DevStackManager
         /// </summary>
         public static bool IsComponentRunning(string component, string version)
         {
-            var exePath = component.ToLowerInvariant() switch
+            var comp = Components.ComponentsFactory.GetComponent(component);
+            if (comp == null || !comp.IsService || string.IsNullOrEmpty(comp.ServicePattern))
             {
-                "nginx" => Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx-{version}.exe"),
-                "php" => Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi-{version}.exe"),
-                _ => null
-            };
+                return false;
+            }
 
-            if (string.IsNullOrEmpty(exePath) || !File.Exists(exePath))
+            var exePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
+
+            if (!File.Exists(exePath))
             {
                 return false;
             }
@@ -437,30 +581,31 @@ namespace DevStackManager
         /// </summary>
         public static void ListComponentsStatus()
         {
-            var components = new[] { "nginx", "php" };
+            var serviceComponents = Components.ComponentsFactory.GetAll()
+                .Where(c => c.IsService)
+                .ToList();
             
             DevStackConfig.WriteColoredLine("Status dos componentes:", ConsoleColor.Cyan);
             Console.WriteLine();
             
-            foreach (var component in components)
+            foreach (var component in serviceComponents)
             {
-                DevStackConfig.WriteColoredLine($"{component.ToUpper()}:", ConsoleColor.Yellow);
-                var compObj = Components.ComponentsFactory.GetComponent(component);
-                var versions = compObj?.ListInstalled() ?? new List<string>();
+                DevStackConfig.WriteColoredLine($"{component.Name.ToUpper()}:", ConsoleColor.Yellow);
+                var versions = component.ListInstalled();
                 if (versions.Any())
                 {
                     foreach (var version in versions)
                     {
-                        var isRunning = IsComponentRunning(component, version);
+                        var isRunning = IsComponentRunning(component.Name, version);
                         var status = isRunning ? "EXECUTANDO" : "PARADO";
                         var color = isRunning ? ConsoleColor.Green : ConsoleColor.Red;
-                        Console.Write($"  {component}-{version}: ");
+                        Console.Write($"  {component.Name}-{version}: ");
                         DevStackConfig.WriteColoredLine(status, color);
                     }
                 }
                 else
                 {
-                    DevStackConfig.WriteColoredLine($"  Nenhuma versão de {component} instalada.", ConsoleColor.Gray);
+                    DevStackConfig.WriteColoredLine($"  Nenhuma versão de {component.Name} instalada.", ConsoleColor.Gray);
                 }
                 Console.WriteLine();
             }
@@ -471,17 +616,18 @@ namespace DevStackManager
         /// </summary>
         public static void StopAllComponents()
         {
-            var components = new[] { "nginx", "php" };
+            var serviceComponents = Components.ComponentsFactory.GetAll()
+                .Where(c => c.IsService)
+                .ToList();
             
-            foreach (var component in components)
+            foreach (var component in serviceComponents)
             {
-                var compObj = Components.ComponentsFactory.GetComponent(component);
-                var versions = compObj?.ListInstalled() ?? new List<string>();
+                var versions = component.ListInstalled();
                 foreach (var version in versions)
                 {
-                    if (IsComponentRunning(component, version))
+                    if (IsComponentRunning(component.Name, version))
                     {
-                        StopComponent(component, version);
+                        StopComponent(component.Name, version);
                     }
                 }
             }
@@ -492,17 +638,18 @@ namespace DevStackManager
         /// </summary>
         public static void StartAllComponents()
         {
-            var components = new[] { "nginx", "php" };
+            var serviceComponents = Components.ComponentsFactory.GetAll()
+                .Where(c => c.IsService)
+                .ToList();
             
-            foreach (var component in components)
+            foreach (var component in serviceComponents)
             {
-                var compObj = Components.ComponentsFactory.GetComponent(component);
-                var versions = compObj?.ListInstalled() ?? new List<string>();
+                var versions = component.ListInstalled();
                 foreach (var version in versions)
                 {
-                    if (!IsComponentRunning(component, version))
+                    if (!IsComponentRunning(component.Name, version))
                     {
-                        StartComponent(component, version);
+                        StartComponent(component.Name, version);
                     }
                 }
             }

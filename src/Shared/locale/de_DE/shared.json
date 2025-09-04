@@ -1,0 +1,29 @@
+{
+  "uninstall": {
+    "no_component": "Keine Komponente für Deinstallation angegeben.",
+    "removing_shortcut": "Verknüpfung für {0} wird entfernt...",
+    "unknown_component": "Unbekannte Komponente: {0}",
+    "finished": "Deinstallation abgeschlossen."
+  },
+  "shortcuts": {
+    "created": "Verknüpfung {0} erstellt, die auf {1} zeigt",
+    "error_creating": "Fehler beim Erstellen der symbolischen Verknüpfung: {0}",
+    "fallback_copy": "Fallback: Kopie {0} erstellt in {1}",
+    "file_not_found": "Warnung: Datei {0} nicht gefunden zum Erstellen der Verknüpfung",
+    "removed": "Verknüpfung {0} entfernt",
+    "not_found": "Verknüpfung {0} nicht zum Entfernen gefunden",
+    "error_removing": "Fehler beim Entfernen der Verknüpfung: {0}"
+  },
+  "install": {
+    "already_installed": "{0} {1} ist bereits installiert.",
+    "downloading": "{0} {1} wird heruntergeladen...",
+    "running_installer": "Installer {0} {1} wird ausgeführt...",
+    "installed_via_installer": "{0} {1} über Installer installiert in {2}",
+    "extracting": "Extrahieren...",
+    "installed": "{0} {1} installiert.",
+    "installed_in": "{0} {1} installiert in {2}.",
+    "error_installing": "Fehler beim Installieren von {0} {1}: {2}",
+    "shortcut_creation_failed": "Warnung: Erstellen der Verknüpfung fehlgeschlagen: {0}",
+    "component_installed": "{0} {1} installiert."
+  }
+}

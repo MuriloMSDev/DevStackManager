@@ -9,18 +9,14 @@ namespace DevStackManager.Components
         public override string Name => "php";
         public override string ToolDir => DevStackConfig.phpDir;
         public override bool IsService => true;
+        public override bool IsExecutable => true;
+        public override string? ExecutablePattern => "php.exe";
+        public override string? ServicePattern => "php-cgi.exe";
+        public override string? CreateBinShortcut => "php-{version}.exe";
 
         public override async Task PostInstall(string version, string targetDir)
         {
             string phpDir = System.IO.Path.Combine(DevStackConfig.phpDir, $"php-{version}");
-            try
-            {
-                RenameMainExe(phpDir, "php-cgi.exe", version, "php-cgi");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Aviso: falha ao renomear php-cgi: {e.Message}");
-            }
 
             string phpIniDst = System.IO.Path.Combine(phpDir, "php.ini");
             var assembly = typeof(PHPComponent).Assembly;

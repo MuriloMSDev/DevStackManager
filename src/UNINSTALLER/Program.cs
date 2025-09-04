@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -36,8 +38,8 @@ namespace DevStackUninstaller
             }
             catch (Exception ex)
             {
-                MessageBox.Show(LocalizationManager.Instance?.GetString("dialogs.startup_error_message", ex.Message, ex) ?? $"Error starting uninstaller: {ex.Message}\n\nDetails: {ex}", 
-                    LocalizationManager.Instance?.GetString("dialogs.startup_error_title") ?? "DevStack Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(LocalizationManager.Instance?.GetString("uninstaller.dialogs.startup_error_message", ex.Message, ex) ?? $"Error starting uninstaller: {ex.Message}\n\nDetails: {ex}", 
+                    LocalizationManager.Instance?.GetString("uninstaller.dialogs.startup_error_title") ?? "DevStack Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
@@ -72,10 +74,10 @@ namespace DevStackUninstaller
         
         // Uninstall settings
         private string installationPath = "";
-        private bool removeUserData = true;
-        private bool removeRegistry = true;
-        private bool removeShortcuts = true;
-        private bool removeFromPath = true;
+        private bool removeUserData = false;  // Default: preserve user data
+        private bool removeRegistry = true;   // Default: clean registry
+        private bool removeShortcuts = true;  // Default: remove shortcuts
+        private bool removeFromPath = true;   // Default: remove from PATH
         
         // Step-specific controls
         private CheckBox removeUserDataCheckBox = null!;
@@ -117,8 +119,8 @@ namespace DevStackUninstaller
             }
             catch (Exception ex)
             {
-                MessageBox.Show(localization.GetString("dialogs.initialization_error_message", ex.Message), 
-                    localization.GetString("dialogs.initialization_error_title"), MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(localization.GetString("uninstaller.dialogs.initialization_error_message", ex.Message), 
+                    localization.GetString("uninstaller.dialogs.initialization_error_title"), MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
         }
@@ -145,7 +147,7 @@ namespace DevStackUninstaller
             System.Diagnostics.Debug.WriteLine($"Uninstaller version: {version}");
             
             // Get window title with explicit formatting
-            Title = localization.GetString("window_title", version);
+            Title = localization.GetString("uninstaller.window_title", version);
             System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
             Width = 750;
             Height = 650;
@@ -273,7 +275,7 @@ namespace DevStackUninstaller
                 Margin = new Thickness(25, 18, 25, 18)
             };
 
-            languageLabel = ThemeManager.CreateStyledLabel(localization.GetString("welcome.language_label"), false, false, ThemeManager.LabelStyle.Secondary);
+            languageLabel = ThemeManager.CreateStyledLabel(localization.GetString("uninstaller.welcome.language_label"), false, false, ThemeManager.LabelStyle.Secondary);
             languageLabel.FontSize = 14;
             languageLabel.VerticalAlignment = VerticalAlignment.Center;
             languageLabel.Margin = new Thickness(0, 0, 10, 0);
@@ -314,7 +316,7 @@ namespace DevStackUninstaller
             };
 
             // Back button
-            backButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.back"), null, ThemeManager.ButtonStyle.Secondary);
+            backButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.back"), null, ThemeManager.ButtonStyle.Secondary);
             backButton.Width = 90;
             backButton.Height = 36;
             backButton.Margin = new Thickness(0, 0, 12, 0);
@@ -322,14 +324,14 @@ namespace DevStackUninstaller
             backButton.Click += BackButton_Click;
 
             // Next button - using Danger style for uninstall theme
-            nextButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.next"), null, ThemeManager.ButtonStyle.Danger);
+            nextButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.next"), null, ThemeManager.ButtonStyle.Danger);
             nextButton.Width = 130;
             nextButton.Height = 36;
             nextButton.Margin = new Thickness(0, 0, 12, 0);
             nextButton.Click += NextButton_Click;
 
             // Cancel button
-            cancelButton = ThemeManager.CreateStyledButton(localization.GetString("buttons.cancel"), null, ThemeManager.ButtonStyle.Secondary);
+            cancelButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.cancel"), null, ThemeManager.ButtonStyle.Secondary);
             cancelButton.Width = 90;
             cancelButton.Height = 36;
             cancelButton.Click += CancelButton_Click;
@@ -364,7 +366,7 @@ namespace DevStackUninstaller
                 // Atualiza título da janela
                 var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
                 var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? localization.GetString("common.unknown");
-                Title = localization.GetString("window_title", version);
+                Title = localization.GetString("uninstaller.window_title", version);
 
                 // Recria layout principal preservando o passo atual
                 var mainGridRef = Content as Grid;
@@ -451,22 +453,22 @@ namespace DevStackUninstaller
             {
                 case UninstallerStep.Welcome:
                     CreateWelcomeStep();
-                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.Content = localization.GetString("common.buttons.next");
                     nextButton.IsEnabled = true;
                     break;
                 case UninstallerStep.Confirmation:
                     CreateConfirmationStep();
-                    nextButton.Content = localization.GetString("buttons.continue");
+                    nextButton.Content = localization.GetString("common.buttons.continue");
                     nextButton.IsEnabled = true;
                     break;
                 case UninstallerStep.UninstallOptions:
                     CreateUninstallOptionsStep();
-                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.Content = localization.GetString("common.buttons.next");
                     nextButton.IsEnabled = true;
                     break;
                 case UninstallerStep.ReadyToUninstall:
                     CreateReadyToUninstallStep();
-                    nextButton.Content = localization.GetString("buttons.uninstall");
+                    nextButton.Content = localization.GetString("common.buttons.uninstall");
                     nextButton.IsEnabled = true;
                     break;
                 case UninstallerStep.Uninstalling:
@@ -476,7 +478,7 @@ namespace DevStackUninstaller
                     break;
                 case UninstallerStep.Finished:
                     CreateFinishedStep();
-                    nextButton.Content = localization.GetString("buttons.finish");
+                    nextButton.Content = localization.GetString("common.buttons.finish");
                     nextButton.IsEnabled = true;
                     backButton.IsEnabled = false;
                     cancelButton.Visibility = Visibility.Collapsed;
@@ -489,12 +491,12 @@ namespace DevStackUninstaller
             // Log detailed diagnostic info
             System.Diagnostics.Debug.WriteLine("=========== CREATING UNINSTALLER WELCOME STEP ===========");
             
-            var title = localization.GetString("welcome.title");
-            System.Diagnostics.Debug.WriteLine($"welcome.title = \"{title}\"");
+            var title = localization.GetString("uninstaller.welcome.title");
+            System.Diagnostics.Debug.WriteLine($"uninstaller.welcome.title = \"{title}\"");
             stepTitleText.Text = title;
             
-            var description = localization.GetString("welcome.description");
-            System.Diagnostics.Debug.WriteLine($"welcome.description = \"{description}\"");
+            var description = localization.GetString("uninstaller.welcome.description");
+            System.Diagnostics.Debug.WriteLine($"uninstaller.welcome.description = \"{description}\"");
             stepDescriptionText.Text = description;
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -525,7 +527,7 @@ namespace DevStackUninstaller
 
             var welcomeText = new TextBlock
             {
-                Text = localization.GetString("welcome.app_name"),
+                Text = localization.GetString("uninstaller.welcome.app_name"),
                 FontSize = 28,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -535,7 +537,7 @@ namespace DevStackUninstaller
 
             var versionText = new TextBlock
             {
-                Text = localization.GetString("welcome.version", GetVersion()),
+                Text = localization.GetString("uninstaller.welcome.version", GetVersion()),
                 FontSize = 15,
                 Foreground = ThemeManager.CurrentTheme.TextSecondary,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -544,7 +546,7 @@ namespace DevStackUninstaller
 
             var descriptionText = new TextBlock
             {
-                Text = localization.GetString("welcome.app_description"),
+                Text = localization.GetString("uninstaller.welcome.app_description"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 14,
@@ -596,7 +598,19 @@ namespace DevStackUninstaller
                     }
                     break;
                 case UninstallerStep.Finished:
-                    Application.Current.Shutdown();
+                    // Force application exit to ensure file handle is released
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(500); // Small delay to ensure UI updates
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            Application.Current.Shutdown();
+                        });
+                        
+                        // Additional forced exit if needed
+                        await Task.Delay(1000);
+                        Environment.Exit(0);
+                    });
                     break;
             }
         }
@@ -604,8 +618,8 @@ namespace DevStackUninstaller
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             var result = ThemeManager.CreateStyledMessageBox(
-                localization.GetString("dialogs.cancel_message"),
-                localization.GetString("dialogs.cancel_title"),
+                localization.GetString("uninstaller.dialogs.cancel_message"),
+                localization.GetString("uninstaller.dialogs.cancel_title"),
                 MessageBoxButton.YesNo, MessageBoxImage.Question
             );
             
@@ -620,8 +634,8 @@ namespace DevStackUninstaller
             if (currentStep != UninstallerStep.Finished)
             {
                 var result = ThemeManager.CreateStyledMessageBox(
-                    localization.GetString("dialogs.cancel_message"), 
-                    localization.GetString("dialogs.cancel_title"),
+                    localization.GetString("uninstaller.dialogs.cancel_message"), 
+                    localization.GetString("uninstaller.dialogs.cancel_title"),
                     MessageBoxButton.YesNo, MessageBoxImage.Question
                 );
                 
@@ -635,15 +649,15 @@ namespace DevStackUninstaller
         // Placeholder methods - will be implemented in next parts
         private void CreateConfirmationStep()
         {
-            stepTitleText.Text = localization.GetString("confirmation.title");
-            stepDescriptionText.Text = localization.GetString("confirmation.description");
+            stepTitleText.Text = localization.GetString("uninstaller.confirmation.title");
+            stepDescriptionText.Text = localization.GetString("uninstaller.confirmation.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // Warning panel using ThemeManager notification panel
             var warningContainer = ThemeManager.CreateNotificationPanel(
-                localization.GetString("confirmation.warning_text"), 
+                localization.GetString("uninstaller.confirmation.warning_text"), 
                 ThemeManager.NotificationType.Warning, 
                 true);
             warningContainer.Margin = new Thickness(0, 0, 0, 20);
@@ -660,7 +674,7 @@ namespace DevStackUninstaller
             {
                 detailsPanel.Children.Add(new TextBlock
                 {
-                    Text = localization.GetString("confirmation.install_found"),
+                    Text = localization.GetString("uninstaller.confirmation.install_found"),
                     FontWeight = FontWeights.SemiBold,
                     Foreground = ThemeManager.CurrentTheme.Foreground,
                     FontSize = 14,
@@ -682,7 +696,7 @@ namespace DevStackUninstaller
                 {
                     detailsPanel.Children.Add(new TextBlock
                     {
-                        Text = localization.GetString("confirmation.space_to_free", sizeText),
+                        Text = localization.GetString("uninstaller.confirmation.space_to_free", sizeText),
                         Foreground = ThemeManager.CurrentTheme.TextSecondary,
                         FontSize = 13,
                         Margin = new Thickness(0, 0, 0, 0)
@@ -693,7 +707,7 @@ namespace DevStackUninstaller
             {
                 detailsPanel.Children.Add(new TextBlock
                 {
-                    Text = localization.GetString("confirmation.install_not_found"),
+                    Text = localization.GetString("uninstaller.confirmation.install_not_found"),
                     Foreground = ThemeManager.CurrentTheme.Danger,
                     FontWeight = FontWeights.SemiBold,
                     FontSize = 14,
@@ -702,7 +716,7 @@ namespace DevStackUninstaller
 
                 detailsPanel.Children.Add(new TextBlock
                 {
-                    Text = localization.GetString("confirmation.install_not_found_desc"),
+                    Text = localization.GetString("uninstaller.confirmation.install_not_found_desc"),
                     Foreground = ThemeManager.CurrentTheme.TextSecondary,
                     TextWrapping = TextWrapping.Wrap,
                     FontSize = 13
@@ -719,14 +733,14 @@ namespace DevStackUninstaller
 
         private void CreateUninstallOptionsStep()
         {
-            stepTitleText.Text = localization.GetString("uninstall_options.title");
-            stepDescriptionText.Text = localization.GetString("uninstall_options.description");
+            stepTitleText.Text = localization.GetString("uninstaller.uninstall_options.title");
+            stepDescriptionText.Text = localization.GetString("uninstaller.uninstall_options.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var optionsLabel = ThemeManager.CreateStyledLabel(
-                localization.GetString("uninstall_options.label"), 
+                localization.GetString("uninstaller.uninstall_options.label"), 
                 false, false, ThemeManager.LabelStyle.Title);
             optionsLabel.FontSize = 15;
             optionsLabel.Margin = new Thickness(0, 0, 0, 15);
@@ -736,61 +750,17 @@ namespace DevStackUninstaller
 
             var optionsPanel = (StackPanel)optionsContainer.Child;
 
-            // User data checkbox
+            // User data checkbox (only configurable option)
             removeUserDataCheckBox = ThemeManager.CreateStyledCheckBox(
-                localization.GetString("uninstall_options.user_data"), removeUserData);
+                localization.GetString("uninstaller.uninstall_options.user_data"), removeUserData);
+            removeUserDataCheckBox.IsChecked = removeUserData;
             removeUserDataCheckBox.Checked += (s, e) => removeUserData = true;
             removeUserDataCheckBox.Unchecked += (s, e) => removeUserData = false;
             removeUserDataCheckBox.Margin = new Thickness(0, 0, 0, 15);
 
             var userDataDescription = new TextBlock
             {
-                Text = localization.GetString("uninstall_options.user_data_desc"),
-                FontSize = 12,
-                Foreground = ThemeManager.CurrentTheme.TextMuted,
-                Margin = new Thickness(30, -10, 0, 15)
-            };
-
-            // Registry checkbox
-            removeRegistryCheckBox = ThemeManager.CreateStyledCheckBox(
-                localization.GetString("uninstall_options.registry"), removeRegistry);
-            removeRegistryCheckBox.Checked += (s, e) => removeRegistry = true;
-            removeRegistryCheckBox.Unchecked += (s, e) => removeRegistry = false;
-            removeRegistryCheckBox.Margin = new Thickness(0, 0, 0, 15);
-
-            var registryDescription = new TextBlock
-            {
-                Text = localization.GetString("uninstall_options.registry_desc"),
-                FontSize = 12,
-                Foreground = ThemeManager.CurrentTheme.TextMuted,
-                Margin = new Thickness(30, -10, 0, 15)
-            };
-
-            // Shortcuts checkbox
-            removeShortcutsCheckBox = ThemeManager.CreateStyledCheckBox(
-                localization.GetString("uninstall_options.shortcuts"), removeShortcuts);
-            removeShortcutsCheckBox.Checked += (s, e) => removeShortcuts = true;
-            removeShortcutsCheckBox.Unchecked += (s, e) => removeShortcuts = false;
-            removeShortcutsCheckBox.Margin = new Thickness(0, 0, 0, 15);
-
-            var shortcutsDescription = new TextBlock
-            {
-                Text = localization.GetString("uninstall_options.shortcuts_desc"),
-                FontSize = 12,
-                Foreground = ThemeManager.CurrentTheme.TextMuted,
-                Margin = new Thickness(30, -10, 0, 15)
-            };
-
-            // PATH checkbox
-            removeFromPathCheckBox = ThemeManager.CreateStyledCheckBox(
-                localization.GetString("uninstall_options.path"), removeFromPath);
-            removeFromPathCheckBox.Checked += (s, e) => removeFromPath = true;
-            removeFromPathCheckBox.Unchecked += (s, e) => removeFromPath = false;
-            removeFromPathCheckBox.Margin = new Thickness(0, 0, 0, 15);
-
-            var pathDescription = new TextBlock
-            {
-                Text = localization.GetString("uninstall_options.path_desc"),
+                Text = localization.GetString("uninstaller.uninstall_options.user_data_desc"),
                 FontSize = 12,
                 Foreground = ThemeManager.CurrentTheme.TextMuted,
                 Margin = new Thickness(30, -10, 0, 0)
@@ -798,16 +768,10 @@ namespace DevStackUninstaller
 
             optionsPanel.Children.Add(removeUserDataCheckBox);
             optionsPanel.Children.Add(userDataDescription);
-            optionsPanel.Children.Add(removeRegistryCheckBox);
-            optionsPanel.Children.Add(registryDescription);
-            optionsPanel.Children.Add(removeShortcutsCheckBox);
-            optionsPanel.Children.Add(shortcutsDescription);
-            optionsPanel.Children.Add(removeFromPathCheckBox);
-            optionsPanel.Children.Add(pathDescription);
 
             // Info panel
             var infoPanel = ThemeManager.CreateNotificationPanel(
-                localization.GetString("uninstall_options.info"), 
+                localization.GetString("uninstaller.uninstall_options.info"), 
                 ThemeManager.NotificationType.Info
             );
             infoPanel.Margin = new Thickness(0, 20, 0, 0);
@@ -826,14 +790,14 @@ namespace DevStackUninstaller
 
         private void CreateReadyToUninstallStep()
         {
-            stepTitleText.Text = localization.GetString("ready_to_uninstall.title");
-            stepDescriptionText.Text = localization.GetString("ready_to_uninstall.description");
+            stepTitleText.Text = localization.GetString("uninstaller.ready_to_uninstall.title");
+            stepDescriptionText.Text = localization.GetString("uninstaller.ready_to_uninstall.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var summaryLabel = ThemeManager.CreateStyledLabel(
-                localization.GetString("ready_to_uninstall.summary_label"), 
+                localization.GetString("uninstaller.ready_to_uninstall.summary_label"), 
                 false, false, ThemeManager.LabelStyle.Title);
             summaryLabel.FontSize = 15;
             summaryLabel.Margin = new Thickness(0, 0, 0, 15);
@@ -862,8 +826,8 @@ namespace DevStackUninstaller
 
         private void CreateUninstallingStep()
         {
-            stepTitleText.Text = localization.GetString("uninstalling.title");
-            stepDescriptionText.Text = localization.GetString("uninstalling.description");
+            stepTitleText.Text = localization.GetString("uninstaller.uninstalling.title");
+            stepDescriptionText.Text = localization.GetString("uninstaller.uninstalling.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -871,7 +835,7 @@ namespace DevStackUninstaller
 
             uninstallStatusText = new TextBlock
             {
-                Text = localization.GetString("uninstalling.preparing"),
+                Text = localization.GetString("uninstaller.uninstalling.preparing"),
                 FontWeight = FontWeights.SemiBold,
                 Foreground = ThemeManager.CurrentTheme.Foreground,
                 FontSize = 15,
@@ -937,8 +901,8 @@ namespace DevStackUninstaller
 
         private void CreateFinishedStep()
         {
-            stepTitleText.Text = localization.GetString("finished.title");
-            stepDescriptionText.Text = localization.GetString("finished.description");
+            stepTitleText.Text = localization.GetString("uninstaller.finished.title");
+            stepDescriptionText.Text = localization.GetString("uninstaller.finished.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
@@ -958,7 +922,7 @@ namespace DevStackUninstaller
 
             var successText = new TextBlock
             {
-                Text = localization.GetString("finished.success_title"),
+                Text = localization.GetString("uninstaller.finished.success_title"),
                 FontSize = 18,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -968,7 +932,7 @@ namespace DevStackUninstaller
 
             var finishedMessage = new TextBlock
             {
-                Text = localization.GetString("finished.success_message"),
+                Text = localization.GetString("uninstaller.finished.success_message"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 14,
@@ -984,7 +948,7 @@ namespace DevStackUninstaller
             var resultContent = (StackPanel)resultPanel.Child;
             resultContent.Children.Add(new TextBlock
             {
-                Text = localization.GetString("finished.summary_title"),
+                Text = localization.GetString("uninstaller.finished.summary_title"),
                 FontWeight = FontWeights.SemiBold,
                 Foreground = ThemeManager.CurrentTheme.Foreground,
                 Margin = new Thickness(0, 0, 0, 10)
@@ -1053,42 +1017,42 @@ namespace DevStackUninstaller
 
         private string GetUninstallationSummary()
         {
-            var summary = localization.GetString("ready_to_uninstall.components_header") + "\n\n";
+            var summary = localization.GetString("uninstaller.ready_to_uninstall.components_header") + "\n\n";
 
-            summary += $"{localization.GetString("ready_to_uninstall.installation_location")}\n  {(!string.IsNullOrEmpty(installationPath) ? installationPath : localization.GetString("ready_to_uninstall.not_found"))}\n\n";
+            summary += $"{localization.GetString("uninstaller.ready_to_uninstall.installation_location")}\n  {(!string.IsNullOrEmpty(installationPath) ? installationPath : localization.GetString("uninstaller.ready_to_uninstall.not_found"))}\n\n";
 
-            summary += localization.GetString("ready_to_uninstall.program_components") + "\n";
-            summary += localization.GetString("ready_to_uninstall.executables") + "\n";
-            summary += localization.GetString("ready_to_uninstall.libraries") + "\n";
-            summary += localization.GetString("ready_to_uninstall.config_files") + "\n";
-            summary += localization.GetString("ready_to_uninstall.documentation") + "\n\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.program_components") + "\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.executables") + "\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.libraries") + "\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.config_files") + "\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.documentation") + "\n\n";
 
-            summary += localization.GetString("ready_to_uninstall.selected_options") + "\n\n";
+            summary += localization.GetString("uninstaller.ready_to_uninstall.selected_options") + "\n\n";
 
             if (removeUserData)
-                summary += localization.GetString("ready_to_uninstall.user_data_selected") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.user_data_selected") + "\n";
             else
-                summary += localization.GetString("ready_to_uninstall.user_data_preserved") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.user_data_preserved") + "\n";
 
             if (removeRegistry)
-                summary += localization.GetString("ready_to_uninstall.registry_selected") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.registry_selected") + "\n";
             else
-                summary += localization.GetString("ready_to_uninstall.registry_preserved") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.registry_preserved") + "\n";
 
             if (removeShortcuts)
-                summary += localization.GetString("ready_to_uninstall.shortcuts_selected") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.shortcuts_selected") + "\n";
             else
-                summary += localization.GetString("ready_to_uninstall.shortcuts_preserved") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.shortcuts_preserved") + "\n";
 
             if (removeFromPath)
-                summary += localization.GetString("ready_to_uninstall.path_selected") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.path_selected") + "\n";
             else
-                summary += localization.GetString("ready_to_uninstall.path_preserved") + "\n";
+                summary += localization.GetString("uninstaller.ready_to_uninstall.path_preserved") + "\n";
 
             var sizeText = GetInstallationSizeText();
             if (!string.IsNullOrEmpty(sizeText))
             {
-                summary += $"\n{localization.GetString("ready_to_uninstall.space_to_free", sizeText)}";
+                summary += $"\n{localization.GetString("uninstaller.ready_to_uninstall.space_to_free", sizeText)}";
             }
 
             return summary;
@@ -1099,21 +1063,21 @@ namespace DevStackUninstaller
             var summary = "";
 
             if (!string.IsNullOrEmpty(installationPath))
-                summary += localization.GetString("finished.files_removed", installationPath) + "\n";
+                summary += localization.GetString("uninstaller.finished.files_removed", installationPath) + "\n";
 
             if (removeUserData)
-                summary += localization.GetString("finished.user_data_removed") + "\n";
+                summary += localization.GetString("uninstaller.finished.user_data_removed") + "\n";
 
             if (removeRegistry)
-                summary += localization.GetString("finished.registry_cleaned") + "\n";
+                summary += localization.GetString("uninstaller.finished.registry_cleaned") + "\n";
 
             if (removeShortcuts)
-                summary += localization.GetString("finished.shortcuts_removed") + "\n";
+                summary += localization.GetString("uninstaller.finished.shortcuts_removed") + "\n";
 
             if (removeFromPath)
-                summary += localization.GetString("finished.path_removed") + "\n";
+                summary += localization.GetString("uninstaller.finished.path_removed") + "\n";
 
-            summary += "\n" + localization.GetString("finished.system_clean");
+            summary += "\n" + localization.GetString("uninstaller.finished.system_clean");
 
             return summary;
         }
@@ -1137,67 +1101,58 @@ namespace DevStackUninstaller
                 // Reset progress bar
                 uninstallProgressBar.Value = 0;
                 
-                uninstallStatusText.Text = localization.GetString("uninstalling.stopping_services");
-                AddUninstallationLog(localization.GetString("log_messages.starting"));
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.stopping_services");
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.starting"));
                 
                 // Step 1: Stop services
-                AddUninstallationLog(localization.GetString("log_messages.stopping_services"));
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.stopping_services"));
                 await StopDevStackServices();
                 uninstallProgressBar.Value = 15; // 15% complete
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.removing_shortcuts");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.removing_shortcuts");
                 uninstallProgressBar.Value = 25; // 25% complete
                 
-                // Step 2: Remove shortcuts
-                if (removeShortcuts)
-                {
-                    AddUninstallationLog(localization.GetString("log_messages.removing_shortcuts"));
-                    await RemoveShortcuts();
-                }
+                // Step 2: Remove shortcuts (always executed)
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.removing_shortcuts"));
+                await RemoveShortcuts();
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.cleaning_registry");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.cleaning_registry");
                 uninstallProgressBar.Value = 50; // 50% complete
                 
-                // Step 3: Clean registry
-                if (removeRegistry)
-                {
-                    AddUninstallationLog(localization.GetString("log_messages.cleaning_registry"));
-                    await CleanRegistry();
-                }
+                // Step 3: Clean registry (always executed)
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.cleaning_registry"));
+                await CleanRegistry();
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.removing_path");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.removing_path");
                 uninstallProgressBar.Value = 65; // 65% complete
                 
-                // Step 4: Remove from PATH
-                if (removeFromPath)
-                {
-                    AddUninstallationLog(localization.GetString("log_messages.removing_path"));
-                    await RemoveFromSystemPath();
-                }
+                // Step 4: Remove from PATH (always executed)
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.removing_path"));
+                await RemoveFromSystemPath();
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.removing_files");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.removing_files");
                 uninstallProgressBar.Value = 75; // 75% complete
                 
                 // Step 5: Remove files
                 if (!string.IsNullOrEmpty(installationPath))
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.removing_files", installationPath));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.removing_files", installationPath));
                     await RemoveFiles();
                 }
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.finalizing");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.finalizing");
                 uninstallProgressBar.Value = 90; // 90% complete
                 
-                // Step 6: Clean user data
+                // Step 6: Clean user data (only if checkbox is checked)
                 if (removeUserData)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.removing_user_data"));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.removing_user_data"));
                     await RemoveUserData();
                 }
 
-                uninstallStatusText.Text = localization.GetString("uninstalling.completed");
+                uninstallStatusText.Text = localization.GetString("uninstaller.uninstalling.completed");
                 uninstallProgressBar.Value = 100; // 100% complete
-                AddUninstallationLog(localization.GetString("log_messages.uninstall_success"));
+                AddUninstallationLog(localization.GetString("uninstaller.log_messages.uninstall_success"));
 
                 await Task.Delay(1000);
 
@@ -1208,8 +1163,8 @@ namespace DevStackUninstaller
             {
                 AddUninstallationLog($"{localization.GetString("common.unknown")}: {ex.Message}");
                 ThemeManager.CreateStyledMessageBox(
-                    localization.GetString("dialogs.uninstall_error_message", ex.Message), 
-                    localization.GetString("dialogs.uninstall_error_title"),
+                    localization.GetString("uninstaller.dialogs.uninstall_error_message", ex.Message), 
+                    localization.GetString("uninstaller.dialogs.uninstall_error_title"),
                     MessageBoxButton.OK, MessageBoxImage.Error
                 );
                 
@@ -1238,18 +1193,18 @@ namespace DevStackUninstaller
                             {
                                 process.Kill();
                                 process.WaitForExit(5000);
-                                AddUninstallationLog(localization.GetString("log_messages.process_stopped", processName));
+                                AddUninstallationLog(localization.GetString("uninstaller.log_messages.process_stopped", processName));
                             }
                             catch (Exception ex)
                             {
-                                AddUninstallationLog(localization.GetString("log_messages.process_stop_warning", processName, ex.Message));
+                                AddUninstallationLog(localization.GetString("uninstaller.log_messages.process_stop_warning", processName, ex.Message));
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.stop_services_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.stop_services_error", ex.Message));
                 }
             });
         }
@@ -1270,7 +1225,7 @@ namespace DevStackUninstaller
                         if (File.Exists(shortcutPath))
                         {
                             File.Delete(shortcutPath);
-                            AddUninstallationLog(localization.GetString("log_messages.shortcut_removed", shortcut));
+                            AddUninstallationLog(localization.GetString("uninstaller.log_messages.shortcut_removed", shortcut));
                         }
                     }
 
@@ -1287,13 +1242,13 @@ namespace DevStackUninstaller
                         if (Directory.Exists(devstackFolder))
                         {
                             Directory.Delete(devstackFolder, true);
-                            AddUninstallationLog(localization.GetString("log_messages.start_menu_removed", devstackFolder));
+                            AddUninstallationLog(localization.GetString("uninstaller.log_messages.start_menu_removed", devstackFolder));
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.shortcuts_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.shortcuts_error", ex.Message));
                 }
             });
         }
@@ -1308,14 +1263,14 @@ namespace DevStackUninstaller
                     try
                     {
                         Registry.CurrentUser.DeleteSubKeyTree(@"Software\DevStack", false);
-                        AddUninstallationLog(localization.GetString("log_messages.user_registry_removed"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.user_registry_removed"));
                     }
                     catch { }
 
                     try
                     {
                         Registry.LocalMachine.DeleteSubKeyTree(@"SOFTWARE\DevStack", false);
-                        AddUninstallationLog(localization.GetString("log_messages.machine_registry_removed"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.machine_registry_removed"));
                     }
                     catch { }
                     
@@ -1324,13 +1279,13 @@ namespace DevStackUninstaller
                     {
                         var uninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DevStack";
                         Registry.LocalMachine.DeleteSubKeyTree(uninstallKey, false);
-                        AddUninstallationLog(localization.GetString("log_messages.uninstall_registry_removed"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.uninstall_registry_removed"));
                     }
                     catch { }
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.registry_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.registry_error", ex.Message));
                 }
             });
         }
@@ -1348,7 +1303,7 @@ namespace DevStackUninstaller
                         var paths = userPath.Split(';').Where(p => !string.Equals(p, installationPath, StringComparison.OrdinalIgnoreCase)).ToArray();
                         var newPath = string.Join(";", paths);
                         Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
-                        AddUninstallationLog(localization.GetString("log_messages.user_path_removed"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.user_path_removed"));
                     }
 
                     // Try to remove from system PATH (requires admin rights)
@@ -1360,17 +1315,17 @@ namespace DevStackUninstaller
                             var paths = systemPath.Split(';').Where(p => !string.Equals(p, installationPath, StringComparison.OrdinalIgnoreCase)).ToArray();
                             var newPath = string.Join(";", paths);
                             Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.Machine);
-                            AddUninstallationLog(localization.GetString("log_messages.system_path_removed"));
+                            AddUninstallationLog(localization.GetString("uninstaller.log_messages.system_path_removed"));
                         }
                     }
                     catch
                     {
-                        AddUninstallationLog(localization.GetString("log_messages.system_path_warning"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.system_path_warning"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.path_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.path_error", ex.Message));
                 }
             });
         }
@@ -1383,19 +1338,30 @@ namespace DevStackUninstaller
                 {
                     if (string.IsNullOrEmpty(installationPath) || !Directory.Exists(installationPath))
                     {
-                        AddUninstallationLog(localization.GetString("log_messages.install_not_found"));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.install_not_found"));
                         return;
                     }
 
                     var uninstallerPath = Path.Combine(AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
+                    var toolsPath = Path.Combine(installationPath, "tools");
                     
-                    // Remove all files except the uninstaller
+                    // Remove all files except the uninstaller and tools folder (if UserData is not being removed)
                     var files = Directory.GetFiles(installationPath, "*", SearchOption.AllDirectories);
                     int removedFiles = 0;
+                    int preservedFiles = 0;
                     
                     foreach (var file in files)
                     {
-                        if (!string.Equals(file, uninstallerPath, StringComparison.OrdinalIgnoreCase))
+                        bool shouldPreserve = string.Equals(file, uninstallerPath, StringComparison.OrdinalIgnoreCase);
+                        
+                        // If UserData is not being removed, preserve tools folder content
+                        if (!removeUserData && file.StartsWith(toolsPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                        {
+                            shouldPreserve = true;
+                            preservedFiles++;
+                        }
+                        
+                        if (!shouldPreserve)
                         {
                             try
                             {
@@ -1404,22 +1370,39 @@ namespace DevStackUninstaller
                             }
                             catch (Exception ex)
                             {
-                                AddUninstallationLog(localization.GetString("log_messages.file_remove_warning", Path.GetFileName(file), ex.Message));
+                                AddUninstallationLog(localization.GetString("uninstaller.log_messages.file_remove_warning", Path.GetFileName(file), ex.Message));
                             }
                         }
                     }
 
-                    AddUninstallationLog(localization.GetString("log_messages.files_removed_count", removedFiles.ToString()));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.files_removed_count", removedFiles.ToString()));
+                    
+                    if (!removeUserData && preservedFiles > 0)
+                    {
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.tools_preserved", toolsPath));
+                        AddUninstallationLog($"Preserved {preservedFiles} files in tools folder");
+                    }
 
-                    // Remove empty directories
+                    // Remove empty directories (but preserve tools folder if UserData is not being removed)
                     var directories = Directory.GetDirectories(installationPath, "*", SearchOption.AllDirectories);
                     int removedDirs = 0;
+                    int preservedDirs = 0;
                     
                     foreach (var dir in directories.OrderByDescending(d => d.Length))
                     {
                         try
                         {
-                            if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                            bool shouldPreserveDir = false;
+                            
+                            // If UserData is not being removed, preserve tools folder and its subdirectories
+                            if (!removeUserData && (string.Equals(dir, toolsPath, StringComparison.OrdinalIgnoreCase) || 
+                                                   dir.StartsWith(toolsPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                shouldPreserveDir = true;
+                                preservedDirs++;
+                            }
+                            
+                            if (!shouldPreserveDir && !Directory.EnumerateFileSystemEntries(dir).Any())
                             {
                                 Directory.Delete(dir);
                                 removedDirs++;
@@ -1429,14 +1412,17 @@ namespace DevStackUninstaller
                     }
 
                     if (removedDirs > 0)
-                        AddUninstallationLog(localization.GetString("log_messages.dirs_removed_count", removedDirs.ToString()));
+                        AddUninstallationLog(localization.GetString("uninstaller.log_messages.dirs_removed_count", removedDirs.ToString()));
+                    
+                    if (!removeUserData && preservedDirs > 0)
+                        AddUninstallationLog($"Preserved {preservedDirs} directories in tools folder");
 
                     // Schedule removal of installation directory and uninstaller
                     ScheduleSelfDeletion().Wait();
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.files_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.files_error", ex.Message));
                 }
             });
         }
@@ -1459,13 +1445,13 @@ namespace DevStackUninstaller
                         if (Directory.Exists(dataPath))
                         {
                             Directory.Delete(dataPath, true);
-                            AddUninstallationLog(localization.GetString("log_messages.user_data_removed", dataPath));
+                            AddUninstallationLog(localization.GetString("uninstaller.log_messages.user_data_removed", dataPath));
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.user_data_error", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.user_data_error", ex.Message));
                 }
             });
         }
@@ -1477,30 +1463,69 @@ namespace DevStackUninstaller
                 try
                 {
                     var currentPath = Path.Combine(AppContext.BaseDirectory, "DevStack-Uninstaller.exe");
-                    var installPath = AppContext.BaseDirectory;
                     
-                    var batchContent = $@"
-@echo off
-timeout /t 3 /nobreak > nul
-del ""{currentPath}""
-if exist ""{installPath}"" rmdir ""{installPath}"" /s /q 2>nul
-del ""%~f0""
-";
-                    var batchPath = Path.Combine(Path.GetTempPath(), "DevStackUninstaller_Cleanup.bat");
-                    File.WriteAllText(batchPath, batchContent);
-                    
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = batchPath,
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    });
+                    // Use PowerShell script for cleaner execution without visible windows
+                    var psScript = $@"
+# Wait for uninstaller to close
+Start-Sleep -Seconds 2
 
-                    AddUninstallationLog(localization.GetString("log_messages.self_deletion_scheduled"));
+# Attempt to delete the uninstaller
+if (Test-Path '{currentPath}') {{
+    try {{
+        Remove-Item '{currentPath}' -Force -ErrorAction Stop
+        Write-Host 'Uninstaller deleted successfully'
+    }}
+    catch {{
+        # If first attempt fails, wait a bit more and try again
+        Start-Sleep -Seconds 2
+        try {{
+            Remove-Item '{currentPath}' -Force -ErrorAction Stop
+            Write-Host 'Uninstaller deleted on second attempt'
+        }}
+        catch {{
+            Write-Host 'Failed to delete uninstaller: $_'
+        }}
+    }}
+}} else {{
+    Write-Host 'Uninstaller not found'
+}}
+
+# Clean exit
+exit 0
+";
+                    var psPath = Path.Combine(Path.GetTempPath(), $"DevStackCleanup_{DateTime.Now:yyyyMMddHHmmss}.ps1");
+                    File.WriteAllText(psPath, psScript, Encoding.UTF8);
+                    
+                    AddUninstallationLog($"Self-deletion script created: {psPath}");
+                    
+                    // Execute PowerShell script in completely hidden mode
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-WindowStyle Hidden -ExecutionPolicy Bypass -NoProfile -Command \"& '{psPath}'; Remove-Item '{psPath}' -Force -ErrorAction SilentlyContinue\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
+                        RedirectStandardInput = false
+                    };
+                    
+                    var process = Process.Start(processInfo);
+                    if (process != null)
+                    {
+                        AddUninstallationLog("Self-deletion PowerShell process started successfully");
+                    }
+                    else
+                    {
+                        AddUninstallationLog("Failed to start PowerShell self-deletion process");
+                    }
+
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.self_deletion_scheduled"));
                 }
                 catch (Exception ex)
                 {
-                    AddUninstallationLog(localization.GetString("log_messages.self_deletion_warning", ex.Message));
+                    AddUninstallationLog(localization.GetString("uninstaller.log_messages.self_deletion_warning", ex.Message));
                 }
             });
         }

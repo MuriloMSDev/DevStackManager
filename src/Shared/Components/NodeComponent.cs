@@ -7,59 +7,55 @@ namespace DevStackManager.Components
     {
         public override string Name => "node";
         public override string ToolDir => DevStackConfig.nodeDir;
+        public override bool IsExecutable => true;
+        public override bool IsCommandLine => true;
+        public override string? ExecutablePattern => "node.exe";
+        public override string? CreateBinShortcut => "node-{version}.exe";
 
         public override Task PostInstall(string version, string targetDir)
         {
             string nodePath = System.IO.Path.Combine(DevStackConfig.nodeDir, $"node-{version}");
-            string binDir = System.IO.Path.Combine(DevStackConfig.nodeDir, "bin");
-            if (!System.IO.Directory.Exists(binDir))
-            {
-                System.IO.Directory.CreateDirectory(binDir);
-            }
-            string srcExe = System.IO.Path.Combine(nodePath, "node.exe");
-            string dstExe = System.IO.Path.Combine(binDir, $"node-{version}.exe");
-            if (System.IO.File.Exists(srcExe))
-            {
-                System.IO.File.Copy(srcExe, dstExe, true);
-                Console.WriteLine($"Atalho node-{version}.exe criado em {binDir}");
-            }
 
-            // Handle npm and npx renaming
+            // Create shortcuts for npm and npx in global bin (não renomear arquivos)
             string npmPkgJson = System.IO.Path.Combine(nodePath, "node_modules", "npm", "package.json");
             if (System.IO.File.Exists(npmPkgJson))
             {
-                var npmPackageContent = System.IO.File.ReadAllText(npmPkgJson);
-                using var doc = System.Text.Json.JsonDocument.Parse(npmPackageContent);
-                string? npmVersion = doc.RootElement.GetProperty("version").GetString();
-                if (string.IsNullOrEmpty(npmVersion))
+                try
                 {
-                    Console.WriteLine("Não foi possível determinar a versão do npm no package.json.");
-                }
-                string[] npmFiles = { "npm", "npm.cmd", "npm.ps1" };
-                string[] npxFiles = { "npx", "npx.cmd", "npx.ps1" };
-                foreach (string npmFile in npmFiles)
-                {
-                    string fullPath = System.IO.Path.Combine(nodePath, npmFile);
-                    if (System.IO.File.Exists(fullPath))
+                    var npmPackageContent = System.IO.File.ReadAllText(npmPkgJson);
+                    using var doc = System.Text.Json.JsonDocument.Parse(npmPackageContent);
+                    string? npmVersion = doc.RootElement.GetProperty("version").GetString();
+                    
+                    if (!string.IsNullOrEmpty(npmVersion))
                     {
-                        string ext = System.IO.Path.GetExtension(fullPath);
-                        string newName = $"npm-{npmVersion}{ext}";
-                        string newPath = System.IO.Path.Combine(nodePath, newName);
-                        System.IO.File.Move(fullPath, newPath);
-                        Console.WriteLine($"Renomeado {npmFile} para {newName}");
+                        // Criar atalhos para npm e npx no bin global
+                        string[] toolFiles = { "npm.cmd", "npx.cmd" };
+                        
+                        foreach (string toolFile in toolFiles)
+                        {
+                            string sourcePath = System.IO.Path.Combine(nodePath, toolFile);
+                            if (System.IO.File.Exists(sourcePath))
+                            {
+                                try
+                                {
+                                    string toolName = System.IO.Path.GetFileNameWithoutExtension(toolFile);
+                                    CreateGlobalBinShortcut(nodePath, toolFile, npmVersion, toolName);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine($"Aviso: falha ao criar atalho para {toolFile}: {e.Message}");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Não foi possível determinar a versão do npm no package.json.");
                     }
                 }
-                foreach (string npxFile in npxFiles)
+                catch (Exception e)
                 {
-                    string fullPath = System.IO.Path.Combine(nodePath, npxFile);
-                    if (System.IO.File.Exists(fullPath))
-                    {
-                        string ext = System.IO.Path.GetExtension(fullPath);
-                        string newName = $"npx-{npmVersion}{ext}";
-                        string newPath = System.IO.Path.Combine(nodePath, newName);
-                        System.IO.File.Move(fullPath, newPath);
-                        Console.WriteLine($"Renomeado {npxFile} para {newName}");
-                    }
+                    Console.WriteLine($"Erro ao processar package.json do npm: {e.Message}");
                 }
             }
             else

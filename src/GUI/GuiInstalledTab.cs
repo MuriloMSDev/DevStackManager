@@ -296,7 +296,7 @@ namespace DevStackManager
                 buttonFactory.SetValue(Button.WidthProperty, 80.0);
                 buttonFactory.SetValue(Button.HeightProperty, 25.0);
                 buttonFactory.SetValue(Button.MarginProperty, new Thickness(2));
-                buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Success).Style);
+                buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Info).Style);
                 // StackPanel para versão + ícone
                 var btnStackPanel = new FrameworkElementFactory(typeof(StackPanel));
                 btnStackPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);

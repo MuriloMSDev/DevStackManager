@@ -17,5 +17,9 @@ namespace DevStackManager.Components
         bool IsCommandLine { get; }
         string? ExecutableFolder { get; }
         string? ExecutablePattern { get; }
+        string? ServicePattern { get; }
+        string? CreateBinShortcut { get; }
+        string GetServiceType(DevStackShared.LocalizationManager localizationManager);
+        string GetServiceDescription(string version, DevStackShared.LocalizationManager localizationManager);
     }
 }

@@ -15,8 +15,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Win32;
 using DevStackShared;
-using SharpCompress.Archives.Zip;
-using SharpCompress.Common;
+using System.Net.Http;
 
 namespace DevStackInstaller
 {
@@ -129,22 +128,22 @@ namespace DevStackInstaller
         {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             
-            // Try to find the resource with different possible names
+            // Try to find the source resource
             var resourceNames = assembly.GetManifestResourceNames();
-            var zipResourceName = resourceNames.FirstOrDefault(r => r.EndsWith("DevStack.zip"));
+            var zipResourceName = resourceNames.FirstOrDefault(r => r.EndsWith("DevStackSource.zip"));
             
             if (zipResourceName == null)
             {
-                throw new Exception("Embedded DevStack.zip resource not found in installer.");
+                throw new Exception("Embedded DevStackSource.zip resource not found in installer.");
             }
 
-            string tempPath = Path.Combine(Path.GetTempPath(), "DevStack_Install_" + Guid.NewGuid().ToString("N")[..8] + ".zip");
+            string tempPath = Path.Combine(Path.GetTempPath(), "DevStackSource_" + Guid.NewGuid().ToString("N")[..8] + ".zip");
             
             using (var resourceStream = assembly.GetManifestResourceStream(zipResourceName))
             {
                 if (resourceStream == null)
                 {
-                    throw new Exception("Could not access embedded DevStack.zip resource.");
+                    throw new Exception("Could not access embedded DevStackSource.zip resource.");
                 }
                 
                 using (var fileStream = File.Create(tempPath))
@@ -163,8 +162,8 @@ namespace DevStackInstaller
             // Log version info for debugging
             System.Diagnostics.Debug.WriteLine($"Installer version: {version}");
             
-            // Get window title with explicit formatting
-            Title = localization.GetString("window_title", version);
+            // Obter window title com formatação explícita
+            Title = localization.GetString("installer.window_title", version);
             System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
             Width = 750;
             Height = 650;
@@ -284,7 +283,7 @@ namespace DevStackInstaller
             };
 
             languageLabel = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("welcome.language_label"), 
+                localization.GetString("installer.welcome.language_label"), 
                 false, true, DevStackShared.ThemeManager.LabelStyle.Secondary);
             languageLabel.VerticalAlignment = VerticalAlignment.Center;
             languageLabel.Margin = new Thickness(0, 0, 10, 0);
@@ -326,7 +325,7 @@ namespace DevStackInstaller
 
             // Botões usando ThemeManager
             backButton = DevStackShared.ThemeManager.CreateStyledButton(
-                localization.GetString("buttons.back"), 
+                localization.GetString("common.buttons.back"), 
                 BackButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Secondary);
             backButton.Width = 90;
@@ -335,15 +334,15 @@ namespace DevStackInstaller
             backButton.IsEnabled = false;
 
             nextButton = DevStackShared.ThemeManager.CreateStyledButton(
-                localization.GetString("buttons.next"), 
+                localization.GetString("common.buttons.next"), 
                 NextButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Primary);
-            nextButton.Width = 90;
+            nextButton.Width = 130;
             nextButton.Height = 36;
             nextButton.Margin = new Thickness(0, 0, 12, 0);
 
             cancelButton = DevStackShared.ThemeManager.CreateStyledButton(
-                localization.GetString("buttons.cancel"), 
+                localization.GetString("common.buttons.cancel"), 
                 CancelButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Secondary);
             cancelButton.Width = 90;
@@ -388,27 +387,27 @@ namespace DevStackInstaller
             {
                 case InstallerStep.Welcome:
                     CreateWelcomeStep();
-                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.Content = localization.GetString("common.buttons.next");
                     nextButton.IsEnabled = true;
                     break;
                 case InstallerStep.License:
                     CreateLicenseStep();
-                    nextButton.Content = localization.GetString("buttons.accept");
+                    nextButton.Content = localization.GetString("common.buttons.accept");
                     nextButton.IsEnabled = true;
                     break;
                 case InstallerStep.InstallationPath:
                     CreateInstallationPathStep();
-                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.Content = localization.GetString("common.buttons.next");
                     nextButton.IsEnabled = true;
                     break;
                 case InstallerStep.Components:
                     CreateComponentsStep();
-                    nextButton.Content = localization.GetString("buttons.next");
+                    nextButton.Content = localization.GetString("common.buttons.next");
                     nextButton.IsEnabled = true;
                     break;
                 case InstallerStep.ReadyToInstall:
                     CreateReadyToInstallStep();
-                    nextButton.Content = localization.GetString("buttons.install");
+                    nextButton.Content = localization.GetString("common.buttons.install");
                     nextButton.IsEnabled = true;
                     break;
                 case InstallerStep.Installing:
@@ -418,7 +417,7 @@ namespace DevStackInstaller
                     break;
                 case InstallerStep.Finished:
                     CreateFinishedStep();
-                    nextButton.Content = localization.GetString("buttons.finish");
+                    nextButton.Content = localization.GetString("common.buttons.finish");
                     nextButton.IsEnabled = true;
                     backButton.IsEnabled = false;
                     cancelButton.Visibility = Visibility.Collapsed;
@@ -431,12 +430,12 @@ namespace DevStackInstaller
             // Log detailed diagnostic info
             System.Diagnostics.Debug.WriteLine("=========== CREATING WELCOME STEP ===========");
             
-            var title = localization.GetString("welcome.title");
-            System.Diagnostics.Debug.WriteLine($"welcome.title = \"{title}\"");
+            var title = localization.GetString("installer.welcome.title");
+            System.Diagnostics.Debug.WriteLine($"installer.welcome.title = \"{title}\"");
             stepTitleText.Text = title;
             
-            var description = localization.GetString("welcome.description");
-            System.Diagnostics.Debug.WriteLine($"welcome.description = \"{description}\"");
+            var description = localization.GetString("installer.welcome.description");
+            System.Diagnostics.Debug.WriteLine($"installer.welcome.description = \"{description}\"");
             stepDescriptionText.Text = description;
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -465,25 +464,25 @@ namespace DevStackInstaller
             };
 
             var welcomeText = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("welcome.app_name"), 
+                localization.GetString("installer.welcome.app_name"), 
                 true, false, DevStackShared.ThemeManager.LabelStyle.Title);
             welcomeText.HorizontalAlignment = HorizontalAlignment.Center;
             welcomeText.FontSize = 28;
             welcomeText.Margin = new Thickness(0, 0, 0, 8);
 
             var versionText = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("welcome.version", GetVersion()),
+                localization.GetString("installer.welcome.version", GetVersion()),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
             versionText.HorizontalAlignment = HorizontalAlignment.Center;
             versionText.FontSize = 15;
             versionText.Margin = new Thickness(0, 0, 0, 25);
 
             var descriptionText = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("welcome.app_description"),
+                localization.GetString("installer.welcome.app_description"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
             descriptionText.Content = new TextBlock
             {
-                Text = localization.GetString("welcome.app_description"),
+                Text = localization.GetString("installer.welcome.app_description"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 14,
@@ -520,13 +519,13 @@ namespace DevStackInstaller
             try
             {
                 // Atualizar título e rótulos fixos
-                Title = localization.GetString("window_title", GetVersion());
+                Title = localization.GetString("installer.window_title", GetVersion());
                 if (languageLabel != null)
-                    languageLabel.Content = localization.GetString("welcome.language_label");
+                    languageLabel.Content = localization.GetString("installer.welcome.language_label");
                 if (backButton != null)
-                    backButton.Content = localization.GetString("buttons.back");
+                    backButton.Content = localization.GetString("common.buttons.back");
                 if (cancelButton != null)
-                    cancelButton.Content = localization.GetString("buttons.cancel");
+                    cancelButton.Content = localization.GetString("common.buttons.cancel");
 
                 // Atualizar conteúdo específico do passo
                 UpdateStepContent();
@@ -536,14 +535,14 @@ namespace DevStackInstaller
 
         private void CreateLicenseStep()
         {
-            stepTitleText.Text = localization.GetString("license.title");
-            stepDescriptionText.Text = localization.GetString("license.description");
+            stepTitleText.Text = localization.GetString("installer.license.title");
+            stepDescriptionText.Text = localization.GetString("installer.license.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var licenseLabel = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("license.label"),
+                localization.GetString("installer.license.label"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             licenseLabel.FontWeight = FontWeights.SemiBold;
             licenseLabel.FontSize = 15;
@@ -559,7 +558,7 @@ namespace DevStackInstaller
             };
 
             var licenseTextBox = DevStackShared.ThemeManager.CreateStyledTextBox(true);
-            licenseTextBox.Text = localization.GetString("license.text");
+            licenseTextBox.Text = localization.GetString("installer.license.text");
             licenseTextBox.IsReadOnly = true;
             licenseTextBox.TextWrapping = TextWrapping.Wrap;
             licenseTextBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -578,8 +577,8 @@ namespace DevStackInstaller
 
         private void CreateInstallationPathStep()
         {
-            stepTitleText.Text = localization.GetString("installation_path.title");
-            stepDescriptionText.Text = localization.GetString("installation_path.description");
+            stepTitleText.Text = localization.GetString("installer.installation_path.title");
+            stepDescriptionText.Text = localization.GetString("installer.installation_path.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -587,7 +586,7 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             var pathLabel = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("installation_path.label"),
+                localization.GetString("installer.installation_path.label"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             pathLabel.FontWeight = FontWeights.SemiBold;
             pathLabel.FontSize = 15;
@@ -618,7 +617,7 @@ namespace DevStackInstaller
             pathTextBox.TextChanged += (s, e) => installationPath = pathTextBox.Text;
 
             var browserButton = DevStackShared.ThemeManager.CreateStyledButton(
-                localization.GetString("installation_path.browser"),
+                localization.GetString("installer.installation_path.browser"),
                 BrowserButton_Click,
                 DevStackShared.ThemeManager.ButtonStyle.Primary
             );
@@ -667,7 +666,7 @@ namespace DevStackInstaller
 
             // Adicionar informações adicionais usando notification panel
             var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
-                localization.GetString("installation_path.info"), 
+                localization.GetString("installer.installation_path.info"), 
                 DevStackShared.ThemeManager.NotificationType.Info);
             infoPanel.Margin = new Thickness(0, 10, 0, 0);
 
@@ -684,8 +683,8 @@ namespace DevStackInstaller
 
         private void CreateComponentsStep()
         {
-            stepTitleText.Text = localization.GetString("components.title");
-            stepDescriptionText.Text = localization.GetString("components.description");
+            stepTitleText.Text = localization.GetString("installer.components.title");
+            stepDescriptionText.Text = localization.GetString("installer.components.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -694,7 +693,7 @@ namespace DevStackInstaller
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var optionsLabel = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("components.label"),
+                localization.GetString("installer.components.label"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             optionsLabel.FontWeight = FontWeights.SemiBold;
             optionsLabel.FontSize = 15;
@@ -714,21 +713,21 @@ namespace DevStackInstaller
 
             // CheckBoxes usando ThemeManager
             desktopShortcutCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
-                localization.GetString("components.desktop_shortcuts"));
+                localization.GetString("installer.components.desktop_shortcuts"));
             desktopShortcutCheckBox.IsChecked = createDesktopShortcuts;
             desktopShortcutCheckBox.Checked += (s, e) => createDesktopShortcuts = true;
             desktopShortcutCheckBox.Unchecked += (s, e) => createDesktopShortcuts = false;
             desktopShortcutCheckBox.Margin = new Thickness(0, 0, 0, 15);
 
             startMenuShortcutCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
-                localization.GetString("components.start_menu_shortcuts"));
+                localization.GetString("installer.components.start_menu_shortcuts"));
             startMenuShortcutCheckBox.IsChecked = createStartMenuShortcuts;
             startMenuShortcutCheckBox.Checked += (s, e) => createStartMenuShortcuts = true;
             startMenuShortcutCheckBox.Unchecked += (s, e) => createStartMenuShortcuts = false;
             startMenuShortcutCheckBox.Margin = new Thickness(0, 0, 0, 15);
 
             addToPathCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
-                localization.GetString("components.add_to_path"));
+                localization.GetString("installer.components.add_to_path"));
             addToPathCheckBox.IsChecked = addToPath;
             addToPathCheckBox.Checked += (s, e) => addToPath = true;
             addToPathCheckBox.Unchecked += (s, e) => addToPath = false;
@@ -742,7 +741,7 @@ namespace DevStackInstaller
 
             // Adicionar informações sobre PATH usando notification panel
             var pathInfoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
-                localization.GetString("components.path_info"), 
+                localization.GetString("installer.components.path_info"), 
                 DevStackShared.ThemeManager.NotificationType.Warning);
             pathInfoPanel.Margin = new Thickness(0, 20, 0, 0);
 
@@ -757,14 +756,14 @@ namespace DevStackInstaller
 
         private void CreateReadyToInstallStep()
         {
-            stepTitleText.Text = localization.GetString("ready_to_install.title");
-            stepDescriptionText.Text = localization.GetString("ready_to_install.description");
+            stepTitleText.Text = localization.GetString("installer.ready_to_install.title");
+            stepDescriptionText.Text = localization.GetString("installer.ready_to_install.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             var summaryLabel = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("ready_to_install.summary_label"),
+                localization.GetString("installer.ready_to_install.summary_label"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             summaryLabel.FontWeight = FontWeights.SemiBold;
             summaryLabel.FontSize = 15;
@@ -799,15 +798,15 @@ namespace DevStackInstaller
 
         private void CreateInstallingStep()
         {
-            stepTitleText.Text = localization.GetString("installing.title");
-            stepDescriptionText.Text = localization.GetString("installing.description");
+            stepTitleText.Text = localization.GetString("installer.installing.title");
+            stepDescriptionText.Text = localization.GetString("installer.installing.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             installStatusText = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("installing.preparing"),
+                localization.GetString("installer.installing.preparing"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             installStatusText.FontWeight = FontWeights.SemiBold;
             installStatusText.FontSize = 15;
@@ -886,8 +885,8 @@ namespace DevStackInstaller
 
         private void CreateFinishedStep()
         {
-            stepTitleText.Text = localization.GetString("finished.title");
-            stepDescriptionText.Text = localization.GetString("finished.description");
+            stepTitleText.Text = localization.GetString("installer.finished.title");
+            stepDescriptionText.Text = localization.GetString("installer.finished.description");
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
@@ -899,14 +898,14 @@ namespace DevStackInstaller
 
             var successIcon = new TextBlock
             {
-                Text = localization.GetString("finished.success_icon"),
+                Text = localization.GetString("installer.finished.success_icon"),
                 FontSize = 48,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
             var successText = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("finished.success_title"),
+                localization.GetString("installer.finished.success_title"),
                 true, false, DevStackShared.ThemeManager.LabelStyle.Normal);
             successText.FontSize = 18;
             successText.FontWeight = FontWeights.Bold;
@@ -915,11 +914,11 @@ namespace DevStackInstaller
             successText.Foreground = DevStackShared.ThemeManager.CurrentTheme.Success;
 
             var finishedMessage = DevStackShared.ThemeManager.CreateStyledLabel(
-                localization.GetString("finished.success_message"),
+                localization.GetString("installer.finished.success_message"),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
             finishedMessage.Content = new TextBlock
             {
-                Text = localization.GetString("finished.success_message"),
+                Text = localization.GetString("installer.finished.success_message"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 FontSize = 12,
@@ -934,7 +933,7 @@ namespace DevStackInstaller
                     Children =
                     {
                         DevStackShared.ThemeManager.CreateStyledLabel(
-                            localization.GetString("finished.install_location"),
+                            localization.GetString("installer.finished.install_location"),
                             false, false, DevStackShared.ThemeManager.LabelStyle.Normal),
                         new TextBlock
                         {
@@ -956,7 +955,7 @@ namespace DevStackInstaller
             };
 
             var launchCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
-                localization.GetString("finished.launch_now"));
+                localization.GetString("installer.finished.launch_now"));
             launchCheckBox.IsChecked = launchAfterInstall;
             launchCheckBox.Checked += (s, e) => launchAfterInstall = true;
             launchCheckBox.Unchecked += (s, e) => launchAfterInstall = false;
@@ -1021,38 +1020,38 @@ namespace DevStackInstaller
                     availableSpaceText = $"{availableSpaceMB:N0} MB";
                 }
                 
-                return localization.GetString("installation_path.space_required", $"{requiredSpace:F1}") + "  |  " + 
-                       localization.GetString("installation_path.space_available", availableSpaceText);
+                return localization.GetString("installer.installation_path.space_required", $"{requiredSpace:F1}") + "  |  " + 
+                       localization.GetString("installer.installation_path.space_available", availableSpaceText);
             }
             catch
             {
                 var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0); // MB
-                return localization.GetString("installation_path.space_required", $"{requiredSpace:F1}");
+                return localization.GetString("installer.installation_path.space_required", $"{requiredSpace:F1}");
             }
         }
 
         private string GetInstallationSummary()
         {
-            var summary = $@"{localization.GetString("ready_to_install.destination")}
+            var summary = $@"{localization.GetString("installer.ready_to_install.destination")}
   {installationPath}
 
-{localization.GetString("ready_to_install.components_header")}
-{localization.GetString("ready_to_install.cli_component")}
-{localization.GetString("ready_to_install.gui_component")}
-{localization.GetString("ready_to_install.uninstaller_component")}
-{localization.GetString("ready_to_install.config_component")}
+{localization.GetString("installer.ready_to_install.components_header")}
+{localization.GetString("installer.ready_to_install.cli_component")}
+{localization.GetString("installer.ready_to_install.gui_component")}
+{localization.GetString("installer.ready_to_install.uninstaller_component")}
+{localization.GetString("installer.ready_to_install.config_component")}
 
-{localization.GetString("ready_to_install.options_header")}";
+{localization.GetString("installer.ready_to_install.options_header")}";
 
             if (createDesktopShortcuts)
-                summary += $"\n{localization.GetString("ready_to_install.create_desktop")}";
+                summary += $"\n{localization.GetString("installer.ready_to_install.create_desktop")}";
             if (createStartMenuShortcuts)
-                summary += $"\n{localization.GetString("ready_to_install.create_start_menu")}";
+                summary += $"\n{localization.GetString("installer.ready_to_install.create_start_menu")}";
             if (addToPath)
-                summary += $"\n{localization.GetString("ready_to_install.add_path")}";
+                summary += $"\n{localization.GetString("installer.ready_to_install.add_path")}";
 
             var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0); // MB
-            summary += $"\n\n{localization.GetString("ready_to_install.space_required_summary").Replace("{0}", requiredSpace.ToString("F1"))}";
+            summary += $"\n\n{localization.GetString("installer.ready_to_install.space_required_summary").Replace("{0}", requiredSpace.ToString("F1"))}";
 
             return summary;
         }
@@ -1129,8 +1128,8 @@ namespace DevStackInstaller
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
-                localization.GetString("dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("installer.dialogs.cancel_message"), 
+                localization.GetString("installer.dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
             {
@@ -1143,8 +1142,8 @@ namespace DevStackInstaller
             // Only show confirmation if installation hasn't finished
             if (currentStep != InstallerStep.Finished)
             {
-                var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.cancel_message"), 
-                    localization.GetString("dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("installer.dialogs.cancel_message"), 
+                    localization.GetString("installer.dialogs.cancel_title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
                 
                 if (result != MessageBoxResult.Yes)
                 {
@@ -1153,33 +1152,418 @@ namespace DevStackInstaller
             }
         }
 
+        private async Task<string> DownloadDotNetSDK(string tempDir)
+        {
+            var buildInfoPath = Path.Combine(tempDir, "build_info.json");
+            if (!File.Exists(buildInfoPath))
+            {
+                throw new Exception("build_info.json not found in source package");
+            }
+
+            var buildInfoText = File.ReadAllText(buildInfoPath);
+            var buildInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(buildInfoText);
+            
+            if (buildInfo == null)
+                throw new Exception("Failed to parse build_info.json");
+                
+            string dotnetVersion = buildInfo.dotnet_version?.ToString() ?? "9.0.100";
+
+            AddInstallationLog($"Downloading .NET SDK {dotnetVersion}...");
+            
+            string dotnetTempDir = Path.Combine(Path.GetTempPath(), "DevStack_DotNet_" + Guid.NewGuid().ToString("N")[..8]);
+            Directory.CreateDirectory(dotnetTempDir);
+            
+            string zipPath = Path.Combine(dotnetTempDir, "dotnet-sdk.zip");
+            
+            // Multiple fallback URLs for .NET 9 SDK
+            var downloadUrls = new[]
+            {
+                "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.304/dotnet-sdk-9.0.304-win-x64.zip",
+                "https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.304/dotnet-sdk-9.0.304-win-x64.zip",
+                "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/9.0.304/dotnet-sdk-9.0.304-win-x64.zip"
+            };
+            
+            using (var client = new System.Net.Http.HttpClient())
+            {
+                client.Timeout = TimeSpan.FromMinutes(15); // 15 minute timeout for large download
+                client.DefaultRequestHeaders.Add("User-Agent", "DevStack-Installer/1.0");
+                
+                Exception? lastException = null;
+                
+                foreach (var downloadUrl in downloadUrls)
+                {
+                    try
+                    {
+                        AddInstallationLog($"Trying download from: {downloadUrl.Substring(0, Math.Min(50, downloadUrl.Length))}...");
+                        
+                        using (var response = await client.GetAsync(downloadUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                                var downloadedBytes = 0L;
+                                
+                                AddInstallationLog($"Download started, size: {totalBytes / 1024 / 1024:F1}MB");
+                                
+                                using (var contentStream = await response.Content.ReadAsStreamAsync())
+                                using (var fileStream = File.Create(zipPath))
+                                {
+                                    var buffer = new byte[8192];
+                                    int bytesRead;
+                                    
+                                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+                                        downloadedBytes += bytesRead;
+                                    }
+                                }
+                                
+                                AddInstallationLog("Download completed successfully");
+                                break; // Success, exit the loop
+                            }
+                            else
+                            {
+                                AddInstallationLog($"Download failed with status: {response.StatusCode}");
+                                lastException = new Exception($"HTTP {response.StatusCode}: {response.ReasonPhrase}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddInstallationLog($"Download attempt failed: {ex.Message}");
+                        lastException = ex;
+                        
+                        // Clean up partial download
+                        if (File.Exists(zipPath))
+                        {
+                            try { File.Delete(zipPath); } catch { }
+                        }
+                    }
+                }
+                
+                // Check if download was successful
+                if (!File.Exists(zipPath) || new FileInfo(zipPath).Length < 1024 * 1024) // Less than 1MB means failure
+                {
+                    // Fallback: Try using dotnet install script
+                    AddInstallationLog("Direct download failed, trying dotnet install script...");
+                    return await TryDotNetInstallScript(dotnetTempDir, dotnetVersion);
+                }
+            }
+            
+            AddInstallationLog("Extracting .NET SDK...");
+            string dotnetDir = Path.Combine(dotnetTempDir, "dotnet");
+            Directory.CreateDirectory(dotnetDir);
+            
+            try
+            {
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, dotnetDir);
+                AddInstallationLog(".NET SDK extracted successfully");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to extract .NET SDK: {ex.Message}");
+            }
+            
+            File.Delete(zipPath); // Clean up zip file
+            
+            return dotnetDir;
+        }
+
+        private async Task<string> TryDotNetInstallScript(string dotnetTempDir, string dotnetVersion)
+        {
+            try
+            {
+                AddInstallationLog("Downloading dotnet-install script...");
+                
+                string scriptPath = Path.Combine(dotnetTempDir, "dotnet-install.ps1");
+                string dotnetDir = Path.Combine(dotnetTempDir, "dotnet");
+                
+                // Download the official dotnet install script
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(5);
+                    var scriptContent = await client.GetStringAsync("https://dot.net/v1/dotnet-install.ps1");
+                    File.WriteAllText(scriptPath, scriptContent);
+                }
+                
+                AddInstallationLog("Running dotnet install script...");
+                
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-ExecutionPolicy Bypass -File \"{scriptPath}\" -Channel 9.0 -Version {dotnetVersion} -InstallDir \"{dotnetDir}\" -NoPath",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+                
+                using (var process = Process.Start(startInfo))
+                {
+                    if (process == null)
+                    {
+                        throw new Exception("Failed to start PowerShell process");
+                    }
+                    
+                    var outputTask = process.StandardOutput.ReadToEndAsync();
+                    var errorTask = process.StandardError.ReadToEndAsync();
+                    
+                    await process.WaitForExitAsync();
+                    
+                    var output = await outputTask;
+                    var error = await errorTask;
+                    
+                    if (process.ExitCode != 0)
+                    {
+                        AddInstallationLog($"Install script failed: {error}");
+                        throw new Exception($"dotnet-install script failed with exit code {process.ExitCode}: {error}");
+                    }
+                    
+                    AddInstallationLog("dotnet install script completed successfully");
+                }
+                
+                // Verify installation
+                string dotnetExe = Path.Combine(dotnetDir, "dotnet.exe");
+                if (!File.Exists(dotnetExe))
+                {
+                    throw new Exception("dotnet.exe not found after script installation");
+                }
+                
+                return dotnetDir;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to install .NET SDK using install script: {ex.Message}");
+            }
+        }
+
+        private async Task CompileProjects(string sourceDir, string dotnetDir, string installPath)
+        {
+            var buildInfoPath = Path.Combine(sourceDir, "build_info.json");
+            var buildInfoText = File.ReadAllText(buildInfoPath);
+            var buildInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(buildInfoText);
+            
+            if (buildInfo == null)
+                throw new Exception("Failed to parse build_info.json");
+            
+            string dotnetExe = Path.Combine(dotnetDir, "dotnet.exe");
+            if (!File.Exists(dotnetExe))
+            {
+                throw new Exception($"dotnet.exe not found at {dotnetExe}");
+            }
+            
+            AddInstallationLog("Compiling DevStack projects...");
+            
+            var projects = buildInfo.projects ?? throw new Exception("projects not found in build_info.json");
+            int projectCount = projects.Count;
+            int currentProject = 0;
+            
+            // Create temporary build directory
+            string tempBuildDir = Path.Combine(Path.GetTempPath(), "DevStackBuild_" + Guid.NewGuid().ToString("N")[..8]);
+            Directory.CreateDirectory(tempBuildDir);
+            
+            try
+            {
+                foreach (var project in projects)
+                {
+                    currentProject++;
+                    string projectName = project.name;
+                    string projectPath = project.path;
+                    string outputName = project.output_name;
+                    
+                    AddInstallationLog($"Building {projectName}...");
+                    
+                    string fullProjectPath = Path.Combine(sourceDir, projectPath.ToString().Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(fullProjectPath))
+                    {
+                        throw new Exception($"Project file not found: {fullProjectPath}");
+                    }
+                    
+                    // Set progress: 35% (after SDK download) + 50% (compilation) distributed across projects
+                    var baseProgress = 35;
+                    var compilationProgress = (currentProject - 1) * 50 / projectCount;
+                    installProgressBar.Value = baseProgress + compilationProgress;
+                    
+                    // Build to temporary directory
+                    string projectTempDir = Path.Combine(tempBuildDir, projectName);
+                    Directory.CreateDirectory(projectTempDir);
+                    
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = dotnetExe,
+                        Arguments = $"publish \"{fullProjectPath}\" -c Release -r win-x64 --self-contained true -o \"{projectTempDir}\"",
+                        WorkingDirectory = sourceDir,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    };
+                    
+                    using (var process = Process.Start(startInfo))
+                    {
+                        if (process == null)
+                        {
+                            throw new Exception($"Failed to start dotnet process for {projectName}");
+                        }
+                        
+                        // Read output asynchronously to prevent deadlock
+                        var outputTask = process.StandardOutput.ReadToEndAsync();
+                        var errorTask = process.StandardError.ReadToEndAsync();
+                        
+                        await process.WaitForExitAsync();
+                        
+                        var output = await outputTask;
+                        var error = await errorTask;
+                        
+                        if (process.ExitCode != 0)
+                        {
+                            AddInstallationLog($"Build failed for {projectName}:");
+                            AddInstallationLog($"Error: {error}");
+                            throw new Exception($"Build failed for {projectName}: {error}");
+                        }
+                        
+                        AddInstallationLog($"Successfully built {projectName}");
+                    }
+                    
+                    // Copy only .exe files to the installation directory
+                    var exeFiles = Directory.GetFiles(projectTempDir, "*.exe", SearchOption.AllDirectories);
+                    foreach (var exeFile in exeFiles)
+                    {
+                        var fileName = Path.GetFileName(exeFile);
+                        var targetPath = Path.Combine(installPath, fileName);
+                        
+                        // Use the specified output name if it's the main executable
+                        if (fileName.Equals(projectName + ".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetPath = Path.Combine(installPath, outputName.ToString());
+                        }
+                        
+                        File.Copy(exeFile, targetPath, true);
+                        AddInstallationLog($"Copied {fileName} to installation directory");
+                    }
+                }
+            }
+            finally
+            {
+                // Clean up temporary build directory
+                try
+                {
+                    if (Directory.Exists(tempBuildDir))
+                    {
+                        Directory.Delete(tempBuildDir, true);
+                        AddInstallationLog("Temporary build files cleaned up");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddInstallationLog($"Warning: Could not delete temporary build directory: {ex.Message}");
+                }
+            }
+            
+            // Copy additional files
+            var iconsrc = Path.Combine(sourceDir, "src", "Shared", "DevStack.ico");
+            var iconDest = Path.Combine(installPath, "DevStack.ico");
+            if (File.Exists(iconsrc))
+            {
+                File.Copy(iconsrc, iconDest, true);
+            }
+            
+            // Copy configs if exists
+            var configsDir = Path.Combine(sourceDir, "configs");
+            if (Directory.Exists(configsDir))
+            {
+                var configsDest = Path.Combine(installPath, "configs");
+                if (Directory.Exists(configsDest))
+                    Directory.Delete(configsDest, true);
+                DirectoryCopy(configsDir, configsDest, true);
+            }
+            
+            AddInstallationLog("All projects compiled successfully!");
+        }
+
+        private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"Source directory does not exist or could not be found: {sourceDirName}");
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            Directory.CreateDirectory(destDirName);
+
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, true);
+            }
+
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                }
+            }
+        }
+
         private async Task PerformInstallation()
         {
             string? tempZipPath = null;
+            string? tempSourceDir = null;
+            string? dotnetTempDir = null;
+            
             try
             {
                 // Reset progress bar
                 installProgressBar.Value = 0;
                 
-                installStatusText.Content = localization.GetString("installing.extracting");
-                AddInstallationLog(localization.GetString("log_messages.starting"));
+                installStatusText.Content = localization.GetString("installer.installing.extracting");
+                AddInstallationLog(localization.GetString("installer.log_messages.starting"));
                 
+                // Extract embedded source package
                 tempZipPath = await Task.Run(() => ExtractEmbeddedZip());
-                installProgressBar.Value = 15; // 15% complete
-                AddInstallationLog(localization.GetString("log_messages.extracted"));
+                installProgressBar.Value = 5; // 5% complete
+                AddInstallationLog("Source package extracted");
 
-                installStatusText.Content = localization.GetString("installing.creating_directory");
-                AddInstallationLog(localization.GetString("log_messages.creating_dir", installationPath));
+                // Extract source files to temporary directory
+                tempSourceDir = Path.Combine(Path.GetTempPath(), "DevStackSource_" + Guid.NewGuid().ToString("N")[..8]);
+                Directory.CreateDirectory(tempSourceDir);
+                
+                await Task.Run(() => 
+                {
+                    ExtractZipWithDeflate(tempZipPath, tempSourceDir);
+                });
+                installProgressBar.Value = 10; // 10% complete
+                AddInstallationLog("Source files extracted");
+
+                installStatusText.Content = "Downloading .NET SDK...";
+                AddInstallationLog("Downloading .NET SDK for compilation...");
+                
+                // Download and extract .NET SDK
+                dotnetTempDir = await DownloadDotNetSDK(tempSourceDir);
+                installProgressBar.Value = 35; // 35% complete
+                AddInstallationLog(".NET SDK downloaded and extracted");
+
+                installStatusText.Content = localization.GetString("installer.installing.creating_directory");
+                AddInstallationLog(localization.GetString("installer.log_messages.creating_dir", installationPath));
                 Directory.CreateDirectory(installationPath);
-                // Criar settings.conf com idioma selecionado
-                var settingsPath = System.IO.Path.Combine(installationPath, "settings.conf");
+                installProgressBar.Value = 40; // 40% complete
+
+                // Compile projects using temporary .NET SDK
+                installStatusText.Content = "Compiling DevStack projects...";
+                await CompileProjects(tempSourceDir, dotnetTempDir, installationPath);
+                installProgressBar.Value = 85; // 85% complete
+
+                // Create settings.conf with selected language
+                var settingsPath = Path.Combine(installationPath, "settings.conf");
                 var languageCode = localization.CurrentLanguage;
                 try
                 {
                     Newtonsoft.Json.Linq.JObject settingsObj;
-                    if (System.IO.File.Exists(settingsPath))
+                    if (File.Exists(settingsPath))
                     {
-                        var json = System.IO.File.ReadAllText(settingsPath);
+                        var json = File.ReadAllText(settingsPath);
                         settingsObj = Newtonsoft.Json.Linq.JObject.Parse(json);
                     }
                     else
@@ -1187,55 +1571,46 @@ namespace DevStackInstaller
                         settingsObj = new Newtonsoft.Json.Linq.JObject();
                     }
                     settingsObj["language"] = languageCode;
-                    using (var sw = new System.IO.StreamWriter(settingsPath))
+                    using (var sw = new StreamWriter(settingsPath))
                     using (var writer = new Newtonsoft.Json.JsonTextWriter(sw) { Formatting = Newtonsoft.Json.Formatting.Indented })
                     {
                         settingsObj.WriteTo(writer);
                     }
                 }
-                catch { /* silencioso para não travar a instalação */ }
-                installProgressBar.Value = 25; // 25% complete
+                catch { /* silent to not break installation */ }
 
-                installStatusText.Content = localization.GetString("installing.installing_files");
-                AddInstallationLog(localization.GetString("log_messages.installing"));
-                await Task.Run(() => 
-                {
-                    ExtractZipWithLZMA(tempZipPath, installationPath);
-                });
-                installProgressBar.Value = 60; // 60% complete
-
-                installStatusText.Content = localization.GetString("installing.registering");
-                AddInstallationLog(localization.GetString("log_messages.registering"));
+                installStatusText.Content = localization.GetString("installer.installing.registering");
+                AddInstallationLog(localization.GetString("installer.log_messages.registering"));
                 await Task.Run(() => RegisterInstallation(installationPath));
-                installProgressBar.Value = 70; // 70% complete
+                installProgressBar.Value = 90; // 90% complete
 
                 if (createDesktopShortcuts)
                 {
-                    installStatusText.Content = localization.GetString("installing.creating_desktop");
-                    AddInstallationLog(localization.GetString("log_messages.desktop_shortcuts"));
+                    installStatusText.Content = localization.GetString("installer.installing.creating_desktop");
+                    AddInstallationLog(localization.GetString("installer.log_messages.desktop_shortcuts"));
                     CreateDesktopShortcuts(installationPath);
-                    installProgressBar.Value = 80; // 80% complete
+                    installProgressBar.Value = 95; // 95% complete
                 }
 
                 if (createStartMenuShortcuts)
                 {
-                    installStatusText.Content = localization.GetString("installing.creating_start_menu");
-                    AddInstallationLog(localization.GetString("log_messages.start_menu_shortcuts"));
+                    installStatusText.Content = localization.GetString("installer.installing.creating_start_menu");
+                    AddInstallationLog(localization.GetString("installer.log_messages.start_menu_shortcuts"));
                     CreateStartMenuShortcuts(installationPath);
-                    installProgressBar.Value = 85; // 85% complete
+                    installProgressBar.Value = 97; // 97% complete
                 }
 
                 if (addToPath)
                 {
-                    installStatusText.Content = localization.GetString("installing.adding_path");
-                    AddInstallationLog(localization.GetString("log_messages.adding_path"));
+                    installStatusText.Content = localization.GetString("installer.installing.adding_path");
+                    AddInstallationLog(localization.GetString("installer.log_messages.adding_path"));
                     AddToSystemPath(installationPath);
-                    installProgressBar.Value = 95; // 95% complete
+                    installProgressBar.Value = 99; // 99% complete
                 }
 
-                installStatusText.Content = localization.GetString("installing.completed");
+                installStatusText.Content = localization.GetString("installer.installing.completed");
                 installProgressBar.Value = 100; // 100% complete
-                AddInstallationLog(localization.GetString("log_messages.completed_success"));
+                AddInstallationLog(localization.GetString("installer.log_messages.completed_success"));
 
                 await Task.Delay(1000); // Give user time to see completion
 
@@ -1245,11 +1620,11 @@ namespace DevStackInstaller
             catch (Exception ex)
             {
                 AddInstallationLog($"ERROR: {ex.Message}");
-                DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("dialogs.installation_error_message", ex.Message), 
-                    localization.GetString("dialogs.installation_error_title"), 
+                DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("installer.dialogs.installation_error_message", ex.Message), 
+                    localization.GetString("installer.dialogs.installation_error_title"), 
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 
-                installStatusText.Content = localization.GetString("dialogs.installation_error_title");
+                installStatusText.Content = localization.GetString("installer.dialogs.installation_error_title");
                 installProgressBar.Value = 0;
                 
                 // Re-enable navigation
@@ -1258,17 +1633,43 @@ namespace DevStackInstaller
             }
             finally
             {
-                // Clean up temporary zip file
+                // Clean up temporary files
                 if (tempZipPath != null && File.Exists(tempZipPath))
                 {
                     try
                     {
                         File.Delete(tempZipPath);
-                        AddInstallationLog(localization.GetString("log_messages.cleanup"));
+                        AddInstallationLog("Temporary source package cleaned up");
                     }
                     catch (Exception ex)
                     {
-                        AddInstallationLog($"Warning: Could not delete temporary file: {ex.Message}");
+                        AddInstallationLog($"Warning: Could not delete temporary source file: {ex.Message}");
+                    }
+                }
+                
+                if (tempSourceDir != null && Directory.Exists(tempSourceDir))
+                {
+                    try
+                    {
+                        Directory.Delete(tempSourceDir, true);
+                        AddInstallationLog("Temporary source directory cleaned up");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddInstallationLog($"Warning: Could not delete temporary source directory: {ex.Message}");
+                    }
+                }
+                
+                if (dotnetTempDir != null && Directory.Exists(dotnetTempDir))
+                {
+                    try
+                    {
+                        Directory.Delete(Path.GetDirectoryName(dotnetTempDir) ?? dotnetTempDir, true);
+                        AddInstallationLog(".NET SDK temporary files cleaned up");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddInstallationLog($"Warning: Could not delete .NET SDK temporary files: {ex.Message}");
                     }
                 }
             }
@@ -1318,11 +1719,11 @@ namespace DevStackInstaller
                 {
                     var newPath = string.IsNullOrEmpty(userPath) ? installPath : $"{userPath};{installPath}";
                     Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
-                    AddInstallationLog(localization.GetString("log_messages.path_added"));
+                    AddInstallationLog(localization.GetString("installer.log_messages.path_added"));
                 }
                 else
                 {
-                    AddInstallationLog(localization.GetString("log_messages.path_exists"));
+                    AddInstallationLog(localization.GetString("installer.log_messages.path_exists"));
                 }
             }
             catch (Exception ex)
@@ -1336,7 +1737,7 @@ namespace DevStackInstaller
             // Use SaveFileDialog to select folder (workaround)
             var dialog = new SaveFileDialog
             {
-                Title = localization.GetString("dialogs.folder_dialog_title"),
+                Title = localization.GetString("installer.dialogs.folder_dialog_title"),
                 FileName = "Select Folder",
                 Filter = "Folder|*.folder",
                 InitialDirectory = installationPath
@@ -1467,48 +1868,18 @@ $Shortcut.Save()
             }
         }
 
-        private void ExtractZipWithLZMA(string zipPath, string extractPath)
+        private void ExtractZipWithDeflate(string zipPath, string extractPath)
         {
             try
             {
-                // Use SharpCompress which supports LZMA-compressed ZIP entries
-                using (var archive = SharpCompress.Archives.Zip.ZipArchive.Open(zipPath))
-                {
-                    var entries = archive.Entries.Where(e => !e.IsDirectory);
-                    foreach (SharpCompress.Archives.Zip.ZipArchiveEntry entry in entries)
-                    {
-                        string entryPath = entry.Key.Replace('/', Path.DirectorySeparatorChar);
-                        string fullZipToPath = Path.Combine(extractPath, entryPath);
-                        string? directoryName = Path.GetDirectoryName(fullZipToPath);
-
-                        if (!string.IsNullOrEmpty(directoryName))
-                            Directory.CreateDirectory(directoryName);
-
-                        // Extract entry to file, preserving full path and overwriting existing files
-                        using (var entryStream = entry.OpenEntryStream())
-                        using (var fileStream = File.Create(fullZipToPath))
-                        {
-                            entryStream.CopyTo(fileStream);
-                        }
-                    }
-                }
-                AddInstallationLog("Successfully extracted ZIP with LZMA support (SharpCompress)");
+                // Use standard .NET extraction for DEFLATE-compressed ZIP files
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+                AddInstallationLog("Successfully extracted ZIP with DEFLATE compression");
             }
-            catch (Exception lzmaEx)
+            catch (Exception ex)
             {
-                AddInstallationLog($"LZMA extraction failed: {lzmaEx.Message}, trying fallback method...");
-
-                try
-                {
-                    // Fallback to standard .NET extraction (for non-LZMA ZIPs)
-                    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath, true);
-                    AddInstallationLog("Successfully extracted ZIP with fallback method (System.IO.Compression)");
-                }
-                catch (Exception deflateEx)
-                {
-                    AddInstallationLog($"Both extraction methods failed. LZMA error: {lzmaEx.Message}, Deflate error: {deflateEx.Message}");
-                    throw new Exception($"Failed to extract ZIP file. LZMA error: {lzmaEx.Message}, Fallback error: {deflateEx.Message}");
-                }
+                AddInstallationLog($"DEFLATE extraction failed: {ex.Message}");
+                throw new Exception($"Failed to extract ZIP file: {ex.Message}");
             }
         }
 

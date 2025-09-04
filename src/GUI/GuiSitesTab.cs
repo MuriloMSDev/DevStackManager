@@ -214,19 +214,15 @@ namespace DevStackManager
                     mainWindow.IsCreatingSite = false;
                     overlay.Visibility = Visibility.Collapsed;
                 }
-            });
+            }, DevStackShared.ThemeManager.ButtonStyle.Success);
             createButton.Height = 40;
             createButton.FontSize = 14;
-            createButton.Margin = new Thickness(0, 10, 0, 0);
+            createButton.Margin = new Thickness(0, 10, 0, 20);
             panel.Children.Add(createButton);
-
-            // Seção SSL
-            var sslSeparator = new Separator { Margin = new Thickness(0, 20, 0, 10) };
-            panel.Children.Add(sslSeparator);
 
             var sslTitle = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.ssl.title"), true);
             sslTitle.FontSize = 16;
-            sslTitle.Margin = new Thickness(0, 0, 0, 10);
+            sslTitle.Margin = new Thickness(0, 10, 0, 10);
             panel.Children.Add(sslTitle);
 
             var sslDomainLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.ssl_domain"));

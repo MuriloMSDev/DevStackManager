@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 import zipfile
+import json
 
 def run_command(cmd, cwd=None, check=True):
     """Run a shell command and return the result."""
@@ -99,8 +100,104 @@ def build_uninstaller():
     os.chdir(root_dir)
     print("Uninstaller built and copied.")
 
+def get_version():
+    """Get version from VERSION file."""
+    try:
+        with open(version_file, 'r') as f:
+            return f.read().strip()
+    except:
+        return "0.0.0"
+
+def get_directory_size(path):
+    """Get total size of directory in bytes."""
+    total = 0
+    for file_path in path.rglob('*'):
+        if file_path.is_file():
+            total += file_path.stat().st_size
+    return total
+
+def create_source_package():
+    """Create a compressed source package for the installer."""
+    print("Creating source package for installer...")
+    
+    # Create temporary source package directory
+    source_package_dir = root_dir / "temp_source_package"
+    if source_package_dir.exists():
+        shutil.rmtree(source_package_dir)
+    source_package_dir.mkdir(parents=True)
+    
+    # Copy only necessary source files (excluding bin/obj folders)
+    print("Copying source files...")
+    src_dest = source_package_dir / "src"
+    shutil.copytree(src_dir, src_dest, ignore=shutil.ignore_patterns("bin", "obj", "*.user", "*.suo"))
+    
+    # Copy VERSION file
+    shutil.copy2(version_file, source_package_dir / "VERSION")
+    
+    # Copy solution file if exists
+    solution_file = root_dir / "DevStackManager.sln"
+    if solution_file.exists():
+        shutil.copy2(solution_file, source_package_dir / "DevStackManager.sln")
+    
+    # Copy configs if exists
+    configs_dir = root_dir / "configs"
+    if configs_dir.exists():
+        shutil.copytree(configs_dir, source_package_dir / "configs", dirs_exist_ok=True)
+    
+    # Create build metadata for the installer
+    build_info = {
+        "version": get_version(),
+        "build_date": datetime.now().isoformat(),
+        "target_framework": "net9.0-windows",
+        "runtime_identifier": "win-x64",
+        "projects": [
+            {
+                "name": "DevStackCLI",
+                "path": "src/CLI/DevStackCLI.csproj",
+                "output_name": "DevStack.exe",
+                "type": "console"
+            },
+            {
+                "name": "DevStackGUI", 
+                "path": "src/GUI/DevStackGUI.csproj",
+                "output_name": "DevStackGUI.exe",
+                "type": "wpf"
+            },
+            {
+                "name": "DevStackUninstaller",
+                "path": "src/UNINSTALLER/DevStackUninstaller.csproj", 
+                "output_name": "DevStack-Uninstaller.exe",
+                "type": "wpf"
+            }
+        ],
+        "dotnet_version": "9.0.304",
+        "dotnet_download_url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.304/dotnet-sdk-9.0.304-win-x64.zip"
+    }
+    
+    with open(source_package_dir / "build_info.json", 'w') as f:
+        json.dump(build_info, f, indent=2)
+    
+    # Create highly compressed source package
+    zip_path = install_dir / "DevStackSource.zip"
+    # Use DEFLATE compression with maximum compression
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+        for file_path in source_package_dir.rglob('*'):
+            if file_path.is_file():
+                arcname = file_path.relative_to(source_package_dir)
+                zipf.write(file_path, arcname)
+    print("Created source package with DEFLATE compression")
+    
+    # Clean up temporary directory
+    shutil.rmtree(source_package_dir)
+    
+    # Show compression statistics
+    compressed_size = zip_path.stat().st_size
+    print(f"Source package size: {compressed_size / 1024 / 1024:.1f}MB")
+    
+    return zip_path
+
 def build_installer():
-    """Build the installer."""
+    """Build the installer with embedded source code."""
     print("Building Installer...")
 
     # Clean installer dir
@@ -112,43 +209,17 @@ def build_installer():
     if not version_file.exists():
         raise FileNotFoundError("VERSION file not found")
 
-    with open(version_file, 'r') as f:
-        version = f.read().strip()
+    version = get_version()
 
-    # Check release directory
-    if not release_dir.exists():
-        raise FileNotFoundError("Release directory not found. Build projects first.")
+    # Create source package instead of using pre-built binaries
+    print("Creating source package for embedding...")
+    source_zip_path = create_source_package()
 
-    release_files = list(release_dir.iterdir())
-    if not release_files:
-        raise FileNotFoundError("No files in release directory. Build projects first.")
-
-    # Build uninstaller
-    build_uninstaller()
-
-    # Create zip with LZMA compression for better compression
-    zip_path = install_dir / "DevStack.zip"
-    try:
-        # Try LZMA first (better compression)
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_LZMA) as zipf:
-            for file_path in release_dir.rglob('*'):
-                if file_path.is_file():
-                    arcname = file_path.relative_to(release_dir)
-                    zipf.write(file_path, arcname)
-        print("Created DevStack.zip with LZMA compression")
-    except Exception as e:
-        print(f"LZMA failed, falling back to DEFLATE: {e}")
-        # Fallback to DEFLATE with max compression
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
-            for file_path in release_dir.rglob('*'):
-                if file_path.is_file():
-                    arcname = file_path.relative_to(release_dir)
-                    zipf.write(file_path, arcname)
-
-    # Build installer
+    # Build installer with embedded source code
     installer_src_path = src_dir / "INSTALLER"
     os.chdir(installer_src_path)
 
+    print("Building installer executable...")
     run_command("dotnet publish -c Release -p:PublishSingleFile=true -p:SelfContained=true -r win-x64")
 
     installer_bin_path = installer_src_path / "bin" / "Release" / "net9.0-windows" / "win-x64" / "publish"
@@ -162,24 +233,25 @@ def build_installer():
     target_installer_path = install_dir / installer_name
     shutil.copy2(installer_exe, target_installer_path)
 
-    # Create installer zip with LZMA compression
+    # Create installer zip with DEFLATE compression
     zip_installer_path = target_installer_path.with_suffix('.zip')
-    try:
-        # Try LZMA first (better compression)
-        with zipfile.ZipFile(zip_installer_path, 'w', zipfile.ZIP_LZMA) as zipf:
-            zipf.write(target_installer_path, target_installer_path.name)
-        print("Created installer zip with LZMA compression")
-    except Exception as e:
-        print(f"LZMA failed, falling back to DEFLATE: {e}")
-        # Fallback to DEFLATE with max compression
-        with zipfile.ZipFile(zip_installer_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
-            zipf.write(target_installer_path, target_installer_path.name)
+    with zipfile.ZipFile(zip_installer_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+        zipf.write(target_installer_path, target_installer_path.name)
+    print("Created installer zip with DEFLATE compression")
 
     os.chdir(root_dir)
 
-    # Remove temp zip
-    if zip_path.exists():
-        zip_path.unlink()
+    # Clean up temporary source zip
+    if source_zip_path.exists():
+        source_zip_path.unlink()
+
+    # Show final sizes
+    installer_size = target_installer_path.stat().st_size / 1024 / 1024
+    zip_size = zip_installer_path.stat().st_size / 1024 / 1024
+    
+    print(f"\nInstaller built successfully:")
+    print(f"Installer: {installer_name} ({installer_size:.1f}MB)")
+    print(f"Compressed: {zip_installer_path.name} ({zip_size:.1f}MB)")
 
     print("Installer built and compacted.")
 

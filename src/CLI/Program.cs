@@ -12,39 +12,12 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Microsoft.Win32;
 
 namespace DevStackManager
 {
     public class Program
     {
-        // Win32 API declarations for console window management
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        [DllImport("user32.dll")]
-        static extern bool IsWindowVisible(IntPtr hWnd);
-
-        [DllImport("kernel32.dll")]
-        static extern bool AllocConsole();
-
-        [DllImport("kernel32.dll")]
-        static extern bool FreeConsole();
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [DllImport("kernel32.dll")]
-        static extern bool AttachConsole(uint dwProcessId);
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOW = 5;
-        private const uint ATTACH_PARENT_PROCESS = 0x0ffffffff;
-
         public static string baseDir => DevStackConfig.baseDir;
         public static string phpDir => DevStackConfig.phpDir;
         public static string nginxDir => DevStackConfig.nginxDir;
@@ -66,54 +39,6 @@ namespace DevStackManager
         
         public static PathManager? pathManager => DevStackConfig.pathManager;
 
-        /// <summary>
-        /// Determina se o aplicativo foi iniciado por duplo clique (Explorer) ou por linha de comando
-        /// </summary>
-        private static bool IsStartedFromExplorer()
-        {
-            try
-            {
-                var currentProcess = Process.GetCurrentProcess();
-                var parentProcessId = GetParentProcessId(currentProcess.Id);
-                
-                if (parentProcessId > 0)
-                {
-                    var parentProcess = Process.GetProcessById(parentProcessId);
-                    return parentProcess.ProcessName.Equals("explorer", StringComparison.OrdinalIgnoreCase);
-                }
-            }
-            catch
-            {
-                // Se não conseguirmos determinar, assumimos que foi CLI
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Obtém o ID do processo pai
-        /// </summary>
-        private static int GetParentProcessId(int processId)
-        {
-            try
-            {
-                using (var query = new ManagementObjectSearcher($"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {processId}"))
-                {
-                    using (var results = query.Get())
-                    {
-                        foreach (ManagementObject result in results)
-                        {
-                            return Convert.ToInt32(result["ParentProcessId"]);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Se falhar, retorna 0
-            }
-            return 0;
-        }
-
         public static int Main(string[] args)
         {
             // Configurar console para CLI
@@ -122,6 +47,16 @@ namespace DevStackManager
 
             try
             {
+                // Verificar se o comando requer privilégios de administrador
+                if (RequiresAdministrator(args))
+                {
+                    if (!IsAdministrator())
+                    {
+                        // Solicitar elevação e reexecutar com privilégios de administrador
+                        return RestartAsAdministrator(args);
+                    }
+                }
+
                 LoadConfiguration();
 
                 // Se não há argumentos, entrar em modo REPL
@@ -142,6 +77,18 @@ namespace DevStackManager
                         var split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                         string command = split[0].ToLowerInvariant();
                         string[] commandArgs = split.Skip(1).ToArray();
+                        
+                        // Verificar se o comando requer privilégios de administrador
+                        if (RequiresAdministrator(new[] { command }))
+                        {
+                            if (!IsAdministrator())
+                            {
+                                WriteWarningMsg($"O comando '{command}' requer privilégios de administrador.");
+                                WriteInfo("Execute o DevStack como administrador ou use 'DevStack.exe " + input + "' em um prompt de comando como administrador.");
+                                continue;
+                            }
+                        }
+
                         try
                         {
                             int result = ExecuteCommand(command, commandArgs);
@@ -170,6 +117,64 @@ namespace DevStackManager
                 return 1;
             }
         }
+
+        /// <summary>
+        /// Verifica se o comando atual requer privilégios de administrador
+        /// </summary>
+        private static bool RequiresAdministrator(string[] args)
+        {
+            if (args.Length == 0)
+                return false; // Modo REPL não requer admin
+
+            string command = args[0].ToLowerInvariant();
+            
+            // Comandos que requerem privilégios de administrador
+            string[] adminCommands = {
+                "install", "uninstall", "start", "stop", "restart", 
+                "site", "enable", "disable", "service", "global"
+            };
+
+            return adminCommands.Contains(command);
+        }
+
+        /// <summary>
+        /// Reinicia a aplicação como administrador
+        /// </summary>
+        private static int RestartAsAdministrator(string[] args)
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "DevStack.exe"),
+                    Arguments = string.Join(" ", args.Select(arg => $"\"{arg}\"")),
+                    UseShellExecute = true,
+                    Verb = "runas" // Solicita elevação
+                };
+
+                var process = Process.Start(startInfo);
+                if (process != null)
+                {
+                    process.WaitForExit();
+                    return process.ExitCode;
+                }
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                WriteErrorMsg($"Erro ao solicitar privilégios de administrador: {ex.Message}");
+                return 1;
+            }
+        }
+
+#pragma warning disable CA1416 // Validate platform compatibility
+        private static bool IsAdministrator()
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+#pragma warning restore CA1416
 
         private static void LoadConfiguration()
         {
@@ -1449,15 +1454,6 @@ namespace DevStackManager
                 return null;
             }
         }
-
-#pragma warning disable CA1416 // Validate platform compatibility
-        private static bool IsAdministrator()
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
-            return principal.IsInRole(WindowsBuiltInRole.Administrator);
-        }
-#pragma warning restore CA1416
 
         private static void CopyDirectory(string sourceDir, string destinationDir)
         {

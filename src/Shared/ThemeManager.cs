@@ -713,32 +713,6 @@ namespace DevStackShared
                     break;
             }
 
-            // Detectar botões por conteúdo (retrocompatibilidade)
-            if (content.Contains("Instalar") || content.Contains("▶") || content.Contains("⬇"))
-            {
-                backgroundColor = CurrentTheme.Success;
-                hoverColor = CurrentTheme.AccentHover;
-                pressedColor = CurrentTheme.AccentPressed;
-                borderColor = DarkenColor(CurrentTheme.Success, 0.3);
-                borderHoverColor = DarkenColor(CurrentTheme.AccentHover, 0.3);
-            }
-            else if (content.Contains("Não") || content.Contains("Desinstalar") || content.Contains("🗑") || content.Contains("❌"))
-            {
-                backgroundColor = CurrentTheme.Danger;
-                hoverColor = CurrentTheme.DangerHover;
-                pressedColor = CurrentTheme.DangerPressed;
-                borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
-                borderHoverColor = DarkenColor(CurrentTheme.DangerHover, 0.3);
-            }
-            else if (content.Contains("Parar") || content.Contains("⏹"))
-            {
-                backgroundColor = CurrentTheme.Warning;
-                hoverColor = CurrentTheme.WarningHover;
-                pressedColor = CurrentTheme.WarningPressed;
-                borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
-                borderHoverColor = DarkenColor(CurrentTheme.WarningHover, 0.3);
-            }
-
             // Criar estilo com template customizado
             var buttonStyle = new Style(typeof(Button));
 
@@ -1744,7 +1718,7 @@ namespace DevStackShared
         public static MessageBoxResult CreateStyledMessageBox(string message, string? title = null, MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
         {
             // Use localized default title if none provided
-            title ??= LocalizationManager.Instance?.GetString("dialogs.default_title") ?? "Mensagem";
+            title ??= LocalizationManager.Instance?.GetString("common.dialogs.default_title") ?? "Mensagem";
             
             // Cria uma janela customizada para garantir tema escuro real
             var dialog = new Window
@@ -1812,20 +1786,20 @@ namespace DevStackShared
             switch (buttons)
             {
                 case MessageBoxButton.OK:
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.ok") ?? "OK", MessageBoxResult.OK, true);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.ok") ?? "OK", MessageBoxResult.OK, true);
                     break;
                 case MessageBoxButton.OKCancel:
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.ok") ?? "OK", MessageBoxResult.OK, true);
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.ok") ?? "OK", MessageBoxResult.OK, true);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
                     break;
                 case MessageBoxButton.YesNo:
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.yes") ?? "Sim", MessageBoxResult.Yes, true);
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.yes") ?? "Sim", MessageBoxResult.Yes, true);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
                     break;
                 case MessageBoxButton.YesNoCancel:
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.yes") ?? "Sim", MessageBoxResult.Yes, true);
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
-                    AddButton(LocalizationManager.Instance?.GetString("dialogs.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.yes") ?? "Sim", MessageBoxResult.Yes, true);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.no") ?? "Não", MessageBoxResult.No, false, ButtonStyle.Danger);
+                    AddButton(LocalizationManager.Instance?.GetString("common.buttons.cancel") ?? "Cancelar", MessageBoxResult.Cancel, false, ButtonStyle.Warning);
                     break;
             }
 

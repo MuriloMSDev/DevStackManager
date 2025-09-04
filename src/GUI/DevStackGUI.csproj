@@ -20,6 +20,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <!-- <PublishTrimmed>true</PublishTrimmed> -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,8 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Shared\locale\*.json">
-      <LogicalName>DevStackManager.locale.%(Filename)%(Extension)</LogicalName>
+    <!-- Localização -->
+    <EmbeddedResource Include="..\Shared\locale\**\*.json">
+      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

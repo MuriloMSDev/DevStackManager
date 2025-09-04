@@ -35,6 +35,8 @@ namespace DevStackManager
         private string _selectedVersion = "";
         private string _selectedUninstallComponent = "";
         private string _selectedUninstallVersion = "";
+        private string _selectedShortcutComponent = "";
+        private string _selectedShortcutVersion = "";
         private string _consoleOutput = "";
         private bool _isInstallingComponent = false;
         private bool _isUninstallingComponent = false;
@@ -122,6 +124,18 @@ namespace DevStackManager
             set { _selectedUninstallVersion = value; OnPropertyChanged(); }
         }
 
+        public string SelectedShortcutComponent
+        {
+            get => _selectedShortcutComponent;
+            set { _selectedShortcutComponent = value; OnPropertyChanged(); _ = Task.Run(async () => await GuiInstallTab.LoadShortcutVersions(this)); }
+        }
+
+        public string SelectedShortcutVersion
+        {
+            get => _selectedShortcutVersion;
+            set { _selectedShortcutVersion = value; OnPropertyChanged(); }
+        }
+
         public string ConsoleOutput
         {
             get => _consoleOutput;
@@ -207,7 +221,7 @@ namespace DevStackManager
         private void InitializeComponent()
         {
             var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
-            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("gui.common.unknown");
+            var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
             Title = _localizationManager.GetString("gui.window.title", version);
             Width = 1200;
             Height = 840;
@@ -247,7 +261,7 @@ namespace DevStackManager
             Dispatcher.Invoke(() =>
             {
                 var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
-                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("gui.common.unknown");
+                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
                 Title = _localizationManager.GetString("gui.window.title", version);
 
                 // Recreate main layout while preserving selected index
