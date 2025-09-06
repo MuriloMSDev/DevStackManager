@@ -18,16 +18,6 @@ namespace DevStackManager
         /// </summary>
         public static Grid CreateInstallContent(DevStackGui mainWindow)
         {
-            // Carregar componentes disponíveis
-            LoadAvailableComponents(mainWindow);
-            
-            // Carregar componentes instalados com atalhos na inicialização
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(100); // Pequeno delay para garantir que a UI esteja construída
-                await mainWindow.Dispatcher.InvokeAsync(async () => await LoadShortcutComponents(mainWindow));
-            });
-
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -144,6 +134,10 @@ namespace DevStackManager
             installedComponentCombo.Height = 30;
             installedComponentCombo.Name = "ShortcutComponentCombo";
             
+            // Binding para a coleção de componentes que suportam shortcuts
+            var shortcutComponentsBinding = new Binding("ShortcutComponents") { Source = mainWindow };
+            installedComponentCombo.SetBinding(ComboBox.ItemsSourceProperty, shortcutComponentsBinding);
+            
             var selectedShortcutComponentBinding = new Binding("SelectedShortcutComponent") { Source = mainWindow };
             installedComponentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedShortcutComponentBinding);
             panel.Children.Add(installedComponentCombo);
@@ -156,6 +150,10 @@ namespace DevStackManager
             installedVersionCombo.Margin = new Thickness(0, 5, 0, 20);
             installedVersionCombo.Height = 30;
             installedVersionCombo.Name = "ShortcutVersionCombo";
+            
+            // Binding para a coleção de versões do componente selecionado
+            var shortcutVersionsBinding = new Binding("ShortcutVersions") { Source = mainWindow };
+            installedVersionCombo.SetBinding(ComboBox.ItemsSourceProperty, shortcutVersionsBinding);
             
             var selectedShortcutVersionBinding = new Binding("SelectedShortcutVersion") { Source = mainWindow };
             installedVersionCombo.SetBinding(ComboBox.SelectedValueProperty, selectedShortcutVersionBinding);
@@ -213,8 +211,8 @@ namespace DevStackManager
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.success", mainWindow.SelectedComponent);
 
                     // Recarregar lista de instalados
-                    await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-                    await LoadShortcutComponents(mainWindow);
+                    await mainWindow.LoadInstalledComponents();
+                    await mainWindow.LoadShortcutComponents();
                 }
                 catch (Exception ex)
                 {
@@ -223,96 +221,6 @@ namespace DevStackManager
                     DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.error", ex));
                 }
             });
-        }
-
-
-        /// <summary>
-        /// Carrega as versões disponíveis para o componente selecionado
-        /// </summary>
-        public static async Task LoadVersionsForComponent(DevStackGui mainWindow)
-        {
-            if (string.IsNullOrEmpty(mainWindow.SelectedComponent))
-            {
-                mainWindow.AvailableVersions.Clear();
-                return;
-            }
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.loading_versions", mainWindow.SelectedComponent);
-
-                    var selectedComponent = mainWindow.SelectedComponent; // capture safely
-                    var versionData = GetVersionDataForComponent(selectedComponent);
-                    if (versionData.Status != "ok")
-                    {
-                        throw new Exception(string.IsNullOrWhiteSpace(versionData.Message) ? "Failed to load versions" : versionData.Message);
-                    }
-
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        mainWindow.AvailableVersions.Clear();
-                        foreach (var version in versionData.Versions
-                            .OrderByDescending(v =>
-                                Version.TryParse(v, out var parsed) ? parsed : new Version(0, 0)))
-                        {
-                            mainWindow.AvailableVersions.Add(version);
-                        }
-
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_loaded", mainWindow.AvailableVersions.Count, selectedComponent);
-                    });
-                }
-                catch (Exception ex)
-                {
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_error", ex.Message);
-                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.versions_error", ex));
-                    });
-                }
-            });
-        }
-
-        /// <summary>
-        /// Carrega a lista de componentes disponíveis para instalação
-        /// </summary>
-        public static void LoadAvailableComponents(DevStackGui mainWindow)
-        {
-            mainWindow.AvailableComponents.Clear();
-            foreach (var component in DevStackConfig.components)
-            {
-                mainWindow.AvailableComponents.Add(component);
-            }
-        }
-
-        /// <summary>
-        /// Obtém os dados de versão para um componente específico
-        /// </summary>
-        public static VersionData GetVersionDataForComponent(string component)
-        {
-            try
-            {
-                var comp = Components.ComponentsFactory.GetComponent(component);
-                if (comp != null)
-                {
-                    var versions = comp.ListAvailable();
-                    return new VersionData
-                    {
-                        Status = "ok",
-                        Versions = versions,
-                        Message = string.Empty
-                    };
-                }
-                else
-                {
-                    return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = $"Component '{component}' not found" };
-                }
-            }
-            catch (Exception ex)
-            {
-                return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = ex.Message };
-            }
         }
 
         /// <summary>
@@ -406,115 +314,5 @@ namespace DevStackManager
             });
         }
 
-        /// <summary>
-        /// Carrega os componentes instalados que têm CreateBinShortcut definido
-        /// </summary>
-        public static async Task LoadShortcutComponents(DevStackGui mainWindow)
-        {
-            try
-            {
-                var componentCombo = GuiHelpers.FindChild<ComboBox>(mainWindow, "ShortcutComponentCombo");
-                if (componentCombo == null)
-                {
-                    // Se não encontrou o combo, tentar novamente após um delay
-                    await Task.Delay(200);
-                    await mainWindow.Dispatcher.InvokeAsync(async () => await LoadShortcutComponents(mainWindow));
-                    return;
-                }
-
-                componentCombo.Items.Clear();
-
-                // Obter componentes instalados que têm CreateBinShortcut definido - executar em background
-                var installedComponents = await Task.Run(() => mainWindow.InstalledComponents.Where(c => c.Installed).ToList());
-
-                foreach (var comp in installedComponents)
-                {
-                    try
-                    {
-                        var component = await Task.Run(() => Components.ComponentsFactory.GetComponent(comp.Name));
-                        if (component != null && !string.IsNullOrEmpty(component.CreateBinShortcut))
-                        {
-                            componentCombo.Items.Add(comp.Name);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        DevStackConfig.WriteLog($"Erro ao verificar componente {comp.Name} para atalhos: {ex}");
-                    }
-                }
-
-                componentCombo.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                mainWindow.StatusMessage = $"Erro ao carregar componentes para atalhos: {ex.Message}";
-                DevStackConfig.WriteLog($"Erro ao carregar componentes para atalhos na GUI: {ex}");
-            }
-        }
-
-        /// <summary>
-        /// Carrega as versões instaladas do componente selecionado para criação de atalho
-        /// </summary>
-        public static async Task LoadShortcutVersions(DevStackGui mainWindow)
-        {
-            if (string.IsNullOrEmpty(mainWindow.SelectedShortcutComponent))
-            {
-                // Limpar versões se nenhum componente selecionado
-                var versionCombo = GuiHelpers.FindChild<ComboBox>(mainWindow, "ShortcutVersionCombo");
-                if (versionCombo != null)
-                {
-                    versionCombo.Items.Clear();
-                }
-                return;
-            }
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var status = DataManager.GetComponentStatus(mainWindow.SelectedShortcutComponent);
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        var versionCombo = GuiHelpers.FindChild<ComboBox>(mainWindow, "ShortcutVersionCombo");
-                        if (versionCombo != null)
-                        {
-                            versionCombo.Items.Clear();
-                            if (status.Installed && status.Versions.Any())
-                            {
-                                // Ordena as versões em ordem decrescente
-                                foreach (var version in status.Versions
-                                    .OrderByDescending(v => 
-                                    {
-                                        // Extrair apenas a parte da versão, removendo o nome do componente se presente
-                                        var versionNumber = v;
-                                        if (v.StartsWith($"{mainWindow.SelectedShortcutComponent}-"))
-                                        {
-                                            versionNumber = v.Substring(mainWindow.SelectedShortcutComponent.Length + 1);
-                                        }
-                                        return Version.TryParse(versionNumber, out var parsed) ? parsed : new Version(0, 0);
-                                    }))
-                                {
-                                    // Extrair apenas a parte da versão, removendo o nome do componente
-                                    var versionNumber = version;
-                                    if (version.StartsWith($"{mainWindow.SelectedShortcutComponent}-"))
-                                    {
-                                        versionNumber = version.Substring(mainWindow.SelectedShortcutComponent.Length + 1);
-                                    }
-                                    versionCombo.Items.Add(versionNumber);
-                                }
-                            }
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        mainWindow.StatusMessage = $"Erro ao carregar versões para atalho: {ex.Message}";
-                        DevStackConfig.WriteLog($"Erro ao carregar versões para atalho na GUI: {ex}");
-                    });
-                }
-            });
-        }
     }
 }

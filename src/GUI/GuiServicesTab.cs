@@ -139,140 +139,8 @@ namespace DevStackManager
                 IsManipulationEnabled = true
             };
 
-            // Aplicar template moderno para ScrollViewer
-            var scrollViewerStyle = new Style(typeof(ScrollViewer));
-            
-            var templateXaml = @"
-                <ControlTemplate TargetType='ScrollViewer' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                    <Grid>
-                        <!-- Conteúdo principal ocupa toda a área -->
-                        <ScrollContentPresenter Margin='{TemplateBinding Padding}'
-                                                Content='{TemplateBinding Content}'
-                                                ContentTemplate='{TemplateBinding ContentTemplate}'
-                                                CanContentScroll='{TemplateBinding CanContentScroll}'/>
-                        
-                        <!-- ScrollBar Vertical - Sobreposta no canto direito -->
-                        <ScrollBar Name='PART_VerticalScrollBar'
-                                   HorizontalAlignment='Right'
-                                   VerticalAlignment='Stretch'
-                                   Orientation='Vertical'
-                                   Value='{TemplateBinding VerticalOffset}'
-                                   Maximum='{TemplateBinding ScrollableHeight}'
-                                   ViewportSize='{TemplateBinding ViewportHeight}'
-                                   Visibility='{TemplateBinding ComputedVerticalScrollBarVisibility}'
-                                   Margin='0,2,2,2'>
-                            <ScrollBar.Style>
-                                <Style TargetType='ScrollBar'>
-                                    <Setter Property='Background' Value='Transparent'/>
-                                    <Setter Property='Width' Value='8'/>
-                                    <Setter Property='Opacity' Value='0.7'/>
-                                    <Setter Property='Template'>
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType='ScrollBar'>
-                                                <Grid>
-                                                    <Track Name='PART_Track' IsDirectionReversed='True'>
-                                                        <Track.Thumb>
-                                                            <Thumb>
-                                                                <Thumb.Template>
-                                                                    <ControlTemplate TargetType='Thumb'>
-                                                                        <Border Background='#FF555555' 
-                                                                                CornerRadius='4' 
-                                                                                Margin='1'/>
-                                                                    </ControlTemplate>
-                                                                </Thumb.Template>
-                                                            </Thumb>
-                                                        </Track.Thumb>
-                                                    </Track>
-                                                </Grid>
-                                                
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property='IsMouseOver' Value='True'>
-                                                        <Setter Property='Opacity' Value='1.0'/>
-                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType='Thumb'>
-                                                                    <Border Background='#FF777777' 
-                                                                            CornerRadius='4' 
-                                                                            Margin='1'/>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ScrollBar.Style>
-                        </ScrollBar>
-                        
-                        <!-- ScrollBar Horizontal - Sobreposta na parte inferior -->
-                        <ScrollBar Name='PART_HorizontalScrollBar'
-                                   HorizontalAlignment='Stretch'
-                                   VerticalAlignment='Bottom'
-                                   Orientation='Horizontal'
-                                   Value='{TemplateBinding HorizontalOffset}'
-                                   Maximum='{TemplateBinding ScrollableWidth}'
-                                   ViewportSize='{TemplateBinding ViewportWidth}'
-                                   Visibility='{TemplateBinding ComputedHorizontalScrollBarVisibility}'
-                                   Margin='2,0,2,2'>
-                            <ScrollBar.Style>
-                                <Style TargetType='ScrollBar'>
-                                    <Setter Property='Background' Value='Transparent'/>
-                                    <Setter Property='Height' Value='8'/>
-                                    <Setter Property='Opacity' Value='0.7'/>
-                                    <Setter Property='Template'>
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType='ScrollBar'>
-                                                <Grid>
-                                                    <Track Name='PART_Track'>
-                                                        <Track.Thumb>
-                                                            <Thumb>
-                                                                <Thumb.Template>
-                                                                    <ControlTemplate TargetType='Thumb'>
-                                                                        <Border Background='#FF555555' 
-                                                                                CornerRadius='4' 
-                                                                                Margin='1'/>
-                                                                    </ControlTemplate>
-                                                                </Thumb.Template>
-                                                            </Thumb>
-                                                        </Track.Thumb>
-                                                    </Track>
-                                                </Grid>
-                                                
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property='IsMouseOver' Value='True'>
-                                                        <Setter Property='Opacity' Value='1.0'/>
-                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType='Thumb'>
-                                                                    <Border Background='#FF777777' 
-                                                                            CornerRadius='4' 
-                                                                            Margin='1'/>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ScrollBar.Style>
-                        </ScrollBar>
-                    </Grid>
-                </ControlTemplate>";
-
-            try
-            {
-                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
-                scrollViewerStyle.Setters.Add(new Setter(ScrollViewer.TemplateProperty, template));
-                scrollViewer.Style = scrollViewerStyle;
-            }
-            catch
-            {
-                // Fallback - usar ScrollViewer padrão se XAML falhar
-            }
+            // Aplicar scrollbar customizada do ThemeManager
+            DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
             // Criar DataGrid para conteúdo SEM header
             var contentDataGrid = new DataGrid
@@ -585,7 +453,10 @@ namespace DevStackManager
                         ProcessManager.StartComponent(service.Name, service.Version);
                     });
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started", service.Name);
-                    await LoadServices(mainWindow); // Recarregar lista
+                    
+                    // Aguardar um momento para o processo ser registrado e forçar atualização
+                    await Task.Delay(1000);
+                    await mainWindow.RefreshServicesStatus();
                 }
             }
             catch (Exception ex)
@@ -618,7 +489,10 @@ namespace DevStackManager
                         ProcessManager.StopComponent(service.Name, service.Version);
                     });
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped", service.Name);
-                    await LoadServices(mainWindow); // Recarregar lista
+                    
+                    // Aguardar um momento para o processo ser finalizado e forçar atualização
+                    await Task.Delay(500);
+                    await mainWindow.RefreshServicesStatus();
                 }
             }
             catch (Exception ex)
@@ -651,7 +525,10 @@ namespace DevStackManager
                         ProcessManager.RestartComponent(service.Name, service.Version);
                     });
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted", service.Name);
-                    await LoadServices(mainWindow); // Recarregar lista
+                    
+                    // Aguardar um momento para o processo ser reiniciado e forçar atualização
+                    await Task.Delay(1500);
+                    await mainWindow.RefreshServicesStatus();
                 }
             }
             catch (Exception ex)
@@ -728,166 +605,13 @@ namespace DevStackManager
             restartAllButton.Margin = new Thickness(10);
             panel.Children.Add(restartAllButton);
 
-            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await LoadServices(mainWindow));
+            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await mainWindow.LoadServices());
             refreshButton.Width = 150;
             refreshButton.Height = 40;
             refreshButton.Margin = new Thickness(10);
             panel.Children.Add(refreshButton);
 
             return panel;
-        }
-
-        /// <summary>
-        /// Carrega a lista de serviços
-        /// </summary>
-        public static async Task LoadServices(DevStackGui mainWindow)
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.loading");
-                    
-                    var services = new ObservableCollection<ServiceViewModel>();
-                    
-                    // Usar o diretório base do DevStackConfig
-                    var devStackPath = DevStackConfig.baseDir;
-                    
-                    // Verificar se as configurações foram inicializadas
-                    if (string.IsNullOrEmpty(devStackPath))
-                    {
-                        DevStackConfig.Initialize();
-                        devStackPath = DevStackConfig.baseDir;
-                    }
-                    
-                    // Obter todos os componentes que são serviços
-                    var serviceComponents = Components.ComponentsFactory.GetAll()
-                        .Where(c => c.IsService)
-                        .ToList();
-                    
-                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.found_service_components", serviceComponents.Count));
-                    
-                    // Debug: Listar todos os processos relevantes
-                    var allProcesses = Process.GetProcesses();
-                    var debugProcesses = allProcesses
-                        .Where(p => serviceComponents.Any(sc => 
-                            p.ProcessName.StartsWith(sc.Name, StringComparison.OrdinalIgnoreCase)))
-                        .ToList();
-                    
-                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.processes_found", debugProcesses.Count));
-                    foreach (var proc in debugProcesses)
-                    {
-                        try
-                        {
-                            var path = proc.MainModule?.FileName ?? "N/A";
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_info", proc.ProcessName, proc.Id, path));
-                        }
-                        catch (Exception ex)
-                        {
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_error", proc.ProcessName, proc.Id, ex.Message));
-                        }
-                    }
-                    
-                    // Detectar serviços para cada componente de serviço
-                    foreach (var component in serviceComponents)
-                    {
-                        if (!Directory.Exists(component.ToolDir))
-                        {
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_dir_not_found", component.Name, component.ToolDir));
-                            continue;
-                        }
-                        
-                        var installedVersions = component.ListInstalled();
-                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_versions_found", component.Name, installedVersions.Count, string.Join(", ", installedVersions)));
-                        
-                        foreach (var version in installedVersions)
-                        {
-                            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.checking_component_version", component.Name, version));
-                            
-                            try
-                            {
-                                bool isRunning = false;
-                                string pids = "-";
-                                
-                                if (!string.IsNullOrEmpty(component.ServicePattern))
-                                {
-                                    var serviceExePath = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
-                                    
-                                    // Buscar processos do serviço
-                                    var serviceProcesses = allProcesses
-                                        .Where(p => {
-                                            try
-                                            {
-                                                var processPath = p.MainModule?.FileName;
-                                                var matches = !string.IsNullOrEmpty(processPath) && 
-                                                            processPath.Equals(serviceExePath, StringComparison.OrdinalIgnoreCase);
-                                                if (matches)
-                                                {
-                                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_process_found", component.Name, p.ProcessName, p.Id, processPath ?? "N/A"));
-                                                }
-                                                return matches;
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.process_check_error", p.ProcessName, ex.Message));
-                                                return false;
-                                            }
-                                        })
-                                        .ToList();
-                                    
-                                    if (serviceProcesses.Any())
-                                    {
-                                        isRunning = true;
-                                        pids = string.Join(", ", serviceProcesses.Select(p => p.Id));
-                                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_running", component.Name, version, pids));
-                                    }
-                                    else
-                                    {
-                                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.service_not_running", component.Name, version));
-                                    }
-                                }
-                                else
-                                {
-                                    DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.no_service_pattern", component.Name));
-                                }
-                                
-                                services.Add(new ServiceViewModel 
-                                { 
-                                    Name = component.Name, 
-                                    Version = version,
-                                    Status = isRunning ? mainWindow.LocalizationManager.GetString("gui.services_tab.status.running") : mainWindow.LocalizationManager.GetString("gui.services_tab.status.stopped"), 
-                                    Type = component.GetServiceType(mainWindow.LocalizationManager), 
-                                    Description = component.GetServiceDescription(version, mainWindow.LocalizationManager),
-                                    Pid = pids,
-                                    IsRunning = isRunning
-                                });
-                            }
-                            catch (Exception ex)
-                            {
-                                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.component_check_error", component.Name, ex.Message));
-                            }
-                        }
-                    }
-                    
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        mainWindow.Services.Clear();
-                        foreach (var service in services)
-                        {
-                            mainWindow.Services.Add(service);
-                        }
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.loaded", new object[] { mainWindow.Services.Count });
-                    });
-                }
-                catch (Exception ex)
-                {
-                    mainWindow.Dispatcher.Invoke(() =>
-                    {
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error", ex.Message ?? string.Empty);
-                        DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.load_services_error", ex));
-                    });
-                }
-            });
         }
 
         /// <summary>
@@ -905,7 +629,7 @@ namespace DevStackManager
                 });
 
                 mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started_all");
-                await LoadServices(mainWindow); // Recarregar lista
+                await mainWindow.LoadServices(); // Recarregar lista
             }
             catch (Exception ex)
             {
@@ -930,7 +654,7 @@ namespace DevStackManager
                 });
 
                 mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped_all");
-                await LoadServices(mainWindow); // Recarregar lista
+                await mainWindow.LoadServices(); // Recarregar lista
             }
             catch (Exception ex)
             {
@@ -958,7 +682,7 @@ namespace DevStackManager
                 });
 
                 mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted_all");
-                await LoadServices(mainWindow); // Recarregar lista
+                await mainWindow.LoadServices(); // Recarregar lista
             }
             catch (Exception ex)
             {

@@ -8,6 +8,10 @@
   "navigation": {
     "title": "DevStack Manager",
     "items": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "Panoramica del sistema"
+      },
       "installed": {
         "title": "Installati",
         "description": "Strumenti installati"
@@ -38,6 +42,94 @@
       }
     },
     "refresh_tooltip": "Aggiorna tutti i dati"
+  },
+  "dashboard_tab": {
+    "title": "📊 Dashboard",
+    "cards": {
+      "components": {
+        "title": "Componenti",
+        "subtitle": "Clicca per accedere",
+        "loading": "Caricamento...",
+        "installed_count": "{0}/{1} installati",
+        "none": "Nessun componente"
+      },
+      "install": {
+        "title": "Installa",
+        "subtitle": "Clicca per accedere",
+        "description": "Aggiungi componenti"
+      },
+      "services": {
+        "title": "Servizi",
+        "subtitle": "Clicca per accedere",
+        "loading": "Caricamento...",
+        "active_count": "{0}/{1} attivi",
+        "none": "Nessun servizio attivo"
+      }
+    },
+    "panels": {
+      "components": {
+        "title": "Componenti Installati",
+        "refresh_tooltip": "Aggiorna componenti installati",
+        "install_button": "📥 Installa",
+        "uninstall_button": "🗑️ Disinstalla",
+        "none": "Nessun componente installato",
+        "installed_default": "Installato",
+        "error_loading": "Errore nel caricamento dei componenti",
+        "version_na": "N/A"
+      },
+      "services": {
+        "title": "Servizi",
+        "refresh_tooltip": "Aggiorna servizi",
+        "start_all": "▶️ Avvia",
+        "stop_all": "⏹️ Ferma",
+        "restart_all": "🔄 Riavvia",
+        "none": "Nessun servizio trovato",
+        "loading": "Caricamento servizi...",
+        "status": {
+          "active": "Attivo",
+          "stopped": "Fermato",
+          "na": "N/A"
+        }
+      },
+      "install": {
+        "title": "📥 Installazione Rapida",
+        "select_component": "Seleziona un componente da installare.",
+        "installing": "Installazione di {0}...",
+        "success": "{0} installato con successo!",
+        "error": "Errore durante l'installazione di {0}: {1}",
+        "install_button": "📥 Installa",
+        "go_to_install": "Vai a Installa"
+      }
+    },
+    "messages": {
+      "updating_components": "Aggiornamento componenti...",
+      "components_updated": "Componenti aggiornati!",
+      "error_updating_components": "Errore nell'aggiornamento dei componenti: {0}",
+      "updating_services": "Aggiornamento servizi...",
+      "services_updated": "Servizi aggiornati!",
+      "error_updating_services": "Errore nell'aggiornamento dei servizi: {0}",
+      "starting_all_services": "Avvio di tutti i servizi...",
+      "all_services_started": "Tutti i servizi sono stati avviati!",
+      "error_starting_services": "Errore nell'avvio dei servizi: {0}",
+      "stopping_all_services": "Arresto di tutti i servizi...",
+      "all_services_stopped": "Tutti i servizi sono stati fermati!",
+      "error_stopping_services": "Errore nell'arresto dei servizi: {0}",
+      "restarting_all_services": "Riavvio di tutti i servizi...",
+      "all_services_restarted": "Tutti i servizi sono stati riavviati!",
+      "error_restarting_services": "Errore nel riavvio dei servizi: {0}",
+      "select_component_install": "Seleziona un componente da installare.",
+      "installing_component": "Installazione di {0}...",
+      "component_installed": "{0} installato con successo!",
+      "error_installing_component": "Errore nell'installazione di {0}: {1}",
+      "opening_shell": "🚀 Apertura shell interattiva per {0} v{1}",
+      "executing_component": "🚀 Esecuzione di {0} v{1}",
+      "no_executable_found": "❌ Nessun eseguibile trovato per {0} v{1}",
+      "version_folder_not_found": "❌ Cartella della versione non trovata: {0}",
+      "component_not_executable": "❌ Il componente {0} non è eseguibile",
+      "error_executing": "❌ Errore nell'esecuzione di {0} v{1}: {2}",
+      "error_updating_component_data": "Errore nell'aggiornamento dei dati dei componenti: {0}",
+      "error_updating_service_data": "Errore nell'aggiornamento dei dati dei servizi: {0}"
+    }
   },
   "installed_tab": {
     "title": "Strumenti Installati",

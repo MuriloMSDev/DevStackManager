@@ -42,6 +42,9 @@ namespace DevStackManager
                 Margin = new Thickness(10)
             };
 
+            // Aplicar scrollbar customizada do ThemeManager
+            DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
+
             var panel = new StackPanel();
 
             // Configurações de Path

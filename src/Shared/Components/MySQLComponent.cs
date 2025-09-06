@@ -9,5 +9,6 @@ namespace DevStackManager.Components
         public override string ToolDir => DevStackConfig.mysqlDir;
         public override bool IsService => true;
         public override string? ServicePattern => "mysqld.exe";
+        public override int? MaxWorkers => 1; // MySQL normalmente roda em processo único com threads internas
     }
 }

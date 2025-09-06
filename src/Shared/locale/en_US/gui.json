@@ -8,6 +8,10 @@
   "navigation": {
     "title": "DevStack Manager",
     "items": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "System overview"
+      },
       "installed": {
         "title": "Installed",
         "description": "Installed tools"
@@ -38,6 +42,94 @@
       }
     },
     "refresh_tooltip": "Refresh all data"
+  },
+  "dashboard_tab": {
+    "title": "📊 Dashboard",
+    "cards": {
+      "components": {
+        "title": "Components",
+        "subtitle": "Click to access",
+        "loading": "Loading...",
+        "installed_count": "{0}/{1} installed",
+        "none": "No components"
+      },
+      "install": {
+        "title": "Install",
+        "subtitle": "Click to access",
+        "description": "Add components"
+      },
+      "services": {
+        "title": "Services",
+        "subtitle": "Click to access",
+        "loading": "Loading...",
+        "active_count": "{0}/{1} active",
+        "none": "No active services"
+      }
+    },
+    "panels": {
+      "components": {
+        "title": "Installed Components",
+        "refresh_tooltip": "Refresh installed components",
+        "install_button": "📥 Install",
+        "uninstall_button": "🗑️ Uninstall",
+        "none": "No components installed",
+        "installed_default": "Installed",
+        "error_loading": "Error loading components",
+        "version_na": "N/A"
+      },
+      "services": {
+        "title": "Services",
+        "refresh_tooltip": "Refresh services",
+        "start_all": "▶️ Start",
+        "stop_all": "⏹️ Stop",
+        "restart_all": "🔄 Restart",
+        "none": "No services found",
+        "loading": "Loading services...",
+        "status": {
+          "active": "Active",
+          "stopped": "Stopped",
+          "na": "N/A"
+        }
+      },
+      "install": {
+        "title": "📥 Quick Install",
+        "select_component": "Select a component to install.",
+        "installing": "Installing {0}...",
+        "success": "{0} installed successfully!",
+        "error": "Error installing {0}: {1}",
+        "install_button": "📥 Install",
+        "go_to_install": "Go to Install"
+      }
+    },
+    "messages": {
+      "updating_components": "Updating components...",
+      "components_updated": "Components updated!",
+      "error_updating_components": "Error updating components: {0}",
+      "updating_services": "Updating services...",
+      "services_updated": "Services updated!",
+      "error_updating_services": "Error updating services: {0}",
+      "starting_all_services": "Starting all services...",
+      "all_services_started": "All services started!",
+      "error_starting_services": "Error starting services: {0}",
+      "stopping_all_services": "Stopping all services...",
+      "all_services_stopped": "All services stopped!",
+      "error_stopping_services": "Error stopping services: {0}",
+      "restarting_all_services": "Restarting all services...",
+      "all_services_restarted": "All services restarted!",
+      "error_restarting_services": "Error restarting services: {0}",
+      "select_component_install": "Select a component to install.",
+      "installing_component": "Installing {0}...",
+      "component_installed": "{0} installed successfully!",
+      "error_installing_component": "Error installing {0}: {1}",
+      "opening_shell": "🚀 Opening interactive shell for {0} v{1}",
+      "executing_component": "🚀 Executing {0} v{1}",
+      "no_executable_found": "❌ No executable found for {0} v{1}",
+      "version_folder_not_found": "❌ Version folder not found: {0}",
+      "component_not_executable": "❌ Component {0} is not executable",
+      "error_executing": "❌ Error executing {0} v{1}: {2}",
+      "error_updating_component_data": "Error updating component data: {0}",
+      "error_updating_service_data": "Error updating service data: {0}"
+    }
   },
   "installed_tab": {
     "title": "Installed Tools",

@@ -8,6 +8,10 @@
   "navigation": {
     "title": "DevStack Manager",
     "items": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "Visão geral do sistema"
+      },
       "installed": {
         "title": "Instalados",
         "description": "Ferramentas instaladas"
@@ -38,6 +42,94 @@
       }
     },
     "refresh_tooltip": "Atualizar todos os dados"
+  },
+  "dashboard_tab": {
+    "title": "📊 Dashboard",
+    "cards": {
+      "components": {
+        "title": "Componentes",
+        "subtitle": "Clique para acessar",
+        "loading": "Carregando...",
+        "installed_count": "{0}/{1} instalados",
+        "none": "Nenhum componente"
+      },
+      "install": {
+        "title": "Instalar",
+        "subtitle": "Clique para acessar",
+        "description": "Adicionar componentes"
+      },
+      "services": {
+        "title": "Serviços",
+        "subtitle": "Clique para acessar",
+        "loading": "Carregando...",
+        "active_count": "{0}/{1} ativos",
+        "none": "Nenhum serviço ativo"
+      }
+    },
+    "panels": {
+      "components": {
+        "title": "Componentes Instalados",
+        "refresh_tooltip": "Atualizar componentes instalados",
+        "install_button": "📥 Instalar",
+        "uninstall_button": "🗑️ Desinstalar",
+        "none": "Nenhum componente instalado",
+        "installed_default": "Instalado",
+        "error_loading": "Erro ao carregar componentes",
+        "version_na": "N/A"
+      },
+      "services": {
+        "title": "Serviços",
+        "refresh_tooltip": "Atualizar serviços",
+        "start_all": "▶️ Iniciar",
+        "stop_all": "⏹️ Parar",
+        "restart_all": "🔄 Reiniciar",
+        "none": "Nenhum serviço encontrado",
+        "loading": "Carregando serviços...",
+        "status": {
+          "active": "Ativo",
+          "stopped": "Parado",
+          "na": "N/A"
+        }
+      },
+      "install": {
+        "title": "📥 Instalação Rápida",
+        "select_component": "Selecione um componente para instalar.",
+        "installing": "Instalando {0}...",
+        "success": "{0} instalado com sucesso!",
+        "error": "Erro ao instalar {0}: {1}",
+        "install_button": "📥 Instalar",
+        "go_to_install": "Ir para Instalar"
+      }
+    },
+    "messages": {
+      "updating_components": "Atualizando componentes...",
+      "components_updated": "Componentes atualizados!",
+      "error_updating_components": "Erro ao atualizar componentes: {0}",
+      "updating_services": "Atualizando serviços...",
+      "services_updated": "Serviços atualizados!",
+      "error_updating_services": "Erro ao atualizar serviços: {0}",
+      "starting_all_services": "Iniciando todos os serviços...",
+      "all_services_started": "Todos os serviços foram iniciados!",
+      "error_starting_services": "Erro ao iniciar serviços: {0}",
+      "stopping_all_services": "Parando todos os serviços...",
+      "all_services_stopped": "Todos os serviços foram parados!",
+      "error_stopping_services": "Erro ao parar serviços: {0}",
+      "restarting_all_services": "Reiniciando todos os serviços...",
+      "all_services_restarted": "Todos os serviços foram reiniciados!",
+      "error_restarting_services": "Erro ao reiniciar serviços: {0}",
+      "select_component_install": "Selecione um componente para instalar.",
+      "installing_component": "Instalando {0}...",
+      "component_installed": "{0} instalado com sucesso!",
+      "error_installing_component": "Erro ao instalar {0}: {1}",
+      "opening_shell": "🚀 Abrindo shell interativo para {0} v{1}",
+      "executing": "🚀 Executando {0} v{1}",
+      "no_executable": "❌ Nenhum executável encontrado para {0} v{1}",
+      "version_folder_not_found": "❌ Pasta da versão não encontrada: {0}",
+      "component_not_executable": "❌ Componente {0} não é executável",
+      "error_executing": "❌ Erro ao executar {0} v{1}: {2}",
+      "error_updating_component_data": "Erro ao atualizar dados dos componentes: {0}",
+      "error_updating_service_data": "Erro ao atualizar dados dos serviços: {0}"
+    }
   },
   "installed_tab": {
     "title": "Ferramentas Instaladas",

@@ -24,7 +24,7 @@ namespace DevStackManager
         }
 
         /// <summary>
-    /// Cria o conteúdo principal com sidebar
+        /// Cria o conteúdo principal com sidebar
         /// </summary>
         public static void CreateMainContent(DevStackGui mainWindow, Grid mainGrid)
         {
@@ -135,6 +135,7 @@ namespace DevStackManager
 
             var navItems = new List<NavigationItem>
             {
+                new() { Title = "Dashboard", Icon = "📊", Description = "Visão geral do sistema" },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.title"), Icon = "📦", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.installed.description") },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.title"), Icon = "📥", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.install.description") },
                 new() { Title = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.title"), Icon = "🗑️", Description = mainWindow.LocalizationManager.GetString("gui.sidebar.navigation_items.uninstall.description") },
@@ -186,137 +187,6 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o título da sidebar com ícone
-        /// </summary>
-        private static StackPanel CreateSidebarTitle(DevStackGui mainWindow)
-        {
-            var titlePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(5, 15, 5, 10)
-            };
-
-            // Ícone DevStack
-            var iconImage = new Image
-            {
-                Width = 50,
-                Height = 50,
-                Margin = new Thickness(0, 6, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            // Tentar carregar o ícone com fallback para erro
-            try
-            {
-                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DevStack.ico");
-                if (File.Exists(iconPath))
-                {
-                    iconImage.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
-                }
-            }
-            catch {}
-
-            if (iconImage != null)
-                titlePanel.Children.Add(iconImage);
-
-            var sidebarTitleLabel = new Label
-            {
-                Content = mainWindow.LocalizationManager.GetString("gui.navigation.title"),
-                FontSize = 20,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground,
-                Margin = new Thickness(0),
-                Padding = new Thickness(0)
-            };
-            titlePanel.Children.Add(sidebarTitleLabel);
-
-            return titlePanel;
-        }
-
-        /// <summary>
-        /// Cria a lista de navegação
-        /// </summary>
-        private static ListBox CreateNavigationList(DevStackGui mainWindow)
-        {
-            var navList = new ListBox
-            {
-                BorderThickness = new Thickness(0),
-                Background = System.Windows.Media.Brushes.Transparent,
-                Margin = new Thickness(8, 5, 8, 5),
-                SelectedIndex = 0
-            };
-
-            // Criar itens de navegação com ícones modernos
-            var navItems = new List<NavigationItem>
-            {
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.installed.title"), Icon = "📦", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.installed.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.install.title"), Icon = "📥", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.install.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.uninstall.title"), Icon = "🗑️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.uninstall.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.services.title"), Icon = "⚙️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.services.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.sites.title"), Icon = "🌐", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.sites.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.title"), Icon = "🛠️", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.utilities.description") },
-                new() { Title = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.title"), Icon = "🔧", Description = mainWindow.LocalizationManager.GetString("gui.navigation.items.config.description") }
-            };
-
-            foreach (var item in navItems)
-            {
-                var listItem = new ListBoxItem();
-
-                var panel = new StackPanel { Orientation = Orientation.Horizontal };
-                
-                var iconLabel = new Label
-                {
-                    Content = item.Icon,
-                    FontSize = 18,
-                    Margin = new Thickness(0, 0, 12, 0),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground
-                };
-                
-                var textPanel = new StackPanel();
-                var titleLabel = new Label
-                {
-                    Content = item.Title,
-                    FontWeight = FontWeights.SemiBold,
-                    FontSize = 14,
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground
-                };
-                var descLabel = new Label
-                {
-                    Content = item.Description,
-                    FontSize = 11,
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = DevStackShared.ThemeManager.CurrentTheme.TextMuted
-                };
-                
-                textPanel.Children.Add(titleLabel);
-                textPanel.Children.Add(descLabel);
-                
-                panel.Children.Add(iconLabel);
-                panel.Children.Add(textPanel);
-                
-                listItem.Content = panel;
-                navList.Items.Add(listItem);
-            }
-
-            // Apply theme to the navigation list
-            DevStackShared.ThemeManager.ApplySidebarListBoxTheme(navList);
-
-            // Bind da seleção
-            var binding = new Binding("SelectedNavIndex") { Source = mainWindow };
-            navList.SetBinding(ListBox.SelectedIndexProperty, binding);
-
-            return navList;
-        }
-
-        /// <summary>
         /// Navega para uma seção específica baseada no índice
         /// </summary>
         public static void NavigateToSection(DevStackGui mainWindow, int index)
@@ -326,86 +196,65 @@ namespace DevStackManager
             switch (index)
             {
                 case 0:
-                    mainWindow._mainContent.Content = GuiInstalledTab.CreateInstalledContent(mainWindow);
+                    // Dashboard - renderizar imediatamente e carregar dados em background
+                    mainWindow._mainContent.Content = GuiDashboardTab.CreateDashboardContent(mainWindow);
+                    
+                    // Carregar dados em background
+                    _ = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await mainWindow.LoadInstalledComponents();
+                            await mainWindow.LoadServices();
+                        }
+                        catch (Exception ex)
+                        {
+                            mainWindow.Dispatcher.Invoke(() =>
+                            {
+                                mainWindow.StatusMessage = $"Erro ao carregar dados do Dashboard: {ex.Message}";
+                            });
+                        }
+                    });
                     break;
                 case 1:
-                    mainWindow._mainContent.Content = GuiInstallTab.CreateInstallContent(mainWindow);
+                    // Instalados - carregar dados se necessário
+                    if (mainWindow.InstalledComponents?.Count == 0)
+                    {
+                        _ = mainWindow.LoadInstalledComponents();
+                    }
+                    mainWindow._mainContent.Content = GuiInstalledTab.CreateInstalledContent(mainWindow);
                     break;
                 case 2:
-                    mainWindow._mainContent.Content = GuiUninstallTab.CreateUninstallContent(mainWindow);
+                    // Instalar - carregar componentes disponíveis e componentes para shortcuts se necessário
+                    if (mainWindow.AvailableComponents?.Count == 0)
+                    {
+                        _ = mainWindow.LoadAvailableComponents();
+                    }
+                    if (mainWindow.ShortcutComponents?.Count == 0)
+                    {
+                        _ = mainWindow.LoadShortcutComponents();
+                    }
+                    mainWindow._mainContent.Content = GuiInstallTab.CreateInstallContent(mainWindow);
                     break;
                 case 3:
-                    // Atualizar serviços automaticamente ao navegar para a aba
-                    _ = GuiServicesTab.LoadServices(mainWindow);
-                    mainWindow._mainContent.Content = GuiServicesTab.CreateServicesContent(mainWindow);
+                    mainWindow._mainContent.Content = GuiUninstallTab.CreateUninstallContent(mainWindow);
                     break;
                 case 4:
-                    mainWindow._mainContent.Content = GuiSitesTab.CreateSitesContent(mainWindow);
+                    mainWindow._mainContent.Content = GuiServicesTab.CreateServicesContent(mainWindow);
                     break;
                 case 5:
-                    mainWindow._mainContent.Content = GuiUtilitiesTab.CreateUtilitiesContent(mainWindow);
+                    mainWindow._mainContent.Content = GuiSitesTab.CreateSitesContent(mainWindow);
                     break;
                 case 6:
+                    mainWindow._mainContent.Content = GuiUtilitiesTab.CreateUtilitiesContent(mainWindow);
+                    break;
+                case 7:
                     mainWindow._mainContent.Content = GuiConfigTab.CreateConfigContent(mainWindow);
                     break;
                 default:
-                    mainWindow._mainContent.Content = GuiInstalledTab.CreateInstalledContent(mainWindow);
+                    mainWindow._mainContent.Content = GuiDashboardTab.CreateDashboardContent(mainWindow);
                     break;
             }
-        }
-
-        /// <summary>
-        /// Cria a barra de status
-        /// </summary>
-        public static void CreateStatusBar(DevStackGui mainWindow, Grid mainGrid)
-        {
-            var statusBar = new Grid
-            {
-                Height = 35,
-                Background = DevStackShared.ThemeManager.CurrentTheme.StatusBackground
-            };
-            Grid.SetRow(statusBar, 1);
-            
-            // Define columns: status message (left) and refresh button (right)
-            statusBar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            statusBar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            // Add a subtle top border to separate from content
-            var topBorder = new Border
-            {
-                Height = 1,
-                VerticalAlignment = VerticalAlignment.Top,
-                Background = DevStackShared.ThemeManager.CurrentTheme.Border
-            };
-            Grid.SetColumnSpan(topBorder, 2);
-            statusBar.Children.Add(topBorder);
-
-            var statusLabel = new Label
-            {
-                Margin = new Thickness(15, 0, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 13,
-                Foreground = DevStackShared.ThemeManager.CurrentTheme.StatusForeground
-            };
-            Grid.SetColumn(statusLabel, 0);
-            var statusBinding = new Binding("StatusMessage") { Source = mainWindow };
-            statusLabel.SetBinding(Label.ContentProperty, statusBinding);
-            
-            // Create refresh button with only icon
-            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton("🔄");
-            refreshButton.Width = 45;
-            refreshButton.Height = 35;
-            refreshButton.FontSize = 14;
-            refreshButton.Margin = new Thickness(0);
-            refreshButton.VerticalAlignment = VerticalAlignment.Center;
-            refreshButton.HorizontalAlignment = HorizontalAlignment.Right;
-            refreshButton.ToolTip = mainWindow.LocalizationManager.GetString("gui.navigation.refresh_tooltip");
-            refreshButton.Click += (s, e) => mainWindow.RefreshAllData();
-            Grid.SetColumn(refreshButton, 1);
-            
-            statusBar.Children.Add(statusLabel);
-            statusBar.Children.Add(refreshButton);
-            mainGrid.Children.Add(statusBar);
         }
     }
 }

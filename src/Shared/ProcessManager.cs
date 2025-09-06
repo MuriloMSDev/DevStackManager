@@ -3,503 +3,510 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DevStackManager
 {
+    /// <summary>
+    /// Gerenciador genérico e eficiente de serviços DevStack
+    /// </summary>
     public static class ProcessManager
     {
         /// <summary>
-        /// Executa um comando no terminal e retorna a saída
+        /// Inicia um serviço de forma genérica e eficiente
         /// </summary>
-        public static async Task<string> ExecuteProcessAsync(string fileName, string arguments, string? workingDirectory = null, System.Diagnostics.ProcessWindowStyle? windowStyle = null)
+        public static async Task<bool> StartServiceAsync(string component, string version)
         {
-            using var process = new Process();
-            process.StartInfo = new ProcessStartInfo
+            try
             {
-                FileName = fileName,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory ?? "",
-                WindowStyle = windowStyle ?? ProcessWindowStyle.Hidden
-            };
+                // Verificar se já está rodando
+                if (IsServiceRunning(component, version))
+                {
+                    DevStackConfig.WriteColoredLine($"{component} {version} já está em execução.", ConsoleColor.Yellow);
+                    return true;
+                }
 
-            var output = string.Empty;
-            var error = string.Empty;
+                // Obter informações do componente
+                var comp = Components.ComponentsFactory.GetComponent(component);
+                if (comp == null || !comp.IsService || string.IsNullOrEmpty(comp.ServicePattern))
+                {
+                    DevStackConfig.WriteColoredLine($"Componente {component} não é um serviço válido.", ConsoleColor.Red);
+                    return false;
+                }
 
-            var outputTcs = new TaskCompletionSource<string>();
-            var errorTcs = new TaskCompletionSource<string>();
+                var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
+                var workingDirectory = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}");
 
-            process.OutputDataReceived += (s, e) =>
+                if (!File.Exists(executablePath))
+                {
+                    DevStackConfig.WriteColoredLine($"{component} {version} não está instalado.", ConsoleColor.Red);
+                    return false;
+                }
+
+                // Configurar argumentos específicos por componente
+                var arguments = GetServiceArguments(component, version);
+
+                // Determinar quantos processos principais iniciar baseado no MaxWorkers
+                var processCount = comp.MaxWorkers ?? 1; // Padrão é 1 se não definido
+                var processPids = new List<int>();
+
+                // Iniciar os processos principais
+                for (int i = 0; i < processCount; i++)
+                {
+                    // Pequena pausa entre cada processo para evitar conflitos
+                    if (i > 0)
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    var process = await StartProcessAsync(executablePath, arguments, workingDirectory);
+                    if (process == null)
+                    {
+                        DevStackConfig.WriteColoredLine($"Falha ao iniciar processo {i + 1} de {component} {version}.", ConsoleColor.Red);
+                        
+                        // Se falhou, parar os processos já iniciados
+                        foreach (var pid in processPids)
+                        {
+                            try
+                            {
+                                var proc = Process.GetProcessById(pid);
+                                proc.Kill();
+                                proc.Dispose();
+                            }
+                            catch { }
+                        }
+                        return false;
+                    }
+
+                    processPids.Add(process.Id);
+                }
+
+                // Registrar todos os processos principais
+                if (processPids.Count > 0)
+                {
+                    // Registrar o primeiro processo como principal (para compatibilidade)
+                    ProcessRegistry.RegisterService(component, version, processPids[0], executablePath);
+                    
+                    // Registrar os demais como processos principais adicionais
+                    for (int i = 1; i < processPids.Count; i++)
+                    {
+                        ProcessRegistry.AddMainProcess(component, version, processPids[i]);
+                    }
+                }
+
+                var pidsText = processPids.Count == 1 
+                    ? $"PID {processPids[0]}" 
+                    : $"PIDs [{string.Join(", ", processPids)}]";
+                    
+                DevStackConfig.WriteColoredLine($"{component} {version} iniciado com {pidsText}.", ConsoleColor.Green);
+                return true;
+            }
+            catch (Exception ex)
             {
-                if (e.Data == null)
-                    outputTcs.TrySetResult(output);
-                else
-                    output += e.Data + Environment.NewLine;
-            };
-            process.ErrorDataReceived += (s, e) =>
+                DevStackConfig.WriteColoredLine($"Erro ao iniciar {component} {version}: {ex.Message}", ConsoleColor.Red);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Para um serviço de forma genérica e eficiente
+        /// </summary>
+        public static async Task<bool> StopServiceAsync(string component, string version)
+        {
+            try
             {
-                if (e.Data == null)
-                    errorTcs.TrySetResult(error);
-                else
-                    error += e.Data + Environment.NewLine;
-            };
+                // Verificar se está rodando
+                if (!IsServiceRunning(component, version))
+                {
+                    DevStackConfig.WriteColoredLine($"{component} {version} não está em execução.", ConsoleColor.Yellow);
+                    ProcessRegistry.UnregisterService(component, version); // Limpar registro
+                    return true;
+                }
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+                // Obter PID do processo principal
+                var mainPid = ProcessRegistry.GetMainProcessId(component, version);
+                if (mainPid == null)
+                {
+                    DevStackConfig.WriteColoredLine($"Processo principal de {component} {version} não encontrado.", ConsoleColor.Yellow);
+                    return true;
+                }
 
-            await Task.WhenAll(
-                Task.Run(() => process.WaitForExit()),
-                outputTcs.Task,
-                errorTcs.Task
+                // Para todos os processos relacionados
+                await StopRelatedProcessesAsync(component, version, mainPid.Value);
+
+                // Remover do registro
+                ProcessRegistry.UnregisterService(component, version);
+
+                DevStackConfig.WriteColoredLine($"{component} {version} parado.", ConsoleColor.Green);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                DevStackConfig.WriteColoredLine($"Erro ao parar {component} {version}: {ex.Message}", ConsoleColor.Red);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Reinicia um serviço
+        /// </summary>
+        public static async Task<bool> RestartServiceAsync(string component, string version)
+        {
+            DevStackConfig.WriteColoredLine($"Reiniciando {component} {version}...", ConsoleColor.Cyan);
+            
+            if (IsServiceRunning(component, version))
+            {
+                await StopServiceAsync(component, version);
+                await Task.Delay(2000); // Aguardar finalização
+            }
+            
+            return await StartServiceAsync(component, version);
+        }
+
+        /// <summary>
+        /// Verifica se um serviço está rodando
+        /// </summary>
+        public static bool IsServiceRunning(string component, string version)
+        {
+            return ProcessRegistry.IsServiceActive(component, version);
+        }
+
+        /// <summary>
+        /// Lista o status de todos os serviços
+        /// </summary>
+        public static async Task<List<ServiceStatus>> GetAllServicesStatusAsync()
+        {
+            var services = new List<ServiceStatus>();
+            var serviceComponents = Components.ComponentsFactory.GetAll().Where(c => c.IsService);
+
+            await Task.Run(() =>
+            {
+                foreach (var component in serviceComponents)
+                {
+                    var versions = component.ListInstalled();
+                    foreach (var version in versions)
+                    {
+                        var isRunning = IsServiceRunning(component.Name, version);
+                        var mainPid = isRunning ? ProcessRegistry.GetMainProcessId(component.Name, version) : null;
+                        
+                        services.Add(new ServiceStatus
+                        {
+                            Component = component.Name,
+                            Version = version,
+                            IsRunning = isRunning,
+                            MainProcessId = mainPid,
+                            AllProcessIds = isRunning ? GetAllRelatedProcessIds(component.Name, version) : new List<int>()
+                        });
+                    }
+                }
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Para todos os serviços em execução
+        /// </summary>
+        public static async Task StopAllServicesAsync()
+        {
+            var activeServices = ProcessRegistry.GetActiveServices();
+            var stopTasks = activeServices.Select(service => 
+                StopServiceAsync(service.Component, service.Version)
             );
 
-            return output.Trim();
-        }
-
-        // Legacy sync version for compatibility
-        public static string ExecuteProcess(string fileName, string arguments, string? workingDirectory = null, System.Diagnostics.ProcessWindowStyle? windowStyle = null)
-        {
-            using var process = new Process();
-            process.StartInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory ?? "",
-                WindowStyle = windowStyle ?? ProcessWindowStyle.Hidden
-            };
-
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            return output.Trim();
+            await Task.WhenAll(stopTasks);
         }
 
         /// <summary>
-        /// Inicia um componente específico com uma versão
+        /// Inicia todos os serviços instalados
         /// </summary>
-        public static void StartComponent(string component, string version)
+        public static async Task StartAllServicesAsync()
         {
-            var comp = Components.ComponentsFactory.GetComponent(component);
-            if (comp == null || !comp.IsService)
+            var serviceComponents = Components.ComponentsFactory.GetAll().Where(c => c.IsService);
+            var startTasks = new List<Task<bool>>();
+
+            foreach (var component in serviceComponents)
             {
-                DevStackConfig.WriteColoredLine($"Componente desconhecido ou não é um serviço: {component}", ConsoleColor.Red);
-                return;
-            }
-
-            switch (component.ToLowerInvariant())
-            {
-                case "nginx":
-                    StartNginx(version);
-                    break;
-                case "php":
-                    StartPhp(version);
-                    break;
-                default:
-                    StartGenericService(comp, version);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Para um componente específico com uma versão
-        /// </summary>
-        public static void StopComponent(string component, string version)
-        {
-            var comp = Components.ComponentsFactory.GetComponent(component);
-            if (comp == null || !comp.IsService)
-            {
-                DevStackConfig.WriteColoredLine($"Componente desconhecido ou não é um serviço: {component}", ConsoleColor.Red);
-                return;
-            }
-
-            switch (component.ToLowerInvariant())
-            {
-                case "nginx":
-                    StopNginx(version);
-                    break;
-                case "php":
-                    StopPhp(version);
-                    break;
-                default:
-                    StopGenericService(comp, version);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Inicia o Nginx de uma versão específica
-        /// </summary>
-        private static void StartNginx(string version)
-        {
-            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx.exe");
-            var nginxWorkDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}");
-
-            if (!File.Exists(nginxExe))
-            {
-                DevStackConfig.WriteColoredLine($"Nginx {version} não encontrado.", ConsoleColor.Red);
-                return;
-            }
-
-            try
-            {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
-                    {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(nginxExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
-
-                if (runningProcesses.Any())
+                var versions = component.ListInstalled();
+                foreach (var version in versions)
                 {
-                    DevStackConfig.WriteColoredLine($"Nginx {version} já está em execução.", ConsoleColor.Yellow);
-                    return;
-                }
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = nginxExe,
-                    WorkingDirectory = nginxWorkDir,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                };
-
-                Process.Start(startInfo);
-                DevStackConfig.WriteColoredLine($"Nginx {version} iniciado.", ConsoleColor.Green);
-                WriteLog($"Nginx {version} iniciado.");
-            }
-            catch (Exception ex)
-            {
-                DevStackConfig.WriteColoredLine($"Erro ao iniciar Nginx {version}: {ex.Message}", ConsoleColor.Red);
-                WriteLog($"Erro ao iniciar Nginx {version}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Para o Nginx de uma versão específica
-        /// </summary>
-        private static void StopNginx(string version)
-        {
-            var nginxExe = Path.Combine(DevStackConfig.nginxDir, $"nginx-{version}", $"nginx.exe");
-
-            if (!File.Exists(nginxExe))
-            {
-                DevStackConfig.WriteColoredLine($"Nginx {version} não encontrado.", ConsoleColor.Red);
-                return;
-            }
-
-            try
-            {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
+                    if (!IsServiceRunning(component.Name, version))
                     {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(nginxExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
-
-                if (runningProcesses.Any())
-                {
-                    foreach (var process in runningProcesses)
-                    {
-                        try
-                        {
-                            process.Kill();
-                            process.WaitForExit(5000); // Aguarda até 5 segundos
-                        }
-                        catch (Exception ex)
-                        {
-                            DevStackConfig.WriteColoredLine($"Erro ao parar processo Nginx {process.Id}: {ex.Message}", ConsoleColor.Yellow);
-                        }
-                        finally
-                        {
-                            process.Dispose();
-                        }
+                        startTasks.Add(StartServiceAsync(component.Name, version));
                     }
-                    DevStackConfig.WriteColoredLine($"Nginx {version} parado.", ConsoleColor.Green);
-                    WriteLog($"Nginx {version} parado.");
-                }
-                else
-                {
-                    DevStackConfig.WriteColoredLine($"Nginx {version} não está em execução.", ConsoleColor.Yellow);
                 }
             }
-            catch (Exception ex)
-            {
-                DevStackConfig.WriteColoredLine($"Erro ao verificar processos Nginx: {ex.Message}", ConsoleColor.Red);
-            }
+
+            await Task.WhenAll(startTasks);
         }
 
         /// <summary>
-        /// Inicia o PHP-CGI de uma versão específica
+        /// Versões síncronas para compatibilidade
         /// </summary>
-        private static void StartPhp(string version)
+        public static bool StartService(string component, string version) => 
+            StartServiceAsync(component, version).GetAwaiter().GetResult();
+
+        public static bool StopService(string component, string version) => 
+            StopServiceAsync(component, version).GetAwaiter().GetResult();
+
+        public static bool RestartService(string component, string version) => 
+            RestartServiceAsync(component, version).GetAwaiter().GetResult();
+
+        public static void StopAllServices() => 
+            StopAllServicesAsync().GetAwaiter().GetResult();
+
+        public static void StartAllServices() => 
+            StartAllServicesAsync().GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Métodos de compatibilidade com nomes antigos
+        /// </summary>
+        public static async Task<bool> StartComponentAsync(string component, string version) => 
+            await StartServiceAsync(component, version);
+
+        public static async Task<bool> StopComponentAsync(string component, string version) => 
+            await StopServiceAsync(component, version);
+
+        public static async Task RestartComponentAsync(string component, string version) => 
+            await RestartServiceAsync(component, version);
+
+        public static bool IsComponentRunning(string component, string version) => 
+            IsServiceRunning(component, version);
+
+        public static void StartComponent(string component, string version) => 
+            StartService(component, version);
+
+        public static void StopComponent(string component, string version) => 
+            StopService(component, version);
+
+        public static void RestartComponent(string component, string version) => 
+            RestartService(component, version);
+
+        public static async Task ListComponentsStatusAsync()
         {
-            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi.exe");
-            var phpWorkDir = Path.Combine(DevStackConfig.phpDir, $"php-{version}");
+            var services = await GetAllServicesStatusAsync();
+            
+            DevStackConfig.WriteColoredLine("Status dos serviços:", ConsoleColor.Cyan);
+            Console.WriteLine();
 
-            if (!File.Exists(phpExe))
+            foreach (var group in services.GroupBy(s => s.Component))
             {
-                DevStackConfig.WriteColoredLine($"php-cgi {version} não encontrado.", ConsoleColor.Red);
-                return;
-            }
-
-            try
-            {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
-                    {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(phpExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
-
-                if (runningProcesses.Any())
+                DevStackConfig.WriteColoredLine($"{group.Key.ToUpper()}:", ConsoleColor.Yellow);
+                
+                foreach (var service in group)
                 {
-                    DevStackConfig.WriteColoredLine($"php-cgi {version} já está em execução.", ConsoleColor.Yellow);
-                    return;
+                    var status = service.IsRunning ? "EM EXECUÇÃO" : "PARADO";
+                    var color = service.IsRunning ? ConsoleColor.Green : ConsoleColor.Red;
+                    var pidInfo = service.IsRunning && service.AllProcessIds.Any() 
+                        ? $" (PIDs: {string.Join(",", service.AllProcessIds)})" 
+                        : "";
+                    
+                    Console.Write($"  {service.Component}-{service.Version}: ");
+                    DevStackConfig.WriteColoredLine($"{status}{pidInfo}", color);
                 }
+                Console.WriteLine();
+            }
+        }
 
-                // Inicia 6 workers php-cgi para FastCGI
-                for (int i = 1; i <= 6; i++)
+        public static void ListComponentsStatus() => 
+            ListComponentsStatusAsync().GetAwaiter().GetResult();
+
+        // ================= MÉTODOS PRIVADOS =================
+
+        /// <summary>
+        /// Inicia um processo de forma assíncrona
+        /// </summary>
+        private static async Task<Process?> StartProcessAsync(string fileName, string arguments, string workingDirectory)
+        {
+            return await Task.Run(() =>
+            {
+                try
                 {
                     var startInfo = new ProcessStartInfo
                     {
-                        FileName = phpExe,
-                        Arguments = $"-b 127.{version}:9000",
-                        WorkingDirectory = phpWorkDir,
+                        FileName = fileName,
+                        Arguments = arguments,
+                        WorkingDirectory = workingDirectory,
                         WindowStyle = ProcessWindowStyle.Hidden,
                         CreateNoWindow = true,
                         UseShellExecute = false
                     };
 
-                    Process.Start(startInfo);
+                    return Process.Start(startInfo);
                 }
-
-                DevStackConfig.WriteColoredLine($"php-cgi {version} iniciado com 6 workers em 127.{version}:9000.", ConsoleColor.Green);
-                WriteLog($"php-cgi {version} iniciado com 6 workers em 127.{version}:9000.");
-            }
-            catch (Exception ex)
-            {
-                DevStackConfig.WriteColoredLine($"Erro ao iniciar php-cgi {version}: {ex.Message}", ConsoleColor.Red);
-                WriteLog($"Erro ao iniciar php-cgi {version}: {ex.Message}");
-            }
+                catch
+                {
+                    return null;
+                }
+            });
         }
 
         /// <summary>
-        /// Para o PHP-CGI de uma versão específica
+        /// Para todos os processos relacionados a um serviço
         /// </summary>
-        private static void StopPhp(string version)
+        private static async Task StopRelatedProcessesAsync(string component, string version, int mainPid)
         {
-            var phpExe = Path.Combine(DevStackConfig.phpDir, $"php-{version}", $"php-cgi.exe");
-
-            try
+            await Task.Run(() =>
             {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
-                    {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(phpExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
-
-                if (runningProcesses.Any())
+                // Obter todos os PIDs registrados do serviço
+                var registeredPids = ProcessRegistry.GetServicePids(component, version, null);
+                
+                if (registeredPids.Count == 0)
                 {
-                    foreach (var process in runningProcesses)
+                    // Fallback: usar o PID principal se não há registros
+                    registeredPids.Add(mainPid);
+                }
+                
+                foreach (var pid in registeredPids)
+                {
+                    try
                     {
-                        try
+                        var process = Process.GetProcessById(pid);
+                        if (!process.HasExited)
                         {
                             process.Kill();
-                            process.WaitForExit(5000); // Aguarda até 5 segundos
+                            process.WaitForExit(3000);
                         }
-                        catch (Exception ex)
-                        {
-                            DevStackConfig.WriteColoredLine($"Erro ao parar processo PHP {process.Id}: {ex.Message}", ConsoleColor.Yellow);
-                        }
-                        finally
-                        {
-                            process.Dispose();
-                        }
+                        process.Dispose();
                     }
-                    DevStackConfig.WriteColoredLine($"php-cgi {version} parado.", ConsoleColor.Green);
-                    WriteLog($"php-cgi {version} parado.");
+                    catch
+                    {
+                        // Processo já morreu ou não existe
+                    }
                 }
-                else
-                {
-                    DevStackConfig.WriteColoredLine($"php-cgi {version} não está em execução.", ConsoleColor.Yellow);
-                }
-            }
-            catch (Exception ex)
-            {
-                DevStackConfig.WriteColoredLine($"Erro ao verificar processos PHP: {ex.Message}", ConsoleColor.Red);
-            }
+            });
         }
 
         /// <summary>
-        /// Inicia um serviço genérico
+        /// Obtém todos os PIDs relacionados a um serviço
         /// </summary>
-        private static void StartGenericService(Components.ComponentInterface component, string version)
+        private static List<int> GetAllRelatedProcessIds(string component, string version)
         {
-            if (string.IsNullOrEmpty(component.ServicePattern))
-            {
-                DevStackConfig.WriteColoredLine($"Padrão de serviço não definido para {component.Name}.", ConsoleColor.Red);
-                return;
-            }
-
-            var serviceExe = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
-            var workDir = Path.Combine(component.ToolDir, $"{component.Name}-{version}");
-
-            if (!File.Exists(serviceExe))
-            {
-                DevStackConfig.WriteColoredLine($"{component.Name} {version} não encontrado.", ConsoleColor.Red);
-                return;
-            }
-
+            var pids = new List<int>();
+            
             try
             {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
-                    {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(serviceExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
+                var comp = Components.ComponentsFactory.GetComponent(component);
+                if (comp?.ServicePattern == null) return pids;
 
-                if (runningProcesses.Any())
+                var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
+                var processName = Path.GetFileNameWithoutExtension(comp.ServicePattern);
+
+                // Buscar todos os processos com o mesmo nome e caminho
+                var processes = Process.GetProcessesByName(processName);
+                
+                foreach (var process in processes)
                 {
-                    DevStackConfig.WriteColoredLine($"{component.Name} {version} já está em execução.", ConsoleColor.Yellow);
-                    return;
-                }
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = serviceExe,
-                    WorkingDirectory = workDir,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                };
-
-                Process.Start(startInfo);
-                DevStackConfig.WriteColoredLine($"{component.Name} {version} iniciado.", ConsoleColor.Green);
-                WriteLog($"{component.Name} {version} iniciado.");
-            }
-            catch (Exception ex)
-            {
-                DevStackConfig.WriteColoredLine($"Erro ao iniciar {component.Name} {version}: {ex.Message}", ConsoleColor.Red);
-                WriteLog($"Erro ao iniciar {component.Name} {version}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Para um serviço genérico
-        /// </summary>
-        private static void StopGenericService(Components.ComponentInterface component, string version)
-        {
-            if (string.IsNullOrEmpty(component.ServicePattern))
-            {
-                DevStackConfig.WriteColoredLine($"Padrão de serviço não definido para {component.Name}.", ConsoleColor.Red);
-                return;
-            }
-
-            var serviceExe = Path.Combine(component.ToolDir, $"{component.Name}-{version}", component.ServicePattern);
-
-            if (!File.Exists(serviceExe))
-            {
-                DevStackConfig.WriteColoredLine($"{component.Name} {version} não encontrado.", ConsoleColor.Red);
-                return;
-            }
-
-            try
-            {
-                var runningProcesses = Process.GetProcesses()
-                    .Where(p => 
+                    try
                     {
-                        try
+                        var processPath = process.MainModule?.FileName;
+                        if (processPath?.Equals(executablePath, StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            return p.MainModule?.FileName?.Equals(serviceExe, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    })
-                    .ToList();
-
-                if (runningProcesses.Any())
-                {
-                    foreach (var process in runningProcesses)
-                    {
-                        try
-                        {
-                            process.Kill();
-                            process.WaitForExit(5000); // Aguarda até 5 segundos
-                        }
-                        catch (Exception ex)
-                        {
-                            DevStackConfig.WriteColoredLine($"Erro ao parar processo {component.Name} {process.Id}: {ex.Message}", ConsoleColor.Yellow);
-                        }
-                        finally
-                        {
-                            process.Dispose();
+                            // Para PHP, verificar argumentos específicos da versão
+                            if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (IsPhpProcessForVersion(process.Id, version))
+                                {
+                                    pids.Add(process.Id);
+                                }
+                            }
+                            else
+                            {
+                                pids.Add(process.Id);
+                            }
                         }
                     }
-                    DevStackConfig.WriteColoredLine($"{component.Name} {version} parado.", ConsoleColor.Green);
-                    WriteLog($"{component.Name} {version} parado.");
-                }
-                else
-                {
-                    DevStackConfig.WriteColoredLine($"{component.Name} {version} não está em execução.", ConsoleColor.Yellow);
+                    catch
+                    {
+                        // Ignorar processos inacessíveis
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                DevStackConfig.WriteColoredLine($"Erro ao verificar processos {component.Name}: {ex.Message}", ConsoleColor.Red);
+                // Em caso de erro, retornar lista vazia
             }
+
+            return pids;
         }
 
         /// <summary>
-        /// Executa uma ação para cada versão de um componente
+        /// Verifica se um processo PHP é da versão específica
+        /// </summary>
+        private static bool IsPhpProcessForVersion(int processId, string version)
+        {
+            try
+            {
+                using var searcher = new System.Management.ManagementObjectSearcher(
+                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {processId}");
+                
+                foreach (System.Management.ManagementObject obj in searcher.Get())
+                {
+                    var commandLine = obj["CommandLine"]?.ToString();
+                    return commandLine?.Contains($"127.{version}:9000") == true;
+                }
+            }
+            catch
+            {
+                // Se não conseguir verificar, assumir que é da versão
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Obtém argumentos específicos para cada componente
+        /// </summary>
+        private static string GetServiceArguments(string component, string version)
+        {
+            return component.ToLowerInvariant() switch
+            {
+                "php" => $"-b 127.{version}:9000",
+                "nginx" => "",
+                "mysql" => "--console",
+                _ => ""
+            };
+        }
+
+        /// <summary>
+        /// Executa um comando no terminal e retorna a saída (compatibilidade)
+        /// </summary>
+        public static async Task<string> ExecuteProcessAsync(string fileName, string arguments, string? workingDirectory = null, ProcessWindowStyle? windowStyle = null)
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = workingDirectory ?? "",
+                WindowStyle = windowStyle ?? ProcessWindowStyle.Hidden
+            };
+
+            process.Start();
+            var output = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            return output.Trim();
+        }
+
+        /// <summary>
+        /// Versão síncrona do ExecuteProcessAsync
+        /// </summary>
+        public static string ExecuteProcess(string fileName, string arguments, string? workingDirectory = null, ProcessWindowStyle? windowStyle = null)
+        {
+            return ExecuteProcessAsync(fileName, arguments, workingDirectory, windowStyle).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Métodos adicionais para compatibilidade
         /// </summary>
         public static void ForEachVersion(string component, Action<string> action)
         {
@@ -537,158 +544,21 @@ namespace DevStackManager
             }
         }
 
-        /// <summary>
-        /// Verifica se um componente específico está em execução
-        /// </summary>
-        public static bool IsComponentRunning(string component, string version)
-        {
-            var comp = Components.ComponentsFactory.GetComponent(component);
-            if (comp == null || !comp.IsService || string.IsNullOrEmpty(comp.ServicePattern))
-            {
-                return false;
-            }
+        public static async Task StopAllComponentsAsync() => await StopAllServicesAsync();
+        public static void StopAllComponents() => StopAllServices();
+        public static async Task StartAllComponentsAsync() => await StartAllServicesAsync();
+        public static void StartAllComponents() => StartAllServices();
+    }
 
-            var exePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
-
-            if (!File.Exists(exePath))
-            {
-                return false;
-            }
-
-            try
-            {
-                return Process.GetProcesses()
-                    .Any(p => 
-                    {
-                        try
-                        {
-                            return p.MainModule?.FileName?.Equals(exePath, StringComparison.OrdinalIgnoreCase) == true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    });
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Lista o status de todos os componentes e versões
-        /// </summary>
-        public static void ListComponentsStatus()
-        {
-            var serviceComponents = Components.ComponentsFactory.GetAll()
-                .Where(c => c.IsService)
-                .ToList();
-            
-            DevStackConfig.WriteColoredLine("Status dos componentes:", ConsoleColor.Cyan);
-            Console.WriteLine();
-            
-            foreach (var component in serviceComponents)
-            {
-                DevStackConfig.WriteColoredLine($"{component.Name.ToUpper()}:", ConsoleColor.Yellow);
-                var versions = component.ListInstalled();
-                if (versions.Any())
-                {
-                    foreach (var version in versions)
-                    {
-                        var isRunning = IsComponentRunning(component.Name, version);
-                        var status = isRunning ? "EXECUTANDO" : "PARADO";
-                        var color = isRunning ? ConsoleColor.Green : ConsoleColor.Red;
-                        Console.Write($"  {component.Name}-{version}: ");
-                        DevStackConfig.WriteColoredLine(status, color);
-                    }
-                }
-                else
-                {
-                    DevStackConfig.WriteColoredLine($"  Nenhuma versão de {component.Name} instalada.", ConsoleColor.Gray);
-                }
-                Console.WriteLine();
-            }
-        }
-
-        /// <summary>
-        /// Para todos os componentes em execução
-        /// </summary>
-        public static void StopAllComponents()
-        {
-            var serviceComponents = Components.ComponentsFactory.GetAll()
-                .Where(c => c.IsService)
-                .ToList();
-            
-            foreach (var component in serviceComponents)
-            {
-                var versions = component.ListInstalled();
-                foreach (var version in versions)
-                {
-                    if (IsComponentRunning(component.Name, version))
-                    {
-                        StopComponent(component.Name, version);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Inicia todos os componentes instalados
-        /// </summary>
-        public static void StartAllComponents()
-        {
-            var serviceComponents = Components.ComponentsFactory.GetAll()
-                .Where(c => c.IsService)
-                .ToList();
-            
-            foreach (var component in serviceComponents)
-            {
-                var versions = component.ListInstalled();
-                foreach (var version in versions)
-                {
-                    if (!IsComponentRunning(component.Name, version))
-                    {
-                        StartComponent(component.Name, version);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reinicia um componente específico
-        /// </summary>
-        public static void RestartComponent(string component, string version)
-        {
-            DevStackConfig.WriteColoredLine($"Reiniciando {component} {version}...", ConsoleColor.Cyan);
-            
-            if (IsComponentRunning(component, version))
-            {
-                StopComponent(component, version);
-                
-                // Aguarda um pouco para garantir que o processo foi finalizado
-                System.Threading.Thread.Sleep(2000);
-            }
-            
-            StartComponent(component, version);
-        }
-
-        /// <summary>
-        /// Escreve uma mensagem no log
-        /// </summary>
-        private static void WriteLog(string message)
-        {
-            try
-            {
-                string logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                string logEntry = $"[{timestamp}] {message}";
-                File.AppendAllText(logFile, logEntry + Environment.NewLine);
-            }
-            catch
-            {
-                // Ignora erros de logging
-            }
-        }
+    /// <summary>
+    /// Status de um serviço
+    /// </summary>
+    public class ServiceStatus
+    {
+        public string Component { get; set; } = "";
+        public string Version { get; set; } = "";
+        public bool IsRunning { get; set; }
+        public int? MainProcessId { get; set; }
+        public List<int> AllProcessIds { get; set; } = new();
     }
 }

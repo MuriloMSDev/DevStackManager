@@ -126,6 +126,16 @@ namespace DevStackShared
             public LinearGradientBrush ButtonGradient { get; set; } = null!;
             public LinearGradientBrush AccentGradient { get; set; } = null!;
             public LinearGradientBrush HeaderGradient { get; set; } = null!;
+            
+            // Dashboard específico
+            public SolidColorBrush DashboardCardBackground { get; set; } = null!;
+            public SolidColorBrush DashboardCardHover { get; set; } = null!;
+            public SolidColorBrush DashboardCardHoverDefault { get; set; } = null!;
+            public SolidColorBrush DashboardErrorText { get; set; } = null!;
+            public SolidColorBrush DashboardMutedText { get; set; } = null!;
+            public SolidColorBrush DashboardAccentBlue { get; set; } = null!;
+            public SolidColorBrush DashboardServiceYellow { get; set; } = null!;
+            public SolidColorBrush DashboardFooterBackground { get; set; } = null!;
         }
 
         /// <summary>
@@ -232,6 +242,16 @@ namespace DevStackShared
             TooltipBackground = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
             TooltipForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
 
+            // Dashboard específico
+            DashboardCardBackground = new SolidColorBrush(Color.FromRgb(55, 58, 64)),
+            DashboardCardHover = new SolidColorBrush(Color.FromRgb(75, 85, 99)),
+            DashboardCardHoverDefault = new SolidColorBrush(Color.FromRgb(65, 68, 74)),
+            DashboardErrorText = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
+            DashboardMutedText = new SolidColorBrush(Color.FromRgb(169, 169, 169)),
+            DashboardAccentBlue = new SolidColorBrush(Color.FromRgb(100, 149, 237)),
+            DashboardServiceYellow = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
+            DashboardFooterBackground = new SolidColorBrush(Color.FromArgb(50, 75, 85, 99)),
+
             // Gradientes modernos
             ButtonGradient = new LinearGradientBrush(
                 Color.FromRgb(33, 136, 255), 
@@ -312,7 +332,7 @@ namespace DevStackShared
 
             // Áreas de conteúdo
             ContentBackground = new SolidColorBrush(Colors.White),
-            PanelBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+            PanelBackground = new SolidColorBrush(Color.FromRgb(244, 245, 246)),
             ConsoleBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             ConsoleForeground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
 
@@ -335,6 +355,16 @@ namespace DevStackShared
             OverlayBackground = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
             TooltipBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             TooltipForeground = new SolidColorBrush(Colors.White),
+                
+            // Dashboard específico
+            DashboardCardBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+            DashboardCardHover = new SolidColorBrush(Color.FromRgb(228, 229, 230)),
+            DashboardCardHoverDefault = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+            DashboardErrorText = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
+            DashboardMutedText = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+            DashboardAccentBlue = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
+            DashboardServiceYellow = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
+            DashboardFooterBackground = new SolidColorBrush(Color.FromArgb(50, 108, 117, 125)),
 
             // Gradientes modernos
             ButtonGradient = new LinearGradientBrush(
@@ -2194,6 +2224,165 @@ namespace DevStackShared
             }
 
             return card;
+        }
+
+        /// <summary>
+        /// Cria um ScrollViewer com scrollbar customizada já aplicada
+        /// </summary>
+        public static ScrollViewer CreateStyledScrollViewer(ScrollBarVisibility verticalVisibility = ScrollBarVisibility.Auto, ScrollBarVisibility horizontalVisibility = ScrollBarVisibility.Auto)
+        {
+            var scrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = verticalVisibility,
+                HorizontalScrollBarVisibility = horizontalVisibility,
+                Background = Brushes.Transparent
+            };
+
+            ApplyCustomScrollbar(scrollViewer);
+            return scrollViewer;
+        }
+
+        /// <summary>
+        /// Aplica scrollbar customizada a um ScrollViewer com tema escuro
+        /// </summary>
+        public static void ApplyCustomScrollbar(ScrollViewer scrollViewer)
+        {
+            // Criar style customizado para o ScrollViewer
+            var scrollViewerStyle = new Style(typeof(ScrollViewer));
+            
+            // Template XAML para ScrollViewer com scrollbar customizada sobreposta
+            var templateXaml = @"
+                <ControlTemplate TargetType='ScrollViewer' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                    <Grid>
+                        <!-- Conteúdo principal ocupa toda a área -->
+                        <ScrollContentPresenter Margin='{TemplateBinding Padding}'
+                                                Content='{TemplateBinding Content}'
+                                                ContentTemplate='{TemplateBinding ContentTemplate}'
+                                                CanContentScroll='{TemplateBinding CanContentScroll}'/>
+                        
+                        <!-- ScrollBar Vertical - Sobreposta no canto direito -->
+                        <ScrollBar Name='PART_VerticalScrollBar'
+                                   HorizontalAlignment='Right'
+                                   VerticalAlignment='Stretch'
+                                   Orientation='Vertical'
+                                   Value='{TemplateBinding VerticalOffset}'
+                                   Maximum='{TemplateBinding ScrollableHeight}'
+                                   ViewportSize='{TemplateBinding ViewportHeight}'
+                                   Visibility='{TemplateBinding ComputedVerticalScrollBarVisibility}'
+                                   Margin='0,4,4,4'
+                                   Width='10'
+                                   Background='Transparent'
+                                   Opacity='0.6'>
+                            <ScrollBar.Style>
+                                <Style TargetType='ScrollBar'>
+                                    <Setter Property='Template'>
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType='ScrollBar'>
+                                                <Grid>
+                                                    <Track Name='PART_Track' IsDirectionReversed='True'>
+                                                        <Track.Thumb>
+                                                            <Thumb>
+                                                                <Thumb.Template>
+                                                                    <ControlTemplate TargetType='Thumb'>
+                                                                        <Border Background='#FF666666' 
+                                                                                CornerRadius='5' 
+                                                                                Margin='1'/>
+                                                                    </ControlTemplate>
+                                                                </Thumb.Template>
+                                                            </Thumb>
+                                                        </Track.Thumb>
+                                                    </Track>
+                                                </Grid>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property='IsMouseOver' Value='True'>
+                                                        <Setter Property='Opacity' Value='1.0'/>
+                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType='Thumb'>
+                                                                    <Border Background='#FF888888' 
+                                                                            CornerRadius='5' 
+                                                                            Margin='1'/>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ScrollBar.Style>
+                        </ScrollBar>
+                        
+                        <!-- ScrollBar Horizontal - Sobreposta na parte inferior -->
+                        <ScrollBar Name='PART_HorizontalScrollBar'
+                                   HorizontalAlignment='Stretch'
+                                   VerticalAlignment='Bottom'
+                                   Orientation='Horizontal'
+                                   Value='{TemplateBinding HorizontalOffset}'
+                                   Maximum='{TemplateBinding ScrollableWidth}'
+                                   ViewportSize='{TemplateBinding ViewportWidth}'
+                                   Visibility='{TemplateBinding ComputedHorizontalScrollBarVisibility}'
+                                   Margin='4,0,4,4'
+                                   Height='10'
+                                   Background='Transparent'
+                                   Opacity='0.6'>
+                            <ScrollBar.Style>
+                                <Style TargetType='ScrollBar'>
+                                    <Setter Property='Template'>
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType='ScrollBar'>
+                                                <Grid>
+                                                    <Track Name='PART_Track'>
+                                                        <Track.Thumb>
+                                                            <Thumb>
+                                                                <Thumb.Template>
+                                                                    <ControlTemplate TargetType='Thumb'>
+                                                                        <Border Background='#FF666666' 
+                                                                                CornerRadius='5' 
+                                                                                Margin='1'/>
+                                                                    </ControlTemplate>
+                                                                </Thumb.Template>
+                                                            </Thumb>
+                                                        </Track.Thumb>
+                                                    </Track>
+                                                </Grid>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property='IsMouseOver' Value='True'>
+                                                        <Setter Property='Opacity' Value='1.0'/>
+                                                        <Setter TargetName='PART_Track' Property='Thumb.Template'>
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType='Thumb'>
+                                                                    <Border Background='#FF888888' 
+                                                                            CornerRadius='5' 
+                                                                            Margin='1'/>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ScrollBar.Style>
+                        </ScrollBar>
+                    </Grid>
+                </ControlTemplate>";
+
+            try
+            {
+                var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
+                scrollViewerStyle.Setters.Add(new Setter(ScrollViewer.TemplateProperty, template));
+                scrollViewer.Style = scrollViewerStyle;
+            }
+            catch
+            {
+                // Fallback: aplicar apenas cores básicas se o XAML falhar
+                scrollViewer.Background = CurrentTheme.PanelBackground;
+            }
         }
 
         /// <summary>

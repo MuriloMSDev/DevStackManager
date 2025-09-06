@@ -9,5 +9,6 @@ namespace DevStackManager.Components
         public override string ToolDir => DevStackConfig.pgsqlDir;
         public override bool IsService => true;
         public override string? ServicePattern => "postgres.exe";
+        public override int? MaxWorkers => 3; // PostgreSQL normalmente usa 1 postmaster + 2-3 backends
     }
 }

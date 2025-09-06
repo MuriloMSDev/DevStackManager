@@ -197,8 +197,6 @@ namespace DevStackManager
                     // Reiniciar serviços do Nginx apenas se o site e SSL foram criados
                     if (siteCreated && sslCreated)
                     {
-                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-
                         phpComboBox.SelectedIndex = -1;
                         nginxComboBox.SelectedIndex = -1;
                         sslCheckBox.IsChecked = false;
@@ -248,8 +246,6 @@ namespace DevStackManager
 
                     if (sslCreated)
                     {
-                        await GuiInstalledTab.LoadInstalledComponents(mainWindow);
-                        
                         sslDomainTextBox.Text = "";
 
                         // Reiniciar serviços do Nginx após criar a configuração

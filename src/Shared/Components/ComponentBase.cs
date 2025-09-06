@@ -82,6 +82,7 @@ namespace DevStackManager.Components
         public virtual bool RunInstaller => false;
         public virtual string? GetInstallerArgs(string version) => null;
         public virtual string? CreateBinShortcut => null;
+        public virtual int? MaxWorkers => null;
 
         /// <summary>
         /// Obtém o tipo de serviço baseado no nome do componente
