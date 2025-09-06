@@ -13,5 +13,6 @@ namespace DevStackManager.Components
         public override string ToolDir => DevStackConfig.nginxDir;
         public override bool IsService => true;
         public override string? ServicePattern => "nginx.exe";
+        public override int? MaxWorkers => 1; // Mostrar apenas o processo master
     }
 }

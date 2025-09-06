@@ -81,9 +81,11 @@ namespace DevStackUninstaller
         
         // Step-specific controls
         private CheckBox removeUserDataCheckBox = null!;
+#pragma warning disable CS0414 // Field is assigned but its value is never used - keeping for future implementation
         private CheckBox removeRegistryCheckBox = null!;
         private CheckBox removeShortcutsCheckBox = null!;
         private CheckBox removeFromPathCheckBox = null!;
+#pragma warning restore CS0414
         private ProgressBar uninstallProgressBar = null!;
         private TextBlock uninstallStatusText = null!;
         private ListBox uninstallLogListBox = null!;
@@ -599,7 +601,7 @@ namespace DevStackUninstaller
                     break;
                 case UninstallerStep.Finished:
                     // Force application exit to ensure file handle is released
-                    Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         await Task.Delay(500); // Small delay to ensure UI updates
                         Application.Current.Dispatcher.Invoke(() =>

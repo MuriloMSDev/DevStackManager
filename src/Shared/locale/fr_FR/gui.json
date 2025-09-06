@@ -8,6 +8,10 @@
   "navigation": {
     "title": "DevStack Manager",
     "items": {
+      "dashboard": {
+        "title": "Tableau de bord",
+        "description": "Vue d'ensemble du système"
+      },
       "installed": {
         "title": "Installés",
         "description": "Outils installés"
@@ -38,6 +42,94 @@
       }
     },
     "refresh_tooltip": "Actualiser toutes les données"
+  },
+  "dashboard_tab": {
+    "title": "📊 Tableau de bord",
+    "cards": {
+      "components": {
+        "title": "Composants",
+        "subtitle": "Cliquez pour accéder",
+        "loading": "Chargement...",
+        "installed_count": "{0}/{1} installés",
+        "none": "Aucun composant"
+      },
+      "install": {
+        "title": "Installer",
+        "subtitle": "Cliquez pour accéder",
+        "description": "Ajouter des composants"
+      },
+      "services": {
+        "title": "Services",
+        "subtitle": "Cliquez pour accéder",
+        "loading": "Chargement...",
+        "active_count": "{0}/{1} actifs",
+        "none": "Aucun service actif"
+      }
+    },
+    "panels": {
+      "components": {
+        "title": "Composants installés",
+        "refresh_tooltip": "Actualiser les composants installés",
+        "install_button": "📥 Installer",
+        "uninstall_button": "🗑️ Désinstaller",
+        "none": "Aucun composant installé",
+        "installed_default": "Installé",
+        "error_loading": "Erreur lors du chargement des composants",
+        "version_na": "N/A"
+      },
+      "services": {
+        "title": "Services",
+        "refresh_tooltip": "Actualiser les services",
+        "start_all": "▶️ Démarrer",
+        "stop_all": "⏹️ Arrêter",
+        "restart_all": "🔄 Redémarrer",
+        "none": "Aucun service trouvé",
+        "loading": "Chargement des services...",
+        "status": {
+          "active": "Actif",
+          "stopped": "Arrêté",
+          "na": "N/A"
+        }
+      },
+      "install": {
+        "title": "📥 Installation Rapide",
+        "select_component": "Sélectionnez un composant à installer.",
+        "installing": "Installation de {0}...",
+        "success": "{0} installé avec succès !",
+        "error": "Erreur lors de l'installation de {0} : {1}",
+        "install_button": "📥 Installer",
+        "go_to_install": "Aller à l'Installation"
+      }
+    },
+    "messages": {
+      "updating_components": "Mise à jour des composants...",
+      "components_updated": "Composants mis à jour !",
+      "error_updating_components": "Erreur lors de la mise à jour des composants : {0}",
+      "updating_services": "Mise à jour des services...",
+      "services_updated": "Services mis à jour !",
+      "error_updating_services": "Erreur lors de la mise à jour des services : {0}",
+      "starting_all_services": "Démarrage de tous les services...",
+      "all_services_started": "Tous les services ont été démarrés !",
+      "error_starting_services": "Erreur lors du démarrage des services : {0}",
+      "stopping_all_services": "Arrêt de tous les services...",
+      "all_services_stopped": "Tous les services ont été arrêtés !",
+      "error_stopping_services": "Erreur lors de l'arrêt des services : {0}",
+      "restarting_all_services": "Redémarrage de tous les services...",
+      "all_services_restarted": "Tous les services ont été redémarrés !",
+      "error_restarting_services": "Erreur lors du redémarrage des services : {0}",
+      "select_component_install": "Sélectionnez un composant à installer.",
+      "installing_component": "Installation de {0}...",
+      "component_installed": "{0} installé avec succès !",
+      "error_installing_component": "Erreur lors de l'installation de {0} : {1}",
+      "opening_shell": "🚀 Ouverture du shell interactif pour {0} v{1}",
+      "executing_component": "🚀 Exécution de {0} v{1}",
+      "no_executable_found": "❌ Aucun exécutable trouvé pour {0} v{1}",
+      "version_folder_not_found": "❌ Dossier de version introuvable : {0}",
+      "component_not_executable": "❌ Le composant {0} n'est pas exécutable",
+      "error_executing": "❌ Erreur lors de l'exécution de {0} v{1} : {2}",
+      "error_updating_component_data": "Erreur lors de la mise à jour des données des composants : {0}",
+      "error_updating_service_data": "Erreur lors de la mise à jour des données des services : {0}"
+    }
   },
   "installed_tab": {
     "title": "Outils installés",

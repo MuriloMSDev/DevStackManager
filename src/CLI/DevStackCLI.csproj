@@ -48,6 +48,7 @@
     <Compile Include="..\Shared\LocalizationManager.cs" />
     <Compile Include="..\Shared\PathManager.cs" />
     <Compile Include="..\Shared\ProcessManager.cs" />
+    <Compile Include="..\Shared\ProcessRegistry.cs" />
     <Compile Include="..\Shared\UninstallManager.cs" />
     <Compile Include="..\Shared\Components\*.cs" />
     <Compile Include="..\Shared\Models\*.cs" />

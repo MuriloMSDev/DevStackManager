@@ -13,6 +13,7 @@ namespace DevStackManager.Components
         public override string? ExecutablePattern => "php.exe";
         public override string? ServicePattern => "php-cgi.exe";
         public override string? CreateBinShortcut => "php-{version}.exe";
+        public override int? MaxWorkers => 6;
 
         public override async Task PostInstall(string version, string targetDir)
         {
