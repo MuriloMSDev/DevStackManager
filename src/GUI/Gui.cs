@@ -339,30 +339,56 @@ namespace DevStackManager
             // Rebuild main window texts and content to reflect new language
             Dispatcher.Invoke(() =>
             {
-                var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
-                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
-                Title = _localizationManager.GetString("gui.window.title", version);
-
-                // Recreate main layout while preserving selected index
-                int currentIndex = SelectedNavIndex;
-                var mainGrid = Content as Grid;
-                if (mainGrid != null)
+                try
                 {
-                    mainGrid.Children.Clear();
-                    mainGrid.RowDefinitions.Clear();
-                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                    mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Language changed to: {newLang}");
+                    
+                    var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
+                    var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
+                    Title = _localizationManager.GetString("gui.window.title", version);
 
-                    CreateMainContent(mainGrid);
-                    CreateStatusBar(mainGrid);
-                    SelectedNavIndex = currentIndex;
+                    // Recreate main layout while preserving selected index
+                    int currentIndex = SelectedNavIndex;
+                    var mainGrid = Content as Grid;
+                    if (mainGrid != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Clearing and recreating main grid content");
+                        
+                        mainGrid.Children.Clear();
+                        mainGrid.RowDefinitions.Clear();
+                        mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                        mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                        CreateMainContent(mainGrid);
+                        CreateStatusBar(mainGrid);
+                        SelectedNavIndex = currentIndex;
+                        
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Main grid recreated successfully");
+                    }
+                    else
+                    {
+                        // Fallback: rebuild the whole content
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Falling back to InitializeComponent");
+                        InitializeComponent();
+                    }
+                    
+                    StatusMessage = _localizationManager.GetString("gui.config_tab.languages.messages.language_changed", newLang);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Language change to {newLang} completed successfully");
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Fallback: rebuild the whole content
-                    InitializeComponent();
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Error during language change: {ex.Message}");
+                    // Fallback to InitializeComponent in case of any error
+                    try
+                    {
+                        InitializeComponent();
+                    }
+                    catch (Exception initEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Error during InitializeComponent fallback: {initEx.Message}");
+                    }
                 }
-                StatusMessage = _localizationManager.GetString("gui.config_tab.languages.messages.language_changed", _localizationManager.GetLanguageName(newLang));
             });
         }
 
