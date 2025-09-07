@@ -130,6 +130,12 @@ namespace DevStackManager
             // Popular opções de idioma
             var localization = mainWindow.LocalizationManager;
             var availableLanguages = localization.GetAvailableLanguages();
+            var currentLanguage = localization.CurrentLanguage;
+            
+            System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Creating language ComboBox. Current language: {currentLanguage}");
+            
+            ComboBoxItem? selectedLanguageItem = null;
+            
             foreach (var lang in availableLanguages)
             {
                 var langName = localization.GetLanguageName(lang);
@@ -139,20 +145,127 @@ namespace DevStackManager
                     Tag = lang
                 };
                 languageComboBox.Items.Add(item);
-                if (lang == localization.CurrentLanguage)
+                
+                System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Added language option: {lang} ({langName})");
+                
+                if (lang == currentLanguage)
                 {
-                    languageComboBox.SelectedItem = item;
+                    selectedLanguageItem = item;
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Marking {lang} as selected item");
+                }
+            }
+            
+            // Aguardar um tick antes de definir a seleção para garantir que o ComboBox está totalmente inicializado
+            languageComboBox.Loaded += (sender, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] ComboBox Loaded event - setting selection");
+                
+                // Definir o item selecionado após o controle estar carregado
+                if (selectedLanguageItem != null)
+                {
+                    languageComboBox.SelectedItem = selectedLanguageItem;
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Set selected item to: {((string)selectedLanguageItem.Tag)} ({selectedLanguageItem.Content})");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Warning: No matching item found for current language {currentLanguage}");
+                    // Fallback: selecionar o primeiro item se disponível
+                    if (languageComboBox.Items.Count > 0)
+                    {
+                        languageComboBox.SelectedIndex = 0;
+                        System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Fallback: Selected first item");
+                    }
+                }
+            };
+            
+            // Definir imediatamente também, caso o evento Loaded não seja chamado
+            if (selectedLanguageItem != null)
+            {
+                languageComboBox.SelectedItem = selectedLanguageItem;
+                System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Set selected item immediately to: {((string)selectedLanguageItem.Tag)} ({selectedLanguageItem.Content})");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Warning: No matching item found for current language {currentLanguage}");
+                // Fallback: selecionar o primeiro item se disponível
+                if (languageComboBox.Items.Count > 0)
+                {
+                    languageComboBox.SelectedIndex = 0;
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Fallback: Selected first item immediately");
                 }
             }
 
             // Evento para troca de idioma
+            bool isUpdatingSelection = false;
             languageComboBox.SelectionChanged += (s, e) =>
             {
+                if (isUpdatingSelection) return; // Evitar loops infinitos
+                
                 if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
                 {
-                    localization.LoadLanguage(languageCode);
-                    DevStackConfig.PersistSetting("language", languageCode);
-                    // A janela principal ouvirá o evento e reconstruirá a UI
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] ComboBox selection changed to: {languageCode} ({selectedItem.Content})");
+                    
+                    // Verificar se realmente está mudando de idioma
+                    if (languageCode != localization.CurrentLanguage)
+                    {
+                        // Log para debug
+                        System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Changing language from {localization.CurrentLanguage} to {languageCode}");
+                        
+                        try
+                        {
+                            isUpdatingSelection = true;
+                            localization.LoadLanguage(languageCode);
+                            DevStackConfig.PersistSetting("language", languageCode);
+                            
+                            // Force a complete UI refresh by triggering the language changed event manually if needed
+                            System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Language change completed. Current language is now: {localization.CurrentLanguage}");
+                        }
+                        finally
+                        {
+                            isUpdatingSelection = false;
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Language {languageCode} is already current, no change needed");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] ComboBox selection changed but could not extract language code");
+                }
+            };
+            
+            // Adicionar um evento para sincronizar a seleção quando o ComboBox receber foco
+            languageComboBox.GotFocus += (s, e) =>
+            {
+                if (isUpdatingSelection) return;
+                
+                var currentLang = localization.CurrentLanguage;
+                var currentSelectedLang = (languageComboBox.SelectedItem as ComboBoxItem)?.Tag as string;
+                
+                if (currentLang != currentSelectedLang)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Synchronizing ComboBox selection. Current: {currentLang}, Selected: {currentSelectedLang}");
+                    
+                    // Encontrar e selecionar o item correto
+                    foreach (ComboBoxItem item in languageComboBox.Items)
+                    {
+                        if (item.Tag as string == currentLang)
+                        {
+                            isUpdatingSelection = true;
+                            try
+                            {
+                                languageComboBox.SelectedItem = item;
+                                System.Diagnostics.Debug.WriteLine($"[GuiConfigTab] Synchronized selection to: {currentLang}");
+                            }
+                            finally
+                            {
+                                isUpdatingSelection = false;
+                            }
+                            break;
+                        }
+                    }
                 }
             };
 

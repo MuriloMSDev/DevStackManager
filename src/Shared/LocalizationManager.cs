@@ -188,10 +188,21 @@ namespace DevStackShared
 
         public void LoadLanguage(string languageCode)
         {
-            string logMessage = $"[LoadLanguage] Loading language: {languageCode}\n";
+            string logMessage = $"[LoadLanguage] Loading language: {languageCode} (current: {_currentLanguage})\n";
             
             try
             {
+                // Check if we're already using this language
+                if (_currentLanguage == languageCode && _translations.Count > 0)
+                {
+                    logMessage += $"[LoadLanguage] Language {languageCode} is already loaded and has translations. Forcing reload to ensure UI update.\n";
+                    System.Diagnostics.Debug.WriteLine(logMessage);
+                    AppendToLogFile(logMessage);
+                    
+                    // Clear existing translations to force a reload
+                    _translations.Clear();
+                }
+                
                 _currentLanguage = languageCode;
                 
                 // Tentamos diferentes abordagens para carregar o arquivo de idioma
@@ -223,13 +234,23 @@ namespace DevStackShared
                     loaded = true;
                 }
                 
+                logMessage += $"[LoadLanguage] Successfully loaded language {languageCode}. Translation sections: {string.Join(", ", _translations.Keys)}\n";
+                
                 // Escrever log para saída de depuração e arquivo
                 System.Diagnostics.Debug.WriteLine(logMessage);
                 AppendToLogFile(logMessage);
 
+                // Always fire the language changed event
                 if (!_suppressLanguageChangedEvent)
                 {
+                    logMessage += $"[LoadLanguage] Firing LanguageChanged event for {languageCode}\n";
+                    System.Diagnostics.Debug.WriteLine(logMessage);
                     try { LanguageChanged?.Invoke(this, _currentLanguage); } catch { }
+                }
+                else
+                {
+                    logMessage += $"[LoadLanguage] LanguageChanged event suppressed for {languageCode}\n";
+                    System.Diagnostics.Debug.WriteLine(logMessage);
                 }
             }
             catch (Exception ex)
@@ -1598,7 +1619,7 @@ namespace DevStackShared
 
         public string GetLanguageName(string languageCode)
         {
-            System.Diagnostics.Debug.WriteLine($"Getting language name for {languageCode}");
+            System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Getting language name for {languageCode}");
             
             // Mapa de nomes de idiomas padrão caso a tradução falhe
             Dictionary<string, string> defaultNames = new Dictionary<string, string>
@@ -1613,62 +1634,19 @@ namespace DevStackShared
             
             try
             {
-                // Salvar o idioma atual
-                var currentLang = _currentLanguage;
-                
-                // Suprimir eventos de mudança de idioma durante esta operação temporária
-                _suppressLanguageChangedEvent = true;
-                
-                // Carregar o idioma solicitado
-                LoadLanguage(languageCode);
-                
-                // Procurar a chave "language_name" nos diferentes arquivos
-                string name = string.Empty;
-                
-                // Verificar no arquivo common.json
-                if (_translations.ContainsKey("common"))
+                // Para evitar chamadas recursivas e interferências, vamos usar apenas os nomes padrão por enquanto
+                if (defaultNames.ContainsKey(languageCode))
                 {
-                    if (_translations["common"] is Dictionary<string, object> commonDict && commonDict.ContainsKey("language_name"))
-                    {
-                        var langNameObj = commonDict["language_name"];
-                        name = langNameObj?.ToString() ?? string.Empty;
-                    }
-                    else if (_translations["common"] is JsonElement commonElement &&
-                            commonElement.ValueKind == JsonValueKind.Object &&
-                            commonElement.TryGetProperty("language_name", out JsonElement langNameProp))
-                    {
-                        name = langNameProp.ValueKind == JsonValueKind.String ? langNameProp.GetString() ?? string.Empty : string.Empty;
-                    }
-                }
-                
-                // Se não encontrado, tentar GetString
-                if (string.IsNullOrEmpty(name))
-                {
-                    name = GetString("language_name");
-                    
-                    // Se GetString retornou a própria chave, significa que não encontrou
-                    if (name == "language_name")
-                    {
-                        name = string.Empty;
-                    }
-                }
-                
-                // Restaurar idioma anterior
-                LoadLanguage(currentLang);
-                _suppressLanguageChangedEvent = false;
-                
-                // Se não encontrou, usar o nome padrão
-                if (string.IsNullOrEmpty(name) && defaultNames.ContainsKey(languageCode))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Using default name for {languageCode}");
+                    System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Using default name for {languageCode}: {defaultNames[languageCode]}");
                     return defaultNames[languageCode];
                 }
                 
-                return string.IsNullOrEmpty(name) ? languageCode : name;
+                System.Diagnostics.Debug.WriteLine($"[GetLanguageName] No default name found for {languageCode}, returning code itself");
+                return languageCode;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting language name: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Error getting language name: {ex.Message}");
                 
                 // Em caso de erro, use os nomes padrão
                 if (defaultNames.ContainsKey(languageCode))
