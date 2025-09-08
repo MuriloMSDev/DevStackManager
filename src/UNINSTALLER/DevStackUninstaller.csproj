@@ -46,6 +46,8 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\LocalizationManager.cs" Link="LocalizationManager.cs" />
+    <Compile Include="..\Shared\DevStackConfig.cs" Link="DevStackConfig.cs" />
+    <Compile Include="..\Shared\PathManager.cs" Link="PathManager.cs" />
     <Compile Include="..\Shared\ThemeManager.cs" Link="ThemeManager.cs" />
   </ItemGroup>
 

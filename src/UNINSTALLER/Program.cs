@@ -1,3 +1,4 @@
+using DevStackManager;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -94,28 +95,10 @@ namespace DevStackUninstaller
         {
             try
             {
-                var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
-                if (System.IO.File.Exists(settingsPath))
-                {
-                    using (var sr = new StreamReader(settingsPath))
-                    using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
-                    {
-                        string? lang = null;
-                        while (reader.Read())
-                        {
-                            if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
-                                reader.Value?.ToString() == "language")
-                            {
-                                reader.Read();
-                                lang = reader.Value?.ToString();
-                                break;
-                            }
-                        }
-                        if (!string.IsNullOrWhiteSpace(lang))
-                            localization.LoadLanguage(lang);
-                    }
-                }
-                // Assina o evento antes da construção da UI
+                var lang = DevStackConfig.GetSetting("language")?.ToString();
+                if (!string.IsNullOrWhiteSpace(lang))
+                    LocalizationManager.ApplyLanguage(lang);
+
                 localization.LanguageChanged += Localization_LanguageChanged;
                 InitializeComponent();
             }
@@ -297,7 +280,7 @@ namespace DevStackUninstaller
                 };
                 languageComboBox.Items.Add(item);
 
-                if (lang == localization.CurrentLanguage)
+                if (lang == LocalizationManager.CurrentLanguageStatic)
                 {
                     languageComboBox.SelectedIndex = languageComboBox.Items.Count - 1;
                 }
@@ -356,7 +339,7 @@ namespace DevStackUninstaller
         {
             if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
             {
-                localization.LoadLanguage(languageCode);
+                LocalizationManager.ApplyLanguage(languageCode);
             }
         }
 

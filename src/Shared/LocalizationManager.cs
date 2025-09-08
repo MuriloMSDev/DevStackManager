@@ -23,6 +23,21 @@ namespace DevStackShared
         public event EventHandler<string>? LanguageChanged;
         private bool _suppressLanguageChangedEvent = false;
 
+        private static string _currentLanguageStatic = "pt_BR";
+        public static string CurrentLanguageStatic 
+        { 
+            get => _currentLanguageStatic; 
+            set 
+            { 
+                _currentLanguageStatic = value;
+                OnLanguageChangedStatic?.Invoke(value);
+            } 
+        }
+
+        public string CurrentLanguage => _currentLanguage;
+        public ApplicationType ApplicationType => _applicationType;
+        public static event Action<string>? OnLanguageChangedStatic;
+
         public static LocalizationManager? Instance { get; private set; }
 
         // Private constructor to prevent direct instantiation
@@ -42,6 +57,9 @@ namespace DevStackShared
             // Create an instance with basic initialization
             _instance = new LocalizationManager(applicationType);
             Instance = _instance;
+            
+            // Inicializar idioma estático com o valor da instância
+            _currentLanguageStatic = _instance._currentLanguage;
             
             // Log detailed information about embedded resources
             try
@@ -1658,7 +1676,42 @@ namespace DevStackShared
             }
         }
 
-        public string CurrentLanguage => _currentLanguage;
-        public ApplicationType ApplicationType => _applicationType;
+        /// <summary>
+        /// Aplica um idioma em tempo real, dispara evento e faz fallback se necessário
+        /// Implementação idêntica ao ApplyTheme do ThemeManager
+        /// </summary>
+        public static void ApplyLanguage(string languageCode)
+        {
+            string logMessage = $"[ApplyLanguage] Applying language: {languageCode}\n";
+            try
+            {
+                if (_currentLanguageStatic != languageCode)
+                {
+                    _currentLanguageStatic = languageCode;
+                    logMessage += $"[ApplyLanguage] Language set to: {_currentLanguageStatic}\n";
+                    
+                    // Chama LoadLanguage na instância se existir
+                    if (Instance != null)
+                    {
+                        Instance._suppressLanguageChangedEvent = false;
+                        Instance.LoadLanguage(languageCode);
+                    }
+                    
+                    OnLanguageChangedStatic?.Invoke(languageCode);
+                }
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                Instance?.AppendToLogFile(logMessage);
+            }
+            catch (Exception ex)
+            {
+                logMessage += $"[ApplyLanguage] Failed to apply language {languageCode}: {ex.Message}\n";
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                Instance?.AppendToLogFile(logMessage);
+                
+                // Fallback para idioma padrão
+                _currentLanguageStatic = "pt_BR";
+                OnLanguageChangedStatic?.Invoke(_currentLanguageStatic);
+            }
+        }
     }
 }

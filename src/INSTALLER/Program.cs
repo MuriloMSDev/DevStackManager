@@ -1,3 +1,4 @@
+using DevStackManager;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -510,7 +511,7 @@ namespace DevStackInstaller
         {
             if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
             {
-                localization.LoadLanguage(languageCode);
+                LocalizationManager.ApplyLanguage(languageCode);
             }
         }
 
@@ -1555,27 +1556,10 @@ namespace DevStackInstaller
                 await CompileProjects(tempSourceDir, dotnetTempDir, installationPath);
                 installProgressBar.Value = 85; // 85% complete
 
-                // Create settings.conf with selected language
-                var settingsPath = Path.Combine(installationPath, "settings.conf");
-                var languageCode = localization.CurrentLanguage;
+                // Create settings.conf with selected language using DevStackConfig
                 try
                 {
-                    Newtonsoft.Json.Linq.JObject settingsObj;
-                    if (File.Exists(settingsPath))
-                    {
-                        var json = File.ReadAllText(settingsPath);
-                        settingsObj = Newtonsoft.Json.Linq.JObject.Parse(json);
-                    }
-                    else
-                    {
-                        settingsObj = new Newtonsoft.Json.Linq.JObject();
-                    }
-                    settingsObj["language"] = languageCode;
-                    using (var sw = new StreamWriter(settingsPath))
-                    using (var writer = new Newtonsoft.Json.JsonTextWriter(sw) { Formatting = Newtonsoft.Json.Formatting.Indented })
-                    {
-                        settingsObj.WriteTo(writer);
-                    }
+                    DevStackConfig.PersistSetting("language", localization.CurrentLanguage, installationPath);
                 }
                 catch { /* silent to not break installation */ }
 
