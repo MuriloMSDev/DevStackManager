@@ -178,9 +178,10 @@ namespace DevStackManager
         /// <summary>
         /// Persistir configuração genérica em settings.conf
         /// </summary>
-        public static void PersistSetting(string key, object value)
+        public static void PersistSetting(string key, object value, string? settingsDir = null)
         {
-            var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
+            var baseDir = settingsDir ?? System.AppContext.BaseDirectory;
+            var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
             try
             {
                 Newtonsoft.Json.Linq.JObject settingsObj;
@@ -203,6 +204,55 @@ namespace DevStackManager
                 }
             }
             catch { /* silencioso para não travar a UI caso não tenha permissão */ }
+        }
+
+        /// <summary>
+        /// Lê configuração do settings.conf. Se key for fornecida, retorna apenas o valor; senão retorna todas as configurações como Dictionary.
+        /// </summary>
+        public static object? GetSetting(object? key = null, string? settingsDir = null)
+        {
+            var baseDir = settingsDir ?? System.AppContext.BaseDirectory;
+            var settingsPath = System.IO.Path.Combine(baseDir, "settings.conf");
+            if (!System.IO.File.Exists(settingsPath))
+                return null;
+            try
+            {
+                using (var sr = new System.IO.StreamReader(settingsPath))
+                using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
+                {
+                    var serializer = new Newtonsoft.Json.JsonSerializer();
+                    var dict = serializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(reader);
+                    if (dict == null)
+                        return null;
+
+                    // Se key for null, retorna todas as settings
+                    if (key == null)
+                        return dict;
+
+                    // Se key for string, retorna apenas o valor
+                    if (key is string strKey)
+                        return dict.TryGetValue(strKey, out var value) ? value : null;
+
+                    // Se key for array de string, retorna dicionário apenas com as chaves solicitadas
+                    var arrKeys = key as string[];
+                    if (arrKeys != null)
+                    {
+                        var result = new System.Collections.Generic.Dictionary<string, object?>();
+                        foreach (var k in arrKeys)
+                        {
+                            result[k] = dict.TryGetValue(k, out var v) ? v : null;
+                        }
+                        return result;
+                    }
+
+                    // Se key for outro tipo, retorna null
+                    return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

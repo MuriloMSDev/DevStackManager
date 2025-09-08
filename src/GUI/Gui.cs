@@ -220,40 +220,20 @@ namespace DevStackManager
             _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
             try
             {
-                var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
-                if (System.IO.File.Exists(settingsPath))
-                {
-                    using (var sr = new StreamReader(settingsPath))
-                    using (var reader = new Newtonsoft.Json.JsonTextReader(sr))
-                    {
-                        string? lang = null;
-                        string? theme = null;
-                        while (reader.Read())
-                        {
-                            if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
-                                reader.Value?.ToString() == "language")
-                            {
-                                reader.Read();
-                                lang = reader.Value?.ToString();
-                            }
-                            else if (reader.TokenType == Newtonsoft.Json.JsonToken.PropertyName &&
-                                     reader.Value?.ToString() == "theme")
-                            {
-                                reader.Read();
-                                theme = reader.Value?.ToString();
-                            }
-                        }
-                        if (!string.IsNullOrWhiteSpace(lang))
-                            _localizationManager.LoadLanguage(lang);
-
-                        if (!string.IsNullOrWhiteSpace(theme))
-                            DevStackShared.ThemeManager.ApplyTheme(theme.Equals("light", StringComparison.OrdinalIgnoreCase) ? DevStackShared.ThemeManager.ThemeType.Light : DevStackShared.ThemeManager.ThemeType.Dark);
-                    }
-                }
+                var settings = DevStackConfig.GetSetting(new string[] { "language", "theme" }) as System.Collections.Generic.Dictionary<string, object?>;
+                var lang = settings != null && settings.TryGetValue("language", out var l) ? l?.ToString() : null;
+                var theme = settings != null && settings.TryGetValue("theme", out var t) ? t?.ToString() : null;
+                if (!string.IsNullOrWhiteSpace(lang))
+                    DevStackShared.LocalizationManager.ApplyLanguage(lang);
+                if (!string.IsNullOrWhiteSpace(theme))
+                    DevStackShared.ThemeManager.ApplyTheme(theme.Equals("light", StringComparison.OrdinalIgnoreCase) ? DevStackShared.ThemeManager.ThemeType.Light : DevStackShared.ThemeManager.ThemeType.Dark);
             }
             catch { }
             _statusMessage = _localizationManager.GetString("gui.window.ready_status");
             _localizationManager.LanguageChanged += OnLanguageChanged;
+
+            // Listener para troca de idioma em tempo real (similar ao tema)
+            DevStackShared.LocalizationManager.OnLanguageChangedStatic += OnLanguageChangedStatic;
 
             // Listener para troca de tema em tempo real
             DevStackShared.ThemeManager.OnThemeChanged += OnThemeChanged;
@@ -387,6 +367,64 @@ namespace DevStackManager
                     catch (Exception initEx)
                     {
                         System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Error during InitializeComponent fallback: {initEx.Message}");
+                    }
+                }
+            });
+        }
+
+        private void OnLanguageChangedStatic(string newLang)
+        {
+            // Método estático para mudança de idioma (similar ao OnThemeChanged)
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Language changed to: {newLang}");
+                    
+                    var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
+                    var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
+                    Title = _localizationManager.GetString("gui.window.title", version);
+
+                    // Recreate main layout while preserving selected index
+                    int currentIndex = SelectedNavIndex;
+                    var mainGrid = Content as Grid;
+                    if (mainGrid != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Clearing and recreating main grid content");
+                        
+                        mainGrid.Children.Clear();
+                        mainGrid.RowDefinitions.Clear();
+                        mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                        mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                        CreateMainContent(mainGrid);
+                        CreateStatusBar(mainGrid);
+                        SelectedNavIndex = currentIndex;
+                        
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Main grid recreated successfully");
+                    }
+                    else
+                    {
+                        // Fallback: rebuild the whole content
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Falling back to InitializeComponent");
+                        InitializeComponent();
+                    }
+                    
+                    StatusMessage = _localizationManager.GetString("gui.config_tab.languages.messages.language_changed", newLang);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Language change to {newLang} completed successfully");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Error during language change: {ex.Message}");
+                    // Fallback to InitializeComponent in case of any error
+                    try
+                    {
+                        InitializeComponent();
+                    }
+                    catch (Exception initEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Error during InitializeComponent fallback: {initEx.Message}");
                     }
                 }
             });

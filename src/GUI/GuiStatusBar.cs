@@ -2,6 +2,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DevStackManager
 {
@@ -154,8 +156,6 @@ namespace DevStackManager
             }
             catch { }
 
-            var settingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "settings.conf");
-
             // Popular temas
             var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
             var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
@@ -171,25 +171,29 @@ namespace DevStackManager
                 }
             };
 
-            // Popular idiomas
+            // Popular idiomas seguindo exatamente o padrão do themeComboBox
             var languages = localization.GetAvailableLanguages();
+            var languageItems = new Dictionary<string, ComboBoxItem>();
+            
             foreach (var lang in languages)
             {
                 var name = localization.GetLanguageName(lang);
                 var item = new ComboBoxItem { Content = name, Tag = lang };
                 languageComboBox.Items.Add(item);
-                if (lang == localization.CurrentLanguage)
-                {
-                    languageComboBox.SelectedItem = item;
-                }
+                languageItems[lang] = item;
             }
-
-            // Alterar idioma e persistir
+            
+            // Definir item selecionado baseado no idioma atual estático (igual ao tema)
+            languageComboBox.SelectedItem = languageItems.ContainsKey(DevStackShared.LocalizationManager.CurrentLanguageStatic) 
+                ? languageItems[DevStackShared.LocalizationManager.CurrentLanguageStatic] 
+                : languageItems.Values.FirstOrDefault();
+            
+            // Alterar idioma usando ApplyLanguage (exatamente como o tema)
             languageComboBox.SelectionChanged += (s, e) =>
             {
                 if (languageComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is string code)
                 {
-                    localization.LoadLanguage(code);
+                    DevStackShared.LocalizationManager.ApplyLanguage(code);
                     DevStackConfig.PersistSetting("language", code);
                 }
             };
