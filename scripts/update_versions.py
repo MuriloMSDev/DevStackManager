@@ -5,15 +5,15 @@ DevStack Version Manager - Python Version
 Script para verificar e atualizar as versões disponíveis dos componentes DevStack.
 
 Este script permite:
-- Verificar URLs existentes nos arquivos JSON
+- Verificar URLs existentes nos arquivos CS
 - Remover URLs quebradas/inválidas
 - Buscar novas versões disponíveis
-- Atualizar os arquivos JSON com novas versões
+- Atualizar os arquivos CS com novas versões
 - Criar backups antes das alterações
 - Reordenar versões em ordem crescente
 
 Uso:
-    python Update-VersionsManager.py [opções]
+    python update_versions.py [opções]
 
 Opções:
     --component COMPONENTE    Componente específico para atualizar
@@ -25,15 +25,15 @@ Opções:
     --help                  Mostra esta ajuda
 
 Exemplos:
-    python Update-VersionsManager.py --check-only
-    python Update-VersionsManager.py --component php --check-only
-    python Update-VersionsManager.py --component php
-    python Update-VersionsManager.py --update-all
-    python Update-VersionsManager.py --clear-cache
-    python Update-VersionsManager.py --component php --clear-cache
-    python Update-VersionsManager.py --clear-backups
-    python Update-VersionsManager.py --component php --clear-backups
-    python Update-VersionsManager.py --show-backups
+    python update_versions.py --check-only
+    python update_versions.py --component php --check-only
+    python update_versions.py --component php
+    python update_versions.py --update-all
+    python update_versions.py --clear-cache
+    python update_versions.py --component php --clear-cache
+    python update_versions.py --clear-backups
+    python update_versions.py --component php --clear-backups
+    python update_versions.py --show-backups
 """
 
 import os
@@ -49,21 +49,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from urllib.parse import urlparse
-import argparse
-import json
-import os
 import random
 import re
 import shutil
 import signal
-import sys
-import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
-import re
 
 # Tenta importar tqdm para barras de progresso aprimoradas
 try:
@@ -73,8 +67,8 @@ except ImportError:
     TQDM_AVAILABLE = False
 
 # Configurações globais
-AVAILABLE_VERSIONS_PATH = Path(__file__).parent.parent / "src" / "Shared" / "AvailableVersions"
-BACKUP_PATH = AVAILABLE_VERSIONS_PATH / "backup"
+AVAILABLE_VERSIONS_PATH = Path(__file__).parent.parent / "src" / "Shared" / "AvailableVersions" / "Providers"
+BACKUP_PATH = Path(__file__).parent.parent / "src" / "Shared" / "AvailableVersions" / "backup"
 CACHE_PATH = BACKUP_PATH / "cache"
 MAX_WORKERS = 50  # Máximo para performance otimizada
 TIMEOUT_SECONDS = 30
@@ -401,7 +395,7 @@ def clear_old_backups(file_name: str, keep_count: int = 10) -> None:
     if not BACKUP_PATH.exists():
         return
 
-    base_file_name = file_name.replace('.json', '')
+    base_file_name = file_name.replace('.cs', '')
     backup_files = list(BACKUP_PATH.glob(f"{base_file_name}*.bak"))
     backup_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
 
@@ -411,6 +405,84 @@ def clear_old_backups(file_name: str, keep_count: int = 10) -> None:
             file.unlink()
             print_colored(f"  Backup antigo removido: {file.name}", "gray")
         print_colored(f"  {len(files_to_remove)} backups antigos removidos (mantidos {keep_count} mais recentes)", "gray")
+
+def parse_cs_versions(file_path: Path) -> List[Dict]:
+    """Extrai versões de um arquivo CS"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        versions = []
+        # Procura por padrão: new VersionInfo("version", "url")
+        pattern = r'new\s+VersionInfo\s*\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\)'
+        matches = re.findall(pattern, content)
+        
+        for version, url in matches:
+            versions.append({
+                'version': version,
+                'url': url
+            })
+        
+        return versions
+    except Exception as e:
+        print_colored(f"Erro ao ler arquivo CS: {e}", "red")
+        return []
+
+def get_cs_component_info(file_path: Path) -> Tuple[str, str]:
+    """Extrai ComponentName e ComponentId de um arquivo CS"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        component_name = ""
+        component_id = ""
+        
+        # Procura por ComponentName
+        name_match = re.search(r'public\s+string\s+ComponentName\s*=>\s*"([^"]+)"', content)
+        if name_match:
+            component_name = name_match.group(1)
+        
+        # Procura por ComponentId
+        id_match = re.search(r'public\s+string\s+ComponentId\s*=>\s*"([^"]+)"', content)
+        if id_match:
+            component_id = id_match.group(1)
+        
+        return component_name, component_id
+    except Exception as e:
+        print_colored(f"Erro ao ler informações do componente: {e}", "red")
+        return "", ""
+
+def write_cs_versions(file_path: Path, versions: List[Dict], component_name: str = "", component_id: str = "") -> None:
+    """Escreve versões em um arquivo CS mantendo a estrutura"""
+    try:
+        # Lê o arquivo original para manter a estrutura
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Se não tiver component_name/id, tenta extrair do arquivo
+        if not component_name or not component_id:
+            component_name, component_id = get_cs_component_info(file_path)
+        
+        # Gera o novo conteúdo da lista de versões
+        version_lines = []
+        for version in versions:
+            version_lines.append(f'            new VersionInfo("{version["version"]}", "{version["url"]}")')
+        
+        version_list_content = ',\n'.join(version_lines)
+        
+        # Substitui o conteúdo da lista de versões
+        # Padrão: private static readonly List<VersionInfo> _versions = new List<VersionInfo> { ... };
+        pattern = r'(private\s+static\s+readonly\s+List<VersionInfo>\s+_versions\s*=\s*new\s+List<VersionInfo>\s*\{).*?(\s*\};)'
+        replacement = rf'\1\n{version_list_content}        \2'
+        
+        new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+        
+        # Salva o arquivo atualizado
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        
+    except Exception as e:
+        print_colored(f"Erro ao escrever arquivo CS: {e}", "red")
 
 def get_failed_versions_cache(component_name: str) -> List[Dict]:
     """Obtém cache de versões falhadas"""
@@ -1007,6 +1079,38 @@ async def test_url_valid_async(url: str) -> UrlCheckResult:
 
     return result
 
+def test_url_valid(url: str) -> UrlCheckResult:
+    """Verifica se uma URL é válida de forma síncrona"""
+    result = UrlCheckResult(url)
+    
+    try:
+        # Faz uma requisição HEAD simples
+        req = Request(url)
+        req.get_method = lambda: 'HEAD'
+        
+        with urlopen(req, timeout=TIMEOUT_SECONDS) as response:
+            result.status_code = response.getcode()
+            result.is_valid = response.status < 400
+            
+            # Obtém tamanho do conteúdo se disponível
+            content_length = response.headers.get('Content-Length')
+            if content_length:
+                result.content_length = int(content_length)
+    except HTTPError as e:
+        result.is_valid = False
+        result.error_message = f"HTTP {e.code}: {e.reason}"
+        result.status_code = e.code
+    except URLError as e:
+        result.is_valid = False
+        result.error_message = str(e.reason)
+        result.status_code = 0
+    except Exception as e:
+        result.is_valid = False
+        result.error_message = str(e)
+        result.status_code = 0
+    
+    return result
+
 def test_single_url(url: str) -> bool:
     """Verifica uma URL específica"""
     print_colored(f"  Verificando: {url}", "gray")
@@ -1263,12 +1367,13 @@ async def get_node_new_versions_async(existing_versions: List[Dict]) -> List[Dic
 async def get_php_new_versions_async(existing_versions: List[Dict]) -> List[Dict]:
     """Busca novas versões do PHP usando asyncio"""
     try:
-        base_url = "https://windows.php.net/downloads/releases/"
-        archive_url = "https://windows.php.net/downloads/releases/archives/"
+        base_url = "https://windows.php.net"
+        release_url = base_url + "/downloads/releases"
+        archive_url = release_url + "/archives/"
 
         new_versions = []
 
-        for url in [base_url, archive_url]:
+        for url in [release_url, archive_url]:
             try:
                 content, error, status_code = make_http_request(url)
 
@@ -1295,7 +1400,7 @@ async def get_php_new_versions_async(existing_versions: List[Dict]) -> List[Dict
                                 if any(v['version'] == version for v in existing_versions):
                                     continue
 
-                                download_url = href if href.startswith('http') else url + href
+                                download_url = href if href.startswith('http') else base_url + href
 
                                 new_versions.append({
                                     'version': version,
@@ -1988,13 +2093,13 @@ async def process_component(component_name: str, file_path: Path, check_only: bo
         return
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            json_content = json.load(f)
+        # Lê versões do arquivo CS
+        cs_content = parse_cs_versions(file_path)
 
-        print_colored(f"Carregadas {len(json_content)} versões existentes", "green")
+        print_colored(f"Carregadas {len(cs_content)} versões existentes", "green")
 
         # Verifica URLs existentes
-        urls = [item['url'] for item in json_content]
+        urls = [item['url'] for item in cs_content]
         results = await test_urls_parallel_async(urls)
 
         valid_urls = len([r for r in results if r.is_valid])
@@ -2016,7 +2121,7 @@ async def process_component(component_name: str, file_path: Path, check_only: bo
 
         # Busca novas versões (tanto para CheckOnly quanto para atualização)
         print_colored("\nBuscando novas versões...", "yellow")
-        new_versions = await get_new_versions_for_component_async(component_name, json_content)
+        new_versions = await get_new_versions_for_component_async(component_name, cs_content)
 
         if new_versions:
             print_colored(f"Encontradas {len(new_versions)} novas versões:", "green")
@@ -2033,15 +2138,15 @@ async def process_component(component_name: str, file_path: Path, check_only: bo
         # Remove URLs inválidas
         if invalid_urls > 0:
             invalid_urls_list = [r.url for r in results if not r.is_valid]
-            valid_entries = [item for item in json_content if item['url'] not in invalid_urls_list]
+            valid_entries = [item for item in cs_content if item['url'] not in invalid_urls_list]
 
-            if len(valid_entries) < len(json_content):
-                print_colored(f"Removendo {len(json_content) - len(valid_entries)} entradas com URLs inválidas...", "yellow")
-                json_content = valid_entries
+            if len(valid_entries) < len(cs_content):
+                print_colored(f"Removendo {len(cs_content) - len(valid_entries)} entradas com URLs inválidas...", "yellow")
+                cs_content = valid_entries
 
         if new_versions:
             # Adiciona novas versões
-            all_versions = json_content + new_versions
+            all_versions = cs_content + new_versions
 
             # Ordena em ordem crescente
             sorted_versions = sort_versions(all_versions)
@@ -2049,18 +2154,23 @@ async def process_component(component_name: str, file_path: Path, check_only: bo
             # Cria backup
             create_backup(file_path)
 
+            # Extrai informações do componente
+            comp_name, comp_id = get_cs_component_info(file_path)
+
             # Salva arquivo atualizado
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(sorted_versions, f, indent=2, ensure_ascii=False)
+            write_cs_versions(file_path, sorted_versions, comp_name, comp_id)
 
             print_colored(f"Arquivo atualizado com {len(all_versions)} versões (ordem crescente)", "green")
         else:
             if invalid_urls > 0:
                 # Mesmo sem novas versões, salva se removeu URLs inválidas
-                sorted_versions = sort_versions(json_content)
+                sorted_versions = sort_versions(cs_content)
                 create_backup(file_path)
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(sorted_versions, f, indent=2, ensure_ascii=False)
+                
+                # Extrai informações do componente
+                comp_name, comp_id = get_cs_component_info(file_path)
+                
+                write_cs_versions(file_path, sorted_versions, comp_name, comp_id)
                 print_colored("Arquivo atualizado (removidas URLs inválidas, ordem crescente)", "green")
 
     except Exception as e:
@@ -2073,15 +2183,15 @@ async def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos:
-  python Update-VersionsManager.py --check-only
-  python Update-VersionsManager.py --component php --check-only
-  python Update-VersionsManager.py --component php
-  python Update-VersionsManager.py --update-all
-  python Update-VersionsManager.py --clear-cache
-  python Update-VersionsManager.py --component php --clear-cache
-  python Update-VersionsManager.py --clear-backups
-  python Update-VersionsManager.py --component php --clear-backups
-  python Update-VersionsManager.py --show-backups
+  python update_versions.py --check-only
+  python update_versions.py --component php --check-only
+  python update_versions.py --component php
+  python update_versions.py --update-all
+  python update_versions.py --clear-cache
+  python update_versions.py --component php --clear-cache
+  python update_versions.py --clear-backups
+  python update_versions.py --component php --clear-backups
+  python update_versions.py --show-backups
         """
     )
 
@@ -2102,17 +2212,18 @@ Exemplos:
         print_colored(f"Pasta não encontrada: {AVAILABLE_VERSIONS_PATH}", "red")
         return
 
-    # Obtém lista de componentes
-    json_files = list(AVAILABLE_VERSIONS_PATH.glob("*.json"))
-    json_files = [f for f in json_files if f.name != "backup"]
+    # Obtém lista de componentes (arquivos CS)
+    cs_files = list(AVAILABLE_VERSIONS_PATH.glob("*VersionProvider.cs"))
+    cs_files = [f for f in cs_files if f.name not in ["IVersionProvider.cs", "VersionRegistry.cs"]]
 
-    if not json_files:
-        print_colored(f"Nenhum arquivo JSON encontrado em: {AVAILABLE_VERSIONS_PATH}", "yellow")
+    if not cs_files:
+        print_colored(f"Nenhum arquivo CS de provider encontrado em: {AVAILABLE_VERSIONS_PATH}", "yellow")
         return
 
     print_colored("Componentes disponíveis:", "gray")
-    for file in json_files:
-        component_name = file.stem
+    for file in cs_files:
+        # Extrai o nome do componente (ex: PhpVersionProvider -> php)
+        component_name = file.stem.replace("VersionProvider", "").lower()
         print_colored(f"  - {component_name}", "gray")
 
     # Processa argumentos
@@ -2152,21 +2263,24 @@ Exemplos:
 
     elif args.component:
         # Componente específico
-        file = next((f for f in json_files if f.stem == args.component), None)
+        file = next((f for f in cs_files if f.stem.replace("VersionProvider", "").lower() == args.component.lower()), None)
         if file:
-            await process_component(args.component, file, args.check_only)
+            component_name = file.stem.replace("VersionProvider", "").lower()
+            await process_component(component_name, file, args.check_only)
         else:
             print_colored(f"Componente '{args.component}' não encontrado", "yellow")
 
     elif args.update_all:
         # Todos os componentes automaticamente
-        for file in json_files:
-            await process_component(file.stem, file, args.check_only)
+        for file in cs_files:
+            component_name = file.stem.replace("VersionProvider", "").lower()
+            await process_component(component_name, file, args.check_only)
 
     elif args.check_only:
         # Apenas verificação de todos os componentes
-        for file in json_files:
-            await process_component(file.stem, file, True)
+        for file in cs_files:
+            component_name = file.stem.replace("VersionProvider", "").lower()
+            await process_component(component_name, file, True)
 
     else:
         # Menu interativo
@@ -2186,45 +2300,51 @@ Exemplos:
                 return
 
             if choice == "1":
-                for file in json_files:
-                    await process_component(file.stem, file, True)
+                for file in cs_files:
+                    component_name = file.stem.replace("VersionProvider", "").lower()
+                    await process_component(component_name, file, True)
             elif choice == "2":
                 print_colored("\nComponentes disponíveis:")
-                for i, file in enumerate(json_files):
-                    print_colored(f"{i + 1}. {file.stem}")
+                for i, file in enumerate(cs_files):
+                    component_name = file.stem.replace("VersionProvider", "").lower()
+                    print_colored(f"{i + 1}. {component_name}")
 
                 try:
-                    component_choice = int(input(f"\nEscolha o componente (1-{len(json_files)}): ")) - 1
+                    component_choice = int(input(f"\nEscolha o componente (1-{len(cs_files)}): ")) - 1
                 except ValueError:
                     print_colored("Escolha inválida", "red")
                     continue
 
-                if 0 <= component_choice < len(json_files):
-                    selected_file = json_files[component_choice]
-                    await process_component(selected_file.stem, selected_file, True)
+                if 0 <= component_choice < len(cs_files):
+                    selected_file = cs_files[component_choice]
+                    component_name = selected_file.stem.replace("VersionProvider", "").lower()
+                    await process_component(component_name, selected_file, True)
                 else:
                     print_colored("Escolha inválida", "red")
             elif choice == "3":
                 print_colored("\nComponentes disponíveis:")
-                for i, file in enumerate(json_files):
-                    print_colored(f"{i + 1}. {file.stem}")
+                for i, file in enumerate(cs_files):
+                    component_name = file.stem.replace("VersionProvider", "").lower()
+                    print_colored(f"{i + 1}. {component_name}")
 
                 try:
-                    component_choice = int(input(f"\nEscolha o componente (1-{len(json_files)}): ")) - 1
+                    component_choice = int(input(f"\nEscolha o componente (1-{len(cs_files)}): ")) - 1
                 except ValueError:
                     print_colored("Escolha inválida", "red")
                     continue
 
-                if 0 <= component_choice < len(json_files):
-                    selected_file = json_files[component_choice]
-                    await process_component(selected_file.stem, selected_file, False)
+                if 0 <= component_choice < len(cs_files):
+                    selected_file = cs_files[component_choice]
+                    component_name = selected_file.stem.replace("VersionProvider", "").lower()
+                    await process_component(component_name, selected_file, False)
                 else:
                     print_colored("Escolha inválida", "red")
             elif choice == "4":
                 confirm = input("\nTem certeza que deseja atualizar TODOS os componentes? (s/N): ").strip().lower()
                 if confirm == "s":
-                    for file in json_files:
-                        await process_component(file.stem, file, False)
+                    for file in cs_files:
+                        component_name = file.stem.replace("VersionProvider", "").lower()
+                        await process_component(component_name, file, False)
             elif choice == "5":
                 show_cache_management_menu()
             elif choice == "6":

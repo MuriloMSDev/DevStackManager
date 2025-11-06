@@ -32,13 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Localização -->
-    <EmbeddedResource Include="..\Shared\locale\**\*.json">
-      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\Shared\DevStack.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -46,7 +39,9 @@
     <Compile Include="..\Shared\*.cs" />
     <Compile Include="..\Shared\Components\*.cs" />
     <Compile Include="..\Shared\Models\*.cs" />
-    <EmbeddedResource Include="..\Shared\AvailableVersions\*.json" />
+    <Compile Include="..\Shared\Localization\*.cs" />
+    <Compile Include="..\Shared\AvailableVersions\Models\*.cs" />
+    <Compile Include="..\Shared\AvailableVersions\Providers\*.cs" />
     <EmbeddedResource Include="..\Shared\Configs\*" />
   </ItemGroup>
 
