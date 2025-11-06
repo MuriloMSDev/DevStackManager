@@ -27,13 +27,6 @@
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <!-- Localização -->
-    <EmbeddedResource Include="..\Shared\locale\**\*.json">
-      <LogicalName>DevStackManager.locale.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\Shared\DevStack.ico" CopyToOutputDirectory="PreserveNewest" />
@@ -52,7 +45,9 @@
     <Compile Include="..\Shared\UninstallManager.cs" />
     <Compile Include="..\Shared\Components\*.cs" />
     <Compile Include="..\Shared\Models\*.cs" />
-    <EmbeddedResource Include="..\Shared\AvailableVersions\*.json" />
+    <Compile Include="..\Shared\Localization\*.cs" />
+    <Compile Include="..\Shared\AvailableVersions\Models\*.cs" />
+    <Compile Include="..\Shared\AvailableVersions\Providers\*.cs" />
     <EmbeddedResource Include="..\Shared\Configs\*" />
   </ItemGroup>
 

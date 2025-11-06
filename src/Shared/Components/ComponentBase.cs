@@ -123,22 +123,9 @@ namespace DevStackManager.Components
             return Task.CompletedTask;
         }
 
-        private IEnumerable<System.Text.Json.JsonElement>? GetJsonItems()
+        private List<DevStackShared.AvailableVersions.Models.VersionInfo>? GetVersions()
         {
-            var assembly = GetType().Assembly;
-            var resourceNames = assembly.GetManifestResourceNames();
-            string? resourceName = resourceNames.FirstOrDefault(n => n.Contains($"{Name}.json"));
-            if (!string.IsNullOrEmpty(resourceName))
-            {
-                using var stream = assembly.GetManifestResourceStream(resourceName);
-                if (stream != null)
-                {
-                    using var reader = new System.IO.StreamReader(stream);
-                    var json = reader.ReadToEnd();
-                    return System.Text.Json.JsonDocument.Parse(json).RootElement.EnumerateArray().ToList();
-                }
-            }
-            return null;
+            return DevStackShared.AvailableVersions.Providers.VersionRegistry.GetAvailableVersions(Name);
         }
 
         public void Uninstall(string? version = null)
@@ -155,34 +142,22 @@ namespace DevStackManager.Components
 
         public string GetUrlForVersion(string version)
         {
-            var items = GetJsonItems();
-            if (items != null)
+            var versionInfo = DevStackShared.AvailableVersions.Providers.VersionRegistry.GetVersion(Name, version);
+            if (versionInfo != null)
             {
-                foreach (var item in items)
-                {
-                    if (item.TryGetProperty("version", out var v) && v.GetString() == version)
-                    {
-                        if (item.TryGetProperty("url", out var urlProp))
-                            return urlProp.GetString() ?? throw new System.Exception($"URL para a versão {version} do {Name} não encontrada.");
-                    }
-                }
+                return versionInfo.Url;
             }
             throw new System.Exception($"URL para a versão {version} do {Name} não encontrada.");
         }
 
         public List<string> ListAvailable()
         {
-            var versions = new List<string>();
-            var items = GetJsonItems();
-            if (items != null)
+            var versionInfos = GetVersions();
+            if (versionInfos != null)
             {
-                foreach (var item in items)
-                {
-                    if (item.TryGetProperty("version", out var v))
-                        versions.Add(v.GetString() ?? "");
-                }
+                return versionInfos.Select(v => v.Version).ToList();
             }
-            return versions;
+            return new List<string>();
         }
 
         public string GetLatestVersion()

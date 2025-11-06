@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 
 namespace DevStackShared
 {
@@ -223,31 +224,13 @@ namespace DevStackShared
                 
                 _currentLanguage = languageCode;
                 
-                // Tentamos diferentes abordagens para carregar o arquivo de idioma
+                // NOVA ABORDAGEM: Usar provedores de idioma em C# (primeira tentativa)
+                bool loaded = TryLoadFromProvider(languageCode, ref logMessage);
                 
-                // 1. Primeira tentativa - arquivos externos na pasta locale
-                bool loaded = TryLoadFromExternalFile(languageCode, logMessage);
-                
-                // 2. Segunda tentativa - recursos incorporados
+                // Fallback para traduções básicas hardcoded se o provedor não estiver disponível
                 if (!loaded)
                 {
-                    logMessage += "[LoadLanguage] Trying to load from embedded resources\n";
-                    loaded = TryLoadFromEmbeddedResource(languageCode, logMessage);
-                }
-                
-                // 3. Terceira tentativa - caminho direto usando o nome do assembly mas com padrão LogicalName específico
-                if (!loaded)
-                {
-                    string appPrefix = _applicationType == ApplicationType.Installer ? 
-                        "DevStackInstaller" : (_applicationType == ApplicationType.Uninstaller ? "DevStackUninstaller" : "DevStackManager");
-                    logMessage += $"[LoadLanguage] Trying with app prefix: {appPrefix}\n";
-                    loaded = TryLoadFromSpecificEmbeddedResource($"{appPrefix}.locale.{languageCode}.json", logMessage);
-                }
-                
-                // 4. Quarta tentativa - traduções básicas hardcoded
-                if (!loaded)
-                {
-                    logMessage += "[LoadLanguage] Using hardcoded basic translations\n";
+                    logMessage += "[LoadLanguage] Provider not found, using hardcoded basic translations\n";
                     UseHardcodedTranslations(languageCode);
                     loaded = true;
                 }
@@ -286,6 +269,77 @@ namespace DevStackShared
                 {
                     try { LanguageChanged?.Invoke(this, _currentLanguage); } catch { }
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Tenta carregar traduções de um provedor C# (nova abordagem)
+        /// </summary>
+        private bool TryLoadFromProvider(string languageCode, ref string logMessage)
+        {
+            try
+            {
+                logMessage += $"[TryLoadFromProvider] Looking for provider for {languageCode}\n";
+                
+                // Procurar por classe de provedor usando reflection
+                var assembly = Assembly.GetExecutingAssembly();
+                
+                logMessage += $"[TryLoadFromProvider] Searching for type: {languageCode}\n";
+                
+                var providerType = assembly.GetTypes()
+                    .FirstOrDefault(t => t.Name.Equals(languageCode, StringComparison.OrdinalIgnoreCase) && 
+                                        t.Namespace == "DevStackShared.Localization");
+                
+                if (providerType != null)
+                {
+                    logMessage += $"[TryLoadFromProvider] Found provider type: {providerType.FullName}\n";
+                    
+                    var provider = Activator.CreateInstance(providerType);
+                    if (provider != null)
+                    {
+                        // Tentar obter método GetAllTranslations
+                        var method = providerType.GetMethod("GetAllTranslations");
+                        if (method != null)
+                        {
+                            var translations = method.Invoke(provider, null) as Dictionary<string, object>;
+                            if (translations != null && translations.Count > 0)
+                            {
+                                _translations = translations;
+                                logMessage += $"[TryLoadFromProvider] Successfully loaded {translations.Count} translation sections from provider\n";
+                                System.Diagnostics.Debug.WriteLine(logMessage);
+                                AppendToLogFile(logMessage);
+                                return true;
+                            }
+                            else
+                            {
+                                logMessage += $"[TryLoadFromProvider] Provider returned empty or null translations\n";
+                            }
+                        }
+                        else
+                        {
+                            logMessage += $"[TryLoadFromProvider] GetAllTranslations method not found\n";
+                        }
+                    }
+                    else
+                    {
+                        logMessage += $"[TryLoadFromProvider] Failed to create instance of provider\n";
+                    }
+                }
+                else
+                {
+                    logMessage += $"[TryLoadFromProvider] No provider type found for {languageCode}\n";
+                }
+                
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                AppendToLogFile(logMessage);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logMessage += $"[TryLoadFromProvider] Error loading from provider: {ex.Message}\n{ex.StackTrace}\n";
+                System.Diagnostics.Debug.WriteLine(logMessage);
+                AppendToLogFile(logMessage);
+                return false;
             }
         }
         
@@ -1527,99 +1581,36 @@ namespace DevStackShared
         {
             try
             {
-                // Lista de possíveis códigos de idioma para verificar
-                HashSet<string> allLanguages = new HashSet<string> { "pt_BR", "en_US", "de_DE", "es_ES", "fr_FR", "it_IT" };
+                // Coletar idiomas disponíveis a partir dos provedores C#
+                HashSet<string> allLanguages = new HashSet<string>();
                 
-                // Primeiro, verifique diretórios de idioma externos
-                string localeDir = Path.Combine(AppContext.BaseDirectory, "locale");
-                System.Diagnostics.Debug.WriteLine($"Checking locale directory: {localeDir}");
-                
-                if (Directory.Exists(localeDir))
-                {
-                    var languageDirs = Directory.GetDirectories(localeDir)
-                        .Select(dir => Path.GetFileName(dir))
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .ToArray();
-                    
-                    if (languageDirs.Length > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Found external language directories: {string.Join(", ", languageDirs)}");
-                        foreach (var dir in languageDirs)
-                        {
-                            allLanguages.Add(dir);
-                        }
-                    }
-                }
-                
-                // Try relative path to src/Shared/locale in development environment
-                string srcLocaleDir = Path.Combine(AppContext.BaseDirectory, "..", "src", "Shared", "locale");
-                srcLocaleDir = Path.GetFullPath(srcLocaleDir);
-                
-                if (Directory.Exists(srcLocaleDir))
-                {
-                    var languageDirs = Directory.GetDirectories(srcLocaleDir)
-                        .Select(dir => Path.GetFileName(dir))
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .ToArray();
-                    
-                    if (languageDirs.Length > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Found language directories in dev path: {string.Join(", ", languageDirs)}");
-                        foreach (var dir in languageDirs)
-                        {
-                            allLanguages.Add(dir);
-                        }
-                    }
-                }
-                
-                // Try another common development path
-                string devLocaleDir = Path.Combine(AppContext.BaseDirectory, "src", "Shared", "locale");
-                devLocaleDir = Path.GetFullPath(devLocaleDir);
-                
-                if (Directory.Exists(devLocaleDir))
-                {
-                    var languageDirs = Directory.GetDirectories(devLocaleDir)
-                        .Select(dir => Path.GetFileName(dir))
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .ToArray();
-                    
-                    if (languageDirs.Length > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Found language directories in direct dev path: {string.Join(", ", languageDirs)}");
-                        foreach (var dir in languageDirs)
-                        {
-                            allLanguages.Add(dir);
-                        }
-                    }
-                }
-                
-                // Encontrar recursos incorporados
                 try
                 {
                     var assembly = Assembly.GetExecutingAssembly();
-                    var resources = assembly.GetManifestResourceNames();
+                    var providerTypes = assembly.GetTypes()
+                        .Where(t => t.Namespace == "DevStackShared.Localization" && 
+                                   !t.IsInterface && 
+                                   !t.IsAbstract &&
+                                   t.Name != "LanguageProviderFactory")
+                        .ToArray();
                     
-                    // Exibir todos os recursos para debug
-                    System.Diagnostics.Debug.WriteLine($"All embedded resources ({resources.Length}):");
-                    foreach (var res in resources)
+                    foreach (var providerType in providerTypes)
                     {
-                        System.Diagnostics.Debug.WriteLine($" - {res}");
-                        
-                        // Tenta extrair códigos de idioma de recursos como "DevStackManager.locale.pt_BR.common.json"
-                        foreach (var lang in allLanguages)
-                        {
-                            if (res.Contains($".locale.{lang}.") || res.Contains($".{lang}\\"))
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Found resource for language: {lang}");
-                                allLanguages.Add(lang);
-                                break;
-                            }
-                        }
+                        // O nome da classe é o código do idioma (ex: pt_BR, en_US)
+                        allLanguages.Add(providerType.Name);
+                        System.Diagnostics.Debug.WriteLine($"Found language provider: {providerType.Name}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error checking embedded resources: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error checking for language providers: {ex.Message}");
+                }
+                
+                // Se nenhum provedor foi encontrado, retornar lista padrão
+                if (allLanguages.Count == 0)
+                {
+                    allLanguages = new HashSet<string> { "pt_BR", "en_US", "de_DE", "es_ES", "fr_FR", "it_IT" };
+                    System.Diagnostics.Debug.WriteLine("No providers found, using default language list");
                 }
                 
                 // Ordenar idiomas e remover duplicatas
