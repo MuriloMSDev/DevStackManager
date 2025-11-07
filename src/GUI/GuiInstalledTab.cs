@@ -132,9 +132,10 @@ namespace DevStackManager
 
                 var nameTemplate = new DataTemplate();
                 var nameTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
-                nameTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
+                nameTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Label"));
                 nameTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
                 nameTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                nameTextBlockFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
                 nameTemplate.VisualTree = nameTextBlockFactory;
                 nameColumn.CellTemplate = nameTemplate;
 
@@ -164,7 +165,7 @@ namespace DevStackManager
                 buttonFactory.SetValue(Button.WidthProperty, 80.0);
                 buttonFactory.SetValue(Button.HeightProperty, 25.0);
                 buttonFactory.SetValue(Button.MarginProperty, new Thickness(2));
-                buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Info).Style);
+                buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Secondary).Style);
                 // StackPanel para versão + ícone
                 var btnStackPanel = new FrameworkElementFactory(typeof(StackPanel));
                 btnStackPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
@@ -174,11 +175,20 @@ namespace DevStackManager
                 btnTextBlock.SetBinding(TextBlock.TextProperty, new Binding("."));
                 btnTextBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 btnStackPanel.AppendChild(btnTextBlock);
-                // Ícone ▶️
+                // Ícone 🗲 com gradiente
                 var btnIconBlock = new FrameworkElementFactory(typeof(TextBlock));
-                btnIconBlock.SetValue(TextBlock.TextProperty, " ▶️");
+                btnIconBlock.SetValue(TextBlock.TextProperty, " 🗲");
+                btnIconBlock.SetValue(TextBlock.FontSizeProperty, 16.0);
                 btnIconBlock.SetValue(TextBlock.MarginProperty, new Thickness(4, 0, 0, 0));
                 btnIconBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                // Gradiente amarelo → laranja → vermelho
+                var iconGradientBrush = new LinearGradientBrush();
+                iconGradientBrush.StartPoint = new Point(0.5, 0);
+                iconGradientBrush.EndPoint = new Point(0.5, 1);
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 215, 0), 0.0));   // Gold
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 140, 0), 0.5));  // DarkOrange
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(220, 20, 60), 1.0));  // Crimson
+                btnIconBlock.SetValue(TextBlock.ForegroundProperty, iconGradientBrush);
                 btnStackPanel.AppendChild(btnIconBlock);
                 buttonFactory.AppendChild(btnStackPanel);
                 buttonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => ExecuteComponentVersionButton_Click(sender, e, mainWindow)));

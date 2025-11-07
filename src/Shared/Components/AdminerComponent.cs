@@ -6,6 +6,7 @@ namespace DevStackManager.Components
     public class AdminerComponent : ComponentBase
     {
         public override string Name => "adminer";
+        public override string Label => "Adminer";
         public override string ToolDir => DevStackConfig.adminerDir;
         public override bool IsArchive => false;
     }

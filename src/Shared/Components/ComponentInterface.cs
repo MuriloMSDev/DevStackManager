@@ -10,6 +10,7 @@ namespace DevStackManager.Components
         List<string> ListInstalled();
         List<string> ListAvailable();
         string Name { get; }
+        string Label { get; }
         string ToolDir { get; }
         string GetLatestVersion();
         bool IsService { get; }

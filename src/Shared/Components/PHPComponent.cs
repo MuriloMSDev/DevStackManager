@@ -7,6 +7,7 @@ namespace DevStackManager.Components
     public class PHPComponent : ComponentBase
     {
         public override string Name => "php";
+        public override string Label => "PHP";
         public override string ToolDir => DevStackConfig.phpDir;
         public override bool IsService => true;
         public override bool IsExecutable => true;

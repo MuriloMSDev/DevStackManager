@@ -486,9 +486,11 @@ namespace DevStackManager
                 
                 foreach (var comp in data.Components)
                 {
+                    var compDef = Components.ComponentsFactory.GetComponent(comp.Name);
                     components.Add(new ComponentViewModel
                     {
-                        Name = comp.Name,
+                        Name = comp.Name, // technical key
+                        Label = compDef?.Label ?? comp.Name, // display label
                         Installed = comp.Installed,
                         IsExecutable = comp.IsExecutable,
                         Versions = comp.Versions,
@@ -499,7 +501,7 @@ namespace DevStackManager
                 
                 DevStackConfig.WriteLog("Ordenando e atualizando UI");
                 // Ordena: instalados primeiro
-                var ordered = components.OrderByDescending(c => c.Installed).ThenBy(c => c.Name).ToList();
+                var ordered = components.OrderByDescending(c => c.Installed).ThenBy(c => c.Label).ToList();
                 InstalledComponents = new ObservableCollection<ComponentViewModel>(ordered);
                 StatusMessage = LocalizationManager.GetString("gui.installed_tab.loaded", ordered.Count);
                 DevStackConfig.WriteLog($"LoadInstalledComponents concluído com {ordered.Count} componentes");
@@ -706,6 +708,7 @@ namespace DevStackManager
                             serviceList.Add(new ServiceViewModel 
                             { 
                                 Name = component.Name, 
+                                Label = component.Label,
                                 Version = version,
                                 Status = isRunning ? LocalizationManager.GetString("gui.services_tab.status.running") : LocalizationManager.GetString("gui.services_tab.status.stopped"), 
                                 Type = component.GetServiceType(LocalizationManager), 
@@ -720,6 +723,7 @@ namespace DevStackManager
                             serviceList.Add(new ServiceViewModel 
                             { 
                                 Name = component.Name, 
+                                Label = component.Label,
                                 Version = version,
                                 Status = LocalizationManager.GetString("gui.services_tab.status.stopped"), 
                                 Type = component.GetServiceType(LocalizationManager), 
@@ -732,7 +736,7 @@ namespace DevStackManager
                 }
                 
                 // Ordenar lista
-                var orderedServices = serviceList.OrderBy(s => s.Name).ThenBy(s => s.Version).ToList();
+                var orderedServices = serviceList.OrderBy(s => s.Label).ThenBy(s => s.Version).ToList();
                 
                 // Atualizar UI
                 await Dispatcher.InvokeAsync(() =>

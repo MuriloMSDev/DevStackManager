@@ -6,6 +6,7 @@ namespace DevStackManager.Components
     public class NodeComponent : ComponentBase
     {
         public override string Name => "node";
+        public override string Label => "Node.js"; // Display brand with .js while internal Name remains Node
         public override string ToolDir => DevStackConfig.nodeDir;
         public override bool IsExecutable => true;
         public override bool IsCommandLine => true;

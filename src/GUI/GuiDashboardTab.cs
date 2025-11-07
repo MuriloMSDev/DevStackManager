@@ -500,14 +500,14 @@ namespace DevStackManager
             };
 
             // Criar grid dinâmico baseado na largura disponível
-            int columnsPerRow = 5; // Máximo de 5 colunas por linha
+            int columnsPerRow = 4; // Máximo de 4 colunas por linha
             int currentRow = 0;
             int currentColumn = 0;
 
             // Usar dados dos componentes instalados já carregados no mainWindow
             try
             {
-                var installedComponents = mainWindow.InstalledComponents?.Where(c => c.Installed).OrderBy(c => c.Name).ToList() ?? new List<ComponentViewModel>();
+                var installedComponents = mainWindow.InstalledComponents?.Where(c => c.Installed).OrderBy(c => c.Label).ToList() ?? new List<ComponentViewModel>();
                 
                 if (installedComponents.Count > 0)
                 {
@@ -530,7 +530,7 @@ namespace DevStackManager
                                     componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                                 }
 
-                                var componentCard = CreateComponentCard(component.Name, version, component, mainWindow);
+                                var componentCard = CreateComponentCard(component.Label, version, component, mainWindow);
                                 Grid.SetRow(componentCard, currentRow);
                                 Grid.SetColumn(componentCard, currentColumn);
                                 componentsGrid.Children.Add(componentCard);
@@ -553,7 +553,7 @@ namespace DevStackManager
                             }
 
                             var versionsText = !string.IsNullOrEmpty(component.VersionsText) ? component.VersionsText : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.installed_default");
-                            var componentCard = CreateComponentCard(component.Name, versionsText, component, mainWindow);
+                            var componentCard = CreateComponentCard(component.Label, versionsText, component, mainWindow);
                             Grid.SetRow(componentCard, currentRow);
                             Grid.SetColumn(componentCard, currentColumn);
                             componentsGrid.Children.Add(componentCard);
@@ -665,6 +665,12 @@ namespace DevStackManager
             componentCombo.SetBinding(ComboBox.ItemsSourceProperty, componentBinding);
             var selectedComponentBinding = new Binding("SelectedComponent") { Source = mainWindow };
             componentCombo.SetBinding(ComboBox.SelectedItemProperty, selectedComponentBinding);
+            // Display Label via converter
+            var quickInstallItemTemplate = new DataTemplate();
+            var quickInstallTextFactory = new FrameworkElementFactory(typeof(TextBlock));
+            quickInstallTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new GuiInstallTab.NameToLabelConverter() });
+            quickInstallItemTemplate.VisualTree = quickInstallTextFactory;
+            componentCombo.ItemTemplate = quickInstallItemTemplate;
             content.Children.Add(componentCombo);
 
             // ComboBox para versão (reutilizando binding existente)
@@ -1045,10 +1051,10 @@ namespace DevStackManager
                         // Ordenar a lista por nome antes de processar
                         var sortedComponents = installedComponents
                             .Cast<ComponentViewModel>()
-                            .OrderBy(c => c.Name)
+                            .OrderBy(c => c.Label)
                             .ToList();
 
-                        int columnsPerRow = 5; // Máximo de 5 colunas por linha
+                        int columnsPerRow = 4; // Máximo de 4 colunas por linha
                         int currentRow = 0;
                         int currentColumn = 0;
 
@@ -1071,7 +1077,7 @@ namespace DevStackManager
                                         componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                                     }
 
-                                    var componentCard = CreateComponentCard(component.Name, version, component, mainWindow);
+                                    var componentCard = CreateComponentCard(component.Label, version, component, mainWindow);
                                     Grid.SetRow(componentCard, currentRow);
                                     Grid.SetColumn(componentCard, currentColumn);
                                     componentsGrid.Children.Add(componentCard);
@@ -1094,7 +1100,7 @@ namespace DevStackManager
                                 }
 
                                 var versionText = !string.IsNullOrEmpty(component.VersionsText) ? component.VersionsText : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.installed_default");
-                                var componentCard = CreateComponentCard(component.Name, versionText, component, mainWindow);
+                                var componentCard = CreateComponentCard(component.Label, versionText, component, mainWindow);
                                 Grid.SetRow(componentCard, currentRow);
                                 Grid.SetColumn(componentCard, currentColumn);
                                 componentsGrid.Children.Add(componentCard);
@@ -1209,12 +1215,28 @@ namespace DevStackManager
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(8, 9, 8, 6),
                 Margin = new Thickness(2, 2, 2, 2),
-                Height = 48,
+                Height = 55,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top
+                VerticalAlignment = VerticalAlignment.Top,
+                ClipToBounds = false,
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 315,
+                    ShadowDepth = 2,
+                    Opacity = 0.1,
+                    BlurRadius = 8
+                }
             };
 
-            var mainGrid = new Grid();
+            var mainGrid = new Grid
+            {
+                ClipToBounds = false
+            };
+
+            // Definir colunas: texto à esquerda, ícone à direita
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             // Determinar se o componente é executável para definir a cor da borda
             bool isExecutable = component != null && mainWindow != null;
@@ -1233,6 +1255,7 @@ namespace DevStackManager
                 CornerRadius = new CornerRadius(6, 6, 0, 0),
                 Margin = new Thickness(-8, -9, -8, 0) // Margem negativa para anular o padding
             };
+            Grid.SetColumnSpan(topBorder, 2);
 
             // Criar gradiente baseado na capacidade de execução do componente
             var gradientBrush = new LinearGradientBrush();
@@ -1263,13 +1286,14 @@ namespace DevStackManager
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 0)
             };
+            Grid.SetColumn(stackPanel, 0);
 
             // Nome do componente
             var nameText = new TextBlock
             {
                 Text = name,
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis,
@@ -1280,7 +1304,8 @@ namespace DevStackManager
             var versionText = new TextBlock
             {
                 Text = version,
-                FontSize = 9,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis
@@ -1292,6 +1317,32 @@ namespace DevStackManager
             // Adicionar elementos ao grid
             mainGrid.Children.Add(topBorder);
             mainGrid.Children.Add(stackPanel);
+
+            // Adicionar ícone de raio ao lado direito para componentes executáveis
+            if (isExecutable)
+            {
+                // Criar gradiente amarelo-laranja-vermelho
+                var iconGradientBrush = new LinearGradientBrush();
+                iconGradientBrush.StartPoint = new Point(0, 0);
+                iconGradientBrush.EndPoint = new Point(0, 1);
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 215, 0), 0.0));   // Amarelo (Gold)
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 140, 0), 0.5));  // Laranja (DarkOrange)
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(220, 20, 60), 1.0));  // Vermelho (Crimson)
+
+                var iconText = new TextBlock
+                {
+                    Text = "🗲",
+                    FontSize = 30,
+                    Foreground = iconGradientBrush,
+                    Opacity = 0.90,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, -4, 3, 0),
+                    IsHitTestVisible = false
+                };
+                Grid.SetColumn(iconText, 1);
+                mainGrid.Children.Add(iconText);
+            }
 
             card.Child = mainGrid;
 
@@ -1486,7 +1537,15 @@ namespace DevStackManager
                 Margin = new Thickness(2, 2, 2, 2),
                 Height = 55,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top
+                VerticalAlignment = VerticalAlignment.Top,
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 315,
+                    ShadowDepth = 2,
+                    Opacity = 0.1,
+                    BlurRadius = 8
+                }
             };
 
             var mainGrid = new Grid();
@@ -1523,8 +1582,8 @@ namespace DevStackManager
             var nameText = new TextBlock
             {
                 Text = name,
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis,
@@ -1535,8 +1594,8 @@ namespace DevStackManager
             var versionText = new TextBlock
             {
                 Text = !string.IsNullOrEmpty(version) ? version : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.version_na"),
-                FontSize = 9,
-                FontWeight = FontWeights.Normal,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis,
@@ -1680,7 +1739,7 @@ namespace DevStackManager
                             }
 
                             var status = service.IsRunning ? mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.status.active") : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.status.stopped");
-                            var serviceCard = CreateServiceCard(service.Name, service.Version, status, mainWindow);
+                            var serviceCard = CreateServiceCard(string.IsNullOrEmpty(service.Label) ? service.Name : service.Label, service.Version, status, mainWindow);
                             Grid.SetRow(serviceCard, currentRow);
                             Grid.SetColumn(serviceCard, currentColumn);
                             servicesGrid.Children.Add(serviceCard);

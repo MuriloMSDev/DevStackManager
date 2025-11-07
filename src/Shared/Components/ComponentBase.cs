@@ -70,6 +70,7 @@ namespace DevStackManager.Components
         }
 
         public abstract string Name { get; }
+        public abstract string Label { get; }
         public abstract string ToolDir { get; }
         public virtual bool IsService => false;
         public virtual bool IsExecutable => false;

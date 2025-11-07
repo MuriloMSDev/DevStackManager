@@ -169,7 +169,7 @@ namespace DevStackShared
             ConsoleSelectionBrush = new SolidColorBrush(Color.FromRgb(201, 209, 217)),
             RowSelectedForeground = new SolidColorBrush(Colors.White),
             FormBackground = new SolidColorBrush(Color.FromRgb(22, 27, 34)),
-            Foreground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
+            Foreground = new SolidColorBrush(Color.FromRgb(235, 235, 235)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
 
             // Notificações
@@ -283,7 +283,7 @@ namespace DevStackShared
             ConsoleSelectionBrush = new SolidColorBrush(Color.FromRgb(220, 220, 220)),
             RowSelectedForeground = new SolidColorBrush(Colors.Black),
             FormBackground = new SolidColorBrush(Color.FromRgb(245, 247, 250)),
-            Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+            Foreground = new SolidColorBrush(Color.FromRgb(70, 70, 70)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
 
             // Notificações

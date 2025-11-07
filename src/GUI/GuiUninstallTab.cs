@@ -72,6 +72,12 @@ namespace DevStackManager
             
             var selectedUninstallComponentBinding = new Binding("SelectedUninstallComponent") { Source = mainWindow };
             componentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedUninstallComponentBinding);
+            // Exibir Label para cada item preenchido dinamicamente depois (Items.Add(Name))
+            var uninstallItemTemplate = new DataTemplate();
+            var uninstallTextFactory = new FrameworkElementFactory(typeof(TextBlock));
+            uninstallTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new GuiInstallTab.NameToLabelConverter() });
+            uninstallItemTemplate.VisualTree = uninstallTextFactory;
+            componentCombo.ItemTemplate = uninstallItemTemplate;
             panel.Children.Add(componentCombo);
 
             // Versão

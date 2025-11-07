@@ -10,6 +10,7 @@ namespace DevStackManager
     public class ComponentViewModel
     {
         public string Name { get; set; } = "";
+        public string Label { get; set; } = "";
         public bool Installed { get; set; }
         public bool IsExecutable { get; set; }
         public List<string> Versions { get; set; } = new();
@@ -23,6 +24,7 @@ namespace DevStackManager
     public class ServiceViewModel
     {
         public string Name { get; set; } = "";
+        public string Label { get; set; } = "";
         public string Version { get; set; } = "";
         public string Status { get; set; } = "";
         public string Type { get; set; } = "";
