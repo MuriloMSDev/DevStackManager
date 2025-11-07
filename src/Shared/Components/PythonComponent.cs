@@ -6,6 +6,7 @@ namespace DevStackManager.Components
     public class PythonComponent : ComponentBase
     {
         public override string Name => "python";
+        public override string Label => "Python";
         public override string ToolDir => DevStackConfig.pythonDir;
         public override bool IsExecutable => true;
         public override bool IsCommandLine => true;

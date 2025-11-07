@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
+using System.Globalization;
 namespace DevStackManager
 {
     /// <summary>
@@ -14,6 +15,24 @@ namespace DevStackManager
     public static class GuiInstallTab
     {
         /// <summary>
+        // Converter: recebe o Name técnico (string) e retorna o Label do componente
+    public class NameToLabelConverter : IValueConverter
+        {
+            public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+            {
+                if (value is string name && !string.IsNullOrWhiteSpace(name))
+                {
+                    var comp = DevStackManager.Components.ComponentsFactory.GetComponent(name);
+                    return comp?.Label ?? name;
+                }
+                return value ?? string.Empty;
+            }
+            public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+            {
+                // One-way converter
+                return Binding.DoNothing;
+            }
+        }
         /// Cria o conteúdo completo da aba "Instalar"
         /// </summary>
         public static Grid CreateInstallContent(DevStackGui mainWindow)
@@ -70,6 +89,12 @@ namespace DevStackManager
             componentCombo.SetBinding(ComboBox.ItemsSourceProperty, componentBinding);
             var selectedComponentBinding = new Binding("SelectedComponent") { Source = mainWindow };
             componentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedComponentBinding);
+            // Mostrar Label para cada item (items são strings com o Name técnico)
+            var compItemTemplate = new DataTemplate();
+            var compTextFactory = new FrameworkElementFactory(typeof(TextBlock));
+            compTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new NameToLabelConverter() });
+            compItemTemplate.VisualTree = compTextFactory;
+            componentCombo.ItemTemplate = compItemTemplate;
             panel.Children.Add(componentCombo);
 
             // Versão
@@ -140,6 +165,12 @@ namespace DevStackManager
             
             var selectedShortcutComponentBinding = new Binding("SelectedShortcutComponent") { Source = mainWindow };
             installedComponentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedShortcutComponentBinding);
+            // Mostrar Label para cada item (items são strings com o Name técnico)
+            var shortcutItemTemplate = new DataTemplate();
+            var shortcutTextFactory = new FrameworkElementFactory(typeof(TextBlock));
+            shortcutTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new NameToLabelConverter() });
+            shortcutItemTemplate.VisualTree = shortcutTextFactory;
+            installedComponentCombo.ItemTemplate = shortcutItemTemplate;
             panel.Children.Add(installedComponentCombo);
 
             // Versão Instalada

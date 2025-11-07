@@ -6,6 +6,7 @@ namespace DevStackManager.Components
     public class ElasticsearchComponent : ComponentBase
     {
         public override string Name => "elasticsearch";
+        public override string Label => "Elasticsearch";
         public override string ToolDir => DevStackConfig.elasticDir;
         public override bool IsService => true;
         public override string? ServicePattern => "elasticsearch.exe";

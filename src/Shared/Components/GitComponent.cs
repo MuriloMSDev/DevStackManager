@@ -9,6 +9,7 @@ namespace DevStackManager.Components
     public class GitComponent : ComponentBase
     {
         public override string Name => "git";
+        public override string Label => "Git";
         public override string ToolDir => DevStackConfig.gitDir;
         public override bool IsExecutable => true;
         public override bool IsCommandLine => true;

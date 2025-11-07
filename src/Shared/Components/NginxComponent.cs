@@ -10,6 +10,7 @@ namespace DevStackManager.Components
     public class NginxComponent : ComponentBase
     {
         public override string Name => "nginx";
+        public override string Label => "Nginx";
         public override string ToolDir => DevStackConfig.nginxDir;
         public override bool IsService => true;
         public override string? ServicePattern => "nginx.exe";

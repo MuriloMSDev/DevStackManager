@@ -6,6 +6,7 @@ namespace DevStackManager.Components
     public class OpenSSLComponent : ComponentBase
     {
         public override string Name => "openssl";
+        public override string Label => "OpenSSL";
         public override string ToolDir => DevStackConfig.openSSLDir;
         public override bool IsArchive => false;
         public override bool RunInstaller => true;

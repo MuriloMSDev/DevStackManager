@@ -172,9 +172,10 @@ namespace DevStackManager
 
                 var componentTemplate = new DataTemplate();
                 var componentTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
-                componentTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
+                componentTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("Label"));
                 componentTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(12, 0, 0, 0));
                 componentTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                componentTextBlockFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.Bold);
                 componentTemplate.VisualTree = componentTextBlockFactory;
                 componentColumn.CellTemplate = componentTemplate;
 
