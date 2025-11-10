@@ -1,64 +1,120 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DevStackManager
 {
     public static class InstallManager
     {
+        private const string HOSTS_FILE_RELATIVE_PATH = @"System32\drivers\etc\hosts";
+
         public static async Task InstallCommands(string[] args)
         {
-            if (args.Length == 0)
+            if (!ValidateInstallArgs(args, out var component, out var version))
             {
-                Console.WriteLine("Nenhum componente especificado para instalar.");
                 return;
             }
 
-            string component = args[0];
-            string? version = args.Length > 1 ? args[1] : null;
             var comp = Components.ComponentsFactory.GetComponent(component);
-            if (comp != null)
+            if (comp == null)
             {
-                await comp.Install(version);
+                LogUnknownComponent(component);
+                return;
             }
-            else
+
+            await comp.Install(version);
+        }
+
+        public static void CreateNginxSiteConfig(
+            string domain, 
+            string root, 
+            string phpUpstream, 
+            string nginxVersion)
+        {
+            ValidateNginxInstallation(nginxVersion);
+
+            var nginxSitesDir = GetNginxSitesDirectory(nginxVersion);
+            EnsureDirectoryExists(nginxSitesDir);
+
+            var confPath = CreateSiteConfigFile(nginxSitesDir, domain, root, phpUpstream);
+            Console.WriteLine($"Arquivo {confPath} criado/configurado com sucesso!");
+
+            AddDomainToHostsFile(domain);
+        }
+
+        private static bool ValidateInstallArgs(
+            string[] args, 
+            out string component, 
+            out string? version)
+        {
+            component = string.Empty;
+            version = null;
+
+            if (args.Length == 0)
             {
-                Console.WriteLine($"Componente desconhecido: {component}");
+                Console.WriteLine("Nenhum componente especificado para instalar.");
+                return false;
+            }
+
+            component = args[0];
+            version = args.Length > 1 ? args[1] : null;
+            return true;
+        }
+
+        private static void LogUnknownComponent(string component)
+        {
+            Console.WriteLine($"Componente desconhecido: {component}");
+        }
+
+        private static void ValidateNginxInstallation(string nginxVersion)
+        {
+            var nginxVersionDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{nginxVersion}");
+            
+            if (!Directory.Exists(nginxVersionDir))
+            {
+                throw new InvalidOperationException(
+                    $"A versão do Nginx ({nginxVersion}) não está instalada em {nginxVersionDir}.");
             }
         }
 
-        public static void CreateNginxSiteConfig(string domain, string root, string phpUpstream, string nginxVersion)
+        private static string GetNginxSitesDirectory(string nginxVersion)
         {
-            string nginxVersionDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{nginxVersion}");
-            string nginxSitesDirFull = Path.Combine(nginxVersionDir, DevStackConfig.nginxSitesDir);
+            var nginxVersionDir = Path.Combine(DevStackConfig.nginxDir, $"nginx-{nginxVersion}");
+            return Path.Combine(nginxVersionDir, DevStackConfig.nginxSitesDir);
+        }
 
-            if (!Directory.Exists(nginxVersionDir))
+        private static void EnsureDirectoryExists(string directory)
+        {
+            if (!Directory.Exists(directory))
             {
-                throw new Exception($"A versão do Nginx ({nginxVersion}) não está instalada em {nginxVersionDir}.");
+                Directory.CreateDirectory(directory);
             }
+        }
 
-            if (!Directory.Exists(nginxSitesDirFull))
-            {
-                Directory.CreateDirectory(nginxSitesDirFull);
-            }
+        private static string CreateSiteConfigFile(
+            string nginxSitesDir, 
+            string domain, 
+            string root, 
+            string phpUpstream)
+        {
+            var confPath = Path.Combine(nginxSitesDir, $"{domain}.conf");
+            var template = BuildNginxConfigTemplate(domain, root, phpUpstream);
+            
+            File.WriteAllText(confPath, template, new UTF8Encoding(false));
+            
+            return confPath;
+        }
 
-            string confPath = Path.Combine(nginxSitesDirFull, $"{domain}.conf");
-            string serverName = $"{domain}";
-
-            string template = $@"server {{
+        private static string BuildNginxConfigTemplate(string domain, string root, string phpUpstream)
+        {
+            return $@"server {{
 
     listen 80;
     listen [::]:80;
 
-    server_name {serverName};
+    server_name {domain};
     root {root};
     index index.php index.html index.htm;
 
@@ -93,30 +149,52 @@ namespace DevStackManager
     error_log logs\{domain}_error.log;
     access_log logs\{domain}_access.log;
 }}";
+        }
 
-            File.WriteAllText(confPath, template, new UTF8Encoding(false));
-            Console.WriteLine($"Arquivo {confPath} criado/configurado com sucesso!");
+        private static void AddDomainToHostsFile(string domain)
+        {
+            var hostsPath = GetHostsFilePath();
+            var entry = $"127.0.0.1\t{domain}";
 
-            string hostsPath = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot")!, "System32", "drivers", "etc", "hosts");
-            string entry = $"127.0.0.1\t{serverName}";
-            
             try
             {
-                string[] hostsContent = File.Exists(hostsPath) ? File.ReadAllLines(hostsPath) : Array.Empty<string>();
-                if (!hostsContent.Contains(entry))
+                if (IsDomainAlreadyInHosts(hostsPath, entry))
                 {
-                    File.AppendAllText(hostsPath, Environment.NewLine + entry, Encoding.UTF8);
-                    Console.WriteLine($"Adicionado {serverName} ao arquivo hosts.");
+                    Console.WriteLine($"{domain} já está presente no arquivo hosts.");
+                    return;
                 }
-                else
-                {
-                    Console.WriteLine($"{serverName} já está presente no arquivo hosts.");
-                }
+
+                AppendToHostsFile(hostsPath, entry);
+                Console.WriteLine($"Adicionado {domain} ao arquivo hosts.");
             }
             catch
             {
                 Console.WriteLine("Erro ao modificar arquivo hosts. Execute como administrador.");
             }
+        }
+
+        private static string GetHostsFilePath()
+        {
+            var systemRoot = Environment.GetEnvironmentVariable("SystemRoot") 
+                ?? throw new InvalidOperationException("SystemRoot environment variable not found.");
+            
+            return Path.Combine(systemRoot, HOSTS_FILE_RELATIVE_PATH);
+        }
+
+        private static bool IsDomainAlreadyInHosts(string hostsPath, string entry)
+        {
+            if (!File.Exists(hostsPath))
+            {
+                return false;
+            }
+
+            var hostsContent = File.ReadAllLines(hostsPath);
+            return hostsContent.Contains(entry);
+        }
+
+        private static void AppendToHostsFile(string hostsPath, string entry)
+        {
+            File.AppendAllText(hostsPath, Environment.NewLine + entry, Encoding.UTF8);
         }
     }
 }

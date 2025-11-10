@@ -12,6 +12,9 @@ namespace DevStackManager
     /// </summary>
     public static class ProcessManager
     {
+        private const int PROCESS_START_DELAY_MS = 100;
+        private const int RESTART_DELAY_MS = 2000;
+        private const int PROCESS_EXIT_TIMEOUT_MS = 3000;
         /// <summary>
         /// Inicia um serviço de forma genérica e eficiente
         /// </summary>
@@ -19,86 +22,36 @@ namespace DevStackManager
         {
             try
             {
-                // Verificar se já está rodando
                 if (IsServiceRunning(component, version))
                 {
                     DevStackConfig.WriteColoredLine($"{component} {version} já está em execução.", ConsoleColor.Yellow);
                     return true;
                 }
 
-                // Obter informações do componente
                 var comp = Components.ComponentsFactory.GetComponent(component);
-                if (comp == null || !comp.IsService || string.IsNullOrEmpty(comp.ServicePattern))
+                if (!ValidateServiceComponent(comp, component))
                 {
-                    DevStackConfig.WriteColoredLine($"Componente {component} não é um serviço válido.", ConsoleColor.Red);
                     return false;
                 }
 
-                var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
-                var workingDirectory = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}");
-
+                var (executablePath, workingDirectory) = GetServicePaths(comp!, component, version);
                 if (!File.Exists(executablePath))
                 {
                     DevStackConfig.WriteColoredLine($"{component} {version} não está instalado.", ConsoleColor.Red);
                     return false;
                 }
 
-                // Configurar argumentos específicos por componente
                 var arguments = GetServiceArguments(component, version);
+                var processCount = comp!.MaxWorkers ?? 1;
+                var processPids = await StartServiceProcesses(executablePath, arguments, workingDirectory, processCount, component, version);
 
-                // Determinar quantos processos principais iniciar baseado no MaxWorkers
-                var processCount = comp.MaxWorkers ?? 1; // Padrão é 1 se não definido
-                var processPids = new List<int>();
-
-                // Iniciar os processos principais
-                for (int i = 0; i < processCount; i++)
+                if (processPids.Count == 0)
                 {
-                    // Pequena pausa entre cada processo para evitar conflitos
-                    if (i > 0)
-                    {
-                        await Task.Delay(100);
-                    }
-
-                    var process = await StartProcessAsync(executablePath, arguments, workingDirectory);
-                    if (process == null)
-                    {
-                        DevStackConfig.WriteColoredLine($"Falha ao iniciar processo {i + 1} de {component} {version}.", ConsoleColor.Red);
-                        
-                        // Se falhou, parar os processos já iniciados
-                        foreach (var pid in processPids)
-                        {
-                            try
-                            {
-                                var proc = Process.GetProcessById(pid);
-                                proc.Kill();
-                                proc.Dispose();
-                            }
-                            catch { }
-                        }
-                        return false;
-                    }
-
-                    processPids.Add(process.Id);
+                    return false;
                 }
 
-                // Registrar todos os processos principais
-                if (processPids.Count > 0)
-                {
-                    // Registrar o primeiro processo como principal (para compatibilidade)
-                    ProcessRegistry.RegisterService(component, version, processPids[0], executablePath);
-                    
-                    // Registrar os demais como processos principais adicionais
-                    for (int i = 1; i < processPids.Count; i++)
-                    {
-                        ProcessRegistry.AddMainProcess(component, version, processPids[i]);
-                    }
-                }
-
-                var pidsText = processPids.Count == 1 
-                    ? $"PID {processPids[0]}" 
-                    : $"PIDs [{string.Join(", ", processPids)}]";
-                    
-                DevStackConfig.WriteColoredLine($"{component} {version} iniciado com {pidsText}.", ConsoleColor.Green);
+                RegisterServiceProcesses(component, version, processPids, executablePath);
+                PrintServiceStartedMessage(component, version, processPids);
                 return true;
             }
             catch (Exception ex)
@@ -106,6 +59,96 @@ namespace DevStackManager
                 DevStackConfig.WriteColoredLine($"Erro ao iniciar {component} {version}: {ex.Message}", ConsoleColor.Red);
                 return false;
             }
+        }
+
+        private static bool ValidateServiceComponent(Components.ComponentInterface? comp, string component)
+        {
+            if (comp == null || !comp.IsService || string.IsNullOrEmpty(comp.ServicePattern))
+            {
+                DevStackConfig.WriteColoredLine($"Componente {component} não é um serviço válido.", ConsoleColor.Red);
+                return false;
+            }
+            return true;
+        }
+
+        private static (string executablePath, string workingDirectory) GetServicePaths(
+            Components.ComponentInterface comp, 
+            string component, 
+            string version)
+        {
+            var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern!);
+            var workingDirectory = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}");
+            return (executablePath, workingDirectory);
+        }
+
+        private static async Task<List<int>> StartServiceProcesses(
+            string executablePath,
+            string arguments,
+            string workingDirectory,
+            int processCount,
+            string component,
+            string version)
+        {
+            var processPids = new List<int>();
+
+            for (int i = 0; i < processCount; i++)
+            {
+                if (i > 0)
+                {
+                    await Task.Delay(PROCESS_START_DELAY_MS);
+                }
+
+                var process = await StartProcessAsync(executablePath, arguments, workingDirectory);
+                if (process == null)
+                {
+                    DevStackConfig.WriteColoredLine($"Falha ao iniciar processo {i + 1} de {component} {version}.", ConsoleColor.Red);
+                    await KillStartedProcesses(processPids);
+                    return new List<int>();
+                }
+
+                processPids.Add(process.Id);
+            }
+
+            return processPids;
+        }
+
+        private static async Task KillStartedProcesses(List<int> processPids)
+        {
+            await Task.Run(() =>
+            {
+                foreach (var pid in processPids)
+                {
+                    try
+                    {
+                        var proc = Process.GetProcessById(pid);
+                        proc.Kill();
+                        proc.Dispose();
+                    }
+                    catch { }
+                }
+            });
+        }
+
+        private static void RegisterServiceProcesses(string component, string version, List<int> processPids, string executablePath)
+        {
+            if (processPids.Count > 0)
+            {
+                ProcessRegistry.RegisterService(component, version, processPids[0], executablePath);
+
+                for (int i = 1; i < processPids.Count; i++)
+                {
+                    ProcessRegistry.AddMainProcess(component, version, processPids[i]);
+                }
+            }
+        }
+
+        private static void PrintServiceStartedMessage(string component, string version, List<int> processPids)
+        {
+            var pidsText = processPids.Count == 1
+                ? $"PID {processPids[0]}"
+                : $"PIDs [{string.Join(", ", processPids)}]";
+
+            DevStackConfig.WriteColoredLine($"{component} {version} iniciado com {pidsText}.", ConsoleColor.Green);
         }
 
         /// <summary>
@@ -153,13 +196,13 @@ namespace DevStackManager
         public static async Task<bool> RestartServiceAsync(string component, string version)
         {
             DevStackConfig.WriteColoredLine($"Reiniciando {component} {version}...", ConsoleColor.Cyan);
-            
+
             if (IsServiceRunning(component, version))
             {
                 await StopServiceAsync(component, version);
-                await Task.Delay(2000); // Aguardar finalização
+                await Task.Delay(RESTART_DELAY_MS);
             }
-            
+
             return await StartServiceAsync(component, version);
         }
 
@@ -348,33 +391,43 @@ namespace DevStackManager
         {
             await Task.Run(() =>
             {
-                // Obter todos os PIDs registrados do serviço
-                var registeredPids = ProcessRegistry.GetServicePids(component, version, null);
-                
-                if (registeredPids.Count == 0)
-                {
-                    // Fallback: usar o PID principal se não há registros
-                    registeredPids.Add(mainPid);
-                }
-                
+                var registeredPids = GetRegisteredPidsOrFallback(component, version, mainPid);
+
                 foreach (var pid in registeredPids)
                 {
-                    try
-                    {
-                        var process = Process.GetProcessById(pid);
-                        if (!process.HasExited)
-                        {
-                            process.Kill();
-                            process.WaitForExit(3000);
-                        }
-                        process.Dispose();
-                    }
-                    catch
-                    {
-                        // Processo já morreu ou não existe
-                    }
+                    TryKillProcess(pid);
                 }
             });
+        }
+
+        private static List<int> GetRegisteredPidsOrFallback(string component, string version, int mainPid)
+        {
+            var registeredPids = ProcessRegistry.GetServicePids(component, version, null);
+
+            if (registeredPids.Count == 0)
+            {
+                registeredPids.Add(mainPid);
+            }
+
+            return registeredPids;
+        }
+
+        private static void TryKillProcess(int pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(pid);
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                    process.WaitForExit(PROCESS_EXIT_TIMEOUT_MS);
+                }
+                process.Dispose();
+            }
+            catch
+            {
+                // Processo já morreu ou não existe
+            }
         }
 
         /// <summary>
@@ -382,56 +435,70 @@ namespace DevStackManager
         /// </summary>
         private static List<int> GetAllRelatedProcessIds(string component, string version)
         {
-            var pids = new List<int>();
-            
             try
             {
                 var comp = Components.ComponentsFactory.GetComponent(component);
-                if (comp?.ServicePattern == null) return pids;
-
-                var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern);
-                var processName = Path.GetFileNameWithoutExtension(comp.ServicePattern);
-
-                // Buscar todos os processos com o mesmo nome e caminho
-                var processes = Process.GetProcessesByName(processName);
-                
-                foreach (var process in processes)
+                if (comp?.ServicePattern == null)
                 {
-                    try
-                    {
-                        var processPath = process.MainModule?.FileName;
-                        if (processPath?.Equals(executablePath, StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            // Para PHP, verificar argumentos específicos da versão
-                            if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (IsPhpProcessForVersion(process.Id, version))
-                                {
-                                    pids.Add(process.Id);
-                                }
-                            }
-                            else
-                            {
-                                pids.Add(process.Id);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Ignorar processos inacessíveis
-                    }
-                    finally
-                    {
-                        process.Dispose();
-                    }
+                    return new List<int>();
                 }
+
+                return FindProcessesByComponentAndVersion(comp, component, version);
             }
             catch
             {
-                // Em caso de erro, retornar lista vazia
+                return new List<int>();
+            }
+        }
+
+        private static List<int> FindProcessesByComponentAndVersion(
+            Components.ComponentInterface comp,
+            string component,
+            string version)
+        {
+            var pids = new List<int>();
+            var executablePath = Path.Combine(comp.ToolDir, $"{comp.Name}-{version}", comp.ServicePattern!);
+            var processName = Path.GetFileNameWithoutExtension(comp.ServicePattern);
+
+            var processes = Process.GetProcessesByName(processName);
+
+            foreach (var process in processes)
+            {
+                try
+                {
+                    if (IsProcessMatchingVersion(process, executablePath, component, version))
+                    {
+                        pids.Add(process.Id);
+                    }
+                }
+                catch { }
+                finally
+                {
+                    process.Dispose();
+                }
             }
 
             return pids;
+        }
+
+        private static bool IsProcessMatchingVersion(
+            Process process,
+            string expectedPath,
+            string component,
+            string version)
+        {
+            var processPath = process.MainModule?.FileName;
+            if (processPath?.Equals(expectedPath, StringComparison.OrdinalIgnoreCase) != true)
+            {
+                return false;
+            }
+
+            if (component.Equals("php", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsPhpProcessForVersion(process.Id, version);
+            }
+
+            return true;
         }
 
         /// <summary>

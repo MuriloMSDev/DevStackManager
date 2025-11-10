@@ -10,7 +10,7 @@ namespace DevStackShared
     {
         Installer,
         Uninstaller,
-        GUI
+        DevStack  // Usado tanto para CLI quanto para GUI
     }
 
     public class LocalizationManager
@@ -360,12 +360,12 @@ namespace DevStackShared
                 
                 // List of files to load for each language
                 string[] localeFiles = { "common.json", "shared.json" };
-                string appSpecificFile = _applicationType switch
+                string[] appSpecificFiles = _applicationType switch
                 {
-                    ApplicationType.Installer => "installer.json",
-                    ApplicationType.Uninstaller => "uninstaller.json",
-                    ApplicationType.GUI => "gui.json",
-                    _ => "gui.json"
+                    ApplicationType.Installer => new[] { "installer.json" },
+                    ApplicationType.Uninstaller => new[] { "uninstaller.json" },
+                    ApplicationType.DevStack => new[] { "gui.json", "cli.json" },
+                    _ => new[] { "gui.json", "cli.json" }
                 };
                 
                 var mergedTranslations = new Dictionary<string, object>();
@@ -406,31 +406,34 @@ namespace DevStackShared
                     }
                 }
                 
-                // Load application-specific file
-                var appMatchingResources = langResources.Where(r => r.EndsWith(appSpecificFile, StringComparison.OrdinalIgnoreCase)).ToList();
-                if (appMatchingResources.Count > 0)
+                // Load application-specific files (pode haver múltiplos para DevStack)
+                foreach (var appSpecificFile in appSpecificFiles)
                 {
-                    string resourceName = appMatchingResources[0]; // Use the first matching resource
-                    logMessage += $"[TryLoadFromEmbeddedResource] Loading app-specific resource: {resourceName}\n";
-                    
-                    using var stream = assembly.GetManifestResourceStream(resourceName);
-                    if (stream != null)
+                    var appMatchingResources = langResources.Where(r => r.EndsWith(appSpecificFile, StringComparison.OrdinalIgnoreCase)).ToList();
+                    if (appMatchingResources.Count > 0)
                     {
-                        var appTranslations = LoadDictionaryFromStream(stream, logMessage);
-                        if (appTranslations != null)
+                        string resourceName = appMatchingResources[0]; // Use the first matching resource
+                        logMessage += $"[TryLoadFromEmbeddedResource] Loading app-specific resource: {resourceName}\n";
+                        
+                        using var stream = assembly.GetManifestResourceStream(resourceName);
+                        if (stream != null)
                         {
-                            // Add app section with its own key
-                            string appSectionName = Path.GetFileNameWithoutExtension(appSpecificFile);
-                            mergedTranslations[appSectionName] = appTranslations;
-                            anyFileLoaded = true;
-                            
-                            logMessage += $"[TryLoadFromEmbeddedResource] Added app-specific section '{appSectionName}' with {appTranslations.Count} entries\n";
+                            var appTranslations = LoadDictionaryFromStream(stream, logMessage);
+                            if (appTranslations != null)
+                            {
+                                // Add app section with its own key
+                                string appSectionName = Path.GetFileNameWithoutExtension(appSpecificFile);
+                                mergedTranslations[appSectionName] = appTranslations;
+                                anyFileLoaded = true;
+                                
+                                logMessage += $"[TryLoadFromEmbeddedResource] Added app-specific section '{appSectionName}' with {appTranslations.Count} entries\n";
+                            }
                         }
                     }
-                }
-                else
-                {
-                    logMessage += $"[TryLoadFromEmbeddedResource] No matching resources found for app-specific file: {appSpecificFile}\n";
+                    else
+                    {
+                        logMessage += $"[TryLoadFromEmbeddedResource] No matching resources found for app-specific file: {appSpecificFile}\n";
+                    }
                 }
                 
                 if (anyFileLoaded)
@@ -508,12 +511,12 @@ namespace DevStackShared
                 
                 // Lista de arquivos para carregar para cada idioma
                 string[] localeFiles = { "common.json", "shared.json" };
-                string appSpecificFile = _applicationType switch
+                string[] appSpecificFiles = _applicationType switch
                 {
-                    ApplicationType.Installer => "installer.json",
-                    ApplicationType.Uninstaller => "uninstaller.json",
-                    ApplicationType.GUI => "gui.json",
-                    _ => "gui.json"
+                    ApplicationType.Installer => new[] { "installer.json" },
+                    ApplicationType.Uninstaller => new[] { "uninstaller.json" },
+                    ApplicationType.DevStack => new[] { "gui.json", "cli.json" },
+                    _ => new[] { "gui.json", "cli.json" }
                 };
                 
                 // Tenta: ./locale/[lang]/
@@ -522,7 +525,7 @@ namespace DevStackShared
                 
                 if (Directory.Exists(langDir1))
                 {
-                    if (LoadFromLanguageDirectory(langDir1, localeFiles, appSpecificFile, logMessage))
+                    if (LoadFromLanguageDirectory(langDir1, localeFiles, appSpecificFiles, logMessage))
                     {
                         return true;
                     }
@@ -539,7 +542,7 @@ namespace DevStackShared
                 
                 if (Directory.Exists(langDir2))
                 {
-                    if (LoadFromLanguageDirectory(langDir2, localeFiles, appSpecificFile, logMessage))
+                    if (LoadFromLanguageDirectory(langDir2, localeFiles, appSpecificFiles, logMessage))
                     {
                         return true;
                     }
@@ -556,7 +559,7 @@ namespace DevStackShared
                 
                 if (Directory.Exists(langDir3))
                 {
-                    if (LoadFromLanguageDirectory(langDir3, localeFiles, appSpecificFile, logMessage))
+                    if (LoadFromLanguageDirectory(langDir3, localeFiles, appSpecificFiles, logMessage))
                     {
                         return true;
                     }
@@ -573,7 +576,7 @@ namespace DevStackShared
                 
                 if (Directory.Exists(langDir4))
                 {
-                    if (LoadFromLanguageDirectory(langDir4, localeFiles, appSpecificFile, logMessage))
+                    if (LoadFromLanguageDirectory(langDir4, localeFiles, appSpecificFiles, logMessage))
                     {
                         return true;
                     }
@@ -601,7 +604,7 @@ namespace DevStackShared
             }
         }
         
-        private bool LoadFromLanguageDirectory(string languageDir, string[] localeFiles, string appSpecificFile, string logMessage)
+        private bool LoadFromLanguageDirectory(string languageDir, string[] localeFiles, string[] appSpecificFiles, string logMessage)
         {
             try
             {
@@ -636,28 +639,31 @@ namespace DevStackShared
                     }
                 }
                 
-                // Load application-specific file
-                string appFilePath = Path.Combine(languageDir, appSpecificFile);
-                string appSectionName = Path.GetFileNameWithoutExtension(appSpecificFile);
-                
-                logMessage += $"[LoadFromLanguageDirectory] Checking app-specific file: {appFilePath}\n";
-                
-                if (File.Exists(appFilePath))
+                // Load application-specific files (pode haver múltiplos para DevStack)
+                foreach (var appSpecificFile in appSpecificFiles)
                 {
-                    logMessage += $"[LoadFromLanguageDirectory] Found app-specific file: {appFilePath}\n";
-                    var appTranslations = LoadDictionaryFromFile(appFilePath, logMessage);
-                    if (appTranslations != null)
+                    string appFilePath = Path.Combine(languageDir, appSpecificFile);
+                    string appSectionName = Path.GetFileNameWithoutExtension(appSpecificFile);
+                    
+                    logMessage += $"[LoadFromLanguageDirectory] Checking app-specific file: {appFilePath}\n";
+                    
+                    if (File.Exists(appFilePath))
                     {
-                        // Add the application-specific translations with the proper section name
-                        mergedTranslations[appSectionName] = appTranslations;
-                        anyFileLoaded = true;
-                        
-                        logMessage += $"[LoadFromLanguageDirectory] Added app-specific section '{appSectionName}' with {appTranslations.Count} entries\n";
+                        logMessage += $"[LoadFromLanguageDirectory] Found app-specific file: {appFilePath}\n";
+                        var appTranslations = LoadDictionaryFromFile(appFilePath, logMessage);
+                        if (appTranslations != null)
+                        {
+                            // Add the application-specific translations with the proper section name
+                            mergedTranslations[appSectionName] = appTranslations;
+                            anyFileLoaded = true;
+                            
+                            logMessage += $"[LoadFromLanguageDirectory] Added app-specific section '{appSectionName}' with {appTranslations.Count} entries\n";
+                        }
                     }
-                }
-                else
-                {
-                    logMessage += $"[LoadFromLanguageDirectory] App-specific file not found: {appFilePath}\n";
+                    else
+                    {
+                        logMessage += $"[LoadFromLanguageDirectory] App-specific file not found: {appFilePath}\n";
+                    }
                 }
                 
                 if (anyFileLoaded)

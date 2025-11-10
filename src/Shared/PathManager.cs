@@ -7,30 +7,40 @@ namespace DevStackManager
 {
     public class PathManager
     {
-        private readonly string baseDir;
-        private readonly string phpDir;
-        private readonly string nodeDir;
-        private readonly string pythonDir;
-        private readonly string nginxDir;
-        private readonly string mysqlDir;
+        private readonly string _baseDir;
+        
+        // Directory Constants
+        private const string BIN_DIRECTORY_NAME = "bin";
+        private const string PATH_ENVIRONMENT_VARIABLE = "Path";
+        private const string PATH_ENVIRONMENT_VARIABLE_UPPERCASE = "PATH";
+        
+        // Path Separator
+        private const char PATH_SEPARATOR = ';';
+        
+        // Status Symbols
+        private const string STATUS_CHECK_MARK = "✓";
+        private const string STATUS_CROSS_MARK = "✗";
+        
+        // Indentation
+        private const string INDENT = "  ";
 
-        public PathManager(string baseDir, string phpDir, string nodeDir, string pythonDir, string nginxDir, string mysqlDir)
+        public PathManager(
+            string baseDir, 
+            string phpDir, 
+            string nodeDir, 
+            string pythonDir, 
+            string nginxDir, 
+            string mysqlDir)
         {
-            this.baseDir = baseDir;
-            this.phpDir = phpDir;
-            this.nodeDir = nodeDir;
-            this.pythonDir = pythonDir;
-            this.nginxDir = nginxDir;
-            this.mysqlDir = mysqlDir;
+            _baseDir = baseDir;
         }
 
-        /// <summary>
-        /// Normaliza um caminho, removendo espaços em branco e barras finais
-        /// </summary>
         public static string? NormalizePath(string? path)
         {
             if (string.IsNullOrWhiteSpace(path))
+            {
                 return null;
+            }
 
             try
             {
@@ -42,179 +52,216 @@ namespace DevStackManager
             }
         }
 
-        /// <summary>
-        /// Adiciona o diretório bin global das ferramentas ao PATH do usuário
-        /// </summary>
         public void AddBinDirsToPath()
         {
-            // Adicionar apenas a pasta bin global do DevStack
-            var globalBinDir = Path.Combine(baseDir, "bin");
-            var pathsToAdd = new List<string>();
-
-            if (Directory.Exists(globalBinDir))
+            var globalBinDir = Path.Combine(_baseDir, BIN_DIRECTORY_NAME);
+            
+            if (!Directory.Exists(globalBinDir))
             {
-                pathsToAdd.Add(globalBinDir);
+                LogBinDirectoryNotExists();
+                return;
             }
 
-            // Obter PATH atual do usuário
-            var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
-            var currentPathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(NormalizePath)
-                                            .Where(p => !string.IsNullOrEmpty(p))
-                                            .ToList();
+            var currentPathList = GetCurrentUserPathList();
+            var normalizedBinDir = NormalizePath(globalBinDir);
 
-            // Filtrar apenas novos caminhos
-            var newPaths = pathsToAdd.Select(NormalizePath)
-                                    .Where(p => !string.IsNullOrEmpty(p) && !currentPathList.Contains(p))
-                                    .ToList();
-
-            if (newPaths.Count > 0)
+            if (currentPathList.Contains(normalizedBinDir))
             {
-                var allPaths = currentPathList.Concat(newPaths);
-                var newPathValue = string.Join(";", allPaths);
-                
-                // Atualizar PATH do usuário
-                Environment.SetEnvironmentVariable("Path", newPathValue, EnvironmentVariableTarget.User);
-                
-                // Atualizar PATH da sessão atual (processo)
                 UpdateProcessPath();
+                LogBinAlreadyInPath();
+                return;
+            }
 
-                DevStackConfig.WriteColoredLine("O diretório bin global foi adicionado ao PATH do usuário:", ConsoleColor.Green);
-                foreach (var path in newPaths)
-                {
-                    DevStackConfig.WriteColoredLine($"  {path}", ConsoleColor.Yellow);
-                }
-                DevStackConfig.WriteColoredLine("O PATH do terminal atual também foi atualizado.", ConsoleColor.Green);
-            }
-            else
-            {
-                // Mesmo sem novos paths, garantir que o processo está sincronizado
-                UpdateProcessPath();
-                DevStackConfig.WriteColoredLine("O diretório bin global já está no PATH.", ConsoleColor.Yellow);
-            }
+            AddPathToUser(normalizedBinDir!, currentPathList);
+            UpdateProcessPath();
+
+            LogBinAddedToPath(normalizedBinDir!);
         }
 
-        /// <summary>
-        /// Remove diretórios específicos do PATH do usuário
-        /// </summary>
         public void RemoveFromPath(string[] dirsToRemove)
         {
             if (dirsToRemove == null || dirsToRemove.Length == 0)
+            {
                 return;
+            }
 
-            var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
-            var currentPathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(NormalizePath)
-                                            .Where(p => !string.IsNullOrEmpty(p))
-                                            .ToList();
+            var currentPathList = GetCurrentUserPathList();
+            var normalizedDirsToRemove = dirsToRemove
+                .Select(NormalizePath)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .ToHashSet();
 
-            var dirsToRemoveNorm = dirsToRemove.Select(NormalizePath)
-                                              .Where(p => !string.IsNullOrEmpty(p))
-                                              .ToHashSet();
+            var newPathList = currentPathList
+                .Where(p => !normalizedDirsToRemove.Contains(p))
+                .ToList();
 
-            var newPathList = currentPathList.Where(p => !dirsToRemoveNorm.Contains(p)).ToList();
-            var newPathValue = string.Join(";", newPathList);
-
-            // Atualizar PATH do usuário
-            Environment.SetEnvironmentVariable("Path", newPathValue, EnvironmentVariableTarget.User);
-            
-            // Atualizar PATH da sessão atual
+            UpdateUserPath(newPathList);
             UpdateProcessPath();
 
-            var removedPaths = dirsToRemoveNorm.Where(dir => currentPathList.Contains(dir)).ToList();
-            if (removedPaths.Count > 0)
+            var removedPaths = normalizedDirsToRemove
+                .Where(dir => currentPathList.Contains(dir))
+                .ToList();
+
+            if (removedPaths.Any())
             {
-                DevStackConfig.WriteColoredLine("Os seguintes diretórios foram removidos do PATH do usuário:", ConsoleColor.Green);
-                foreach (var path in removedPaths)
-                {
-                    DevStackConfig.WriteColoredLine($"  {path}", ConsoleColor.Yellow);
-                }
+                LogPathsRemoved(removedPaths);
             }
         }
 
-        /// <summary>
-        /// Remove todos os diretórios relacionados às ferramentas DevStack do PATH
-        /// </summary>
         public void RemoveAllDevStackFromPath()
         {
-            // Remover apenas a pasta bin global do DevStack
-            var globalBinDir = Path.Combine(baseDir, "bin");
-            var dirsToRemove = new List<string>();
+            var globalBinDir = Path.Combine(_baseDir, BIN_DIRECTORY_NAME);
+            var normalizedBinDir = NormalizePath(globalBinDir);
 
-            var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
-            var currentPathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(NormalizePath)
-                                            .Where(p => !string.IsNullOrEmpty(p));
-
-            if (Directory.Exists(globalBinDir) && currentPathList.Any(p => p == NormalizePath(globalBinDir)))
+            if (!Directory.Exists(globalBinDir))
             {
-                dirsToRemove.Add(globalBinDir);
+                LogNoDevStackInPath();
+                return;
             }
 
-            if (dirsToRemove.Count > 0)
+            var currentPathList = GetCurrentUserPathList();
+            
+            if (!currentPathList.Contains(normalizedBinDir))
             {
-                RemoveFromPath(dirsToRemove.ToArray());
+                LogNoDevStackInPath();
+                return;
             }
-            else
-            {
-                DevStackConfig.WriteColoredLine("Nenhum diretório DevStack encontrado no PATH.", ConsoleColor.Yellow);
-            }
+
+            RemoveFromPath(new[] { globalBinDir });
         }
 
-        /// <summary>
-        /// Lista todos os diretórios atualmente no PATH do usuário
-        /// </summary>
         public void ListCurrentPath()
         {
-            var currentPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
-            var pathList = currentPath.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                     .Select(NormalizePath)
-                                     .Where(p => !string.IsNullOrEmpty(p))
-                                     .ToList();
+            var globalBinDir = NormalizePath(Path.Combine(_baseDir, BIN_DIRECTORY_NAME));
+            var currentPathList = GetCurrentUserPathList();
+            var devStackPaths = currentPathList
+                .Where(p => p?.Equals(globalBinDir, StringComparison.OrdinalIgnoreCase) == true)
+                .ToList();
 
-            var globalBinDir = NormalizePath(Path.Combine(baseDir, "bin"));
-            var filteredPaths = pathList.Where(p => p != null && p.Equals(globalBinDir, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            DevStackConfig.WriteColoredLine("Diretórios do DevStack no PATH do usuário:", ConsoleColor.Cyan);
-            if (filteredPaths.Count > 0)
+            LogDevStackPathsHeader();
+            
+            if (!devStackPaths.Any())
             {
-                foreach (var path in filteredPaths)
-                {
-                    var exists = Directory.Exists(path) ? "✓" : "✗";
-                    var color = Directory.Exists(path) ? ConsoleColor.Green : ConsoleColor.Red;
-                    DevStackConfig.WriteColoredLine($"  {exists} {path}", color);
-                }
+                LogNoDevStackInPath();
+                return;
             }
-            else
+
+            foreach (var path in devStackPaths)
             {
-                DevStackConfig.WriteColoredLine("  Nenhum diretório DevStack encontrado no PATH.", ConsoleColor.Yellow);
+                LogPathWithStatus(path!);
             }
         }
 
-        /// <summary>
-        /// Atualiza o PATH do processo atual combinando Machine PATH + User PATH
-        /// </summary>
+        private void LogBinDirectoryNotExists()
+        {
+            DevStackConfig.WriteColoredLine("O diretório bin global não existe.", ConsoleColor.Yellow);
+        }
+
+        private void LogBinAlreadyInPath()
+        {
+            DevStackConfig.WriteColoredLine("O diretório bin global já está no PATH.", ConsoleColor.Yellow);
+        }
+
+        private void LogBinAddedToPath(string binDir)
+        {
+            DevStackConfig.WriteColoredLine("O diretório bin global foi adicionado ao PATH do usuário:", ConsoleColor.Green);
+            DevStackConfig.WriteColoredLine($"{INDENT}{binDir}", ConsoleColor.Yellow);
+            DevStackConfig.WriteColoredLine("O PATH do terminal atual também foi atualizado.", ConsoleColor.Green);
+        }
+
+        private void LogPathsRemoved(List<string?> removedPaths)
+        {
+            DevStackConfig.WriteColoredLine("Os seguintes diretórios foram removidos do PATH do usuário:", ConsoleColor.Green);
+            foreach (var path in removedPaths)
+            {
+                DevStackConfig.WriteColoredLine($"{INDENT}{path}", ConsoleColor.Yellow);
+            }
+        }
+
+        private void LogNoDevStackInPath()
+        {
+            DevStackConfig.WriteColoredLine("Nenhum diretório DevStack encontrado no PATH.", ConsoleColor.Yellow);
+        }
+
+        private void LogDevStackPathsHeader()
+        {
+            DevStackConfig.WriteColoredLine("Diretórios do DevStack no PATH do usuário:", ConsoleColor.Cyan);
+        }
+
+        private void LogPathWithStatus(string path)
+        {
+            var exists = Directory.Exists(path);
+            var status = exists ? STATUS_CHECK_MARK : STATUS_CROSS_MARK;
+            var color = exists ? ConsoleColor.Green : ConsoleColor.Red;
+            DevStackConfig.WriteColoredLine($"{INDENT}{status} {path}", color);
+        }
+
+        private List<string?> GetCurrentUserPathList()
+        {
+            var currentPath = Environment.GetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE, EnvironmentVariableTarget.User) ?? string.Empty;
+            
+            return currentPath
+                .Split(PATH_SEPARATOR, StringSplitOptions.RemoveEmptyEntries)
+                .Select(NormalizePath)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .ToList();
+        }
+
+        private void AddPathToUser(string newPath, List<string?> currentPathList)
+        {
+            var allPaths = currentPathList.Append(newPath);
+            var newPathValue = string.Join(PATH_SEPARATOR, allPaths);
+            Environment.SetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE, newPathValue, EnvironmentVariableTarget.User);
+        }
+
+        private void UpdateUserPath(List<string?> newPathList)
+        {
+            var newPathValue = string.Join(PATH_SEPARATOR, newPathList);
+            Environment.SetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE, newPathValue, EnvironmentVariableTarget.User);
+        }
+
         private void UpdateProcessPath()
         {
             try
             {
-                var userPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
-                var machinePath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine) ?? "";
+                var userPath = Environment.GetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE, EnvironmentVariableTarget.User) ?? string.Empty;
+                var machinePath = Environment.GetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE, EnvironmentVariableTarget.Machine) ?? string.Empty;
                 
-                // Combinar Machine PATH + User PATH (ordem padrão do Windows)
-                var combinedPath = string.IsNullOrEmpty(machinePath) ? userPath : 
-                                  string.IsNullOrEmpty(userPath) ? machinePath : 
-                                  $"{machinePath};{userPath}";
+                var combinedPath = CombinePaths(machinePath, userPath);
+                Environment.SetEnvironmentVariable(PATH_ENVIRONMENT_VARIABLE_UPPERCASE, combinedPath);
                 
-                // Atualizar PATH do processo atual
-                Environment.SetEnvironmentVariable("PATH", combinedPath);
-                
-                DevStackConfig.WriteLog($"PATH do processo atualizado. Total de entradas: {combinedPath.Split(';').Length}");
+                LogPathUpdateSuccess(combinedPath);
             }
             catch (Exception ex)
             {
-                DevStackConfig.WriteLog($"Erro ao atualizar PATH do processo: {ex.Message}");
+                LogPathUpdateError(ex);
             }
+        }
+
+        private static string CombinePaths(string machinePath, string userPath)
+        {
+            if (string.IsNullOrEmpty(machinePath))
+            {
+                return userPath;
+            }
+
+            if (string.IsNullOrEmpty(userPath))
+            {
+                return machinePath;
+            }
+
+            return $"{machinePath}{PATH_SEPARATOR}{userPath}";
+        }
+
+        private void LogPathUpdateSuccess(string combinedPath)
+        {
+            var entryCount = combinedPath.Split(PATH_SEPARATOR).Length;
+            DevStackConfig.WriteLog($"PATH do processo atualizado. Total de entradas: {entryCount}");
+        }
+
+        private void LogPathUpdateError(Exception ex)
+        {
+            DevStackConfig.WriteLog($"Erro ao atualizar PATH do processo: {ex.Message}");
         }
     }
 }

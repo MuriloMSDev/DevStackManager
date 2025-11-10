@@ -33,7 +33,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+                var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
                 DevStackShared.ThemeManager.CreateStyledMessageBox(
                     localizationManager.GetString("gui.window.initialization_error", ex.Message),
                     localizationManager.GetString("gui.window.error_title"),

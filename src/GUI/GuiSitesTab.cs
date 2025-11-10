@@ -14,6 +14,16 @@ namespace DevStackManager
     /// </summary>
     public static class GuiSitesTab
     {
+        // Constantes de dimensões e configuração
+        private const int INPUT_HEIGHT = 30;
+        private const int BUTTON_HEIGHT = 40;
+        private const int BUTTON_FONT_SIZE = 14;
+        private const int BROWSE_BUTTON_WIDTH = 120;
+        private const int TITLE_FONT_SIZE = 18;
+        private const int SECTION_FONT_SIZE = 16;
+        private const int INPUT_MARGIN_BOTTOM = 15;
+        private const int SECTION_MARGIN_TOP = 10;
+        private const int SECTION_MARGIN_BOTTOM = 10;
         /// <summary>
         /// Cria o conteúdo completo da aba "Sites"
         /// </summary>
@@ -336,46 +346,80 @@ namespace DevStackManager
         /// </summary>
         private static async Task<bool> CreateSite(DevStackGui mainWindow, string domain, string root, string phpUpstream, string nginxVersion)
         {
-            if (string.IsNullOrEmpty(domain))
+            if (!ValidateSiteInputs(mainWindow, domain, root, phpUpstream, nginxVersion))
             {
-                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_domain"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                return await Task.FromResult(false);
-            }
-
-            if (string.IsNullOrEmpty(root))
-            {
-                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_root"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                return await Task.FromResult(false);
-            }
-
-            if (string.IsNullOrEmpty(phpUpstream))
-            {
-                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_php"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                return await Task.FromResult(false);
-            }
-
-            if (string.IsNullOrEmpty(nginxVersion))
-            {
-                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.select_nginx"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                return await Task.FromResult(false);
+                return false;
             }
 
             try
             {
                 mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.creating_site", domain);
-                // Run heavy config creation in background
                 await Task.Run(() => InstallManager.CreateNginxSiteConfig(domain, root, $"127.{phpUpstream}:9000", nginxVersion));
-
                 mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_created", domain);
-                return await Task.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message);
-                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_config_error", ex.Message), mainWindow.LocalizationManager.GetString("gui.common.error"), MessageBoxButton.OK, MessageBoxImage.Error);
-                return await Task.FromResult(false);
+                HandleSiteError(mainWindow, domain, ex);
+                return false;
             }
+        }
+
+        private static bool ValidateSiteInputs(
+            DevStackGui mainWindow,
+            string domain,
+            string root,
+            string phpUpstream,
+            string nginxVersion)
+        {
+            if (string.IsNullOrEmpty(domain))
+            {
+                ShowWarning(mainWindow, "gui.sites_tab.messages.enter_domain");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(root))
+            {
+                ShowWarning(mainWindow, "gui.sites_tab.messages.enter_root");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(phpUpstream))
+            {
+                ShowWarning(mainWindow, "gui.sites_tab.messages.select_php");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(nginxVersion))
+            {
+                ShowWarning(mainWindow, "gui.sites_tab.messages.select_nginx");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void ShowWarning(DevStackGui mainWindow, string messageKey)
+        {
+            DevStackShared.ThemeManager.CreateStyledMessageBox(
+                mainWindow.LocalizationManager.GetString(messageKey),
+                mainWindow.LocalizationManager.GetString("gui.common.warning"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning
+            );
+        }
+
+        private static void HandleSiteError(DevStackGui mainWindow, string domain, Exception ex)
+        {
+            var errorMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message);
+            GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, errorMessage, mainWindow);
+            mainWindow.StatusMessage = errorMessage;
+            DevStackShared.ThemeManager.CreateStyledMessageBox(
+                mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_config_error", ex.Message),
+                mainWindow.LocalizationManager.GetString("gui.common.error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error
+            );
         }
 
         /// <summary>
@@ -383,20 +427,47 @@ namespace DevStackManager
         /// </summary>
         private static async Task<bool> GenerateSslCertificate(DevStackGui mainWindow, string domain)
         {
+            if (!await ValidateSslDomain(mainWindow, domain))
+            {
+                return false;
+            }
+
+            return await ExecuteSslGeneration(mainWindow, domain);
+        }
+
+        private static async Task<bool> ValidateSslDomain(DevStackGui mainWindow, string domain)
+        {
             if (string.IsNullOrEmpty(domain))
             {
                 Application.Current.Dispatcher.Invoke(() =>
+                    ShowWarning(mainWindow, "gui.sites_tab.messages.enter_ssl_domain")
+                );
+                return false;
+            }
+
+            bool domainResolves = await CheckDomainResolution(domain);
+            if (!domainResolves)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.enter_ssl_domain"), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                    DevStackShared.ThemeManager.CreateStyledMessageBox(
+                        mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.domain_not_exists", domain),
+                        mainWindow.LocalizationManager.GetString("gui.common.warning"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
                 });
                 return false;
             }
 
-            // Validação extra: checar se o domínio existe (resolve DNS) em thread separada
-            bool domainResolves = false;
+            return true;
+        }
+
+        private static async Task<bool> CheckDomainResolution(string domain)
+        {
             try
             {
-                domainResolves = await Task.Run(() =>
+                return await Task.Run(() =>
                 {
                     try
                     {
@@ -409,17 +480,14 @@ namespace DevStackManager
                     }
                 });
             }
-            catch { domainResolves = false; }
-
-            if (!domainResolves)
+            catch
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.domain_not_exists", domain), mainWindow.LocalizationManager.GetString("gui.common.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                });
                 return false;
             }
+        }
 
+        private static async Task<bool> ExecuteSslGeneration(DevStackGui mainWindow, string domain)
+        {
             bool success = true;
             await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, mainWindow, async progress =>
             {
@@ -427,19 +495,29 @@ namespace DevStackManager
                 {
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.generating_ssl", domain);
                     var args = new string[] { domain };
-                    // Run heavy SSL generation in background
                     await Task.Run(() => GenerateManager.GenerateSslCertificate(args));
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_generated", domain);
                 }
                 catch (Exception ex)
                 {
                     success = false;
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", domain);
-                    DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message), mainWindow.LocalizationManager.GetString("gui.common.dialogs.error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    HandleSslError(mainWindow, domain, ex, progress);
                 }
             });
             return success;
+        }
+
+        private static void HandleSslError(DevStackGui mainWindow, string domain, Exception ex, IProgress<string> progress)
+        {
+            var errorMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message);
+            progress.Report(errorMessage);
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", domain);
+            DevStackShared.ThemeManager.CreateStyledMessageBox(
+                errorMessage,
+                mainWindow.LocalizationManager.GetString("gui.common.dialogs.error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error
+            );
         }
 
         /// <summary>

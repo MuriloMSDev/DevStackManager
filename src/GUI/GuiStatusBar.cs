@@ -12,6 +12,24 @@ namespace DevStackManager
     /// </summary>
     public static class GuiStatusBar
     {
+        // Status Bar Dimensions
+        private const double STATUS_BAR_HEIGHT = 30;
+        private const double STATUS_BAR_PADDING_LEFT = 5;
+        private const double STATUS_BAR_BORDER_TOP = 1;
+        
+        // ComboBox Dimensions
+        private const double THEME_COMBOBOX_MIN_WIDTH = 120;
+        private const double LANGUAGE_COMBOBOX_MIN_WIDTH = 160;
+        
+        // Font Sizes
+        private const double STATUS_LABEL_FONT_SIZE = 12;
+        
+        // Arrow Path Dimensions
+        private const double ARROW_PATH_MARGIN_RIGHT = 8;
+        
+        // Popup Border Color
+        private const string POPUP_BORDER_BACKGROUND = "#FF2D2D30";
+        
         /// <summary>
         /// Cria a barra de status para a interface principal
         /// </summary>
@@ -20,24 +38,64 @@ namespace DevStackManager
         public static void CreateStatusBar(Grid mainGrid, DevStackGui gui)
         {
             var localization = gui.LocalizationManager;
-            var statusBar = new Border
+            var statusBar = CreateStatusBarBorder(gui);
+            Grid.SetRow(statusBar, 1);
+
+            var statusGrid = CreateStatusGrid();
+
+            var statusLabel = CreateStatusLabel(gui);
+            Grid.SetColumn(statusLabel, 0);
+            statusGrid.Children.Add(statusLabel);
+
+            // ComboBox para seleção de tema (Light/Dark) com estilo do ThemeManager
+            var themeComboBox = CreateThemeComboBox(gui, localization);
+            Grid.SetColumn(themeComboBox, 1);
+            statusGrid.Children.Add(themeComboBox);
+
+            // Language selector (substitui o botão de atualizar)
+            var languageComboBox = CreateLanguageComboBox(gui, localization);
+            Grid.SetColumn(languageComboBox, 2);
+            statusGrid.Children.Add(languageComboBox);
+
+            statusBar.Child = statusGrid;
+            mainGrid.Children.Add(statusBar);
+        }
+
+        /// <summary>
+        /// Cria o border da status bar
+        /// </summary>
+        private static Border CreateStatusBarBorder(DevStackGui gui)
+        {
+            return new Border
             {
                 Background = gui.CurrentTheme.StatusBackground,
                 BorderBrush = gui.CurrentTheme.Border,
-                BorderThickness = new Thickness(0, 1, 0, 0),
-                Height = 30,
-                Padding = new Thickness(5, 0, 0, 0)
+                BorderThickness = new Thickness(0, STATUS_BAR_BORDER_TOP, 0, 0),
+                Height = STATUS_BAR_HEIGHT,
+                Padding = new Thickness(STATUS_BAR_PADDING_LEFT, 0, 0, 0)
             };
-            Grid.SetRow(statusBar, 1);
+        }
 
+        /// <summary>
+        /// Cria o grid interno da status bar
+        /// </summary>
+        private static Grid CreateStatusGrid()
+        {
             var statusGrid = new Grid();
             statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             statusGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            return statusGrid;
+        }
 
+        /// <summary>
+        /// Cria o label de status com binding
+        /// </summary>
+        private static Label CreateStatusLabel(DevStackGui gui)
+        {
             var statusLabel = new Label
             {
-                FontSize = 12,
+                FontSize = STATUS_LABEL_FONT_SIZE,
                 Foreground = gui.CurrentTheme.StatusForeground,
                 Padding = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
@@ -46,26 +104,56 @@ namespace DevStackManager
 
             var statusBinding = new Binding("StatusMessage") { Source = gui };
             statusLabel.SetBinding(Label.ContentProperty, statusBinding);
-            Grid.SetColumn(statusLabel, 0);
-            statusGrid.Children.Add(statusLabel);
+            return statusLabel;
+        }
 
-            // ComboBox para seleção de tema (Light/Dark) com estilo do ThemeManager
+        /// <summary>
+        /// Cria o ComboBox de seleção de tema
+        /// </summary>
+        private static ComboBox CreateThemeComboBox(DevStackGui gui, DevStackShared.LocalizationManager localization)
+        {
             var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
-            themeComboBox.Height = 30;
-            themeComboBox.MinWidth = 120;
+            themeComboBox.Height = STATUS_BAR_HEIGHT;
+            themeComboBox.MinWidth = THEME_COMBOBOX_MIN_WIDTH;
             themeComboBox.VerticalAlignment = VerticalAlignment.Center;
             themeComboBox.HorizontalAlignment = HorizontalAlignment.Right;
             themeComboBox.Margin = new Thickness(0);
 
-            // Language selector (substitui o botão de atualizar)
+            // Substituir o template para remover bordas (mantendo o Background atual via TemplateBinding)
+            ApplyComboBoxTemplate(themeComboBox);
+
+            // Popular temas
+            PopulateThemeItems(themeComboBox, localization);
+
+            return themeComboBox;
+        }
+
+        /// <summary>
+        /// Cria o ComboBox de seleção de idioma
+        /// </summary>
+        private static ComboBox CreateLanguageComboBox(DevStackGui gui, DevStackShared.LocalizationManager localization)
+        {
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
-            languageComboBox.Height = 30; // Mesma altura da status bar
-            languageComboBox.MinWidth = 160;
+            languageComboBox.Height = STATUS_BAR_HEIGHT;
+            languageComboBox.MinWidth = LANGUAGE_COMBOBOX_MIN_WIDTH;
             languageComboBox.VerticalAlignment = VerticalAlignment.Center;
             languageComboBox.HorizontalAlignment = HorizontalAlignment.Right;
             languageComboBox.Margin = new Thickness(0, 0, 0, 0);
 
-            // Substituir o template para remover bordas (mantendo o Background atual via TemplateBinding)
+            // Substituir o template para remover bordas
+            ApplyComboBoxTemplate(languageComboBox);
+
+            // Popular idiomas
+            PopulateLanguageItems(languageComboBox, localization);
+
+            return languageComboBox;
+        }
+
+        /// <summary>
+        /// Aplica template customizado ao ComboBox
+        /// </summary>
+        private static void ApplyComboBoxTemplate(ComboBox comboBox)
+        {
             try
             {
                 var templateXaml = @"
@@ -142,26 +230,26 @@ namespace DevStackManager
 
                 var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
 
-                themeComboBox.Template = template;
+                comboBox.Template = template;
                 // Garantir que nenhuma borda de controle seja aplicada
-                themeComboBox.BorderThickness = new Thickness(0);
-                themeComboBox.BorderBrush = Brushes.Transparent;
-                themeComboBox.FocusVisualStyle = null;
-
-                languageComboBox.Template = template;
-                // Garantir que nenhuma borda de controle seja aplicada
-                languageComboBox.BorderThickness = new Thickness(0);
-                languageComboBox.BorderBrush = Brushes.Transparent;
-                languageComboBox.FocusVisualStyle = null;
+                comboBox.BorderThickness = new Thickness(0);
+                comboBox.BorderBrush = Brushes.Transparent;
+                comboBox.FocusVisualStyle = null;
             }
             catch { }
+        }
 
-            // Popular temas
+        /// <summary>
+        /// Popula o ComboBox de temas
+        /// </summary>
+        private static void PopulateThemeItems(ComboBox themeComboBox, DevStackShared.LocalizationManager localization)
+        {
             var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
             var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
             themeComboBox.Items.Add(darkItem);
             themeComboBox.Items.Add(lightItem);
             themeComboBox.SelectedItem = DevStackShared.ThemeManager.CurrentThemeType == DevStackShared.ThemeManager.ThemeType.Light ? lightItem : darkItem;
+            
             themeComboBox.SelectionChanged += (s, e) =>
             {
                 if (themeComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is DevStackShared.ThemeManager.ThemeType type)
@@ -170,8 +258,13 @@ namespace DevStackManager
                     DevStackConfig.PersistSetting("theme", type == DevStackShared.ThemeManager.ThemeType.Light ? "light" : "dark");
                 }
             };
+        }
 
-            // Popular idiomas seguindo exatamente o padrão do themeComboBox
+        /// <summary>
+        /// Popula o ComboBox de idiomas
+        /// </summary>
+        private static void PopulateLanguageItems(ComboBox languageComboBox, DevStackShared.LocalizationManager localization)
+        {
             var languages = localization.GetAvailableLanguages();
             var languageItems = new Dictionary<string, ComboBoxItem>();
             
@@ -197,14 +290,6 @@ namespace DevStackManager
                     DevStackConfig.PersistSetting("language", code);
                 }
             };
-
-            Grid.SetColumn(themeComboBox, 1);
-            statusGrid.Children.Add(themeComboBox);
-            Grid.SetColumn(languageComboBox, 2);
-            statusGrid.Children.Add(languageComboBox);
-
-            statusBar.Child = statusGrid;
-            mainGrid.Children.Add(statusBar);
         }
     }
 }

@@ -57,6 +57,88 @@ namespace DevStackUninstaller
 
     public class UninstallerWindow : Window
     {
+        #region Constants
+        // Window Dimensions
+        private const double WINDOW_WIDTH = 750;
+        private const double WINDOW_HEIGHT = 650;
+        
+        // Layout Heights
+        private const double HEADER_HEIGHT = 105;
+        private const double BUTTON_BAR_HEIGHT = 80;
+        
+        // Margins and Padding
+        private const double CONTENT_MARGIN = 20;
+        private const double HEADER_MARGIN = 25;
+        private const double HEADER_VERTICAL_MARGIN = 20;
+        private const double BUTTON_PANEL_MARGIN = 25;
+        private const double BUTTON_PANEL_VERTICAL_MARGIN = 18;
+        private const double BUTTON_SPACING = 12;
+        
+        // Font Sizes
+        private const double TITLE_FONT_SIZE = 18;
+        private const double DESCRIPTION_FONT_SIZE = 13;
+        private const double LABEL_FONT_SIZE = 15;
+        private const double WELCOME_TITLE_FONT_SIZE = 28;
+        private const double VERSION_FONT_SIZE = 15;
+        private const double CONSOLE_FONT_SIZE = 12;
+        private const double TEXT_FONT_SIZE = 14;
+        
+        // Button Dimensions
+        private const double BACK_BUTTON_WIDTH = 90;
+        private const double NEXT_BUTTON_WIDTH = 130;
+        private const double CANCEL_BUTTON_WIDTH = 90;
+        private const double BUTTON_HEIGHT = 36;
+        
+        // Progress Bar
+        private const double PROGRESS_BAR_WIDTH = 220;
+        private const double PROGRESS_BAR_HEIGHT = 6;
+        private const double UNINSTALL_PROGRESS_HEIGHT = 8;
+        
+        // Icon Dimensions
+        private const double LOGO_SIZE = 80;
+        private const double WARNING_ICON_FONT_SIZE = 48;
+        
+        // Card and Container
+        private const double CARD_CORNER_RADIUS = 12;
+        private const double CONTAINER_CORNER_RADIUS = 8;
+        private const double CARD_PADDING = 40;
+        private const double CARD_PADDING_VERTICAL = 35;
+        private const double CONTAINER_PADDING = 20;
+        private const double CONTAINER_PADDING_VERTICAL = 18;
+        private const double OPTION_SPACING = 15;
+        
+        // Spacing
+        private const double WELCOME_MARGIN_VERTICAL = 20;
+        private const double TITLE_MARGIN_BOTTOM = 8;
+        private const double VERSION_MARGIN_BOTTOM = 25;
+        private const double LABEL_MARGIN_BOTTOM = 15;
+        private const double CONTAINER_MARGIN_BOTTOM = 20;
+        private const double DESCRIPTION_MARGIN_TOP = 6;
+        private const double INFO_PANEL_MARGIN_TOP = 10;
+        
+        // Progress Values
+        private const int PROGRESS_START = 0;
+        private const int PROGRESS_REGISTRY_CLEANED = 20;
+        private const int PROGRESS_SHORTCUTS_REMOVED = 40;
+        private const int PROGRESS_PATH_CLEANED = 60;
+        private const int PROGRESS_FILES_DELETED = 80;
+        private const int PROGRESS_COMPLETE = 100;
+        
+        // Delays
+        private const int COMPLETION_DELAY_MS = 1000;
+        private const int FILE_DELETE_RETRY_DELAY_MS = 500;
+        private const int MAX_DELETE_RETRIES = 3;
+        private const int UI_UPDATE_DELAY_MS = 500;
+        
+        // Additional Margins
+        private const double CHECKBOX_DESCRIPTION_MARGIN_LEFT = 30;
+        private const double CHECKBOX_DESCRIPTION_MARGIN_TOP = -10;
+        private const double LANGUAGE_SELECTOR_MARGIN = 10;
+        private const double LINE_HEIGHT_NORMAL = 22;
+        private const double MAX_DESCRIPTION_WIDTH = 420;
+        private const double LOG_ITEM_PADDING_VERTICAL = 2;
+        #endregion
+        
         private readonly LocalizationManager localization = LocalizationManager.Instance!;
         private UninstallerStep currentStep = UninstallerStep.Welcome;
         private Grid mainGrid = null!;
@@ -134,8 +216,8 @@ namespace DevStackUninstaller
             // Get window title with explicit formatting
             Title = localization.GetString("uninstaller.window_title", version);
             System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
-            Width = 750;
-            Height = 650;
+            Width = WINDOW_WIDTH;
+            Height = WINDOW_HEIGHT;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             ResizeMode = ResizeMode.NoResize;
             
@@ -155,16 +237,16 @@ namespace DevStackUninstaller
         private void CreateMainLayout()
         {
             mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) }); // Header
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(HEADER_HEIGHT) }); // Header
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) }); // Buttons
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BUTTON_BAR_HEIGHT) }); // Buttons
 
             // Header
             CreateHeader();
 
             // Content area
             contentGrid = new Grid();
-            contentGrid.Margin = new Thickness(20);
+            contentGrid.Margin = new Thickness(CONTENT_MARGIN);
             Grid.SetRow(contentGrid, 1);
             mainGrid.Children.Add(contentGrid);
 
@@ -189,22 +271,22 @@ namespace DevStackUninstaller
 
             var headerStackPanel = new StackPanel
             {
-                Margin = new Thickness(25, 20, 25, 20),
+                Margin = new Thickness(HEADER_MARGIN, HEADER_VERTICAL_MARGIN, HEADER_MARGIN, HEADER_VERTICAL_MARGIN),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
             stepTitleText = new TextBlock
             {
-                FontSize = 18,
+                FontSize = TITLE_FONT_SIZE,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = ThemeManager.CurrentTheme.Foreground
             };
 
             stepDescriptionText = new TextBlock
             {
-                FontSize = 13,
+                FontSize = DESCRIPTION_FONT_SIZE,
                 Foreground = ThemeManager.CurrentTheme.TextSecondary,
-                Margin = new Thickness(0, 6, 0, 0),
+                Margin = new Thickness(0, DESCRIPTION_MARGIN_TOP, 0, 0),
                 TextWrapping = TextWrapping.Wrap
             };
 
@@ -213,9 +295,9 @@ namespace DevStackUninstaller
 
             // Progress indicator
             stepProgressBar = ThemeManager.CreateStyledProgressBar(0, 5, false);
-            stepProgressBar.Width = 220;
-            stepProgressBar.Height = 6;
-            stepProgressBar.Margin = new Thickness(25, 0, 25, 0);
+            stepProgressBar.Width = PROGRESS_BAR_WIDTH;
+            stepProgressBar.Height = PROGRESS_BAR_HEIGHT;
+            stepProgressBar.Margin = new Thickness(HEADER_MARGIN, 0, HEADER_MARGIN, 0);
             stepProgressBar.VerticalAlignment = VerticalAlignment.Center;
             stepProgressBar.Foreground = ThemeManager.CurrentTheme.Danger; // Red for uninstall
 
@@ -257,13 +339,13 @@ namespace DevStackUninstaller
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(25, 18, 25, 18)
+                Margin = new Thickness(BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN, BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN)
             };
 
             languageLabel = ThemeManager.CreateStyledLabel(localization.GetString("uninstaller.welcome.language_label"), false, false, ThemeManager.LabelStyle.Secondary);
-            languageLabel.FontSize = 14;
+            languageLabel.FontSize = TEXT_FONT_SIZE;
             languageLabel.VerticalAlignment = VerticalAlignment.Center;
-            languageLabel.Margin = new Thickness(0, 0, 10, 0);
+            languageLabel.Margin = new Thickness(0, 0, LANGUAGE_SELECTOR_MARGIN, 0);
 
             languageComboBox = ThemeManager.CreateStyledComboBox();
 
@@ -297,28 +379,28 @@ namespace DevStackUninstaller
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(25, 18, 25, 18)
+                Margin = new Thickness(BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN, BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN)
             };
 
             // Back button
             backButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.back"), null, ThemeManager.ButtonStyle.Secondary);
-            backButton.Width = 90;
-            backButton.Height = 36;
-            backButton.Margin = new Thickness(0, 0, 12, 0);
+            backButton.Width = BACK_BUTTON_WIDTH;
+            backButton.Height = BUTTON_HEIGHT;
+            backButton.Margin = new Thickness(0, 0, BUTTON_SPACING, 0);
             backButton.IsEnabled = false;
             backButton.Click += BackButton_Click;
 
             // Next button - using Danger style for uninstall theme
             nextButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.next"), null, ThemeManager.ButtonStyle.Danger);
-            nextButton.Width = 130;
-            nextButton.Height = 36;
-            nextButton.Margin = new Thickness(0, 0, 12, 0);
+            nextButton.Width = NEXT_BUTTON_WIDTH;
+            nextButton.Height = BUTTON_HEIGHT;
+            nextButton.Margin = new Thickness(0, 0, BUTTON_SPACING, 0);
             nextButton.Click += NextButton_Click;
 
             // Cancel button
             cancelButton = ThemeManager.CreateStyledButton(localization.GetString("common.buttons.cancel"), null, ThemeManager.ButtonStyle.Secondary);
-            cancelButton.Width = 90;
-            cancelButton.Height = 36;
+            cancelButton.Width = CANCEL_BUTTON_WIDTH;
+            cancelButton.Height = BUTTON_HEIGHT;
             cancelButton.Click += CancelButton_Click;
 
             buttonPanel.Children.Add(backButton);
@@ -359,13 +441,13 @@ namespace DevStackUninstaller
                 {
                     mainGridRef.Children.Clear();
                     mainGridRef.RowDefinitions.Clear();
-                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) });
+                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(HEADER_HEIGHT) });
                     mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) });
+                    mainGridRef.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BUTTON_BAR_HEIGHT) });
 
                     CreateHeader();
                     contentGrid = new Grid();
-                    contentGrid.Margin = new Thickness(20);
+                    contentGrid.Margin = new Thickness(CONTENT_MARGIN);
                     Grid.SetRow(contentGrid, 1);
                     mainGridRef.Children.Add(contentGrid);
                     CreateButtonBar();
@@ -422,7 +504,7 @@ namespace DevStackUninstaller
             contentGrid.ColumnDefinitions.Clear();
 
             contentGrid.Background = ThemeManager.CurrentTheme.FormBackground;
-            contentGrid.Margin = new Thickness(25);
+            contentGrid.Margin = new Thickness(HEADER_MARGIN);
 
             // Update progress
             stepProgressBar.Value = (int)currentStep;
@@ -493,8 +575,8 @@ namespace DevStackUninstaller
                 Background = ThemeManager.CurrentTheme.ControlBackground
             };
 
-            var welcomeContainer = ThemeManager.CreateStyledCard(new StackPanel(), 12, true);
-            welcomeContainer.Padding = new Thickness(40, 35, 40, 35);
+            var welcomeContainer = ThemeManager.CreateStyledCard(new StackPanel(), CARD_CORNER_RADIUS, true);
+            welcomeContainer.Padding = new Thickness(CARD_PADDING, CARD_PADDING_VERTICAL, CARD_PADDING, CARD_PADDING_VERTICAL);
 
             var innerPanel = new StackPanel
             {
@@ -504,29 +586,29 @@ namespace DevStackUninstaller
             var logoImage = new Image
             {
                 Source = new BitmapImage(new Uri("pack://application:,,,/DevStack.ico")),
-                Width = 80,
-                Height = 80,
+                Width = LOGO_SIZE,
+                Height = LOGO_SIZE,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 15)
+                Margin = new Thickness(0, 0, 0, LABEL_MARGIN_BOTTOM)
             };
 
             var welcomeText = new TextBlock
             {
                 Text = localization.GetString("uninstaller.welcome.app_name"),
-                FontSize = 28,
+                FontSize = WELCOME_TITLE_FONT_SIZE,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Foreground = ThemeManager.CurrentTheme.Danger, // Danger color for uninstall
-                Margin = new Thickness(0, 0, 0, 8)
+                Margin = new Thickness(0, 0, 0, TITLE_MARGIN_BOTTOM)
             };
 
             var versionText = new TextBlock
             {
                 Text = localization.GetString("uninstaller.welcome.version", GetVersion()),
-                FontSize = 15,
+                FontSize = VERSION_FONT_SIZE,
                 Foreground = ThemeManager.CurrentTheme.TextSecondary,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 25)
+                Margin = new Thickness(0, 0, 0, VERSION_MARGIN_BOTTOM)
             };
 
             var descriptionText = new TextBlock
@@ -534,10 +616,10 @@ namespace DevStackUninstaller
                 Text = localization.GetString("uninstaller.welcome.app_description"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
-                FontSize = 14,
-                LineHeight = 22,
+                FontSize = TEXT_FONT_SIZE,
+                LineHeight = LINE_HEIGHT_NORMAL,
                 Foreground = ThemeManager.CurrentTheme.TextSecondary,
-                MaxWidth = 420
+                MaxWidth = MAX_DESCRIPTION_WIDTH
             };
 
             innerPanel.Children.Add(logoImage);
@@ -586,14 +668,14 @@ namespace DevStackUninstaller
                     // Force application exit to ensure file handle is released
                     _ = Task.Run(async () =>
                     {
-                        await Task.Delay(500); // Small delay to ensure UI updates
+                        await Task.Delay(UI_UPDATE_DELAY_MS); // Small delay to ensure UI updates
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             Application.Current.Shutdown();
                         });
                         
                         // Additional forced exit if needed
-                        await Task.Delay(1000);
+                        await Task.Delay(COMPLETION_DELAY_MS);
                         Environment.Exit(0);
                     });
                     break;
@@ -645,15 +727,15 @@ namespace DevStackUninstaller
                 localization.GetString("uninstaller.confirmation.warning_text"), 
                 ThemeManager.NotificationType.Warning, 
                 true);
-            warningContainer.Margin = new Thickness(0, 0, 0, 20);
+            warningContainer.Margin = new Thickness(0, 0, 0, CONTAINER_MARGIN_BOTTOM);
 
             // Installation details panel
-            var detailsContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            var detailsContainer = ThemeManager.CreateStyledCard(new StackPanel(), CONTAINER_CORNER_RADIUS, false);
             detailsContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
             detailsContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
 
             var detailsPanel = (StackPanel)detailsContainer.Child;
-            detailsPanel.Margin = new Thickness(20, 18, 20, 18);
+            detailsPanel.Margin = new Thickness(CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL, CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL);
 
             if (!string.IsNullOrEmpty(installationPath))
             {
@@ -662,8 +744,8 @@ namespace DevStackUninstaller
                     Text = localization.GetString("uninstaller.confirmation.install_found"),
                     FontWeight = FontWeights.SemiBold,
                     Foreground = ThemeManager.CurrentTheme.Foreground,
-                    FontSize = 14,
-                    Margin = new Thickness(0, 0, 0, 8)
+                    FontSize = TEXT_FONT_SIZE,
+                    Margin = new Thickness(0, 0, 0, TITLE_MARGIN_BOTTOM)
                 });
 
                 detailsPanel.Children.Add(new TextBlock
@@ -671,8 +753,8 @@ namespace DevStackUninstaller
                     Text = installationPath,
                     Foreground = ThemeManager.CurrentTheme.Accent,
                     FontFamily = new FontFamily("Consolas"),
-                    FontSize = 13,
-                    Margin = new Thickness(20, 0, 0, 15)
+                    FontSize = DESCRIPTION_FONT_SIZE,
+                    Margin = new Thickness(CONTENT_MARGIN, 0, 0, LABEL_MARGIN_BOTTOM)
                 });
 
                 // Calculate folder size
@@ -683,7 +765,7 @@ namespace DevStackUninstaller
                     {
                         Text = localization.GetString("uninstaller.confirmation.space_to_free", sizeText),
                         Foreground = ThemeManager.CurrentTheme.TextSecondary,
-                        FontSize = 13,
+                        FontSize = DESCRIPTION_FONT_SIZE,
                         Margin = new Thickness(0, 0, 0, 0)
                     });
                 }
@@ -695,8 +777,8 @@ namespace DevStackUninstaller
                     Text = localization.GetString("uninstaller.confirmation.install_not_found"),
                     Foreground = ThemeManager.CurrentTheme.Danger,
                     FontWeight = FontWeights.SemiBold,
-                    FontSize = 14,
-                    Margin = new Thickness(0, 0, 0, 10)
+                    FontSize = TEXT_FONT_SIZE,
+                    Margin = new Thickness(0, 0, 0, INFO_PANEL_MARGIN_TOP)
                 });
 
                 detailsPanel.Children.Add(new TextBlock
@@ -727,11 +809,11 @@ namespace DevStackUninstaller
             var optionsLabel = ThemeManager.CreateStyledLabel(
                 localization.GetString("uninstaller.uninstall_options.label"), 
                 false, false, ThemeManager.LabelStyle.Title);
-            optionsLabel.FontSize = 15;
-            optionsLabel.Margin = new Thickness(0, 0, 0, 15);
+            optionsLabel.FontSize = LABEL_FONT_SIZE;
+            optionsLabel.Margin = new Thickness(0, 0, 0, LABEL_MARGIN_BOTTOM);
 
-            var optionsContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
-            optionsContainer.Padding = new Thickness(20, 18, 20, 18);
+            var optionsContainer = ThemeManager.CreateStyledCard(new StackPanel(), CONTAINER_CORNER_RADIUS, false);
+            optionsContainer.Padding = new Thickness(CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL, CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL);
 
             var optionsPanel = (StackPanel)optionsContainer.Child;
 
@@ -741,14 +823,14 @@ namespace DevStackUninstaller
             removeUserDataCheckBox.IsChecked = removeUserData;
             removeUserDataCheckBox.Checked += (s, e) => removeUserData = true;
             removeUserDataCheckBox.Unchecked += (s, e) => removeUserData = false;
-            removeUserDataCheckBox.Margin = new Thickness(0, 0, 0, 15);
+            removeUserDataCheckBox.Margin = new Thickness(0, 0, 0, LABEL_MARGIN_BOTTOM);
 
             var userDataDescription = new TextBlock
             {
                 Text = localization.GetString("uninstaller.uninstall_options.user_data_desc"),
-                FontSize = 12,
+                FontSize = CONSOLE_FONT_SIZE,
                 Foreground = ThemeManager.CurrentTheme.TextMuted,
-                Margin = new Thickness(30, -10, 0, 0)
+                Margin = new Thickness(CHECKBOX_DESCRIPTION_MARGIN_LEFT, CHECKBOX_DESCRIPTION_MARGIN_TOP, 0, 0)
             };
 
             optionsPanel.Children.Add(removeUserDataCheckBox);
@@ -759,7 +841,7 @@ namespace DevStackUninstaller
                 localization.GetString("uninstaller.uninstall_options.info"), 
                 ThemeManager.NotificationType.Info
             );
-            infoPanel.Margin = new Thickness(0, 20, 0, 0);
+            infoPanel.Margin = new Thickness(0, CONTAINER_MARGIN_BOTTOM, 0, 0);
 
             Grid.SetRow(optionsLabel, 0);
             Grid.SetRow(optionsContainer, 1);
@@ -784,10 +866,10 @@ namespace DevStackUninstaller
             var summaryLabel = ThemeManager.CreateStyledLabel(
                 localization.GetString("uninstaller.ready_to_uninstall.summary_label"), 
                 false, false, ThemeManager.LabelStyle.Title);
-            summaryLabel.FontSize = 15;
-            summaryLabel.Margin = new Thickness(0, 0, 0, 15);
+            summaryLabel.FontSize = LABEL_FONT_SIZE;
+            summaryLabel.Margin = new Thickness(0, 0, 0, LABEL_MARGIN_BOTTOM);
 
-            var summaryContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
+            var summaryContainer = ThemeManager.CreateStyledCard(new StackPanel(), CONTAINER_CORNER_RADIUS, false);
             summaryContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
             summaryContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
             summaryContainer.Padding = new Thickness(20, 18, 20, 18);
@@ -823,35 +905,35 @@ namespace DevStackUninstaller
                 Text = localization.GetString("uninstaller.uninstalling.preparing"),
                 FontWeight = FontWeights.SemiBold,
                 Foreground = ThemeManager.CurrentTheme.Foreground,
-                FontSize = 15,
-                Margin = new Thickness(0, 0, 0, 15)
+                FontSize = LABEL_FONT_SIZE,
+                Margin = new Thickness(0, 0, 0, LABEL_MARGIN_BOTTOM)
             };
 
             // Progress bar container
-            var progressContainer = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
-            progressContainer.Padding = new Thickness(20, 18, 20, 18);
-            progressContainer.Margin = new Thickness(0, 0, 0, 20);
+            var progressContainer = ThemeManager.CreateStyledCard(new StackPanel(), CONTAINER_CORNER_RADIUS, false);
+            progressContainer.Padding = new Thickness(CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL, CONTAINER_PADDING, CONTAINER_PADDING_VERTICAL);
+            progressContainer.Margin = new Thickness(0, 0, 0, CONTAINER_MARGIN_BOTTOM);
 
-            uninstallProgressBar = ThemeManager.CreateStyledProgressBar(0, 100, false);
-            uninstallProgressBar.Height = 8;
-            uninstallProgressBar.Value = 0; // Start at 0
+            uninstallProgressBar = ThemeManager.CreateStyledProgressBar(PROGRESS_START, PROGRESS_COMPLETE, false);
+            uninstallProgressBar.Height = UNINSTALL_PROGRESS_HEIGHT;
+            uninstallProgressBar.Value = PROGRESS_START; // Start at 0
             uninstallProgressBar.Foreground = ThemeManager.CurrentTheme.Danger; // Red for uninstall
 
             ((StackPanel)progressContainer.Child).Children.Add(uninstallProgressBar);
 
             // Log container
-            var logContainer = ThemeManager.CreateStyledCard(new ListBox(), 8, false);
+            var logContainer = ThemeManager.CreateStyledCard(new ListBox(), CONTAINER_CORNER_RADIUS, false);
             logContainer.Background = ThemeManager.CurrentTheme.ConsoleBackground;
             logContainer.BorderBrush = ThemeManager.CurrentTheme.Border;
             logContainer.Padding = new Thickness(0);
 
             uninstallLogListBox = (ListBox)logContainer.Child;
             uninstallLogListBox.FontFamily = new FontFamily("Consolas");
-            uninstallLogListBox.FontSize = 12;
+            uninstallLogListBox.FontSize = CONSOLE_FONT_SIZE;
             uninstallLogListBox.Background = ThemeManager.CurrentTheme.ConsoleBackground;
             uninstallLogListBox.Foreground = ThemeManager.CurrentTheme.ConsoleForeground;
             uninstallLogListBox.BorderThickness = new Thickness(0);
-            uninstallLogListBox.Padding = new Thickness(15, 10, 15, 10);
+            uninstallLogListBox.Padding = new Thickness(LABEL_MARGIN_BOTTOM, INFO_PANEL_MARGIN_TOP, LABEL_MARGIN_BOTTOM, INFO_PANEL_MARGIN_TOP);
 
             ScrollViewer.SetHorizontalScrollBarVisibility(uninstallLogListBox, ScrollBarVisibility.Disabled);
             ScrollViewer.SetVerticalScrollBarVisibility(uninstallLogListBox, ScrollBarVisibility.Auto);
@@ -860,7 +942,7 @@ namespace DevStackUninstaller
             var logItemStyle = new Style(typeof(ListBoxItem));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.BorderThicknessProperty, new Thickness(0)));
-            logItemStyle.Setters.Add(new Setter(ListBoxItem.PaddingProperty, new Thickness(0, 2, 0, 2)));
+            logItemStyle.Setters.Add(new Setter(ListBoxItem.PaddingProperty, new Thickness(0, LOG_ITEM_PADDING_VERTICAL, 0, LOG_ITEM_PADDING_VERTICAL)));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.MarginProperty, new Thickness(0)));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, ThemeManager.CurrentTheme.ConsoleForeground));
 
@@ -900,18 +982,18 @@ namespace DevStackUninstaller
             var successIcon = new TextBlock
             {
                 Text = "✅",
-                FontSize = 48,
+                FontSize = WARNING_ICON_FONT_SIZE,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
+                Margin = new Thickness(0, 0, 0, CONTAINER_MARGIN_BOTTOM)
             };
 
             var successText = new TextBlock
             {
                 Text = localization.GetString("uninstaller.finished.success_title"),
-                FontSize = 18,
+                FontSize = TITLE_FONT_SIZE,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20),
+                Margin = new Thickness(0, 0, 0, CONTAINER_MARGIN_BOTTOM),
                 Foreground = ThemeManager.CurrentTheme.Success
             };
 
@@ -920,15 +1002,15 @@ namespace DevStackUninstaller
                 Text = localization.GetString("uninstaller.finished.success_message"),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
-                FontSize = 14,
-                Margin = new Thickness(40, 0, 40, 20),
+                FontSize = TEXT_FONT_SIZE,
+                Margin = new Thickness(CARD_PADDING, 0, CARD_PADDING, CONTAINER_MARGIN_BOTTOM),
                 Foreground = ThemeManager.CurrentTheme.ConsoleForeground
             };
 
             // Info panel with results
-            var resultPanel = ThemeManager.CreateStyledCard(new StackPanel(), 8, false);
-            resultPanel.Margin = new Thickness(20, 10, 20, 20);
-            resultPanel.Padding = new Thickness(15);
+            var resultPanel = ThemeManager.CreateStyledCard(new StackPanel(), CONTAINER_CORNER_RADIUS, false);
+            resultPanel.Margin = new Thickness(CONTENT_MARGIN, INFO_PANEL_MARGIN_TOP, CONTENT_MARGIN, CONTAINER_MARGIN_BOTTOM);
+            resultPanel.Padding = new Thickness(LABEL_MARGIN_BOTTOM);
             
             var resultContent = (StackPanel)resultPanel.Child;
             resultContent.Children.Add(new TextBlock
@@ -936,7 +1018,7 @@ namespace DevStackUninstaller
                 Text = localization.GetString("uninstaller.finished.summary_title"),
                 FontWeight = FontWeights.SemiBold,
                 Foreground = ThemeManager.CurrentTheme.Foreground,
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(0, 0, 0, INFO_PANEL_MARGIN_TOP)
             });
             
             resultContent.Children.Add(new TextBlock
@@ -944,7 +1026,7 @@ namespace DevStackUninstaller
                 Text = GetUninstallationResultSummary(),
                 Foreground = ThemeManager.CurrentTheme.ConsoleForeground,
                 FontFamily = new FontFamily("Consolas"),
-                FontSize = 12,
+                FontSize = CONSOLE_FONT_SIZE,
                 LineHeight = 18
             });
 

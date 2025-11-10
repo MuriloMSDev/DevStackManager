@@ -44,8 +44,8 @@ namespace DevStackInstaller
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error starting installer: {ex.Message}\n\nDetails: {ex}", 
-                    "DevStack Installer Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(LocalizationManager.Instance?.GetString("installer.dialogs.startup_error_message", ex.Message, ex) ?? $"Error starting installer: {ex.Message}\n\nDetails: {ex}", 
+                    LocalizationManager.Instance?.GetString("installer.dialogs.startup_error_title") ?? "DevStack Installer Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
@@ -63,6 +63,94 @@ namespace DevStackInstaller
 
     public class InstallerWindow : Window
     {
+        #region Constants
+        // Window Dimensions
+        private const double WINDOW_WIDTH = 750;
+        private const double WINDOW_HEIGHT = 650;
+        
+        // Layout Heights
+        private const double HEADER_HEIGHT = 105;
+        private const double BUTTON_BAR_HEIGHT = 80;
+        
+        // Margins and Padding
+        private const double CONTENT_MARGIN = 20;
+        private const double HEADER_MARGIN = 25;
+        private const double HEADER_VERTICAL_MARGIN = 20;
+        private const double BUTTON_PANEL_MARGIN = 25;
+        private const double BUTTON_PANEL_VERTICAL_MARGIN = 18;
+        private const double BUTTON_SPACING = 12;
+        
+        // Font Sizes
+        private const double TITLE_FONT_SIZE = 18;
+        private const double DESCRIPTION_FONT_SIZE = 13;
+        private const double LABEL_FONT_SIZE = 15;
+        private const double WELCOME_TITLE_FONT_SIZE = 28;
+        private const double VERSION_FONT_SIZE = 15;
+        private const double CONSOLE_FONT_SIZE = 12;
+        private const double TEXT_FONT_SIZE = 14;
+        private const double BUTTON_FONT_SIZE = 14;
+        
+        // Button Dimensions
+        private const double BACK_BUTTON_WIDTH = 90;
+        private const double NEXT_BUTTON_WIDTH = 130;
+        private const double CANCEL_BUTTON_WIDTH = 90;
+        private const double BUTTON_HEIGHT = 36;
+        private const double BROWSE_BUTTON_WIDTH = 130;
+        private const double INPUT_HEIGHT = 40;
+        
+        // Progress Bar
+        private const double PROGRESS_BAR_WIDTH = 220;
+        private const double PROGRESS_BAR_HEIGHT = 6;
+        private const double INSTALL_PROGRESS_HEIGHT = 8;
+        
+        // Icon Dimensions
+        private const double LOGO_SIZE = 80;
+        private const double SUCCESS_ICON_FONT_SIZE = 48;
+        
+        // Card and Container
+        private const double CARD_CORNER_RADIUS = 12;
+        private const double CONTAINER_CORNER_RADIUS = 8;
+        private const double CONTAINER_CORNER_RADIUS_SMALL = 6;
+        private const double CARD_PADDING = 40;
+        private const double CARD_PADDING_VERTICAL = 35;
+        private const double CONTAINER_PADDING = 20;
+        private const double CONTAINER_PADDING_VERTICAL = 18;
+        private const double OPTION_SPACING = 15;
+        
+        // Spacing
+        private const double WELCOME_MARGIN_VERTICAL = 20;
+        private const double TITLE_MARGIN_BOTTOM = 8;
+        private const double VERSION_MARGIN_BOTTOM = 25;
+        private const double LABEL_MARGIN_BOTTOM = 15;
+        private const double CONTAINER_MARGIN_BOTTOM = 20;
+        private const double DESCRIPTION_MARGIN_TOP = 6;
+        private const double INFO_PANEL_MARGIN_TOP = 10;
+        
+        // Progress Values
+        private const int PROGRESS_ZIP_EXTRACTED = 5;
+        private const int PROGRESS_SOURCE_EXTRACTED = 10;
+        private const int PROGRESS_SDK_DOWNLOADED = 35;
+        private const int PROGRESS_DIR_CREATED = 40;
+        private const int PROGRESS_COMPILED = 85;
+        private const int PROGRESS_REGISTERED = 90;
+        private const int PROGRESS_DESKTOP_SHORTCUTS = 95;
+        private const int PROGRESS_START_MENU = 97;
+        private const int PROGRESS_PATH_ADDED = 99;
+        private const int PROGRESS_COMPLETE = 100;
+        
+        // Delays
+        private const int COMPLETION_DELAY_MS = 1000;
+        
+        // GUID Length
+        private const int GUID_SHORT_LENGTH = 8;
+        
+        // SDK Download
+        private const int SDK_DOWNLOAD_TIMEOUT_MINUTES = 15;
+        private const int SDK_MIN_FILE_SIZE_MB = 1;
+        private const int INSTALL_SCRIPT_TIMEOUT_MINUTES = 5;
+        private const int BUFFER_SIZE = 8192;
+        #endregion
+        
         private InstallerStep currentStep = InstallerStep.Welcome;
         private Grid mainGrid = null!;
         private Grid contentGrid = null!;
@@ -105,8 +193,8 @@ namespace DevStackInstaller
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error initializing installer window: {ex.Message}", 
-                    "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(localization.GetString("installer.dialogs.initialization_error_message", ex.Message), 
+                    localization.GetString("installer.dialogs.initialization_error_title"), MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
         }
@@ -166,8 +254,8 @@ namespace DevStackInstaller
             // Obter window title com formatação explícita
             Title = localization.GetString("installer.window_title", version);
             System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
-            Width = 750;
-            Height = 650;
+            Width = WINDOW_WIDTH;
+            Height = WINDOW_HEIGHT;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             ResizeMode = ResizeMode.NoResize;
             
@@ -187,16 +275,16 @@ namespace DevStackInstaller
         private void CreateMainLayout()
         {
             mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) }); // Header
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(HEADER_HEIGHT) }); // Header
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(80) }); // Buttons
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BUTTON_BAR_HEIGHT) }); // Buttons
 
             // Header
             CreateHeader();
 
             // Content area
             contentGrid = new Grid();
-            contentGrid.Margin = new Thickness(20);
+            contentGrid.Margin = new Thickness(CONTENT_MARGIN);
             Grid.SetRow(contentGrid, 1);
             mainGrid.Children.Add(contentGrid);
 
@@ -221,22 +309,22 @@ namespace DevStackInstaller
 
             var headerStackPanel = new StackPanel
             {
-                Margin = new Thickness(25, 20, 25, 20),
+                Margin = new Thickness(HEADER_MARGIN, HEADER_VERTICAL_MARGIN, HEADER_MARGIN, HEADER_VERTICAL_MARGIN),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
             stepTitleText = new TextBlock
             {
-                FontSize = 18,
+                FontSize = TITLE_FONT_SIZE,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground
             };
 
             stepDescriptionText = new TextBlock
             {
-                FontSize = 13,
+                FontSize = DESCRIPTION_FONT_SIZE,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.TextSecondary,
-                Margin = new Thickness(0, 6, 0, 0),
+                Margin = new Thickness(0, DESCRIPTION_MARGIN_TOP, 0, 0),
                 TextWrapping = TextWrapping.Wrap
             };
 
@@ -245,9 +333,9 @@ namespace DevStackInstaller
 
             // Progress indicator usando ThemeManager
             stepProgressBar = DevStackShared.ThemeManager.CreateStyledProgressBar(0, 6, false);
-            stepProgressBar.Width = 220;
-            stepProgressBar.Height = 6;
-            stepProgressBar.Margin = new Thickness(25, 0, 25, 0);
+            stepProgressBar.Width = PROGRESS_BAR_WIDTH;
+            stepProgressBar.Height = PROGRESS_BAR_HEIGHT;
+            stepProgressBar.Margin = new Thickness(HEADER_MARGIN, 0, HEADER_MARGIN, 0);
             stepProgressBar.VerticalAlignment = VerticalAlignment.Center;
 
             Grid.SetColumn(headerStackPanel, 0);
@@ -280,7 +368,7 @@ namespace DevStackInstaller
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(25, 18, 25, 18)
+                Margin = new Thickness(BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN, BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN)
             };
 
             languageLabel = DevStackShared.ThemeManager.CreateStyledLabel(
@@ -321,7 +409,7 @@ namespace DevStackInstaller
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(25, 18, 25, 18)
+                Margin = new Thickness(BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN, BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN)
             };
 
             // Botões usando ThemeManager
@@ -329,25 +417,25 @@ namespace DevStackInstaller
                 localization.GetString("common.buttons.back"), 
                 BackButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Secondary);
-            backButton.Width = 90;
-            backButton.Height = 36;
-            backButton.Margin = new Thickness(0, 0, 12, 0);
+            backButton.Width = BACK_BUTTON_WIDTH;
+            backButton.Height = BUTTON_HEIGHT;
+            backButton.Margin = new Thickness(0, 0, BUTTON_SPACING, 0);
             backButton.IsEnabled = false;
 
             nextButton = DevStackShared.ThemeManager.CreateStyledButton(
                 localization.GetString("common.buttons.next"), 
                 NextButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Primary);
-            nextButton.Width = 130;
-            nextButton.Height = 36;
-            nextButton.Margin = new Thickness(0, 0, 12, 0);
+            nextButton.Width = NEXT_BUTTON_WIDTH;
+            nextButton.Height = BUTTON_HEIGHT;
+            nextButton.Margin = new Thickness(0, 0, BUTTON_SPACING, 0);
 
             cancelButton = DevStackShared.ThemeManager.CreateStyledButton(
                 localization.GetString("common.buttons.cancel"), 
                 CancelButton_Click, 
                 DevStackShared.ThemeManager.ButtonStyle.Secondary);
-            cancelButton.Width = 90;
-            cancelButton.Height = 36;
+            cancelButton.Width = CANCEL_BUTTON_WIDTH;
+            cancelButton.Height = BUTTON_HEIGHT;
 
             buttonPanel.Children.Add(backButton);
             buttonPanel.Children.Add(nextButton);
@@ -372,7 +460,7 @@ namespace DevStackInstaller
 
             // Atualizar área de conteúdo com tema do ThemeManager
             contentGrid.Background = DevStackShared.ThemeManager.CurrentTheme.FormBackground;
-            contentGrid.Margin = new Thickness(25);
+            contentGrid.Margin = new Thickness(HEADER_MARGIN);
 
             // Update progress
             stepProgressBar.Value = (int)currentStep;
@@ -447,7 +535,7 @@ namespace DevStackInstaller
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
-                Margin = new Thickness(0, 20, 0, 20)
+                Margin = new Thickness(0, WELCOME_MARGIN_VERTICAL, 0, WELCOME_MARGIN_VERTICAL)
             };
 
             var innerPanel = new StackPanel
@@ -458,8 +546,8 @@ namespace DevStackInstaller
             var logoImage = new Image
             {
                 Source = new BitmapImage(new Uri("pack://application:,,,/DevStack.ico")),
-                Width = 80,
-                Height = 80,
+                Width = LOGO_SIZE,
+                Height = LOGO_SIZE,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0)
             };
@@ -468,15 +556,15 @@ namespace DevStackInstaller
                 localization.GetString("installer.welcome.app_name"), 
                 true, false, DevStackShared.ThemeManager.LabelStyle.Title);
             welcomeText.HorizontalAlignment = HorizontalAlignment.Center;
-            welcomeText.FontSize = 28;
-            welcomeText.Margin = new Thickness(0, 0, 0, 8);
+            welcomeText.FontSize = WELCOME_TITLE_FONT_SIZE;
+            welcomeText.Margin = new Thickness(0, 0, 0, TITLE_MARGIN_BOTTOM);
 
             var versionText = DevStackShared.ThemeManager.CreateStyledLabel(
                 localization.GetString("installer.welcome.version", GetVersion()),
                 false, false, DevStackShared.ThemeManager.LabelStyle.Secondary);
             versionText.HorizontalAlignment = HorizontalAlignment.Center;
-            versionText.FontSize = 15;
-            versionText.Margin = new Thickness(0, 0, 0, 25);
+            versionText.FontSize = VERSION_FONT_SIZE;
+            versionText.Margin = new Thickness(0, 0, 0, VERSION_MARGIN_BOTTOM);
 
             var descriptionText = DevStackShared.ThemeManager.CreateStyledLabel(
                 localization.GetString("installer.welcome.app_description"),
@@ -498,8 +586,8 @@ namespace DevStackInstaller
             innerPanel.Children.Add(descriptionText);
 
             // Container principal com borda arredondada usando ThemeManager
-            var welcomeContainer = DevStackShared.ThemeManager.CreateStyledCard(innerPanel, 12, true);
-            welcomeContainer.Padding = new Thickness(40, 35, 40, 35);
+            var welcomeContainer = DevStackShared.ThemeManager.CreateStyledCard(innerPanel, CARD_CORNER_RADIUS, true);
+            welcomeContainer.Padding = new Thickness(CARD_PADDING, CARD_PADDING_VERTICAL, CARD_PADDING, CARD_PADDING_VERTICAL);
 
             welcomePanel.Children.Add(welcomeContainer);
 
@@ -1536,15 +1624,15 @@ namespace DevStackInstaller
                     ExtractZipWithDeflate(tempZipPath, tempSourceDir);
                 });
                 installProgressBar.Value = 10; // 10% complete
-                AddInstallationLog("Source files extracted");
+                AddInstallationLog(localization.GetString("installer.log_messages.source_extracted"));
 
-                installStatusText.Content = "Downloading .NET SDK...";
-                AddInstallationLog("Downloading .NET SDK for compilation...");
+                installStatusText.Content = localization.GetString("installer.installing.downloading_sdk");
+                AddInstallationLog(localization.GetString("installer.log_messages.downloading_sdk"));
                 
                 // Download and extract .NET SDK
                 dotnetTempDir = await DownloadDotNetSDK(tempSourceDir);
                 installProgressBar.Value = 35; // 35% complete
-                AddInstallationLog(".NET SDK downloaded and extracted");
+                AddInstallationLog(localization.GetString("installer.log_messages.sdk_downloaded"));
 
                 installStatusText.Content = localization.GetString("installer.installing.creating_directory");
                 AddInstallationLog(localization.GetString("installer.log_messages.creating_dir", installationPath));
@@ -1552,9 +1640,11 @@ namespace DevStackInstaller
                 installProgressBar.Value = 40; // 40% complete
 
                 // Compile projects using temporary .NET SDK
-                installStatusText.Content = "Compiling DevStack projects...";
+                installStatusText.Content = localization.GetString("installer.installing.compiling_projects");
+                AddInstallationLog(localization.GetString("installer.log_messages.compiling"));
                 await CompileProjects(tempSourceDir, dotnetTempDir, installationPath);
                 installProgressBar.Value = 85; // 85% complete
+                AddInstallationLog(localization.GetString("installer.log_messages.compilation_complete"));
 
                 // Create settings.conf with selected language using DevStackConfig
                 try

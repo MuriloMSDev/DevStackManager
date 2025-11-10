@@ -14,6 +14,36 @@ namespace DevStackManager
     /// </summary>
     public static class GuiUtilitiesTab
     {
+        // UI Dimensions Constants
+        private const int HEADER_FONT_SIZE = 18;
+        private const int HEADER_MARGIN = 10;
+        private const int CLEAR_BUTTON_SIZE = 32;
+        private const int CLEAR_BUTTON_TOP_MARGIN = 1;
+        private const int CLEAR_BUTTON_RIGHT_MARGIN_DEFAULT = 6;
+        private const int CLEAR_BUTTON_RIGHT_MARGIN_WITH_SCROLLBAR = 23;
+        private const int CLEAR_BUTTON_Z_INDEX = 10;
+        private const int COMMAND_LABEL_WIDTH = 90;
+        private const int COMMAND_INPUT_HEIGHT = 30;
+        private const int COMMAND_INPUT_HORIZONTAL_MARGIN = 5;
+        private const int EXECUTE_BUTTON_WIDTH = 100;
+        private const int EXECUTE_BUTTON_HEIGHT = 30;
+        private const int EXECUTE_BUTTON_LEFT_MARGIN = 5;
+        private const int EXECUTE_BUTTON_HORIZONTAL_PADDING = 12;
+        private const int EXECUTE_BUTTON_VERTICAL_PADDING = 4;
+        private const int CONSOLE_FONT_SIZE = 12;
+        private const int CONSOLE_MARGIN = 5;
+        private const int CONSOLE_HORIZONTAL_MARGIN = 10;
+        private const int QUICK_BUTTON_WIDTH = 120;
+        private const int QUICK_BUTTON_HEIGHT = 35;
+        private const int QUICK_BUTTON_MARGIN = 5;
+        private const int BUTTONS_PANEL_TOP_MARGIN = 10;
+        private const int INPUT_PANEL_MARGIN = 10;
+        private const int INPUT_PANEL_TOP_MARGIN = 5;
+        private const int INPUT_PANEL_BOTTOM_MARGIN = 10;
+
+        // Font Constants
+        private const string CONSOLE_FONT_FAMILY = "Consolas";
+
         /// <summary>
         /// Cria o conteúdo completo da aba "Utilitários"
         /// </summary>
@@ -27,8 +57,8 @@ namespace DevStackManager
 
             // Header
             var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.console_title"), true);
-            headerLabel.FontSize = 18;
-            headerLabel.Margin = new Thickness(10, 10, 10, 0);
+            headerLabel.FontSize = HEADER_FONT_SIZE;
+            headerLabel.Margin = new Thickness(HEADER_MARGIN, HEADER_MARGIN, HEADER_MARGIN, 0);
             Grid.SetRow(headerLabel, 0);
             grid.Children.Add(headerLabel);
 
@@ -45,61 +75,13 @@ namespace DevStackManager
             consoleGrid.Children.Add(consoleScrollViewer);
 
             // Layer 1: Clear button (top-right)
-            var clearButton = new Button
-            {
-                Content = "❌",
-                BorderBrush = Brushes.Transparent,
-                Foreground = DevStackShared.ThemeManager.CurrentTheme.Danger,
-                Width = 32,
-                Height = 32,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 1, 6, 0),
-                ToolTip = mainWindow.LocalizationManager.GetString("gui.utilities_tab.clear_console_tooltip")
-            };
-            // Custom ControlTemplate: always transparent background, even on hover/press
-            var buttonTemplate = new ControlTemplate(typeof(Button));
-            var borderFactory = new FrameworkElementFactory(typeof(Border));
-            borderFactory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
-            borderFactory.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
-            borderFactory.SetValue(Border.SnapsToDevicePixelsProperty, true);
-            // ContentPresenter for the icon
-            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            borderFactory.AppendChild(contentPresenterFactory);
-            buttonTemplate.VisualTree = borderFactory;
-            // Remove highlight/hover/pressed background
-            var style = new Style(typeof(Button));
-            style.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
-            style.Setters.Add(new Setter(Button.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.Danger));
-            style.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
-            style.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-            style.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
-            // No triggers needed: template always keeps background transparent
-            clearButton.Style = style;
+            var clearButton = CreateClearButton(mainWindow);
             clearButton.Click += (s, e) => ClearConsole(mainWindow);
-            Panel.SetZIndex(clearButton, 10);
+            Panel.SetZIndex(clearButton, CLEAR_BUTTON_Z_INDEX);
             consoleGrid.Children.Add(clearButton);
 
             // Ajuste dinâmico da margem do botão Clear conforme o scroll horizontal
-            void UpdateClearButtonMargin()
-            {
-                // Se o ScrollViewer mostrar a barra de rolagem vertical, aumente a margem da direita
-                if (consoleScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
-                {
-                    clearButton.Margin = new Thickness(0, 1, 23, 0); // margem maior à direita
-                }
-                else
-                {
-                    clearButton.Margin = new Thickness(0, 1, 6, 0); // margem padrão
-                }
-            }
-            // Atualiza ao carregar e ao rolar
-            consoleScrollViewer.ScrollChanged += (s, e) => UpdateClearButtonMargin();
-            consoleScrollViewer.SizeChanged += (s, e) => UpdateClearButtonMargin();
-            // Atualiza ao mostrar
-            consoleScrollViewer.Loaded += (s, e) => UpdateClearButtonMargin();
+            SetupClearButtonMarginAdjustment(consoleScrollViewer, clearButton);
 
             Grid.SetRow(consoleGrid, 2);
             grid.Children.Add(consoleGrid);
@@ -119,7 +101,7 @@ namespace DevStackManager
         {
             var inputPanel = new Grid
             {
-                Margin = new Thickness(10, 5, 10, 10)
+                Margin = new Thickness(INPUT_PANEL_MARGIN, INPUT_PANEL_TOP_MARGIN, INPUT_PANEL_MARGIN, INPUT_PANEL_BOTTOM_MARGIN)
             };
             
             // Definir colunas: Label (auto) | TextBox (star) | Button (auto)
@@ -128,16 +110,28 @@ namespace DevStackManager
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             var commandLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.command_label"));
-            commandLabel.Width = 90;
+            commandLabel.Width = COMMAND_LABEL_WIDTH;
             commandLabel.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(commandLabel, 0);
             inputPanel.Children.Add(commandLabel);
 
-            var commandTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
-            commandTextBox.Height = 30;
-            commandTextBox.Margin = new Thickness(5, 0, 5, 0);
-            commandTextBox.Name = "UtilsCommandTextBox";
+            var commandTextBox = CreateCommandTextBox(mainWindow);
             Grid.SetColumn(commandTextBox, 1);
+            inputPanel.Children.Add(commandTextBox);
+
+            var executeButton = CreateExecuteButton(mainWindow, commandTextBox);
+            Grid.SetColumn(executeButton, 2);
+            inputPanel.Children.Add(executeButton);
+
+            return inputPanel;
+        }
+
+        private static TextBox CreateCommandTextBox(DevStackGui mainWindow)
+        {
+            var commandTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
+            commandTextBox.Height = COMMAND_INPUT_HEIGHT;
+            commandTextBox.Margin = new Thickness(COMMAND_INPUT_HORIZONTAL_MARGIN, 0, COMMAND_INPUT_HORIZONTAL_MARGIN, 0);
+            commandTextBox.Name = "UtilsCommandTextBox";
             
             // Enter para executar comando
             commandTextBox.KeyDown += (s, e) =>
@@ -149,21 +143,89 @@ namespace DevStackManager
                 }
             };
             
-            inputPanel.Children.Add(commandTextBox);
+            return commandTextBox;
+        }
 
-            var executeButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.utilities_tab.execute_button"), (s, e) =>
+        private static Button CreateExecuteButton(DevStackGui mainWindow, TextBox commandTextBox)
+        {
+            var executeButton = DevStackShared.ThemeManager.CreateStyledButton(
+                mainWindow.LocalizationManager.GetString("gui.utilities_tab.execute_button"), 
+                (s, e) =>
+                {
+                    ExecuteCommand(mainWindow, commandTextBox.Text);
+                    commandTextBox.Text = "";
+                }, 
+                DevStackShared.ThemeManager.ButtonStyle.Success);
+            
+            executeButton.Width = EXECUTE_BUTTON_WIDTH;
+            executeButton.Height = EXECUTE_BUTTON_HEIGHT;
+            executeButton.Margin = new Thickness(EXECUTE_BUTTON_LEFT_MARGIN, 0, 0, 0);
+            executeButton.Padding = new Thickness(EXECUTE_BUTTON_HORIZONTAL_PADDING, EXECUTE_BUTTON_VERTICAL_PADDING, EXECUTE_BUTTON_HORIZONTAL_PADDING, EXECUTE_BUTTON_VERTICAL_PADDING);
+            
+            return executeButton;
+        }
+
+        private static Button CreateClearButton(DevStackGui mainWindow)
+        {
+            var clearButton = new Button
             {
-                ExecuteCommand(mainWindow, commandTextBox.Text);
-                commandTextBox.Text = "";
-            }, DevStackShared.ThemeManager.ButtonStyle.Success);
-            executeButton.Width = 100;
-            executeButton.Height = 30;
-            executeButton.Margin = new Thickness(5, 0, 0, 0);
-            executeButton.Padding = new Thickness(12, 4, 12, 4);
-            Grid.SetColumn(executeButton, 2);
-            inputPanel.Children.Add(executeButton);
+                Content = "❌",
+                BorderBrush = Brushes.Transparent,
+                Foreground = DevStackShared.ThemeManager.CurrentTheme.Danger,
+                Width = CLEAR_BUTTON_SIZE,
+                Height = CLEAR_BUTTON_SIZE,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, CLEAR_BUTTON_TOP_MARGIN, CLEAR_BUTTON_RIGHT_MARGIN_DEFAULT, 0),
+                ToolTip = mainWindow.LocalizationManager.GetString("gui.utilities_tab.clear_console_tooltip")
+            };
+            
+            // Custom ControlTemplate: always transparent background, even on hover/press
+            var buttonTemplate = new ControlTemplate(typeof(Button));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+            borderFactory.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
+            borderFactory.SetValue(Border.SnapsToDevicePixelsProperty, true);
+            
+            // ContentPresenter for the icon
+            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            borderFactory.AppendChild(contentPresenterFactory);
+            buttonTemplate.VisualTree = borderFactory;
+            
+            // Remove highlight/hover/pressed background
+            var style = new Style(typeof(Button));
+            style.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
+            style.Setters.Add(new Setter(Button.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.Danger));
+            style.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
+            style.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            style.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
+            
+            clearButton.Style = style;
+            
+            return clearButton;
+        }
 
-            return inputPanel;
+        private static void SetupClearButtonMarginAdjustment(ScrollViewer consoleScrollViewer, Button clearButton)
+        {
+            void UpdateClearButtonMargin()
+            {
+                // Se o ScrollViewer mostrar a barra de rolagem vertical, aumente a margem da direita
+                if (consoleScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+                {
+                    clearButton.Margin = new Thickness(0, CLEAR_BUTTON_TOP_MARGIN, CLEAR_BUTTON_RIGHT_MARGIN_WITH_SCROLLBAR, 0);
+                }
+                else
+                {
+                    clearButton.Margin = new Thickness(0, CLEAR_BUTTON_TOP_MARGIN, CLEAR_BUTTON_RIGHT_MARGIN_DEFAULT, 0);
+                }
+            }
+            
+            // Atualiza ao carregar e ao rolar
+            consoleScrollViewer.ScrollChanged += (s, e) => UpdateClearButtonMargin();
+            consoleScrollViewer.SizeChanged += (s, e) => UpdateClearButtonMargin();
+            consoleScrollViewer.Loaded += (s, e) => UpdateClearButtonMargin();
         }
 
         /// <summary>
@@ -173,7 +235,7 @@ namespace DevStackManager
         {
             var consoleScrollViewer = new ScrollViewer
             {
-                Margin = new Thickness(10, 5, 10, 5),
+                Margin = new Thickness(CONSOLE_HORIZONTAL_MARGIN, CONSOLE_MARGIN, CONSOLE_HORIZONTAL_MARGIN, CONSOLE_MARGIN),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
             };
@@ -181,10 +243,18 @@ namespace DevStackManager
             // Aplicar scrollbar customizada do ThemeManager
             DevStackShared.ThemeManager.ApplyCustomScrollbar(consoleScrollViewer);
 
+            var consoleTextBox = CreateConsoleTextBox(mainWindow);
+            consoleScrollViewer.Content = consoleTextBox;
+            
+            return consoleScrollViewer;
+        }
+
+        private static TextBox CreateConsoleTextBox(DevStackGui mainWindow)
+        {
             var consoleTextBox = new TextBox
             {
-                FontFamily = new FontFamily("Consolas"),
-                FontSize = 12,
+                FontFamily = new FontFamily(CONSOLE_FONT_FAMILY),
+                FontSize = CONSOLE_FONT_SIZE,
                 Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
                 Foreground = DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground,
                 IsReadOnly = true,
@@ -193,11 +263,10 @@ namespace DevStackManager
                 Name = "UtilsConsoleOutput"
             };
 
-            // Texto inicial de ajuda
-            consoleTextBox.Text = GetInitialHelpText();
+            // Texto inicial de ajuda usando o LocalizationManager da mainWindow
+            consoleTextBox.Text = GetInitialHelpText(mainWindow);
 
-            consoleScrollViewer.Content = consoleTextBox;
-            return consoleScrollViewer;
+            return consoleTextBox;
         }
 
         /// <summary>
@@ -213,7 +282,7 @@ namespace DevStackManager
         {
             var buttonsPanel = new WrapPanel
             {
-                Margin = new Thickness(10, 10, 10, 5),
+                Margin = new Thickness(BUTTONS_PANEL_TOP_MARGIN, BUTTONS_PANEL_TOP_MARGIN, BUTTONS_PANEL_TOP_MARGIN, CONSOLE_MARGIN),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
@@ -228,29 +297,33 @@ namespace DevStackManager
 
             foreach (var btn in quickButtons)
             {
-                var button = DevStackShared.ThemeManager.CreateStyledButton(btn.Text);
-                button.Width = 120;
-                button.Height = 35;
-                button.Margin = new Thickness(5);
-                var command = btn.Command;
-                
-                // Tratamento especial para o botão de ajuda
-                if (command == "help")
-                {
-                    button.Click += (s, e) => ShowHelpInConsole(mainWindow);
-                }
-                else
-                {
-                    button.Click += (s, e) => ExecuteCommand(mainWindow, command);
-                }
-                
+                var button = CreateQuickButton(mainWindow, btn.Text, btn.Command);
                 buttonsPanel.Children.Add(button);
             }
-
 
             // O botão de limpar não é mais adicionado aqui, pois agora é sobreposto ao console
 
             return buttonsPanel;
+        }
+
+        private static Button CreateQuickButton(DevStackGui mainWindow, string text, string command)
+        {
+            var button = DevStackShared.ThemeManager.CreateStyledButton(text);
+            button.Width = QUICK_BUTTON_WIDTH;
+            button.Height = QUICK_BUTTON_HEIGHT;
+            button.Margin = new Thickness(QUICK_BUTTON_MARGIN);
+            
+            // Tratamento especial para o botão de ajuda
+            if (command == "help")
+            {
+                button.Click += (s, e) => ShowHelpInConsole(mainWindow);
+            }
+            else
+            {
+                button.Click += (s, e) => ExecuteCommand(mainWindow, command);
+            }
+            
+            return button;
         }
 
         /// <summary>
@@ -266,7 +339,7 @@ namespace DevStackManager
             // Tratamento especial para comando help
             if (command.Trim().ToLowerInvariant() == "help")
             {
-                consoleOutput.Text = GetInitialHelpText();
+                consoleOutput.Text = GetInitialHelpText(mainWindow);
                 consoleOutput.ScrollToEnd();
                 return;
             }
@@ -344,7 +417,7 @@ namespace DevStackManager
                         // Verificar se é o comando help especial
                         if (output == "help_command_special")
                         {
-                            consoleOutput.Text = GetInitialHelpText();
+                            consoleOutput.Text = GetInitialHelpText(mainWindow);
                             consoleOutput.ScrollToEnd();
                         }
                         else
@@ -374,10 +447,12 @@ namespace DevStackManager
         {
             try
             {
+                // Usar a instância existente ao invés de criar uma nova
+                var localizationManager = DevStackShared.LocalizationManager.Instance ?? DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
+                
                 var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 0)
                 {
-                    var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
                     return localizationManager.GetString("gui.utilities_tab.empty_command");
                 }
 
@@ -415,16 +490,16 @@ namespace DevStackManager
                                 return writer.ToString();
                             }
                         }
-                        return "Uso: list --installed ou list <componente>";
+                        return localizationManager.GetString("gui.utilities_tab.messages.list_usage");
                     case "help":
                         return "help_command_special"; // Sinal especial para limpar console
                     default:
-                        return $"Comando '{parts[0]}' n 3o reconhecido. Use 'help' para ver comandos dispon edveis.";
+                        return localizationManager.GetString("gui.utilities_tab.messages.command_not_recognized", parts[0]);
                 }
             }
             catch (Exception ex)
             {
-                var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+                var localizationManager = DevStackShared.LocalizationManager.Instance ?? DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
                 return localizationManager.GetString("gui.utilities_tab.command_execution_error", ex.Message);
             }
         }
@@ -450,7 +525,7 @@ namespace DevStackManager
             var consoleOutput = GuiHelpers.FindChild<TextBox>(mainWindow, "UtilsConsoleOutput");
             if (consoleOutput != null)
             {
-                consoleOutput.Text = GetInitialHelpText();
+                consoleOutput.Text = GetInitialHelpText(mainWindow);
                 consoleOutput.ScrollToEnd();
             }
         }
@@ -458,9 +533,9 @@ namespace DevStackManager
         /// <summary>
         /// Obtém o texto inicial de ajuda para o console
         /// </summary>
-        private static string GetInitialHelpText()
+        private static string GetInitialHelpText(DevStackGui mainWindow)
         {
-            var localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+            var localizationManager = mainWindow.LocalizationManager;
             var helpText = localizationManager.GetString("gui.utilities_tab.console_header") + "\n" +
                           localizationManager.GetString("gui.utilities_tab.available_commands") + "\n\n";
 

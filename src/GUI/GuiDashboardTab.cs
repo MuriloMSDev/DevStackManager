@@ -18,6 +18,56 @@ namespace DevStackManager
     /// </summary>
     public static class GuiDashboardTab
     {
+        // UI Dimensions Constants
+        private const int MAIN_MARGIN = 10;
+        private const int HEADER_BOTTOM_MARGIN = 20;
+        private const int TOP_ROW_BOTTOM_MARGIN = 10;
+        private const int TITLE_RIGHT_MARGIN = 20;
+        private const int TITLE_FONT_SIZE = 28;
+        private const int STATUS_PANEL_RIGHT_MARGIN = 20;
+        private const int SEPARATOR_TOP_MARGIN = 5;
+        private const int CARDS_GRID_BOTTOM_MARGIN = 30;
+        private const int CARD_MARGIN = 12;
+        private const int CARD_PADDING = 20;
+        private const int CARD_BORDER_THICKNESS = 1;
+        private const int CARD_CORNER_RADIUS = 12;
+        private const int CARD_HEADER_BOTTOM_MARGIN = 15;
+        private const int ICON_BORDER_CORNER_RADIUS = 8;
+        private const int ICON_BORDER_PADDING = 8;
+        private const int ICON_BORDER_RIGHT_MARGIN = 12;
+        private const int ICON_FONT_SIZE = 20;
+        private const int TITLE_CARD_FONT_SIZE = 16;
+        private const int SUBTITLE_FONT_SIZE = 11;
+        private const int SEPARATOR_HEIGHT = 3;
+        private const int SEPARATOR_BOTTOM_MARGIN = 12;
+        private const int CONTENT_FONT_SIZE = 14;
+        private const int INTERACTION_HINT_FONT_SIZE = 48;
+        private const int SPACER_WIDTH = 1;
+        
+        // Shadow Effect Constants
+        private const int SHADOW_DIRECTION = 315;
+        private const int SHADOW_DEPTH = 2;
+        private const double SHADOW_OPACITY = 0.1;
+        private const int SHADOW_BLUR_RADIUS = 8;
+        
+        // Opacity Constants
+        private const double CARD_HOVER_OPACITY = 0.8;
+        private const double CARD_NORMAL_OPACITY = 1.0;
+        private const double INTERACTION_HINT_OPACITY = 0.7;
+        private const double INTERACTION_HINT_HOVER_OPACITY = 1.0;
+        
+        // Animation Constants
+        private const int HOVER_ANIMATION_DELAY_MS = 100;
+        private const double CARD_HOVER_SCALE = 1.02;
+        
+        // Navigation Indices
+        private const int NAV_INDEX_INSTALLED = 1;
+        private const int NAV_INDEX_INSTALL = 2;
+        private const int NAV_INDEX_SERVICES = 4;
+        
+        // Timing Constants
+        private const int UI_INITIALIZATION_DELAY_MS = 500;
+        
         private static DispatcherTimer? _refreshTimer;
         
         /// <summary>
@@ -29,7 +79,7 @@ namespace DevStackManager
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Margin = new Thickness(10)
+                Margin = new Thickness(MAIN_MARGIN)
             };
 
             // Aplicar scrollbar customizada do ThemeManager
@@ -62,7 +112,7 @@ namespace DevStackManager
             
             // Carregar dados iniciais imediatamente
             Task.Run(async () => {
-                System.Threading.Thread.Sleep(500); // Pequena pausa para garantir que a UI esteja pronta
+                System.Threading.Thread.Sleep(UI_INITIALIZATION_DELAY_MS);
                 await mainWindow.Dispatcher.BeginInvoke(() => {
                     UpdateComponentsData(mainWindow);
                 });
@@ -83,19 +133,19 @@ namespace DevStackManager
             var headerPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                Margin = new Thickness(0, 0, 0, 20)
+                Margin = new Thickness(0, 0, 0, HEADER_BOTTOM_MARGIN)
             };
 
             // Row superior com título e botões
             var topRow = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(0, 0, 0, TOP_ROW_BOTTOM_MARGIN)
             };
 
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.title"), true);
-            titleLabel.FontSize = 28;
-            titleLabel.Margin = new Thickness(0, 0, 20, 0);
+            titleLabel.FontSize = TITLE_FONT_SIZE;
+            titleLabel.Margin = new Thickness(0, 0, TITLE_RIGHT_MARGIN, 0);
             topRow.Children.Add(titleLabel);
 
             // Status indicator
@@ -103,13 +153,13 @@ namespace DevStackManager
             {
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 20, 0)
+                Margin = new Thickness(0, 0, STATUS_PANEL_RIGHT_MARGIN, 0)
             };
 
             topRow.Children.Add(statusPanel);
 
             // Spacer flexível
-            var spacer = new Border { Width = 1, HorizontalAlignment = HorizontalAlignment.Stretch };
+            var spacer = new Border { Width = SPACER_WIDTH, HorizontalAlignment = HorizontalAlignment.Stretch };
             topRow.Children.Add(spacer);
 
             // Botões de ação
@@ -124,7 +174,7 @@ namespace DevStackManager
 
             // Separador visual elegante
             var separator = DevStackShared.ThemeManager.CreateStyledSeparator();
-            separator.Margin = new Thickness(0, 5, 0, 0);
+            separator.Margin = new Thickness(0, SEPARATOR_TOP_MARGIN, 0, 0);
             headerPanel.Children.Add(separator);
 
             return headerPanel;
@@ -137,7 +187,7 @@ namespace DevStackManager
         {
             var grid = new Grid
             {
-                Margin = new Thickness(0, 0, 0, 30) // Aumentado o espaçamento inferior
+                Margin = new Thickness(0, 0, 0, CARDS_GRID_BOTTOM_MARGIN)
             };
             
             // 3 colunas para os cards com espaçamento melhor distribuído
@@ -150,7 +200,7 @@ namespace DevStackManager
                 "📦", 
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.title"),
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.loading"),
-                () => mainWindow.SelectedNavIndex = 1, // Navega para tab Instalados
+                () => mainWindow.SelectedNavIndex = NAV_INDEX_INSTALLED,
                 mainWindow.CurrentTheme.Success,
                 mainWindow
             );
@@ -163,7 +213,7 @@ namespace DevStackManager
                 "📥",
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.install.title"),
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.install.description"),
-                () => mainWindow.SelectedNavIndex = 2, // Navega para tab Instalar
+                () => mainWindow.SelectedNavIndex = NAV_INDEX_INSTALL,
                 mainWindow.CurrentTheme.Info,
                 mainWindow
             );
@@ -175,7 +225,7 @@ namespace DevStackManager
                 "⚙️",
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.services.title"),
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.services.loading"),
-                () => mainWindow.SelectedNavIndex = 4, // Navega para tab Serviços
+                () => mainWindow.SelectedNavIndex = NAV_INDEX_SERVICES,
                 mainWindow.CurrentTheme.Warning,
                 mainWindow
             );
@@ -195,18 +245,18 @@ namespace DevStackManager
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.PanelBackground,
                 BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(12),
-                Margin = new Thickness(12), // Aumentado de 8 para 12 para melhor espaçamento
-                Padding = new Thickness(20),
+                BorderThickness = new Thickness(CARD_BORDER_THICKNESS),
+                CornerRadius = new CornerRadius(CARD_CORNER_RADIUS),
+                Margin = new Thickness(CARD_MARGIN),
+                Padding = new Thickness(CARD_PADDING),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
                     Color = Colors.Black,
-                    Direction = 315,
-                    ShadowDepth = 2,
-                    Opacity = 0.1,
-                    BlurRadius = 8
+                    Direction = SHADOW_DIRECTION,
+                    ShadowDepth = SHADOW_DEPTH,
+                    Opacity = SHADOW_OPACITY,
+                    BlurRadius = SHADOW_BLUR_RADIUS
                 }
             };
 
@@ -216,21 +266,21 @@ namespace DevStackManager
             var headerPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 15)
+                Margin = new Thickness(0, 0, 0, CARD_HEADER_BOTTOM_MARGIN)
             };
 
             var iconBorder = new Border
             {
                 Background = accentColor,
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(8),
-                Margin = new Thickness(0, 0, 12, 0)
+                CornerRadius = new CornerRadius(ICON_BORDER_CORNER_RADIUS),
+                Padding = new Thickness(ICON_BORDER_PADDING),
+                Margin = new Thickness(0, 0, ICON_BORDER_RIGHT_MARGIN, 0)
             };
 
             var iconLabel = new Label
             {
                 Content = icon,
-                FontSize = 20,
+                FontSize = ICON_FONT_SIZE,
                 Foreground = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -241,12 +291,12 @@ namespace DevStackManager
 
             var titleStack = new StackPanel();
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(title, true);
-            titleLabel.FontSize = 16;
+            titleLabel.FontSize = TITLE_CARD_FONT_SIZE;
             titleLabel.Margin = new Thickness(0);
             titleStack.Children.Add(titleLabel);
 
             var subtitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.subtitle"));
-            subtitleLabel.FontSize = 11;
+            subtitleLabel.FontSize = SUBTITLE_FONT_SIZE;
             subtitleLabel.Foreground = DevStackShared.ThemeManager.CurrentTheme.TextMuted;
             subtitleLabel.Margin = new Thickness(0);
             titleStack.Children.Add(subtitleLabel);
@@ -257,7 +307,7 @@ namespace DevStackManager
             // Linha de separação com gradiente
             var separator = new Border
             {
-                Height = 3,
+                Height = SEPARATOR_HEIGHT,
                 Background = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
@@ -268,7 +318,7 @@ namespace DevStackManager
                         new GradientStop(Colors.Transparent, 1)
                     }
                 },
-                Margin = new Thickness(0, 0, 0, 12)
+                Margin = new Thickness(0, 0, 0, SEPARATOR_BOTTOM_MARGIN)
             };
             cardContent.Children.Add(separator);
 
@@ -278,7 +328,7 @@ namespace DevStackManager
             contentPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             var contentLabel = DevStackShared.ThemeManager.CreateStyledLabel(content);
-            contentLabel.FontSize = 14;
+            contentLabel.FontSize = CONTENT_FONT_SIZE;
             contentLabel.Tag = "content";
             contentLabel.Foreground = DevStackShared.ThemeManager.CurrentTheme.Foreground;
             contentLabel.FontWeight = FontWeights.Medium;
@@ -290,11 +340,11 @@ namespace DevStackManager
             var interactionHint = new Label
             {
                 Content = "⎘", // ícone de abrir em outra página
-                FontSize = 48,
+                FontSize = INTERACTION_HINT_FONT_SIZE,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = accentColor,
-                Opacity = 0.7,
+                Opacity = INTERACTION_HINT_OPACITY,
             };
             Grid.SetColumn(interactionHint, 1);
             contentPanel.Children.Add(interactionHint);
@@ -306,11 +356,11 @@ namespace DevStackManager
             // Eventos de interação melhorados
             card.MouseLeftButtonUp += (s, e) => {
                 // Simular animação de clique
-                card.Opacity = 0.8;
-                var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+                card.Opacity = CARD_HOVER_OPACITY;
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(HOVER_ANIMATION_DELAY_MS) };
                 timer.Tick += (_, _) =>
                 {
-                    card.Opacity = 1.0;
+                    card.Opacity = CARD_NORMAL_OPACITY;
                     timer.Stop();
                 };
                 timer.Start();
@@ -320,9 +370,9 @@ namespace DevStackManager
 
             card.MouseEnter += (s, e) => {
                 card.Background = DevStackShared.ThemeManager.CurrentTheme.DashboardCardHover;
-                interactionHint.Opacity = 1.0;
+                interactionHint.Opacity = INTERACTION_HINT_HOVER_OPACITY;
                 // Animação de hover
-                var scaleTransform = new ScaleTransform(1.02, 1.02);
+                var scaleTransform = new ScaleTransform(CARD_HOVER_SCALE, CARD_HOVER_SCALE);
                 card.RenderTransform = scaleTransform;
                 card.RenderTransformOrigin = new Point(0.5, 0.5);
             };
@@ -330,7 +380,7 @@ namespace DevStackManager
             card.MouseLeave += (s, e) => {
                 card.Background = DevStackShared.ThemeManager.CurrentTheme.PanelBackground;
                 card.BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border;
-                interactionHint.Opacity = 0.7;
+                interactionHint.Opacity = INTERACTION_HINT_OPACITY;
                 card.RenderTransform = null;
             };
 
@@ -507,7 +557,12 @@ namespace DevStackManager
             // Usar dados dos componentes instalados já carregados no mainWindow
             try
             {
-                var installedComponents = mainWindow.InstalledComponents?.Where(c => c.Installed).OrderBy(c => c.Label).ToList() ?? new List<ComponentViewModel>();
+                // Ordenar: executáveis primeiro (ordenados por Label e Versão), depois não-executáveis (ordenados por Label e Versão)
+                var installedComponents = mainWindow.InstalledComponents?
+                    .Where(c => c.Installed)
+                    .OrderByDescending(c => c.IsExecutable) // Executáveis primeiro
+                    .ThenBy(c => c.Label)                   // Ordenar por Label
+                    .ToList() ?? new List<ComponentViewModel>();
                 
                 if (installedComponents.Count > 0)
                 {
@@ -629,112 +684,6 @@ namespace DevStackManager
 
             footerPanel.Child = footerContent;
             content.Children.Add(footerPanel);
-
-            panel.Child = content;
-            return panel;
-        }
-
-        /// <summary>
-        /// Cria painel de instalação rápida
-        /// </summary>
-        private static Border CreateQuickInstallPanel(DevStackGui mainWindow)
-        {
-            var panel = new Border
-            {
-                Background = DevStackShared.ThemeManager.CurrentTheme.PanelBackground,
-                BorderBrush = DevStackShared.ThemeManager.CurrentTheme.Border,
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Margin = new Thickness(5),
-                Padding = new Thickness(10)
-            };
-
-            var content = new StackPanel();
-
-            // Header
-            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.title"), true);
-            titleLabel.FontSize = 14;
-            titleLabel.Margin = new Thickness(0, 0, 0, 10);
-            content.Children.Add(titleLabel);
-
-            // ComboBox para seleção de componente (reutilizando binding existente)
-            var componentCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
-            componentCombo.Height = 30;
-            componentCombo.Margin = new Thickness(0, 0, 0, 10);
-            var componentBinding = new Binding("AvailableComponents") { Source = mainWindow };
-            componentCombo.SetBinding(ComboBox.ItemsSourceProperty, componentBinding);
-            var selectedComponentBinding = new Binding("SelectedComponent") { Source = mainWindow };
-            componentCombo.SetBinding(ComboBox.SelectedItemProperty, selectedComponentBinding);
-            // Display Label via converter
-            var quickInstallItemTemplate = new DataTemplate();
-            var quickInstallTextFactory = new FrameworkElementFactory(typeof(TextBlock));
-            quickInstallTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new GuiInstallTab.NameToLabelConverter() });
-            quickInstallItemTemplate.VisualTree = quickInstallTextFactory;
-            componentCombo.ItemTemplate = quickInstallItemTemplate;
-            content.Children.Add(componentCombo);
-
-            // ComboBox para versão (reutilizando binding existente)
-            var versionCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
-            versionCombo.Height = 30;
-            versionCombo.Margin = new Thickness(0, 0, 0, 10);
-            var versionBinding = new Binding("AvailableVersions") { Source = mainWindow };
-            versionCombo.SetBinding(ComboBox.ItemsSourceProperty, versionBinding);
-            var selectedVersionBinding = new Binding("SelectedVersion") { Source = mainWindow };
-            versionCombo.SetBinding(ComboBox.SelectedItemProperty, selectedVersionBinding);
-            content.Children.Add(versionCombo);
-
-            // Botões de ação
-            var buttonsPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal
-            };
-
-            var installButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.install_button"), async (s, e) => {
-                if (string.IsNullOrEmpty(mainWindow.SelectedComponent))
-                {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.select_component");
-                    return;
-                }
-                
-                mainWindow.IsInstallingComponent = true;
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.installing", mainWindow.SelectedComponent);
-                
-                await Task.Run(async () => {
-                    try
-                    {
-                        string[] args = string.IsNullOrEmpty(mainWindow.SelectedVersion) 
-                            ? new[] { mainWindow.SelectedComponent }
-                            : new[] { mainWindow.SelectedComponent, mainWindow.SelectedVersion };
-                        
-                        await InstallManager.InstallCommands(args);
-                        
-                        mainWindow.Dispatcher.Invoke(() => {
-                            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.success", mainWindow.SelectedComponent);
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        mainWindow.Dispatcher.Invoke(() => {
-                            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.error", mainWindow.SelectedComponent, ex.Message);
-                        });
-                    }
-                    finally
-                    {
-                        mainWindow.Dispatcher.Invoke(() => {
-                            mainWindow.IsInstallingComponent = false;
-                        });
-                    }
-                });
-            });
-            installButton.Height = 30;
-            installButton.Margin = new Thickness(0, 0, 5, 0);
-            buttonsPanel.Children.Add(installButton);
-
-            var fullInstallButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.install.go_to_install"), (s, e) => mainWindow.SelectedNavIndex = 2, DevStackShared.ThemeManager.ButtonStyle.Secondary);
-            fullInstallButton.Height = 30;
-            buttonsPanel.Children.Add(fullInstallButton);
-
-            content.Children.Add(buttonsPanel);
 
             panel.Child = content;
             return panel;
@@ -1048,10 +997,11 @@ namespace DevStackManager
                     
                     if (installedComponents.Count > 0)
                     {
-                        // Ordenar a lista por nome antes de processar
+                        // Ordenar: executáveis primeiro (ordenados por Label e Versão), depois não-executáveis (ordenados por Label e Versão)
                         var sortedComponents = installedComponents
                             .Cast<ComponentViewModel>()
-                            .OrderBy(c => c.Label)
+                            .OrderByDescending(c => c.IsExecutable) // Executáveis primeiro
+                            .ThenBy(c => c.Label)                   // Ordenar por Label
                             .ToList();
 
                         int columnsPerRow = 4; // Máximo de 4 colunas por linha

@@ -294,23 +294,39 @@ namespace DevStackShared.Localization
                     { "labels", new Dictionary<string, object>
                     {
                         { "select_tool", "Seleziona lo strumento:" },
-                        { "select_version", "Seleziona la versione (lascia vuoto per la più recente):" }
+                        { "select_version", "Seleziona la versione (lascia vuoto per la più recente):" },
+                        { "installed_component", "Componente Installato:" },
+                        { "installed_version", "Versione Installata:" }
+                    }
+                    },
+                    { "sections", new Dictionary<string, object>
+                    {
+                        { "install_component", "Installa Componente" },
+                        { "create_shortcuts", "Crea Collegamenti per Componenti Installati" }
                     }
                     },
                     { "buttons", new Dictionary<string, object>
                     {
-                        { "install", "📥 Installa" }
+                        { "install", "📥 Installa" },
+                        { "create_shortcut", "Crea collegamento" }
                     }
                     },
                     { "messages", new Dictionary<string, object>
                     {
                         { "select_component", "Seleziona un componente da installare." },
+                        { "select_component_warning", "Seleziona un componente" },
+                        { "select_version_warning", "Seleziona una versione" },
                         { "installing", "Installazione di {0}..." },
                         { "success", "{0} installato con successo!" },
                         { "error", "Errore nell'installazione di {0}" },
                         { "loading_versions", "Caricamento versioni di {0}..." },
                         { "versions_loaded", "{0} versioni caricate per {1}" },
-                        { "versions_error", "Errore nel caricamento delle versioni: {0}" }
+                        { "versions_error", "Errore nel caricamento delle versioni: {0}" },
+                        { "component_not_found", "Componente '{0}' non trovato" },
+                        { "failed_to_load_versions", "Errore nel caricamento delle versioni" },
+                        { "shortcut_component_not_found", "Componente '{0}' non trovato" },
+                        { "shortcut_not_supported", "Il componente '{0}' non supporta la creazione di collegamenti" },
+                        { "shortcut_install_dir_not_found", "Directory di installazione non trovata: {0}" }
                     }
                     }
                 }
@@ -403,7 +419,8 @@ namespace DevStackShared.Localization
                     { "status", new Dictionary<string, object>
                     {
                         { "running", "In esecuzione" },
-                        { "stopped", "Fermato" }
+                        { "stopped", "Fermato" },
+                        { "active", "Attivo" }
                     }
                     },
                     { "types", new Dictionary<string, object>
@@ -489,6 +506,12 @@ namespace DevStackShared.Localization
                     { "title", "DevStack Manager" },
                     { "navigation_items", new Dictionary<string, object>
                     {
+                        { "dashboard", new Dictionary<string, object>
+                        {
+                            { "title", "Dashboard" },
+                            { "description", "Panoramica del sistema" }
+                        }
+                        },
                         { "installed", new Dictionary<string, object>
                         {
                             { "title", "Installati" },
@@ -703,6 +726,12 @@ namespace DevStackShared.Localization
                         { "error", "Errore nell'esecuzione del comando" },
                         { "cleared", "Console pulita" }
                     }
+                    },
+                    { "messages", new Dictionary<string, object>
+                    {
+                        { "list_usage", "Utilizzo: list --installed o list <componente>" },
+                        { "command_not_recognized", "Comando '{0}' non riconosciuto. Usa 'help' per vedere i comandi disponibili." }
+                    }
                     }
                 }
                 },
@@ -747,7 +776,30 @@ namespace DevStackShared.Localization
                 {
                     { "refresh_tooltip", "Aggiorna stato" },
                     { "updating", "Aggiornamento..." },
-                    { "updated", "Stato aggiornato" }
+                    { "updated", "Stato aggiornato" },
+                    { "loading_data", "Avvio caricamento dati..." },
+                    { "loading_installed", "Caricamento componenti installati..." },
+                    { "loading_available", "Caricamento componenti disponibili..." },
+                    { "loading_services", "Caricamento servizi e altre opzioni..." },
+                    { "loading_complete", "Tutti i dati caricati con successo" },
+                    { "loading_error", "Errore nel caricamento dei dati: {0}" },
+                    { "shortcut_created", "Collegamento creato con successo per {0} {1}" },
+                    { "shortcut_error", "Errore nella creazione del collegamento per {0}" },
+                    { "shortcut_create_error", "Errore nella creazione del collegamento: {0}" },
+                    { "creating_shortcut", "Creazione collegamento per {0} {1}..." },
+                    { "error_loading_initial", "Errore nel caricamento dei dati iniziali: {0}" },
+                    { "error_loading_components", "Errore nel caricamento dei componenti: {0}" },
+                    { "error_loading_shortcuts", "Errore nel caricamento dei componenti per collegamenti: {0}" },
+                    { "error_loading_versions", "Errore nel caricamento delle versioni per collegamento: {0}" },
+                    { "error_loading_dashboard", "Errore nel caricamento dei dati della Dashboard: {0}" },
+                    { "opening_shell", "Apertura shell interattiva per {0} versione {1}" },
+                    { "executing_component", "Esecuzione di {0} versione {1}: {2}" },
+                    { "no_executable_found", "Nessun eseguibile trovato in {0}" },
+                    { "version_folder_not_found", "Cartella versione non trovata: {0}" },
+                    { "component_not_executable", "Il componente {0} non è eseguibile o non è installato." },
+                    { "component_not_available", "Impossibile ottenere il componente per l'esecuzione." },
+                    { "version_not_available", "Impossibile ottenere la versione per l'esecuzione." },
+                    { "error_executing_component", "Errore nell'esecuzione del componente: {0}" }
                 }
                 }
             };
@@ -764,7 +816,11 @@ namespace DevStackShared.Localization
                     { "cancel_message", "Sei sicuro di voler annullare l'installazione?" },
                     { "installation_error_title", "Errore" },
                     { "installation_error_message", "Installazione fallita: {0}" },
-                    { "folder_dialog_title", "Seleziona cartella di installazione" }
+                    { "folder_dialog_title", "Seleziona cartella di installazione" },
+                    { "startup_error_title", "Errore Installatore DevStack" },
+                    { "startup_error_message", "Errore nell'avvio dell'installatore: {0}\n\nDettagli: {1}" },
+                    { "initialization_error_title", "Errore di Inizializzazione" },
+                    { "initialization_error_message", "Errore nell'inizializzazione della finestra di installazione: {0}" }
                 }
                 },
                 { "welcome", new Dictionary<string, object>
@@ -831,6 +887,8 @@ namespace DevStackShared.Localization
                     { "description", "Attendere mentre DevStack Manager viene installato..." },
                     { "preparing", "Preparazione dell'installazione..." },
                     { "extracting", "Estrazione dei file di installazione incorporati..." },
+                    { "downloading_sdk", "Download di .NET SDK..." },
+                    { "compiling_projects", "Compilazione dei progetti DevStack..." },
                     { "creating_directory", "Creazione della cartella di installazione..." },
                     { "installing_files", "Installazione dei file DevStack..." },
                     { "registering", "Registrazione dell'installazione..." },
@@ -855,6 +913,11 @@ namespace DevStackShared.Localization
                 {
                     { "starting", "Avvio del processo di installazione" },
                     { "extracted", "File incorporati estratti con successo" },
+                    { "source_extracted", "File sorgente estratti" },
+                    { "downloading_sdk", "Download di .NET SDK per la compilazione..." },
+                    { "sdk_downloaded", ".NET SDK scaricato ed estratto" },
+                    { "compiling", "Compilazione dei progetti DevStack..." },
+                    { "compilation_complete", "Compilazione completata con successo" },
                     { "creating_dir", "Creazione della cartella: {0}" },
                     { "installing", "Installazione dei file dell'applicazione" },
                     { "registering", "Registrazione dell'installazione su Windows" },
@@ -1033,6 +1096,222 @@ namespace DevStackShared.Localization
             };
         }
 
+        public Dictionary<string, object> GetCliTranslations()
+        {
+            return new Dictionary<string, object>
+            {
+                { "shell", new Dictionary<string, object>
+                {
+                    { "interactive_prompt", "Shell Interattivo DevStack. Digita 'help' per l'aiuto o 'exit' per uscire." },
+                    { "prompt", "DevStack> " },
+                    { "exit_code", "(codice di uscita: {0})" },
+                    { "command_requires_admin", "Il comando '{0}' richiede privilegi di amministratore." },
+                    { "run_as_admin_hint", "Esegui DevStack come amministratore o usa 'DevStack.exe {0}' in un prompt dei comandi amministratore." }
+                }
+                },
+                { "commands", new Dictionary<string, object>
+                {
+                    { "unknown", "Comando sconosciuto: {0}" },
+                    { "help_title", "DevStack CLI - Comandi disponibili:" },
+                    { "gui_hint", "Per l'interfaccia grafica, usa: DevStackGUI.exe" },
+                    { "table_header_cmd", "Comando" },
+                    { "table_header_desc", "Descrizione" },
+                    { "help_install", "Installa uno strumento o una versione specifica." },
+                    { "help_uninstall", "Rimuove uno strumento o una versione specifica." },
+                    { "help_list", "Elenca le versioni disponibili o installate." },
+                    { "help_path", "Gestisce il PATH per gli strumenti installati." },
+                    { "help_status", "Mostra lo stato di tutti gli strumenti." },
+                    { "help_test", "Testa tutti gli strumenti installati." },
+                    { "help_update", "Aggiorna uno strumento all'ultima versione." },
+                    { "help_deps", "Verifica le dipendenze del sistema." },
+                    { "help_alias", "Crea un alias .bat per la versione dello strumento." },
+                    { "help_global", "Aggiunge DevStack al PATH e crea alias globale." },
+                    { "help_self_update", "Aggiorna DevStackManager." },
+                    { "help_clean", "Rimuove log e file temporanei." },
+                    { "help_backup", "Crea backup delle configurazioni e log." },
+                    { "help_logs", "Visualizza le ultime righe del log." },
+                    { "help_enable", "Attiva un servizio di Windows." },
+                    { "help_disable", "Disattiva un servizio di Windows." },
+                    { "help_config", "Apre la directory di configurazione." },
+                    { "help_reset", "Rimuove e reinstalla uno strumento." },
+                    { "help_ssl", "Genera certificato SSL autofirmato." },
+                    { "help_db", "Gestisce database di base." },
+                    { "help_service", "Elenca i servizi DevStack (Windows)." },
+                    { "help_doctor", "Diagnostica dell'ambiente DevStack." },
+                    { "help_language", "Elenca o cambia la lingua dell'interfaccia." },
+                    { "help_site", "Crea la configurazione del sito nginx." },
+                    { "help_help", "Visualizza questo aiuto." }
+                }
+                },
+                { "status", new Dictionary<string, object>
+                {
+                    { "title", "Stato di DevStack:" },
+                    { "installed", "{0} installato/i:" },
+                    { "running", "[in esecuzione]" },
+                    { "stopped", "[arrestato]" },
+                    { "installed_versions", "{0} installato/i:" }
+                }
+                },
+                { "test", new Dictionary<string, object>
+                {
+                    { "title", "Test degli strumenti installati:" },
+                    { "not_found", "{0}: non trovato." },
+                    { "error_executing", "{0}: errore durante l'esecuzione di {1}" },
+                    { "tool_output", "{0}: {1}" }
+                }
+                },
+                { "deps", new Dictionary<string, object>
+                {
+                    { "title", "Verifica delle dipendenze di sistema..." },
+                    { "missing_admin", "Permesso di amministratore" },
+                    { "all_present", "Tutte le dipendenze sono presenti." },
+                    { "missing_deps", "Dipendenze mancanti: {0}" }
+                }
+                },
+                { "usage", new Dictionary<string, object>
+                {
+                    { "list", "Utilizzo: DevStackManager list <php|node|python|composer|mysql|nginx|phpmyadmin|git|mongodb|pgsql|elasticsearch|wpcli|adminer|go|openssl|phpcsfixer|--installed>" },
+                    { "site", "Utilizzo: DevStackManager site <dominio> -Root <directory> -PHP <php-upstream> -Nginx <nginx-version>" },
+                    { "site_error_domain", "Errore: il dominio è obbligatorio." },
+                    { "site_error_root", "Errore: Root è obbligatorio." },
+                    { "site_error_php", "Errore: PHP è obbligatorio." },
+                    { "site_error_nginx", "Errore: Nginx è obbligatorio." },
+                    { "start", "Utilizzo: DevStackManager start <nginx|php|--all> [<x.x.x>]" },
+                    { "start_version", "Utilizzo: DevStackManager start <nginx|php> <x.x.x>" },
+                    { "stop", "Utilizzo: DevStackManager stop <nginx|php|--all> [<x.x.x>]" },
+                    { "stop_version", "Utilizzo: DevStackManager stop <nginx|php> <x.x.x>" },
+                    { "restart", "Utilizzo: DevStackManager restart <nginx|php|--all> [<x.x.x>]" },
+                    { "restart_version", "Utilizzo: DevStackManager restart <nginx|php> <x.x.x>" },
+                    { "alias", "Utilizzo: DevStackManager alias <componente> <versione>" },
+                    { "enable", "Utilizzo: DevStackManager enable <servizio>" },
+                    { "disable", "Utilizzo: DevStackManager disable <servizio>" },
+                    { "reset", "Utilizzo: DevStackManager reset <componente>" },
+                    { "db", "Utilizzo: DevStackManager db <mysql|pgsql|mongo> <comando> [args...]" }
+                }
+                },
+                { "logs", new Dictionary<string, object>
+                {
+                    { "last_lines", "Ultime {0} righe di {1}:" },
+                    { "not_found", "File di log non trovato." }
+                }
+                },
+                { "service", new Dictionary<string, object>
+                {
+                    { "enabled", "Servizio {0} abilitato." },
+                    { "disabled", "Servizio {0} disabilitato." },
+                    { "error_enable", "Errore durante l'abilitazione del servizio {0}: {1}" },
+                    { "error_disable", "Errore durante la disabilitazione del servizio {0}: {1}" },
+                    { "none_found", "Nessun servizio DevStack trovato." },
+                    { "list_header", "Nome                 Stato            DisplayName" }
+                }
+                },
+                { "config", new Dictionary<string, object>
+                {
+                    { "opened", "Directory di configurazione aperta." },
+                    { "not_found", "Directory di configurazione non trovata." }
+                }
+                },
+                { "reset", new Dictionary<string, object>
+                {
+                    { "resetting", "Reimpostazione di {0}..." },
+                    { "completed", "{0} reimpostato." }
+                }
+                },
+                { "db", new Dictionary<string, object>
+                {
+                    { "mysql_not_found", "mysql.exe non trovato." },
+                    { "pgsql_not_found", "psql.exe non trovato." },
+                    { "mongo_not_found", "mongo.exe non trovato." },
+                    { "unknown_command_mysql", "Comando database MySQL sconosciuto." },
+                    { "unknown_command_pgsql", "Comando database PostgreSQL sconosciuto." },
+                    { "unknown_command_mongo", "Comando database MongoDB sconosciuto." },
+                    { "unsupported_db", "Database non supportato: {0}" }
+                }
+                },
+                { "doctor", new Dictionary<string, object>
+                {
+                    { "title", "Diagnostica dell'ambiente DevStack:" },
+                    { "path_synced", "PATH sincronizzato con le impostazioni utente." },
+                    { "path_header", "PATH (Processo + Utente + DevStack)" },
+                    { "user_header", "Utente" },
+                    { "system_header", "Sistema" }
+                }
+                },
+                { "global", new Dictionary<string, object>
+                {
+                    { "added", "Directory {0} aggiunta al PATH utente." },
+                    { "already_exists", "La directory {0} è già nel PATH utente." },
+                    { "run_anywhere", "Ora puoi eseguire 'DevStackManager' da qualsiasi parte nel terminale." }
+                }
+                },
+                { "language", new Dictionary<string, object>
+                {
+                    { "available_title", "Lingue disponibili:" },
+                    { "current_marker", " (attuale)" },
+                    { "change_hint", "Per cambiare lingua, usa: DevStack language <codice>" },
+                    { "example", "Esempio: DevStack language it_IT" },
+                    { "not_found", "Lingua '{0}' non trovata." },
+                    { "available_list", "Lingue disponibili:" },
+                    { "changed", "Lingua cambiata in: {0} ({1})" },
+                    { "note_gui", "Nota: Il cambio di lingua influenzerà principalmente l'interfaccia grafica (GUI)." },
+                    { "note_cli", "Alcuni comandi CLI potrebbero non essere completamente tradotti." },
+                    { "error_changing", "Errore durante il cambio di lingua: {0}" }
+                }
+                },
+                { "self_update", new Dictionary<string, object>
+                {
+                    { "updating", "Aggiornamento tramite git pull..." },
+                    { "success", "DevStackManager aggiornato con successo." },
+                    { "error", "Errore durante l'aggiornamento tramite git: {0}" },
+                    { "not_git_repo", "Non è un repository git. Aggiorna manualmente copiando i file dal repository." }
+                }
+                },
+                { "clean", new Dictionary<string, object>
+                {
+                    { "completed", "Pulizia completata. ({0} elementi rimossi)" }
+                }
+                },
+                { "backup", new Dictionary<string, object>
+                {
+                    { "created", "Backup creato in {0}" }
+                }
+                },
+                { "path", new Dictionary<string, object>
+                {
+                    { "help_title", "Utilizzo del comando path:" },
+                    { "help_add", "  path         - Aggiungi le directory degli strumenti al PATH" },
+                    { "help_add_explicit", "  path add     - Aggiungi le directory degli strumenti al PATH" },
+                    { "help_remove", "  path remove  - Rimuovi tutte le directory DevStack dal PATH" },
+                    { "help_remove_specific", "  path remove <dir1> <dir2> ... - Rimuovi directory specifiche dal PATH" },
+                    { "help_list", "  path list    - Elenca tutte le directory nel PATH utente" },
+                    { "help_help", "  path help    - Mostra questo aiuto" },
+                    { "unknown_subcommand", "Sottocomando sconosciuto: {0}" },
+                    { "use_help", "Usa 'path help' per vedere i comandi disponibili." },
+                    { "manager_not_initialized", "PathManager non inizializzato." }
+                }
+                },
+                { "alias", new Dictionary<string, object>
+                {
+                    { "created", "Alias creato: {0}" },
+                    { "executable_not_found", "Eseguibile non trovato per {0} {1}" }
+                }
+                },
+                { "directories", new Dictionary<string, object>
+                {
+                    { "nginx_not_found", "Directory nginx non trovata. Ignorare." },
+                    { "php_not_found", "Directory PHP non trovata. Ignorare." }
+                }
+                },
+                { "error", new Dictionary<string, object>
+                {
+                    { "unexpected", "Errore imprevisto: {0}" },
+                    { "admin_request", "Errore durante la richiesta dei privilegi di amministratore: {0}" },
+                    { "list_services", "Errore nell'elencare i servizi: {0}" }
+                }
+                }
+            };
+        }
+
         public Dictionary<string, object> GetAllTranslations()
         {
             var all = new Dictionary<string, object>();
@@ -1041,6 +1320,7 @@ namespace DevStackShared.Localization
             all["common"] = GetCommonTranslations();
             all["shared"] = GetSharedTranslations();
             all["gui"] = GetGuiTranslations();
+            all["cli"] = GetCliTranslations();
             all["installer"] = GetInstallerTranslations();
             all["uninstaller"] = GetUninstallerTranslations();
             

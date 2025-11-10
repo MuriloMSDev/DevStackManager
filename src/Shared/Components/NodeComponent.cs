@@ -1,12 +1,18 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace DevStackManager.Components
 {
     public class NodeComponent : ComponentBase
     {
+        private const string NPM_PACKAGE_JSON_RELATIVE_PATH = "node_modules/npm/package.json";
+        private static readonly string[] NodeToolFiles = { "npm.cmd", "npx.cmd" };
+
         public override string Name => "node";
-        public override string Label => "Node.js"; // Display brand with .js while internal Name remains Node
+        public override string Label => "Node.js";
         public override string ToolDir => DevStackConfig.nodeDir;
         public override bool IsExecutable => true;
         public override bool IsCommandLine => true;
@@ -15,55 +21,84 @@ namespace DevStackManager.Components
 
         public override Task PostInstall(string version, string targetDir)
         {
-            string nodePath = System.IO.Path.Combine(DevStackConfig.nodeDir, $"node-{version}");
+            var nodePath = Path.Combine(DevStackConfig.nodeDir, $"node-{version}");
+            CreateNpmToolShortcuts(nodePath);
+            return Task.CompletedTask;
+        }
 
-            // Create shortcuts for npm and npx in global bin (não renomear arquivos)
-            string npmPkgJson = System.IO.Path.Combine(nodePath, "node_modules", "npm", "package.json");
-            if (System.IO.File.Exists(npmPkgJson))
+        private void CreateNpmToolShortcuts(string nodePath)
+        {
+            var npmVersion = GetNpmVersionFromPackageJson(nodePath);
+            if (string.IsNullOrEmpty(npmVersion))
             {
-                try
-                {
-                    var npmPackageContent = System.IO.File.ReadAllText(npmPkgJson);
-                    using var doc = System.Text.Json.JsonDocument.Parse(npmPackageContent);
-                    string? npmVersion = doc.RootElement.GetProperty("version").GetString();
-                    
-                    if (!string.IsNullOrEmpty(npmVersion))
-                    {
-                        // Criar atalhos para npm e npx no bin global
-                        string[] toolFiles = { "npm.cmd", "npx.cmd" };
-                        
-                        foreach (string toolFile in toolFiles)
-                        {
-                            string sourcePath = System.IO.Path.Combine(nodePath, toolFile);
-                            if (System.IO.File.Exists(sourcePath))
-                            {
-                                try
-                                {
-                                    string toolName = System.IO.Path.GetFileNameWithoutExtension(toolFile);
-                                    CreateGlobalBinShortcut(nodePath, toolFile, npmVersion, toolName);
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine($"Aviso: falha ao criar atalho para {toolFile}: {e.Message}");
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Não foi possível determinar a versão do npm no package.json.");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Erro ao processar package.json do npm: {e.Message}");
-                }
+                return;
             }
-            else
+
+            CreateShortcutsForNodeTools(nodePath, npmVersion);
+        }
+
+        private string? GetNpmVersionFromPackageJson(string nodePath)
+        {
+            var packageJsonPath = Path.Combine(nodePath, NPM_PACKAGE_JSON_RELATIVE_PATH);
+            
+            if (!File.Exists(packageJsonPath))
             {
                 Console.WriteLine("Arquivo package.json do npm não encontrado.");
+                return null;
             }
-            return Task.CompletedTask;
+
+            try
+            {
+                return ExtractNpmVersionFromPackageJson(packageJsonPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao processar package.json do npm: {ex.Message}");
+                return null;
+            }
+        }
+
+        private string? ExtractNpmVersionFromPackageJson(string packageJsonPath)
+        {
+            var packageContent = File.ReadAllText(packageJsonPath);
+            using var doc = JsonDocument.Parse(packageContent);
+            
+            var version = doc.RootElement.GetProperty("version").GetString();
+            
+            if (string.IsNullOrEmpty(version))
+            {
+                Console.WriteLine("Não foi possível determinar a versão do npm no package.json.");
+            }
+
+            return version;
+        }
+
+        private void CreateShortcutsForNodeTools(string nodePath, string npmVersion)
+        {
+            foreach (var toolFile in NodeToolFiles)
+            {
+                TryCreateToolShortcut(nodePath, toolFile, npmVersion);
+            }
+        }
+
+        private void TryCreateToolShortcut(string nodePath, string toolFile, string npmVersion)
+        {
+            var sourcePath = Path.Combine(nodePath, toolFile);
+            
+            if (!File.Exists(sourcePath))
+            {
+                return;
+            }
+
+            try
+            {
+                var toolName = Path.GetFileNameWithoutExtension(toolFile);
+                CreateGlobalBinShortcut(nodePath, toolFile, npmVersion, toolName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Aviso: falha ao criar atalho para {toolFile}: {ex.Message}");
+            }
         }
     }
 }
