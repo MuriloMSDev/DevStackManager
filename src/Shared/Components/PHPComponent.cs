@@ -1,11 +1,25 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DevStackManager.Components
 {
     public class PHPComponent : ComponentBase
     {
+        private const string PHP_INI_RESOURCE_NAME = "php.ini";
+        private const string PHP_INI_FILE_NAME = "php.ini";
+        private const string PHP_EXTENSIONS_DIR = "ext";
+        private const string PHP_EXTENSION_PATTERN = "*.dll";
+        private const string PHP_EXTENSION_PREFIX = "php_";
+
+        private static readonly string[] EssentialExtensions = 
+        {
+            "mbstring", "intl", "pdo", "pdo_mysql", "pdo_pgsql", "openssl",
+            "json", "fileinfo", "curl", "gd", "gd2", "zip", "xml", "xmlrpc"
+        };
+
         public override string Name => "php";
         public override string Label => "PHP";
         public override string ToolDir => DevStackConfig.phpDir;
@@ -18,49 +32,88 @@ namespace DevStackManager.Components
 
         public override async Task PostInstall(string version, string targetDir)
         {
-            string phpDir = System.IO.Path.Combine(DevStackConfig.phpDir, $"php-{version}");
+            var phpDir = Path.Combine(DevStackConfig.phpDir, $"php-{version}");
+            await CopyPhpIniConfiguration(phpDir);
+            AddEssentialExtensionsToIni(phpDir);
+        }
 
-            string phpIniDst = System.IO.Path.Combine(phpDir, "php.ini");
+        private async Task CopyPhpIniConfiguration(string phpDir)
+        {
+            var phpIniDestination = Path.Combine(phpDir, PHP_INI_FILE_NAME);
             var assembly = typeof(PHPComponent).Assembly;
-            string? resourceName = assembly.GetManifestResourceNames()
-                .FirstOrDefault(n => n.Contains("php.ini"));
-            if (!string.IsNullOrEmpty(resourceName))
-            {
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new System.IO.StreamReader(stream!))
-                {
-                    var iniContent = reader.ReadToEnd();
-                    System.IO.File.WriteAllText(phpIniDst, iniContent, System.Text.Encoding.UTF8);
-                }
-                Console.WriteLine($"Arquivo php.ini copiado para {phpDir}");
-
-                string extDir = System.IO.Path.Combine(phpDir, "ext");
-                if (System.IO.Directory.Exists(extDir))
-                {
-                    string[] acceptExt = {
-                        "mbstring", "intl", "pdo", "pdo_mysql", "pdo_pgsql", "openssl",
-                        "json", "fileinfo", "curl", "gd", "gd2", "zip", "xml", "xmlrpc"
-                    };
-
-                    var extensions = System.IO.Directory.GetFiles(extDir, "*.dll")
-                        .Select(f => System.IO.Path.GetFileNameWithoutExtension(f).Replace("php_", ""))
-                        .Where(name => acceptExt.Contains(name))
-                        .Select(name => $"extension={name}")
-                        .ToArray();
-
-                    if (extensions.Any())
-                    {
-                        System.IO.File.AppendAllText(phpIniDst, $"\n; Extensões essenciais para CakePHP e Laravel:\n{string.Join("\n", extensions)}", System.Text.Encoding.UTF8);
-                        Console.WriteLine("Bloco de extensões essenciais adicionado ao php.ini");
-                    }
-                }
-            }
-            else
+            
+            var resourceName = FindPhpIniResourceName(assembly);
+            if (string.IsNullOrEmpty(resourceName))
             {
                 Console.WriteLine("Arquivo php.ini não encontrado. Arquivo php.ini não copiado.");
+                return;
             }
 
-            await Task.CompletedTask;
+            await CopyEmbeddedResourceToFile(assembly, resourceName, phpIniDestination);
+            Console.WriteLine($"Arquivo php.ini copiado para {phpDir}");
+        }
+
+        private string? FindPhpIniResourceName(System.Reflection.Assembly assembly)
+        {
+            return assembly.GetManifestResourceNames()
+                .FirstOrDefault(n => n.Contains(PHP_INI_RESOURCE_NAME));
+        }
+
+        private async Task CopyEmbeddedResourceToFile(
+            System.Reflection.Assembly assembly, 
+            string resourceName, 
+            string destinationPath)
+        {
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
+            {
+                throw new InvalidOperationException($"Resource {resourceName} not found.");
+            }
+
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            await File.WriteAllTextAsync(destinationPath, content, Encoding.UTF8);
+        }
+
+        private void AddEssentialExtensionsToIni(string phpDir)
+        {
+            var phpIniPath = Path.Combine(phpDir, PHP_INI_FILE_NAME);
+            var extensionsDir = Path.Combine(phpDir, PHP_EXTENSIONS_DIR);
+
+            if (!Directory.Exists(extensionsDir))
+            {
+                return;
+            }
+
+            var availableExtensions = GetAvailableExtensions(extensionsDir);
+            if (!availableExtensions.Any())
+            {
+                return;
+            }
+
+            AppendExtensionsToIni(phpIniPath, availableExtensions);
+            Console.WriteLine("Bloco de extensões essenciais adicionado ao php.ini");
+        }
+
+        private string[] GetAvailableExtensions(string extensionsDir)
+        {
+            return Directory.GetFiles(extensionsDir, PHP_EXTENSION_PATTERN)
+                .Select(f => Path.GetFileNameWithoutExtension(f).Replace(PHP_EXTENSION_PREFIX, string.Empty))
+                .Where(name => EssentialExtensions.Contains(name))
+                .Select(name => $"extension={name}")
+                .ToArray();
+        }
+
+        private void AppendExtensionsToIni(string phpIniPath, string[] extensions)
+        {
+            var extensionsBlock = BuildExtensionsBlock(extensions);
+            File.AppendAllText(phpIniPath, extensionsBlock, Encoding.UTF8);
+        }
+
+        private string BuildExtensionsBlock(string[] extensions)
+        {
+            var header = "\n; Extensões essenciais para CakePHP e Laravel:\n";
+            return header + string.Join("\n", extensions);
         }
     }
 }

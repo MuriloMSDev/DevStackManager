@@ -35,29 +35,15 @@ namespace DevStackManager
     {
         private static readonly ConcurrentDictionary<string, ServiceProcess> _services = new();
         private static readonly string _registryFile = Path.Combine(DevStackConfig.tmpDir, "devstack_services.json");
+        
+        private const int GUID_SHORT_LENGTH = 8;
 
         /// <summary>
         /// Registra um processo principal de serviço
         /// </summary>
         public static void RegisterService(string component, string version, int mainProcessId, string executablePath)
         {
-            var key = GetServiceKey(component, version);
-            var uniqueId = Guid.NewGuid().ToString("N")[..8];
-            
-            var service = new ServiceProcess
-            {
-                MainProcessIds = new List<int> { mainProcessId },
-                Component = component,
-                Version = version,
-                ExecutablePath = executablePath,
-                StartTime = DateTime.Now,
-                UniqueId = uniqueId
-            };
-
-            _services[key] = service;
-            SaveToFile();
-            
-            DevStackConfig.WriteLog($"Serviço registrado: {component}-{version} PID={mainProcessId} ID={uniqueId}");
+            RegisterServiceInternal(component, version, new List<int> { mainProcessId }, executablePath);
         }
 
         /// <summary>
@@ -65,9 +51,14 @@ namespace DevStackManager
         /// </summary>
         public static void RegisterServiceWithMultipleProcesses(string component, string version, List<int> mainProcessIds, string executablePath)
         {
+            RegisterServiceInternal(component, version, mainProcessIds, executablePath);
+        }
+
+        private static void RegisterServiceInternal(string component, string version, List<int> mainProcessIds, string executablePath)
+        {
             var key = GetServiceKey(component, version);
-            var uniqueId = Guid.NewGuid().ToString("N")[..8];
-            
+            var uniqueId = GenerateUniqueId();
+
             var service = new ServiceProcess
             {
                 MainProcessIds = new List<int>(mainProcessIds),
@@ -80,8 +71,17 @@ namespace DevStackManager
 
             _services[key] = service;
             SaveToFile();
-            
-            DevStackConfig.WriteLog($"Serviço registrado: {component}-{version} PIDs=[{string.Join(", ", mainProcessIds)}] ID={uniqueId}");
+
+            var pidsText = mainProcessIds.Count == 1
+                ? $"PID={mainProcessIds[0]}"
+                : $"PIDs=[{string.Join(", ", mainProcessIds)}]";
+
+            DevStackConfig.WriteLog($"Serviço registrado: {component}-{version} {pidsText} ID={uniqueId}");
+        }
+
+        private static string GenerateUniqueId()
+        {
+            return Guid.NewGuid().ToString("N")[..GUID_SHORT_LENGTH];
         }
 
         /// <summary>
@@ -156,39 +156,7 @@ namespace DevStackManager
         /// </summary>
         public static bool IsServiceActive(string component, string version)
         {
-            var key = GetServiceKey(component, version);
-            
-            if (_services.TryGetValue(key, out var service))
-            {
-                // Verificar se pelo menos um processo principal está vivo
-                var alivePids = new List<int>();
-                foreach (var pid in service.MainProcessIds)
-                {
-                    if (IsProcessAlive(pid, service.ExecutablePath))
-                    {
-                        alivePids.Add(pid);
-                    }
-                }
-                
-                if (alivePids.Count > 0)
-                {
-                    // Atualizar lista apenas com processos vivos
-                    if (alivePids.Count != service.MainProcessIds.Count)
-                    {
-                        service.MainProcessIds = alivePids;
-                        SaveToFile();
-                    }
-                    return true;
-                }
-                else
-                {
-                    // Todos os processos morreram, remover registro
-                    UnregisterService(component, version);
-                    return false;
-                }
-            }
-            
-            return false;
+            return UpdateServicePidsAndCheckActive(component, version);
         }
 
         /// <summary>
@@ -196,36 +164,66 @@ namespace DevStackManager
         /// </summary>
         public static int? GetMainProcessId(string component, string version)
         {
+            var alivePids = GetAndUpdateAlivePids(component, version);
+            return alivePids.Count > 0 ? alivePids[0] : null;
+        }
+
+        private static bool UpdateServicePidsAndCheckActive(string component, string version)
+        {
             var key = GetServiceKey(component, version);
-            
-            if (_services.TryGetValue(key, out var service))
+
+            if (!_services.TryGetValue(key, out var service))
             {
-                var alivePids = new List<int>();
-                foreach (var pid in service.MainProcessIds)
-                {
-                    if (IsProcessAlive(pid, service.ExecutablePath))
-                    {
-                        alivePids.Add(pid);
-                    }
-                }
-                
-                if (alivePids.Count > 0)
-                {
-                    // Atualizar lista apenas com processos vivos
-                    if (alivePids.Count != service.MainProcessIds.Count)
-                    {
-                        service.MainProcessIds = alivePids;
-                        SaveToFile();
-                    }
-                    return alivePids[0];
-                }
-                else
-                {
-                    UnregisterService(component, version);
-                }
+                return false;
             }
-            
-            return null;
+
+            var alivePids = GetAlivePidsFromService(service);
+
+            if (alivePids.Count > 0)
+            {
+                UpdateServicePidsIfChanged(service, alivePids);
+                return true;
+            }
+
+            UnregisterService(component, version);
+            return false;
+        }
+
+        private static List<int> GetAndUpdateAlivePids(string component, string version)
+        {
+            var key = GetServiceKey(component, version);
+
+            if (!_services.TryGetValue(key, out var service))
+            {
+                return new List<int>();
+            }
+
+            var alivePids = GetAlivePidsFromService(service);
+
+            if (alivePids.Count > 0)
+            {
+                UpdateServicePidsIfChanged(service, alivePids);
+                return alivePids;
+            }
+
+            UnregisterService(component, version);
+            return new List<int>();
+        }
+
+        private static List<int> GetAlivePidsFromService(ServiceProcess service)
+        {
+            return service.MainProcessIds
+                .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
+                .ToList();
+        }
+
+        private static void UpdateServicePidsIfChanged(ServiceProcess service, List<int> alivePids)
+        {
+            if (alivePids.Count != service.MainProcessIds.Count)
+            {
+                service.MainProcessIds = alivePids;
+                SaveToFile();
+            }
         }
 
         /// <summary>
@@ -234,43 +232,57 @@ namespace DevStackManager
         public static List<int> GetServicePids(string component, string version, int? maxWorkers)
         {
             var key = GetServiceKey(component, version);
-            var resultPids = new List<int>();
-            
-            if (_services.TryGetValue(key, out var service))
+
+            if (!_services.TryGetValue(key, out var service))
             {
-                // Primeiro, limpar PIDs duplicados e mortos
-                var alivePids = service.MainProcessIds
-                    .Distinct()
-                    .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
-                    .ToList();
-                
-                if (alivePids.Count > 0)
-                {
-                    // Aplicar limitação de MaxWorkers se especificado
-                    if (maxWorkers.HasValue && maxWorkers.Value > 0)
-                    {
-                        alivePids = alivePids.Take(maxWorkers.Value).ToList();
-                    }
-                    
-                    // Atualizar lista apenas se houver mudanças
-                    if (alivePids.Count != service.MainProcessIds.Count || 
-                        !alivePids.SequenceEqual(service.MainProcessIds))
-                    {
-                        service.MainProcessIds = alivePids;
-                        SaveToFile();
-                        DevStackConfig.WriteLog($"PIDs atualizados para {component}-{version}: {string.Join(", ", alivePids)}");
-                    }
-                    
-                    resultPids.AddRange(alivePids);
-                }
-                else
-                {
-                    // Todos os processos morreram, remover registro
-                    UnregisterService(component, version);
-                }
+                return new List<int>();
             }
-            
-            return resultPids;
+
+            var alivePids = GetCleanedAlivePids(service);
+
+            if (alivePids.Count == 0)
+            {
+                UnregisterService(component, version);
+                return new List<int>();
+            }
+
+            var limitedPids = ApplyMaxWorkersLimit(alivePids, maxWorkers);
+            UpdateServicePidsIfNeeded(service, component, version, alivePids, limitedPids);
+
+            return limitedPids;
+        }
+
+        private static List<int> GetCleanedAlivePids(ServiceProcess service)
+        {
+            return service.MainProcessIds
+                .Distinct()
+                .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
+                .ToList();
+        }
+
+        private static List<int> ApplyMaxWorkersLimit(List<int> pids, int? maxWorkers)
+        {
+            if (maxWorkers.HasValue && maxWorkers.Value > 0)
+            {
+                return pids.Take(maxWorkers.Value).ToList();
+            }
+            return pids;
+        }
+
+        private static void UpdateServicePidsIfNeeded(
+            ServiceProcess service,
+            string component,
+            string version,
+            List<int> alivePids,
+            List<int> limitedPids)
+        {
+            if (alivePids.Count != service.MainProcessIds.Count ||
+                !alivePids.SequenceEqual(service.MainProcessIds))
+            {
+                service.MainProcessIds = alivePids;
+                SaveToFile();
+                DevStackConfig.WriteLog($"PIDs atualizados para {component}-{version}: {string.Join(", ", limitedPids)}");
+            }
         }
 
         /// <summary>
@@ -279,43 +291,37 @@ namespace DevStackManager
         public static List<ServiceProcess> GetActiveServices()
         {
             var activeServices = new List<ServiceProcess>();
-            var toRemove = new List<string>();
+            var deadServiceKeys = new List<string>();
 
             foreach (var kvp in _services)
             {
-                var alivePids = new List<int>();
-                foreach (var pid in kvp.Value.MainProcessIds)
-                {
-                    if (IsProcessAlive(pid, kvp.Value.ExecutablePath))
-                    {
-                        alivePids.Add(pid);
-                    }
-                }
+                var alivePids = GetAlivePidsFromService(kvp.Value);
 
                 if (alivePids.Count > 0)
                 {
-                    // Atualizar a lista de PIDs vivos
                     kvp.Value.MainProcessIds = alivePids;
                     activeServices.Add(kvp.Value);
                 }
                 else
                 {
-                    toRemove.Add(kvp.Key);
+                    deadServiceKeys.Add(kvp.Key);
                 }
             }
 
-            // Limpar serviços mortos
-            foreach (var key in toRemove)
+            RemoveDeadServices(deadServiceKeys);
+            return activeServices;
+        }
+
+        private static void RemoveDeadServices(List<string> deadServiceKeys)
+        {
+            if (deadServiceKeys.Count == 0) return;
+
+            foreach (var key in deadServiceKeys)
             {
                 _services.TryRemove(key, out _);
             }
 
-            if (toRemove.Any())
-            {
-                SaveToFile();
-            }
-
-            return activeServices;
+            SaveToFile();
         }
 
         /// <summary>
@@ -427,45 +433,64 @@ namespace DevStackManager
         /// </summary>
         public static void CleanupAllServices()
         {
-            var toRemove = new List<string>();
+            var deadServiceKeys = new List<string>();
             bool hasChanges = false;
-            
+
             foreach (var kvp in _services)
             {
-                var service = kvp.Value;
-                var originalCount = service.MainProcessIds.Count;
+                var cleanResult = CleanServicePids(kvp.Value, kvp.Key);
                 
-                // Remover duplicatas e PIDs mortos
-                var cleanPids = service.MainProcessIds
-                    .Distinct()
-                    .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
-                    .ToList();
-                
-                if (cleanPids.Count == 0)
+                if (cleanResult.shouldRemove)
                 {
-                    toRemove.Add(kvp.Key);
+                    deadServiceKeys.Add(kvp.Key);
                     hasChanges = true;
                 }
-                else if (cleanPids.Count != originalCount)
+                else if (cleanResult.hasChanges)
                 {
-                    service.MainProcessIds = cleanPids;
                     hasChanges = true;
-                    DevStackConfig.WriteLog($"PIDs limpos para {service.Component}-{service.Version}: {originalCount} -> {cleanPids.Count}");
                 }
             }
-            
-            // Remover serviços sem processos vivos
-            foreach (var key in toRemove)
+
+            RemoveServices(deadServiceKeys);
+
+            if (hasChanges)
+            {
+                SaveToFile();
+            }
+        }
+
+        private static (bool shouldRemove, bool hasChanges) CleanServicePids(ServiceProcess service, string key)
+        {
+            var originalCount = service.MainProcessIds.Count;
+
+            var cleanPids = service.MainProcessIds
+                .Distinct()
+                .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
+                .ToList();
+
+            if (cleanPids.Count == 0)
+            {
+                return (shouldRemove: true, hasChanges: false);
+            }
+
+            if (cleanPids.Count != originalCount)
+            {
+                service.MainProcessIds = cleanPids;
+                DevStackConfig.WriteLog($"PIDs limpos para {service.Component}-{service.Version}: {originalCount} -> {cleanPids.Count}");
+                return (shouldRemove: false, hasChanges: true);
+            }
+
+            return (shouldRemove: false, hasChanges: false);
+        }
+
+        private static void RemoveServices(List<string> serviceKeys)
+        {
+            foreach (var key in serviceKeys)
             {
                 if (_services.TryRemove(key, out var removedService))
                 {
                     DevStackConfig.WriteLog($"Serviço removido (sem processos vivos): {removedService.Component}-{removedService.Version}");
                 }
-            }
-            
-            if (hasChanges)
-            {
-                SaveToFile();
             }
         }
 

@@ -42,6 +42,23 @@ namespace DevStackManager
     /// </summary>
     public static class GuiServicesTab
     {
+        // Constantes de dimensões e delays
+        private const int COMPONENT_COLUMN_WIDTH = 120;
+        private const int VERSION_COLUMN_WIDTH = 100;
+        private const int STATUS_COLUMN_WIDTH = 120;
+        private const int PID_COLUMN_WIDTH = 330;
+        private const int COPY_PID_COLUMN_WIDTH = 100;
+        private const int ACTIONS_COLUMN_WIDTH = 120;
+        private const int BUTTON_WIDTH = 30;
+        private const int BUTTON_HEIGHT = 25;
+        private const int COPY_BUTTON_WIDTH = 35;
+        private const int CONTROL_BUTTON_WIDTH = 150;
+        private const int CONTROL_BUTTON_HEIGHT = 40;
+        private const int POST_START_DELAY_MS = 1000;
+        private const int POST_STOP_DELAY_MS = 500;
+        private const int POST_RESTART_DELAY_MS = 1500;
+        private const int RESTART_ALL_DELAY_MS = 2000;
+
         // Overlays de loading usados apenas nesta tab
         private static Border? ServicesLoadingOverlay;
         /// <summary>
@@ -442,35 +459,13 @@ namespace DevStackManager
         /// </summary>
         private static async void StartServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
-            mainWindow.IsLoadingServices = true;
-            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
-            try
+            await ExecuteServiceAction(sender, mainWindow, async (service) =>
             {
-                if (sender is Button button && button.DataContext is ServiceViewModel service)
-                {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.starting", service.Name, service.Version);
-                    await Task.Run(() =>
-                    {
-                        ProcessManager.StartComponent(service.Name, service.Version);
-                    });
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started", service.Name);
-                    
-                    // Aguardar um momento para o processo ser registrado e forçar atualização
-                    await Task.Delay(1000);
-                    await mainWindow.RefreshServicesStatus();
-                }
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start", ex));
-            }
-            finally
-            {
-                mainWindow.IsLoadingServices = false;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
-            }
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.starting", service.Name, service.Version);
+                await Task.Run(() => ProcessManager.StartComponent(service.Name, service.Version));
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started", service.Name);
+                await Task.Delay(POST_START_DELAY_MS);
+            }, "gui.services_tab.messages.error_start");
         }
 
         /// <summary>
@@ -478,35 +473,13 @@ namespace DevStackManager
         /// </summary>
         private static async void StopServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
-            mainWindow.IsLoadingServices = true;
-            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
-            try
+            await ExecuteServiceAction(sender, mainWindow, async (service) =>
             {
-                if (sender is Button button && button.DataContext is ServiceViewModel service)
-                {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopping", service.Name, service.Version);
-                    await Task.Run(() =>
-                    {
-                        ProcessManager.StopComponent(service.Name, service.Version);
-                    });
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped", service.Name);
-                    
-                    // Aguardar um momento para o processo ser finalizado e forçar atualização
-                    await Task.Delay(500);
-                    await mainWindow.RefreshServicesStatus();
-                }
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop", ex));
-            }
-            finally
-            {
-                mainWindow.IsLoadingServices = false;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
-            }
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopping", service.Name, service.Version);
+                await Task.Run(() => ProcessManager.StopComponent(service.Name, service.Version));
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped", service.Name);
+                await Task.Delay(POST_STOP_DELAY_MS);
+            }, "gui.services_tab.messages.error_stop");
         }
 
         /// <summary>
@@ -514,35 +487,58 @@ namespace DevStackManager
         /// </summary>
         private static async void RestartServiceButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
-            mainWindow.IsLoadingServices = true;
-            if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
+            await ExecuteServiceAction(sender, mainWindow, async (service) =>
+            {
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarting", service.Name, service.Version);
+                await Task.Run(() => ProcessManager.RestartComponent(service.Name, service.Version));
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted", service.Name);
+                await Task.Delay(POST_RESTART_DELAY_MS);
+            }, "gui.services_tab.messages.error_restart");
+        }
+
+        /// <summary>
+        /// Executa uma ação em um serviço com tratamento de erro e loading
+        /// </summary>
+        private static async Task ExecuteServiceAction(
+            object sender,
+            DevStackGui mainWindow,
+            Func<ServiceViewModel, Task> action,
+            string errorMessageKey)
+        {
+            SetLoadingState(mainWindow, true);
             try
             {
                 if (sender is Button button && button.DataContext is ServiceViewModel service)
                 {
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarting", service.Name, service.Version);
-                    await Task.Run(() =>
-                    {
-                        ProcessManager.RestartComponent(service.Name, service.Version);
-                    });
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted", service.Name);
-                    
-                    // Aguardar um momento para o processo ser reiniciado e forçar atualização
-                    await Task.Delay(1500);
+                    await action(service);
                     await mainWindow.RefreshServicesStatus();
                 }
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart", ex));
+                HandleServiceError(mainWindow, errorMessageKey, ex);
             }
             finally
             {
-                mainWindow.IsLoadingServices = false;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
+                SetLoadingState(mainWindow, false);
             }
+        }
+
+        private static void SetLoadingState(DevStackGui mainWindow, bool isLoading)
+        {
+            mainWindow.IsLoadingServices = isLoading;
+            if (ServicesLoadingOverlay != null)
+            {
+                ServicesLoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private static void HandleServiceError(DevStackGui mainWindow, string errorMessageKey, Exception ex)
+        {
+            var errorMessage = mainWindow.LocalizationManager.GetString(errorMessageKey, ex.Message);
+            GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, errorMessage, mainWindow);
+            mainWindow.StatusMessage = errorMessage;
+            DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString(errorMessageKey, ex));
         }
 
         /// <summary>
@@ -557,62 +553,58 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            // Botões para todos os serviços
-            var startAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.start_all"), async (s, e) =>
-            {
-                mainWindow.IsLoadingServices = true;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
-                try { await StartAllServices(mainWindow); }
-                finally
-                {
-                    mainWindow.IsLoadingServices = false;
-                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
-                }
-            }, DevStackShared.ThemeManager.ButtonStyle.Success);
-            startAllButton.Width = 150;
-            startAllButton.Height = 40;
-            startAllButton.Margin = new Thickness(10);
-            panel.Children.Add(startAllButton);
+            panel.Children.Add(CreateControlButton(
+                mainWindow,
+                "gui.services_tab.buttons.start_all",
+                StartAllServices,
+                DevStackShared.ThemeManager.ButtonStyle.Success
+            ));
 
-            var stopAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.stop_all"), async (s, e) =>
-            {
-                mainWindow.IsLoadingServices = true;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
-                try { await StopAllServices(mainWindow); }
-                finally
-                {
-                    mainWindow.IsLoadingServices = false;
-                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
-                }
-            }, DevStackShared.ThemeManager.ButtonStyle.Danger);
-            stopAllButton.Width = 150;
-            stopAllButton.Height = 40;
-            stopAllButton.Margin = new Thickness(10);
-            panel.Children.Add(stopAllButton);
+            panel.Children.Add(CreateControlButton(
+                mainWindow,
+                "gui.services_tab.buttons.stop_all",
+                StopAllServices,
+                DevStackShared.ThemeManager.ButtonStyle.Danger
+            ));
 
-            var restartAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.restart_all"), async (s, e) =>
-            {
-                mainWindow.IsLoadingServices = true;
-                if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Visible;
-                try { await RestartAllServices(mainWindow); }
-                finally
-                {
-                    mainWindow.IsLoadingServices = false;
-                    if (ServicesLoadingOverlay != null) ServicesLoadingOverlay.Visibility = Visibility.Collapsed;
-                }
-            }, DevStackShared.ThemeManager.ButtonStyle.Warning);
-            restartAllButton.Width = 150;
-            restartAllButton.Height = 40;
-            restartAllButton.Margin = new Thickness(10);
-            panel.Children.Add(restartAllButton);
+            panel.Children.Add(CreateControlButton(
+                mainWindow,
+                "gui.services_tab.buttons.restart_all",
+                RestartAllServices,
+                DevStackShared.ThemeManager.ButtonStyle.Warning
+            ));
 
-            var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.services_tab.buttons.refresh"), async (s, e) => await mainWindow.LoadServices());
-            refreshButton.Width = 150;
-            refreshButton.Height = 40;
-            refreshButton.Margin = new Thickness(10);
-            panel.Children.Add(refreshButton);
+            panel.Children.Add(CreateControlButton(
+                mainWindow,
+                "gui.services_tab.buttons.refresh",
+                async (mw) => await mw.LoadServices(),
+                DevStackShared.ThemeManager.ButtonStyle.Primary
+            ));
 
             return panel;
+        }
+
+        private static Button CreateControlButton(
+            DevStackGui mainWindow,
+            string labelKey,
+            Func<DevStackGui, Task> action,
+            DevStackShared.ThemeManager.ButtonStyle style)
+        {
+            var button = DevStackShared.ThemeManager.CreateStyledButton(
+                mainWindow.LocalizationManager.GetString(labelKey),
+                async (s, e) =>
+                {
+                    SetLoadingState(mainWindow, true);
+                    try { await action(mainWindow); }
+                    finally { SetLoadingState(mainWindow, false); }
+                },
+                style
+            );
+
+            button.Width = CONTROL_BUTTON_WIDTH;
+            button.Height = CONTROL_BUTTON_HEIGHT;
+            button.Margin = new Thickness(10);
+            return button;
         }
 
         /// <summary>
@@ -620,24 +612,14 @@ namespace DevStackManager
         /// </summary>
         private static async Task StartAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.starting_all");
-            
-            try
-            {
-                await Task.Run(() =>
-                {
-                    ProcessManager.StartAllComponents();
-                });
-
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.started_all");
-                await mainWindow.LoadServices(); // Recarregar lista
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start_all", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_start_all", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.start_all_services_error", ex));
-            }
+            await ExecuteAllServicesAction(
+                mainWindow,
+                "gui.services_tab.messages.starting_all",
+                "gui.services_tab.messages.started_all",
+                "gui.services_tab.messages.error_start_all",
+                "gui.services_tab.debug.start_all_services_error",
+                () => ProcessManager.StartAllComponents()
+            );
         }
 
         /// <summary>
@@ -645,24 +627,14 @@ namespace DevStackManager
         /// </summary>
         private static async Task StopAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopping_all");
-            
-            try
-            {
-                await Task.Run(() =>
-                {
-                    ProcessManager.StopAllComponents();
-                });
-
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.stopped_all");
-                await mainWindow.LoadServices(); // Recarregar lista
-            }
-            catch (Exception ex)
-            {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop_all", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_stop_all", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.stop_all_services_error", ex));
-            }
+            await ExecuteAllServicesAction(
+                mainWindow,
+                "gui.services_tab.messages.stopping_all",
+                "gui.services_tab.messages.stopped_all",
+                "gui.services_tab.messages.error_stop_all",
+                "gui.services_tab.debug.stop_all_services_error",
+                () => ProcessManager.StopAllComponents()
+            );
         }
 
         /// <summary>
@@ -670,26 +642,46 @@ namespace DevStackManager
         /// </summary>
         private static async Task RestartAllServices(DevStackGui mainWindow)
         {
-            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarting_all");
-            
+            await ExecuteAllServicesAction(
+                mainWindow,
+                "gui.services_tab.messages.restarting_all",
+                "gui.services_tab.messages.restarted_all",
+                "gui.services_tab.messages.error_restart_all",
+                "gui.services_tab.debug.restart_all_services_error",
+                () =>
+                {
+                    ProcessManager.StopAllComponents();
+                    System.Threading.Thread.Sleep(RESTART_ALL_DELAY_MS);
+                    ProcessManager.StartAllComponents();
+                }
+            );
+        }
+
+        /// <summary>
+        /// Executa uma ação em todos os serviços com tratamento de erro
+        /// </summary>
+        private static async Task ExecuteAllServicesAction(
+            DevStackGui mainWindow,
+            string startMessageKey,
+            string successMessageKey,
+            string errorMessageKey,
+            string logMessageKey,
+            Action action)
+        {
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(startMessageKey);
+
             try
             {
-                await Task.Run(() =>
-                {
-                    // Parar todos e depois iniciar todos
-                    ProcessManager.StopAllComponents();
-                    System.Threading.Thread.Sleep(2000); // Aguardar 2 segundos
-                    ProcessManager.StartAllComponents();
-                });
-
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.restarted_all");
-                await mainWindow.LoadServices(); // Recarregar lista
+                await Task.Run(action);
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(successMessageKey);
+                await mainWindow.LoadServices();
             }
             catch (Exception ex)
             {
-                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart_all", ex.Message), mainWindow);
-                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.services_tab.messages.error_restart_all", ex.Message);
-                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString("gui.services_tab.debug.restart_all_services_error", ex));
+                var errorMessage = mainWindow.LocalizationManager.GetString(errorMessageKey, ex.Message);
+                GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, errorMessage, mainWindow);
+                mainWindow.StatusMessage = errorMessage;
+                DevStackConfig.WriteLog(mainWindow.LocalizationManager.GetString(logMessageKey, ex));
             }
         }
     }

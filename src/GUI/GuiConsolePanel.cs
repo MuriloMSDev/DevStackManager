@@ -17,6 +17,15 @@ namespace DevStackManager
     {
         public enum ConsoleTab { Install, Uninstall, Sites, Config }
 
+        // Console Panel Dimensions
+        private const double PANEL_MARGIN = 10;
+        private const double TITLE_FONT_SIZE = 18;
+        private const double TITLE_MARGIN_BOTTOM = 10;
+        private const double OUTPUT_BOX_HEIGHT = 600;
+        private const double OUTPUT_BOX_FONT_SIZE = 12;
+        private const double CLEAR_BUTTON_HEIGHT = 35;
+        private const double CLEAR_BUTTON_MARGIN_TOP = 10;
+
         // Buffer persistente para cada aba
         private static readonly ConcurrentDictionary<ConsoleTab, StringBuilder> Buffers = new();
         // Lista de TextBox ativos por aba (atualiza output ao alternar)
@@ -35,9 +44,39 @@ namespace DevStackManager
         /// </summary>
         public static StackPanel CreateConsolePanel(ConsoleTab tab)
         {
-            var panel = new StackPanel { Margin = new Thickness(10) };
+            var panel = new StackPanel { Margin = new Thickness(PANEL_MARGIN) };
             var mainWindow = (DevStackGui)Application.Current.MainWindow;
-            var title = tab switch
+            
+            var titleLabel = CreateConsoleTitleLabel(tab, mainWindow);
+            panel.Children.Add(titleLabel);
+
+            var outputBox = CreateOutputTextBox(tab);
+            panel.Children.Add(outputBox);
+
+            var clearButton = CreateClearButton(tab, mainWindow);
+            panel.Children.Add(clearButton);
+
+            return panel;
+        }
+
+        /// <summary>
+        /// Cria o label de título do console
+        /// </summary>
+        private static Label CreateConsoleTitleLabel(ConsoleTab tab, DevStackGui mainWindow)
+        {
+            var title = GetTabTitle(tab, mainWindow);
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(title, true);
+            titleLabel.FontSize = TITLE_FONT_SIZE;
+            titleLabel.Margin = new Thickness(0, 0, 0, TITLE_MARGIN_BOTTOM);
+            return titleLabel;
+        }
+
+        /// <summary>
+        /// Obtém o título localizado para a aba
+        /// </summary>
+        private static string GetTabTitle(ConsoleTab tab, DevStackGui mainWindow)
+        {
+            return tab switch
             {
                 ConsoleTab.Install => mainWindow.LocalizationManager.GetString("gui.console.titles.install"),
                 ConsoleTab.Uninstall => mainWindow.LocalizationManager.GetString("gui.console.titles.uninstall"),
@@ -45,15 +84,17 @@ namespace DevStackManager
                 ConsoleTab.Config => mainWindow.LocalizationManager.GetString("gui.console.titles.config"),
                 _ => mainWindow.LocalizationManager.GetString("gui.console.titles.utilities")
             };
-            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(title, true);
-            titleLabel.FontSize = 18;
-            titleLabel.Margin = new Thickness(0, 0, 0, 10);
-            panel.Children.Add(titleLabel);
+        }
 
+        /// <summary>
+        /// Cria o TextBox de output do console
+        /// </summary>
+        private static TextBox CreateOutputTextBox(ConsoleTab tab)
+        {
             var outputBox = DevStackShared.ThemeManager.CreateStyledTextBox(true);
-            outputBox.Height = 600;
+            outputBox.Height = OUTPUT_BOX_HEIGHT;
             outputBox.IsReadOnly = true;
-            outputBox.FontSize = 12;
+            outputBox.FontSize = OUTPUT_BOX_FONT_SIZE;
             outputBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
             outputBox.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             outputBox.AcceptsReturn = true;
@@ -61,15 +102,21 @@ namespace DevStackManager
             outputBox.Name = $"ConsoleOutput_{tab}";
             outputBox.Text = Buffers[tab].ToString();
             ActiveTextBoxes[tab] = outputBox;
+            return outputBox;
+        }
 
-            panel.Children.Add(outputBox);
-
-            var clearButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.console.buttons.clear"), (s, e) => Clear(tab), DevStackShared.ThemeManager.ButtonStyle.Danger);
-            clearButton.Height = 35;
-            clearButton.Margin = new Thickness(0, 10, 0, 0);
-            panel.Children.Add(clearButton);
-
-            return panel;
+        /// <summary>
+        /// Cria o botão Clear do console
+        /// </summary>
+        private static Button CreateClearButton(ConsoleTab tab, DevStackGui mainWindow)
+        {
+            var clearButton = DevStackShared.ThemeManager.CreateStyledButton(
+                mainWindow.LocalizationManager.GetString("gui.console.buttons.clear"), 
+                (s, e) => Clear(tab), 
+                DevStackShared.ThemeManager.ButtonStyle.Danger);
+            clearButton.Height = CLEAR_BUTTON_HEIGHT;
+            clearButton.Margin = new Thickness(0, CLEAR_BUTTON_MARGIN_TOP, 0, 0);
+            return clearButton;
         }
 
         /// <summary>

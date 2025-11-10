@@ -8,69 +8,89 @@ namespace DevStackManager
 {
     public static class ListManager
     {
+        private const int TABLE_COL1_WIDTH = 15;
+        private const int TABLE_COL2_WIDTH = 40;
+        private const int HORIZONTAL_TABLE_COLS = 6;
+        private const int HORIZONTAL_TABLE_CELL_WIDTH = 16;
         /// <summary>
         /// Lista todas as ferramentas instaladas em formato de tabela
         /// </summary>
         public static void ListInstalledVersions()
         {
             var allComponents = ComponentsFactory.GetAll();
-            int col1 = 15, col2 = 40;
-            string header = new string('_', col1 + col2 + 3);
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(header);
-            string headerRow = $"|{CenterText("Ferramenta", col1)}|{CenterText("Versões Instaladas", col2)}|";
-            Console.WriteLine(headerRow);
-            string separator = $"|{new string('-', col1)}+{new string('-', col2)}|";
-            Console.WriteLine(separator);
-            Console.ResetColor();
+            
+            PrintTableHeader();
+
             foreach (var comp in allComponents)
             {
-                string ferramenta = CenterText(comp.Name, col1);
-                var installed = comp.ListInstalled();
-                if (installed.Count > 0)
-                {
-                    string status = CenterText(string.Join(", ", installed), col2);
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.Write("|");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write(ferramenta);
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.Write("|");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write(status);
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("|");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    string status = CenterText("NÃO INSTALADO", col2);
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.Write("|");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write(ferramenta);
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.Write("|");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write(status);
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("|");
-                    Console.ResetColor();
-                }
+                PrintComponentRow(comp);
             }
+
+            PrintTableFooter();
+        }
+
+        private static void PrintTableHeader()
+        {
+            WriteColoredLine(CreateBorder('_'), ConsoleColor.Gray);
+            WriteColoredLine(CreateTableRow("Ferramenta", "Versões Instaladas"), ConsoleColor.Gray);
+            WriteColoredLine(CreateSeparatorRow(), ConsoleColor.Gray);
+        }
+
+        private static void PrintTableFooter()
+        {
+            WriteColoredLine(CreateBorder('¯'), ConsoleColor.Gray);
+        }
+
+        private static string CreateBorder(char borderChar)
+        {
+            return new string(borderChar, TABLE_COL1_WIDTH + TABLE_COL2_WIDTH + 3);
+        }
+
+        private static string CreateTableRow(string col1Text, string col2Text)
+        {
+            return $"|{CenterText(col1Text, TABLE_COL1_WIDTH)}|{CenterText(col2Text, TABLE_COL2_WIDTH)}|";
+        }
+
+        private static string CreateSeparatorRow()
+        {
+            return $"|{new string('-', TABLE_COL1_WIDTH)}+{new string('-', TABLE_COL2_WIDTH)}|";
+        }
+
+        private static void PrintComponentRow(ComponentInterface comp)
+        {
+            var installed = comp.ListInstalled();
+            bool isInstalled = installed.Count > 0;
+            
+            var color = isInstalled ? ConsoleColor.Green : ConsoleColor.Red;
+            var statusText = isInstalled ? string.Join(", ", installed) : "NÃO INSTALADO";
+            
+            string row = CreateTableRow(comp.Name, statusText);
+            PrintColoredTableRow(row, color);
+        }
+
+        private static void PrintColoredTableRow(string row, ConsoleColor color)
+        {
+            int firstPipe = row.IndexOf('|', 1);
+            int secondPipe = row.IndexOf('|', firstPipe + 1);
+            
+            WriteColored("|", ConsoleColor.Gray);
+            WriteColored(row.Substring(1, firstPipe - 1), color);
+            WriteColored("|", ConsoleColor.Gray);
+            WriteColored(row.Substring(firstPipe + 1, secondPipe - firstPipe - 1), color);
+            WriteColoredLine("|", ConsoleColor.Gray);
+        }
+
+        private static void WriteColored(string text, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(text);
             Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Gray;
-            string footer = new string('¯', col1 + col2 + 3);
-            Console.WriteLine(footer);
+        }
+
+        private static void WriteColoredLine(string text, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(text);
             Console.ResetColor();
         }
 
@@ -81,85 +101,84 @@ namespace DevStackManager
         {
             if (data.Status == "error")
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(data.Message);
-                Console.ResetColor();
+                WriteColoredLine(data.Message, ConsoleColor.Red);
                 return;
             }
-            
-            var items = data.Versions;
-            string header = data.Header;
-            var installed = data.Installed;
-            bool orderDescending = data.OrderDescending ?? true;
-            int cols = 6;
-            
-            if (items == null || items.Count == 0)
+
+            if (data.Versions == null || data.Versions.Count == 0)
             {
                 Console.WriteLine("Nenhuma versão encontrada.");
                 return;
             }
-            
-            // Ordenar da maior para menor (descendente)
-            if (orderDescending)
-            {
-                items = items.OrderByDescending(v => v).ToList();
-            }
-            
-            int total = items.Count;
-            int rows = (int)Math.Ceiling((double)total / cols);
-            int width = 16;
-            int tableWidth = (width * cols) + cols + 1;
-            
+
+            var sortedVersions = SortVersions(data.Versions, data.OrderDescending ?? true);
+            var tableLayout = CalculateTableLayout(sortedVersions.Count);
+
+            PrintHorizontalTableHeader(data.Header, tableLayout.tableWidth);
+            PrintHorizontalTableRows(sortedVersions, data.Installed, tableLayout.rows);
+            PrintHorizontalTableFooter(tableLayout.tableWidth);
+        }
+
+        private static List<string> SortVersions(List<string> versions, bool orderDescending)
+        {
+            return orderDescending 
+                ? versions.OrderByDescending(v => v).ToList() 
+                : versions.ToList();
+        }
+
+        private static (int rows, int tableWidth) CalculateTableLayout(int itemCount)
+        {
+            int rows = (int)Math.Ceiling((double)itemCount / HORIZONTAL_TABLE_COLS);
+            int tableWidth = (HORIZONTAL_TABLE_CELL_WIDTH * HORIZONTAL_TABLE_COLS) + HORIZONTAL_TABLE_COLS + 1;
+            return (rows, tableWidth);
+        }
+
+        private static void PrintHorizontalTableHeader(string header, int tableWidth)
+        {
             Console.WriteLine(header);
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(new string('-', tableWidth));
-            Console.ResetColor();
-            
-            // Preencher linhas de cima para baixo (coluna 1: maior, coluna 2: próxima maior, etc)
+            WriteColoredLine(new string('-', tableWidth), ConsoleColor.Gray);
+        }
+
+        private static void PrintHorizontalTableFooter(int tableWidth)
+        {
+            WriteColoredLine(new string('¯', tableWidth), ConsoleColor.Gray);
+        }
+
+        private static void PrintHorizontalTableRows(List<string> versions, List<string> installed, int rows)
+        {
             for (int r = 0; r < rows; r++)
             {
-                Console.ResetColor();
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write("|");
-                for (int c = 0; c < cols; c++)
-                {
-                    int idx = c * rows + r;
-                    if (idx < total)
-                    {
-                        string val = Regex.Replace(items[idx], @"[^\d\.]", "");
-                        string cellText = CenterText(val, width);
-                        
-                        if (installed.Contains(val))
-                        {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.Write(cellText);
-                            Console.ResetColor();
-                        }
-                        else
-                        {
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Write(cellText);
-                            Console.ResetColor();
-                        }
-                    }
-                    else
-                    {
-                        Console.Write(CenterText("", width));
-                    }
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.Write("|");
-                    Console.ResetColor();
-                }
-                Console.WriteLine();
+                PrintHorizontalTableRow(versions, installed, r, rows);
             }
-            
-            // Garantir que a cor está resetada antes do rodapé
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(new string('¯', tableWidth));
-            Console.ResetColor();
+        }
+
+        private static void PrintHorizontalTableRow(List<string> versions, List<string> installed, int rowIndex, int totalRows)
+        {
+            WriteColored("|", ConsoleColor.Gray);
+
+            for (int c = 0; c < HORIZONTAL_TABLE_COLS; c++)
+            {
+                int idx = c * totalRows + rowIndex;
+                PrintHorizontalTableCell(versions, installed, idx);
+                WriteColored("|", ConsoleColor.Gray);
+            }
+
+            Console.WriteLine();
+        }
+
+        private static void PrintHorizontalTableCell(List<string> versions, List<string> installed, int index)
+        {
+            if (index >= versions.Count)
+            {
+                WriteColored(CenterText("", HORIZONTAL_TABLE_CELL_WIDTH), ConsoleColor.Gray);
+                return;
+            }
+
+            string cleanVersion = Regex.Replace(versions[index], @"[^\d\.]", "");
+            string cellText = CenterText(cleanVersion, HORIZONTAL_TABLE_CELL_WIDTH);
+            var color = installed.Contains(cleanVersion) ? ConsoleColor.Green : ConsoleColor.Gray;
+
+            WriteColored(cellText, color);
         }
 
         /// <summary>

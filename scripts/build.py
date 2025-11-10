@@ -255,31 +255,6 @@ def build_installer():
 
     print("Installer built and compacted.")
 
-def copy_locale_files():
-    """Copy locale files to various directories."""
-    print("Copying locale files...")
-
-    shared_locale_dir = src_dir / "Shared" / "locale"
-    installer_build_dir = src_dir / "INSTALLER" / "bin" / "Release" / "net9.0-windows" / "win-x64" / "publish"
-    uninstaller_build_dir = src_dir / "UNINSTALLER" / "bin" / "Release" / "net9.0-windows" / "win-x64" / "publish"
-
-    installer_locale_dir = installer_build_dir / "locale"
-    uninstaller_locale_dir = uninstaller_build_dir / "locale"
-    installer_install_locale_dir = install_dir / "locale"
-
-    # Create directories
-    for dir_path in [installer_locale_dir, uninstaller_locale_dir, installer_install_locale_dir]:
-        dir_path.mkdir(parents=True, exist_ok=True)
-
-    # Copy locale files
-    locale_files = list(shared_locale_dir.glob("*.json"))
-    for locale_file in locale_files:
-        shutil.copy2(locale_file, installer_locale_dir / locale_file.name)
-        shutil.copy2(locale_file, uninstaller_locale_dir / locale_file.name)
-        shutil.copy2(locale_file, installer_install_locale_dir / locale_file.name)
-
-    print("Locale files copied.")
-
 def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(description="DevStackManager Unified Build Script")
@@ -290,8 +265,8 @@ def main():
 
     try:
         build_projects()
-        copy_locale_files()
         if args.installer:
+            build_uninstaller()
             build_installer()
 
         end_time = datetime.now()

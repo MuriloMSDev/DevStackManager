@@ -20,6 +20,119 @@ namespace DevStackShared
     /// </summary>
     public static class ThemeManager
     {
+        #region UI Constants
+        // Animation Durations (milliseconds)
+        private const int ANIMATION_BUTTON_HOVER_MS = 200;
+        private const int ANIMATION_FADE_IN_MS = 300;
+        private const int ANIMATION_FADE_OUT_MS = 200;
+        private const int ANIMATION_SLIDE_IN_MS = 400;
+        
+        // Font Sizes
+        private const double FONT_SIZE_STANDARD = 14.0;
+        private const double FONT_SIZE_CONSOLE = 13.0;
+        private const double FONT_SIZE_HEADER = 14.0;
+        private const double FONT_SIZE_ROW = 14.0;
+        
+        // Padding Values
+        private const double PADDING_STANDARD_HORIZONTAL = 10;
+        private const double PADDING_STANDARD_VERTICAL = 8;
+        private const double PADDING_CONSOLE_VERTICAL = 8;
+        private const double PADDING_LABEL_HORIZONTAL = 10;
+        private const double PADDING_LABEL_VERTICAL_TOP = 4;
+        private const double PADDING_LABEL_VERTICAL_BOTTOM = 4;
+        private const double PADDING_HEADER_HORIZONTAL = 12;
+        private const double PADDING_HEADER_VERTICAL = 10;
+        private const double PADDING_COMBOBOX_HORIZONTAL = 10;
+        private const double PADDING_COMBOBOX_VERTICAL = 8;
+        private const double PADDING_COMBOBOX_ITEM_HORIZONTAL = 10;
+        private const double PADDING_COMBOBOX_ITEM_VERTICAL = 6;
+        private const double PADDING_CHECKBOX_HORIZONTAL = 12;
+        private const double PADDING_CHECKBOX_VERTICAL = 8;
+        private const double PADDING_CARD_HORIZONTAL = 16;
+        private const double PADDING_CARD_VERTICAL = 12;
+        
+        // Margins
+        private const double MARGIN_COMBOBOX_CONTENT_HORIZONTAL = 10;
+        private const double MARGIN_COMBOBOX_CONTENT_VERTICAL_TOP = 5;
+        private const double MARGIN_COMBOBOX_CONTENT_VERTICAL_BOTTOM = 8;
+        private const double MARGIN_MESSAGEBOX_CONTENT_HORIZONTAL = 55;
+        private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_TOP = 20;
+        private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_RIGHT = 30;
+        private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_BOTTOM = 10;
+        
+        // Dimensions
+        private const double MIN_HEIGHT_TEXTBOX = 35;
+        private const double MIN_HEIGHT_COMBOBOX = 35;
+        private const double MIN_HEIGHT_ROW = 35;
+        private const double SCROLLBAR_WIDTH = 12;
+        private const double COMBOBOX_DROPDOWN_WIDTH = 20;
+        private const double MIN_BUTTON_WIDTH = 80;
+        private const double MESSAGEBOX_ICON_SIZE = 500;
+        
+        // Opacity Values
+        private const double OPACITY_DISABLED = 0.6;
+        private const double OPACITY_SHADOW = 0.3;
+        private const double OPACITY_SCROLLBAR_TRACK = 0.3;
+        
+        // Effects
+        private const double GLOW_RADIUS_DEFAULT = 10;
+        private const double GLOW_OPACITY_DEFAULT = 0.8;
+        private const double SHADOW_OPACITY_DEFAULT = 0.3;
+        
+        // Color Adjustment
+        private const double COLOR_DARKEN_FACTOR = 0.3;
+        
+        // Progress Bar
+        private const double PROGRESS_BAR_DEFAULT_VALUE = 0;
+        private const double PROGRESS_BAR_DEFAULT_MAXIMUM = 100;
+        
+        // Render Transform
+        private const double RENDER_TRANSFORM_CENTER = 0.5;
+        
+        // RGB Color Values - Dark Theme
+        private const byte DARK_DANGER_HOVER_R = 200;
+        private const byte DARK_DANGER_HOVER_G = 35;
+        private const byte DARK_DANGER_HOVER_B = 51;
+        
+        private const byte DARK_DANGER_PRESSED_R = 180;
+        private const byte DARK_DANGER_PRESSED_G = 25;
+        private const byte DARK_DANGER_PRESSED_B = 41;
+        
+        private const byte DARK_FORM_BACKGROUND_R = 22;
+        private const byte DARK_FORM_BACKGROUND_G = 27;
+        private const byte DARK_FORM_BACKGROUND_B = 34;
+        
+        private const byte DARK_CONTROL_BACKGROUND_R = 32;
+        private const byte DARK_CONTROL_BACKGROUND_G = 39;
+        private const byte DARK_CONTROL_BACKGROUND_B = 49;
+        
+        private const byte DARK_BUTTON_HOVER_R = 58;
+        private const byte DARK_BUTTON_HOVER_G = 150;
+        private const byte DARK_BUTTON_HOVER_B = 255;
+        
+        private const byte DARK_BUTTON_PRESSED_R = 25;
+        private const byte DARK_BUTTON_PRESSED_G = 118;
+        private const byte DARK_BUTTON_PRESSED_B = 220;
+        
+        private const byte DARK_ACCENT_PRESSED_R = 40;
+        private const byte DARK_ACCENT_PRESSED_G = 175;
+        private const byte DARK_ACCENT_PRESSED_B = 131;
+        
+        private const byte DARK_INFO_R = 58;
+        private const byte DARK_INFO_G = 150;
+        private const byte DARK_INFO_B = 255;
+        
+        // Alpha Values
+        private const byte ALPHA_NOTIFICATION_BACKGROUND = 25;
+        private const byte ALPHA_SELECTION = 128;
+        private const byte ALPHA_OVERLAY_DARK = 180;
+        private const byte ALPHA_OVERLAY_SEMI = 50;
+        
+        // Gradient Angles
+        private const double GRADIENT_ANGLE_HORIZONTAL = 90;
+        private const double GRADIENT_ANGLE_DIAGONAL = 45;
+        #endregion
+        
         #region Theme Classes
         /// <summary>
         /// Enumeração dos temas disponíveis
@@ -143,10 +256,10 @@ namespace DevStackShared
         /// </summary>
         public class ThemeAnimationSettings
         {
-            public TimeSpan ButtonHoverDuration { get; set; } = TimeSpan.FromMilliseconds(200);
-            public TimeSpan FadeInDuration { get; set; } = TimeSpan.FromMilliseconds(300);
-            public TimeSpan FadeOutDuration { get; set; } = TimeSpan.FromMilliseconds(200);
-            public TimeSpan SlideInDuration { get; set; } = TimeSpan.FromMilliseconds(400);
+            public TimeSpan ButtonHoverDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_BUTTON_HOVER_MS);
+            public TimeSpan FadeInDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_FADE_IN_MS);
+            public TimeSpan FadeOutDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_FADE_OUT_MS);
+            public TimeSpan SlideInDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_SLIDE_IN_MS);
             public IEasingFunction StandardEasing { get; set; } = new CubicEase { EasingMode = EasingMode.EaseOut };
             public IEasingFunction BounceEasing { get; set; } = new BounceEase { EasingMode = EasingMode.EaseOut };
         }
@@ -160,39 +273,39 @@ namespace DevStackShared
         {
             PureWhite = new SolidColorBrush(Colors.White),
             PureBlack = new SolidColorBrush(Colors.Black),
-            DangerHover = new SolidColorBrush(Color.FromRgb(200, 35, 51)),
-            DangerPressed = new SolidColorBrush(Color.FromRgb(180, 25, 41)),
+            DangerHover = new SolidColorBrush(Color.FromRgb(DARK_DANGER_HOVER_R, DARK_DANGER_HOVER_G, DARK_DANGER_HOVER_B)),
+            DangerPressed = new SolidColorBrush(Color.FromRgb(DARK_DANGER_PRESSED_R, DARK_DANGER_PRESSED_G, DARK_DANGER_PRESSED_B)),
             WarningHover = new SolidColorBrush(Color.FromRgb(217, 164, 6)),
             WarningPressed = new SolidColorBrush(Color.FromRgb(195, 147, 5)),
-            SelectionBrush = new SolidColorBrush(Color.FromArgb(128, 0, 123, 255)),
-            OverlayWhite = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
+            SelectionBrush = new SolidColorBrush(Color.FromArgb(ALPHA_SELECTION, 0, 123, 255)),
+            OverlayWhite = new SolidColorBrush(Color.FromArgb(ALPHA_SELECTION, 255, 255, 255)),
             ConsoleSelectionBrush = new SolidColorBrush(Color.FromRgb(201, 209, 217)),
             RowSelectedForeground = new SolidColorBrush(Colors.White),
-            FormBackground = new SolidColorBrush(Color.FromRgb(22, 27, 34)),
+            FormBackground = new SolidColorBrush(Color.FromRgb(DARK_FORM_BACKGROUND_R, DARK_FORM_BACKGROUND_G, DARK_FORM_BACKGROUND_B)),
             Foreground = new SolidColorBrush(Color.FromRgb(235, 235, 235)),
-            ControlBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
+            ControlBackground = new SolidColorBrush(Color.FromRgb(DARK_CONTROL_BACKGROUND_R, DARK_CONTROL_BACKGROUND_G, DARK_CONTROL_BACKGROUND_B)),
 
             // Notificações
-            SuccessBackground = new SolidColorBrush(Color.FromArgb(25, 56, 211, 159)),
-            WarningBackground = new SolidColorBrush(Color.FromArgb(25, 255, 196, 0)),
-            DangerBackground = new SolidColorBrush(Color.FromArgb(25, 248, 81, 73)),
-            InfoBackground = new SolidColorBrush(Color.FromArgb(25, 58, 150, 255)),
+            SuccessBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 56, 211, 159)),
+            WarningBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 255, 196, 0)),
+            DangerBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 248, 81, 73)),
+            InfoBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, DARK_BUTTON_HOVER_R, DARK_BUTTON_HOVER_G, DARK_BUTTON_HOVER_B)),
 
             // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             ButtonForeground = new SolidColorBrush(Colors.White),
-            ButtonHover = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
-            ButtonPressed = new SolidColorBrush(Color.FromRgb(25, 118, 220)),
+            ButtonHover = new SolidColorBrush(Color.FromRgb(DARK_BUTTON_HOVER_R, DARK_BUTTON_HOVER_G, DARK_BUTTON_HOVER_B)),
+            ButtonPressed = new SolidColorBrush(Color.FromRgb(DARK_BUTTON_PRESSED_R, DARK_BUTTON_PRESSED_G, DARK_BUTTON_PRESSED_B)),
             ButtonDisabled = new SolidColorBrush(Color.FromRgb(87, 96, 106)),
 
             // Cores de destaque com estados expandidos
             Accent = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
             AccentHover = new SolidColorBrush(Color.FromRgb(46, 194, 145)),
-            AccentPressed = new SolidColorBrush(Color.FromRgb(40, 175, 131)),
+            AccentPressed = new SolidColorBrush(Color.FromRgb(DARK_ACCENT_PRESSED_R, DARK_ACCENT_PRESSED_G, DARK_ACCENT_PRESSED_B)),
             Warning = new SolidColorBrush(Color.FromRgb(255, 196, 0)),
             Danger = new SolidColorBrush(Color.FromRgb(248, 81, 73)),
             Success = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
-            Info = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
+            Info = new SolidColorBrush(Color.FromRgb(DARK_INFO_R, DARK_INFO_G, DARK_INFO_B)),
 
             // Grid com excelente legibilidade e hover
             GridBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
@@ -499,7 +612,7 @@ namespace DevStackShared
         {
             var scaleTransform = button.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
             button.RenderTransform = scaleTransform;
-            button.RenderTransformOrigin = new Point(0.5, 0.5);
+            button.RenderTransformOrigin = new Point(RENDER_TRANSFORM_CENTER, RENDER_TRANSFORM_CENTER);
             
             var targetScale = isEntering ? 1.05 : 1.0;
             var animation = new DoubleAnimation
@@ -516,7 +629,7 @@ namespace DevStackShared
         /// <summary>
         /// Aplica um efeito de glow nos elementos
         /// </summary>
-        public static void ApplyGlowEffect(UIElement element, Color color, double radius = 10, double opacity = 0.8)
+        public static void ApplyGlowEffect(UIElement element, Color color, double radius = GLOW_RADIUS_DEFAULT, double opacity = GLOW_OPACITY_DEFAULT)
         {
             var glow = new DropShadowEffect
             {
@@ -607,8 +720,8 @@ namespace DevStackShared
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, CurrentTheme.GridHeaderBackground));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, CurrentTheme.GridHeaderForeground));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, FontWeights.SemiBold));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 14.0));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.PaddingProperty, new Thickness(12, 10, 12, 10)));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, FONT_SIZE_HEADER));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.PaddingProperty, new Thickness(PADDING_HEADER_HORIZONTAL, PADDING_HEADER_VERTICAL, PADDING_HEADER_HORIZONTAL, PADDING_HEADER_VERTICAL)));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderBrushProperty, CurrentTheme.Border));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, new Thickness(0, 0, 1, 1)));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Left));
@@ -622,7 +735,7 @@ namespace DevStackShared
             border.SetValue(Border.BorderThicknessProperty, new Thickness(0, 0, 1, 1));
 
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.MarginProperty, new Thickness(12, 10, 12, 10));
+            contentPresenter.SetValue(ContentPresenter.MarginProperty, new Thickness(PADDING_HEADER_HORIZONTAL, PADDING_HEADER_VERTICAL, PADDING_HEADER_HORIZONTAL, PADDING_HEADER_VERTICAL));
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Left);
             contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
 
@@ -634,8 +747,8 @@ namespace DevStackShared
 
             // Row styling with hover and selection effects - SEMPRE aplicar
             var rowStyle = new Style(typeof(DataGridRow));
-            rowStyle.Setters.Add(new Setter(DataGridRow.MinHeightProperty, 35.0));
-            rowStyle.Setters.Add(new Setter(DataGridRow.FontSizeProperty, 14.0));
+            rowStyle.Setters.Add(new Setter(DataGridRow.MinHeightProperty, MIN_HEIGHT_ROW));
+            rowStyle.Setters.Add(new Setter(DataGridRow.FontSizeProperty, FONT_SIZE_ROW));
             rowStyle.Setters.Add(new Setter(DataGridRow.BackgroundProperty, CurrentTheme.GridBackground));
             rowStyle.Setters.Add(new Setter(DataGridRow.ForegroundProperty, CurrentTheme.GridForeground));
 
@@ -703,43 +816,43 @@ namespace DevStackShared
                     backgroundColor = CurrentTheme.Success;
                     hoverColor = CurrentTheme.AccentHover;
                     pressedColor = CurrentTheme.AccentPressed;
-                    borderColor = DarkenColor(CurrentTheme.Success, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.AccentHover, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.Success, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.AccentHover, COLOR_DARKEN_FACTOR);
                     break;
                 case ButtonStyle.Danger:
                     backgroundColor = CurrentTheme.Danger;
                     hoverColor = CurrentTheme.DangerHover;
                     pressedColor = CurrentTheme.DangerPressed;
-                    borderColor = DarkenColor(CurrentTheme.Danger, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.DangerHover, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.Danger, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.DangerHover, COLOR_DARKEN_FACTOR);
                     break;
                 case ButtonStyle.Warning:
                     backgroundColor = CurrentTheme.Warning;
                     hoverColor = CurrentTheme.WarningHover;
                     pressedColor = CurrentTheme.WarningPressed;
-                    borderColor = DarkenColor(CurrentTheme.Warning, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.WarningHover, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.Warning, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.WarningHover, COLOR_DARKEN_FACTOR);
                     break;
                 case ButtonStyle.Info:
                     backgroundColor = CurrentTheme.Info;
                     hoverColor = CurrentTheme.ButtonHover;
                     pressedColor = CurrentTheme.ButtonPressed;
-                    borderColor = DarkenColor(CurrentTheme.Info, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.Info, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, COLOR_DARKEN_FACTOR);
                     break;
                 case ButtonStyle.Secondary:
                     backgroundColor = CurrentTheme.TextMuted;
                     hoverColor = CurrentTheme.TextSecondary;
                     pressedColor = CurrentTheme.TextDisabled;
-                    borderColor = DarkenColor(CurrentTheme.TextMuted, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.TextSecondary, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.TextMuted, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.TextSecondary, COLOR_DARKEN_FACTOR);
                     break;
                 default: // Primary
                     backgroundColor = CurrentTheme.ButtonBackground;
                     hoverColor = CurrentTheme.ButtonHover;
                     pressedColor = CurrentTheme.ButtonPressed;
-                    borderColor = DarkenColor(CurrentTheme.ButtonBackground, 0.3);
-                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, 0.3);
+                    borderColor = DarkenColor(CurrentTheme.ButtonBackground, COLOR_DARKEN_FACTOR);
+                    borderHoverColor = DarkenColor(CurrentTheme.ButtonHover, COLOR_DARKEN_FACTOR);
                     break;
             }
 
@@ -753,7 +866,7 @@ namespace DevStackShared
             buttonStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(1)));
             buttonStyle.Setters.Add(new Setter(Button.PaddingProperty, new Thickness(0)));
             buttonStyle.Setters.Add(new Setter(Button.FontWeightProperty, FontWeights.Medium));
-            buttonStyle.Setters.Add(new Setter(Button.FontSizeProperty, 14.0));
+            buttonStyle.Setters.Add(new Setter(Button.FontSizeProperty, FONT_SIZE_STANDARD));
             buttonStyle.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
 
             // Template melhorado com gradientes
@@ -786,7 +899,7 @@ namespace DevStackShared
             var disabledTrigger = new Trigger { Property = Button.IsEnabledProperty, Value = false };
             disabledTrigger.Setters.Add(new Setter(Button.BackgroundProperty, CurrentTheme.ButtonDisabled));
             disabledTrigger.Setters.Add(new Setter(Button.ForegroundProperty, CurrentTheme.TextMuted));
-            disabledTrigger.Setters.Add(new Setter(Button.OpacityProperty, 0.6));
+            disabledTrigger.Setters.Add(new Setter(Button.OpacityProperty, OPACITY_DISABLED));
             disabledTrigger.Setters.Add(new Setter(Button.CursorProperty, Cursors.No));
 
             buttonStyle.Triggers.Add(hoverTrigger);
@@ -804,7 +917,7 @@ namespace DevStackShared
             {
                 BlurRadius = 6,
                 ShadowDepth = 3,
-                Opacity = 0.3,
+                Opacity = SHADOW_OPACITY_DEFAULT,
                 Color = CurrentTheme.PureBlack.Color
             };
 
@@ -832,8 +945,8 @@ namespace DevStackShared
             var textBox = new TextBox
             {
                 BorderThickness = new Thickness(1),
-                Padding = isConsole ? new Thickness(10, 8, 10, 8) : new Thickness(10, 4, 10, 4),
-                FontSize = isConsole ? 13 : 14
+                Padding = isConsole ? new Thickness(PADDING_STANDARD_HORIZONTAL, PADDING_CONSOLE_VERTICAL, PADDING_STANDARD_HORIZONTAL, PADDING_CONSOLE_VERTICAL) : new Thickness(PADDING_LABEL_HORIZONTAL, PADDING_LABEL_VERTICAL_TOP, PADDING_LABEL_HORIZONTAL, PADDING_LABEL_VERTICAL_BOTTOM),
+                FontSize = isConsole ? FONT_SIZE_CONSOLE : FONT_SIZE_STANDARD
             };
 
             if (isConsole)
@@ -967,9 +1080,9 @@ namespace DevStackShared
                 Foreground = CurrentTheme.InputForeground,
                 BorderBrush = CurrentTheme.InputBorder,
                 BorderThickness = new Thickness(1),
-                Padding = new Thickness(10, 8, 10, 8),
-                FontSize = 14,
-                MinHeight = 35
+                Padding = new Thickness(PADDING_COMBOBOX_HORIZONTAL, PADDING_COMBOBOX_VERTICAL, PADDING_COMBOBOX_HORIZONTAL, PADDING_COMBOBOX_VERTICAL),
+                FontSize = FONT_SIZE_STANDARD,
+                MinHeight = MIN_HEIGHT_COMBOBOX
             };
 
             // Evento para rolar o dropdown para o início ao abrir
@@ -1014,9 +1127,9 @@ namespace DevStackShared
             comboStyle.Setters.Add(new Setter(ComboBox.ForegroundProperty, CurrentTheme.InputForeground));
             comboStyle.Setters.Add(new Setter(ComboBox.BorderBrushProperty, CurrentTheme.InputBorder));
             comboStyle.Setters.Add(new Setter(ComboBox.BorderThicknessProperty, new Thickness(1)));
-            comboStyle.Setters.Add(new Setter(ComboBox.PaddingProperty, new Thickness(10, 8, 10, 8)));
-            comboStyle.Setters.Add(new Setter(ComboBox.FontSizeProperty, 14.0));
-            comboStyle.Setters.Add(new Setter(ComboBox.MinHeightProperty, 35.0));
+            comboStyle.Setters.Add(new Setter(ComboBox.PaddingProperty, new Thickness(PADDING_COMBOBOX_HORIZONTAL, PADDING_COMBOBOX_VERTICAL, PADDING_COMBOBOX_HORIZONTAL, PADDING_COMBOBOX_VERTICAL)));
+            comboStyle.Setters.Add(new Setter(ComboBox.FontSizeProperty, FONT_SIZE_STANDARD));
+            comboStyle.Setters.Add(new Setter(ComboBox.MinHeightProperty, MIN_HEIGHT_COMBOBOX));
 
             // Create simplified template using XAML string
             var templateXaml = @"
@@ -1134,9 +1247,9 @@ namespace DevStackShared
             var itemStyle = new Style(typeof(ComboBoxItem));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, CurrentTheme.DropdownBackground));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, CurrentTheme.InputForeground));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.PaddingProperty, new Thickness(10, 6, 10, 6)));
+            itemStyle.Setters.Add(new Setter(ComboBoxItem.PaddingProperty, new Thickness(PADDING_COMBOBOX_ITEM_HORIZONTAL, PADDING_COMBOBOX_ITEM_VERTICAL, PADDING_COMBOBOX_ITEM_HORIZONTAL, PADDING_COMBOBOX_ITEM_VERTICAL)));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.BorderThicknessProperty, new Thickness(0)));
-            itemStyle.Setters.Add(new Setter(ComboBoxItem.FontSizeProperty, 14.0));
+            itemStyle.Setters.Add(new Setter(ComboBoxItem.FontSizeProperty, FONT_SIZE_STANDARD));
 
             // Hover trigger for items
             var itemHoverTrigger = new Trigger
@@ -1194,8 +1307,8 @@ namespace DevStackShared
                 Foreground = CurrentTheme.TooltipForeground,
                 BorderBrush = CurrentTheme.Border,
                 BorderThickness = new Thickness(1),
-                Padding = new Thickness(12, 8, 12, 8),
-                FontSize = 13,
+                Padding = new Thickness(PADDING_CHECKBOX_HORIZONTAL, PADDING_CHECKBOX_VERTICAL, PADDING_CHECKBOX_HORIZONTAL, PADDING_CHECKBOX_VERTICAL),
+                FontSize = FONT_SIZE_CONSOLE,
                 HasDropShadow = true
             };
 
@@ -1235,7 +1348,7 @@ namespace DevStackShared
     /// <param name="maximum">Valor máximo.</param>
     /// <param name="isIndeterminate">Se true, o progresso é indeterminado.</param>
     /// <param name="animateValueChanges">Se true (default), mudanças no Value serão animadas progressivamente em 1.2s.</param>
-    public static ProgressBar CreateStyledProgressBar(double value = 0, double maximum = 100, bool isIndeterminate = false, bool animateValueChanges = true)
+    public static ProgressBar CreateStyledProgressBar(double value = PROGRESS_BAR_DEFAULT_VALUE, double maximum = PROGRESS_BAR_DEFAULT_MAXIMUM, bool isIndeterminate = false, bool animateValueChanges = true)
         {
             var progressBar = new ProgressBar
             {
@@ -1454,7 +1567,7 @@ namespace DevStackShared
             var separator = new Separator
             {
                 Background = CurrentTheme.Border,
-                Opacity = 0.6
+                Opacity = OPACITY_DISABLED
             };
 
             if (orientation == Orientation.Horizontal)
@@ -1479,7 +1592,7 @@ namespace DevStackShared
             var border = new Border
             {
                 CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(16, 12, 16, 12),
+                Padding = new Thickness(PADDING_CARD_HORIZONTAL, PADDING_CARD_VERTICAL, PADDING_CARD_HORIZONTAL, PADDING_CARD_VERTICAL),
                 Margin = new Thickness(0, 4, 0, 4)
             };
 

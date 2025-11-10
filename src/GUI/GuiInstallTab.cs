@@ -1,12 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-using System.Globalization;
 namespace DevStackManager
 {
     /// <summary>
@@ -14,43 +14,56 @@ namespace DevStackManager
     /// </summary>
     public static class GuiInstallTab
     {
+        private const double TITLE_FONT_SIZE = 18;
+        private const double SECTION_FONT_SIZE = 14;
+        private const double BUTTON_FONT_SIZE = 14;
+        private const double CONTROL_HEIGHT = 30;
+        private const double BUTTON_HEIGHT = 40;
+
         /// <summary>
-        // Converter: recebe o Name técnico (string) e retorna o Label do componente
-    public class NameToLabelConverter : IValueConverter
+        /// Converter que transforma o Name técnico (string) em Label do componente
+        /// </summary>
+        public class NameToLabelConverter : IValueConverter
         {
-            public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 if (value is string name && !string.IsNullOrWhiteSpace(name))
                 {
-                    var comp = DevStackManager.Components.ComponentsFactory.GetComponent(name);
+                    var comp = Components.ComponentsFactory.GetComponent(name);
                     return comp?.Label ?? name;
                 }
                 return value ?? string.Empty;
             }
-            public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             {
-                // One-way converter
                 return Binding.DoNothing;
             }
         }
+
+        /// <summary>
         /// Cria o conteúdo completo da aba "Instalar"
         /// </summary>
         public static Grid CreateInstallContent(DevStackGui mainWindow)
         {
-            var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            // Painel esquerdo - Seleção
+            var grid = CreateTwoColumnGrid();
+            
             var leftPanel = CreateInstallSelectionPanel(mainWindow);
             Grid.SetColumn(leftPanel, 0);
             grid.Children.Add(leftPanel);
 
-            // Painel direito - Console dedicado da aba Install
             var rightPanel = GuiConsolePanel.CreateConsolePanel(GuiConsolePanel.ConsoleTab.Install);
             Grid.SetColumn(rightPanel, 1);
             grid.Children.Add(rightPanel);
 
+            return grid;
+        }
+
+        private static Grid CreateTwoColumnGrid()
+        {
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             return grid;
         }
 
@@ -59,99 +72,168 @@ namespace DevStackManager
         /// </summary>
         private static UIElement CreateInstallSelectionPanel(DevStackGui mainWindow)
         {
-            // Usar Grid para permitir overlay
             var grid = new Grid();
-            var panel = new StackPanel
-            {
-                Margin = new Thickness(10)
-            };
+            var panel = new StackPanel { Margin = new Thickness(10) };
 
-            // Título principal
-            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.title"), true);
-            titleLabel.FontSize = 18;
+            AddTitleSection(panel, mainWindow);
+            AddInstallSection(panel, mainWindow);
+            AddShortcutSection(panel, mainWindow);
+
+            grid.Children.Add(panel);
+            
+            var overlay = CreateLoadingOverlay(mainWindow);
+            grid.Children.Add(overlay);
+
+            return grid;
+        }
+
+        private static void AddTitleSection(StackPanel panel, DevStackGui mainWindow)
+        {
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(
+                mainWindow.LocalizationManager.GetString("gui.install_tab.title"), 
+                true);
+            titleLabel.FontSize = TITLE_FONT_SIZE;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(titleLabel);
+        }
 
-            // Seção de Instalação
-            var installSectionLabel = DevStackShared.ThemeManager.CreateStyledLabel("Instalar Componente", true);
-            installSectionLabel.FontSize = 14;
-            installSectionLabel.Margin = new Thickness(0, 0, 0, 10);
-            panel.Children.Add(installSectionLabel);
+        private static void AddInstallSection(StackPanel panel, DevStackGui mainWindow)
+        {
+            var sectionLabel = CreateSectionLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.sections.install_component"));
+            panel.Children.Add(sectionLabel);
 
-            // Componente
-            var componentLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_tool"));
-            panel.Children.Add(componentLabel);
-
-            var componentCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
-            componentCombo.Margin = new Thickness(0, 5, 0, 15);
-            componentCombo.Height = 30;
-            var componentBinding = new Binding("AvailableComponents") { Source = mainWindow };
-            componentCombo.SetBinding(ComboBox.ItemsSourceProperty, componentBinding);
-            var selectedComponentBinding = new Binding("SelectedComponent") { Source = mainWindow };
-            componentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedComponentBinding);
-            // Mostrar Label para cada item (items são strings com o Name técnico)
-            var compItemTemplate = new DataTemplate();
-            var compTextFactory = new FrameworkElementFactory(typeof(TextBlock));
-            compTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new NameToLabelConverter() });
-            compItemTemplate.VisualTree = compTextFactory;
-            componentCombo.ItemTemplate = compItemTemplate;
+            var componentCombo = CreateComponentComboBox(mainWindow);
             panel.Children.Add(componentCombo);
 
-            // Versão
-            var versionLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_version"));
-            panel.Children.Add(versionLabel);
-
-            var versionCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
-            versionCombo.Margin = new Thickness(0, 5, 0, 20);
-            versionCombo.Height = 30;
-            var versionBinding = new Binding("AvailableVersions") { Source = mainWindow };
-            versionCombo.SetBinding(ComboBox.ItemsSourceProperty, versionBinding);
-            var selectedVersionBinding = new Binding("SelectedVersion") { Source = mainWindow };
-            versionCombo.SetBinding(ComboBox.SelectedValueProperty, selectedVersionBinding);
+            var versionCombo = CreateVersionComboBox(mainWindow);
             panel.Children.Add(versionCombo);
 
-            // Overlay de loading (spinner)
+            var installButton = CreateInstallButton(mainWindow);
+            panel.Children.Add(installButton);
+        }
+
+        private static Label CreateSectionLabel(string text)
+        {
+            var label = DevStackShared.ThemeManager.CreateStyledLabel(text, true);
+            label.FontSize = SECTION_FONT_SIZE;
+            label.Margin = new Thickness(0, 10, 0, 10);
+            return label;
+        }
+
+        private static UIElement CreateComponentComboBox(DevStackGui mainWindow)
+        {
+            var container = new StackPanel();
+            
+            var label = DevStackShared.ThemeManager.CreateStyledLabel(
+                mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_tool"));
+            container.Children.Add(label);
+
+            var combo = DevStackShared.ThemeManager.CreateStyledComboBox();
+            combo.Margin = new Thickness(0, 5, 0, 15);
+            combo.Height = CONTROL_HEIGHT;
+            
+            combo.SetBinding(ComboBox.ItemsSourceProperty, 
+                new Binding("AvailableComponents") { Source = mainWindow });
+            combo.SetBinding(ComboBox.SelectedValueProperty, 
+                new Binding("SelectedComponent") { Source = mainWindow });
+            
+            combo.ItemTemplate = CreateComponentItemTemplate();
+            container.Children.Add(combo);
+
+            return container;
+        }
+
+        private static DataTemplate CreateComponentItemTemplate()
+        {
+            var template = new DataTemplate();
+            var textFactory = new FrameworkElementFactory(typeof(TextBlock));
+            textFactory.SetBinding(TextBlock.TextProperty, 
+                new Binding(".") { Converter = new NameToLabelConverter() });
+            template.VisualTree = textFactory;
+            return template;
+        }
+
+        private static UIElement CreateVersionComboBox(DevStackGui mainWindow)
+        {
+            var container = new StackPanel();
+            
+            var label = DevStackShared.ThemeManager.CreateStyledLabel(
+                mainWindow.LocalizationManager.GetString("gui.install_tab.labels.select_version"));
+            container.Children.Add(label);
+
+            var combo = DevStackShared.ThemeManager.CreateStyledComboBox();
+            combo.Margin = new Thickness(0, 5, 0, 20);
+            combo.Height = CONTROL_HEIGHT;
+            
+            combo.SetBinding(ComboBox.ItemsSourceProperty, 
+                new Binding("AvailableVersions") { Source = mainWindow });
+            combo.SetBinding(ComboBox.SelectedValueProperty, 
+                new Binding("SelectedVersion") { Source = mainWindow });
+            
+            container.Children.Add(combo);
+
+            return container;
+        }
+
+        private static Button CreateInstallButton(DevStackGui mainWindow)
+        {
+            var button = DevStackShared.ThemeManager.CreateStyledButton(
+                mainWindow.LocalizationManager.GetString("gui.install_tab.buttons.install"),
+                async (s, e) => await HandleInstallButtonClick(mainWindow),
+                DevStackShared.ThemeManager.ButtonStyle.Success);
+            
+            button.Height = BUTTON_HEIGHT;
+            button.FontSize = BUTTON_FONT_SIZE;
+            button.Margin = new Thickness(0, 10, 0, 20);
+            
+            return button;
+        }
+
+        private static async Task HandleInstallButtonClick(DevStackGui mainWindow)
+        {
+            mainWindow.IsInstallingComponent = true;
+            try
+            {
+                await InstallComponent(mainWindow);
+            }
+            finally
+            {
+                ResetInstallState(mainWindow);
+            }
+        }
+
+        private static void ResetInstallState(DevStackGui mainWindow)
+        {
+            mainWindow.IsInstallingComponent = false;
+            mainWindow.SelectedComponent = string.Empty;
+            mainWindow.SelectedVersion = string.Empty;
+        }
+
+        private static UIElement CreateLoadingOverlay(DevStackGui mainWindow)
+        {
             var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
-            // Overlay sempre visível se instalando
             overlay.Visibility = mainWindow.IsInstallingComponent ? Visibility.Visible : Visibility.Collapsed;
+            
             mainWindow.PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName == nameof(mainWindow.IsInstallingComponent))
                 {
-                    overlay.Visibility = mainWindow.IsInstallingComponent ? Visibility.Visible : Visibility.Collapsed;
+                    overlay.Visibility = mainWindow.IsInstallingComponent 
+                        ? Visibility.Visible 
+                        : Visibility.Collapsed;
                 }
             };
 
-            // Botão Instalar
-            var installButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.install_tab.buttons.install"), async (s, e) =>
-            {
-                mainWindow.IsInstallingComponent = true;
-                overlay.Visibility = Visibility.Visible;
-                try
-                {
-                    await InstallComponent(mainWindow);
-                }
-                finally
-                {
-                    mainWindow.IsInstallingComponent = false;
-                    mainWindow.SelectedComponent = "";
-                    mainWindow.SelectedVersion = "";
-                    overlay.Visibility = Visibility.Collapsed;
-                }
-            }, DevStackShared.ThemeManager.ButtonStyle.Success);
-            installButton.Height = 40;
-            installButton.FontSize = 14;
-            installButton.Margin = new Thickness(0, 10, 0, 20);
-            panel.Children.Add(installButton);
+            return overlay;
+        }
 
-            // Seção de Criação de Atalhos
-            var shortcutSectionLabel = DevStackShared.ThemeManager.CreateStyledLabel("Criar Atalhos para Componentes Instalados", true);
-            shortcutSectionLabel.FontSize = 14;
-            shortcutSectionLabel.Margin = new Thickness(0, 10, 0, 10);
-            panel.Children.Add(shortcutSectionLabel);
+        private static void AddShortcutSection(StackPanel panel, DevStackGui mainWindow)
+        {
+            var sectionLabel = CreateSectionLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.sections.create_shortcuts"));
+            panel.Children.Add(sectionLabel);
 
             // Componente Instalado
-            var installedComponentLabel = DevStackShared.ThemeManager.CreateStyledLabel("Componente Instalado:");
+            var installedComponentLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.installed_component"));
             panel.Children.Add(installedComponentLabel);
 
             var installedComponentCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -174,7 +256,7 @@ namespace DevStackManager
             panel.Children.Add(installedComponentCombo);
 
             // Versão Instalada
-            var installedVersionLabel = DevStackShared.ThemeManager.CreateStyledLabel("Versão Instalada:");
+            var installedVersionLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.installed_version"));
             panel.Children.Add(installedVersionLabel);
 
             var installedVersionCombo = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -191,19 +273,13 @@ namespace DevStackManager
             panel.Children.Add(installedVersionCombo);
 
             // Botão Criar Atalho
-            var createShortcutButton = DevStackShared.ThemeManager.CreateStyledButton("Criar Atalho", async (s, e) =>
+            var createShortcutButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.install_tab.buttons.create_shortcut"), async (s, e) =>
             {
                 await CreateShortcutForComponent(mainWindow);
             });
             createShortcutButton.Height = 35;
             createShortcutButton.Margin = new Thickness(0, 0, 0, 10);
             panel.Children.Add(createShortcutButton);
-
-            // Adiciona painel e overlay ao grid
-            grid.Children.Add(panel);
-            grid.Children.Add(overlay);
-
-            return grid;
         }
 
         /// <summary>
@@ -261,17 +337,17 @@ namespace DevStackManager
         {
             if (string.IsNullOrEmpty(mainWindow.SelectedShortcutComponent))
             {
-                DevStackShared.ThemeManager.CreateStyledMessageBox("Selecione um componente", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.select_component_warning"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(mainWindow.SelectedShortcutVersion))
             {
-                DevStackShared.ThemeManager.CreateStyledMessageBox("Selecione uma versão", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DevStackShared.ThemeManager.CreateStyledMessageBox(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.select_version_warning"), mainWindow.LocalizationManager.GetString("gui.common.dialogs.warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            mainWindow.StatusMessage = $"Criando atalho para {mainWindow.SelectedShortcutComponent} {mainWindow.SelectedShortcutVersion}...";
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.status_bar.creating_shortcut", mainWindow.SelectedShortcutComponent, mainWindow.SelectedShortcutVersion);
 
             await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, mainWindow, async progress =>
             {
@@ -283,13 +359,13 @@ namespace DevStackManager
                         var comp = Components.ComponentsFactory.GetComponent(mainWindow.SelectedShortcutComponent);
                         if (comp == null)
                         {
-                            throw new Exception($"Componente '{mainWindow.SelectedShortcutComponent}' não encontrado");
+                            throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_component_not_found", mainWindow.SelectedShortcutComponent));
                         }
 
                         // Verificar se o componente tem CreateBinShortcut definido
                         if (string.IsNullOrEmpty(comp.CreateBinShortcut))
                         {
-                            throw new Exception($"Componente '{mainWindow.SelectedShortcutComponent}' não suporta criação de atalhos");
+                            throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_not_supported", mainWindow.SelectedShortcutComponent));
                         }
 
                         // Construir caminhos
@@ -299,7 +375,7 @@ namespace DevStackManager
 
                         if (!System.IO.Directory.Exists(targetDir))
                         {
-                            throw new Exception($"Diretório de instalação não encontrado: {targetDir}");
+                            throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_install_dir_not_found", targetDir));
                         }
 
                         // Criar atalho
@@ -333,12 +409,12 @@ namespace DevStackManager
 
                         Components.ComponentBase.CreateGlobalBinShortcut(sourceDir, sourcePattern, mainWindow.SelectedShortcutVersion, comp.Name, shortcutName);
 
-                        mainWindow.StatusMessage = $"Atalho criado com sucesso para {mainWindow.SelectedShortcutComponent} {mainWindow.SelectedShortcutVersion}";
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.status_bar.shortcut_created", mainWindow.SelectedShortcutComponent, mainWindow.SelectedShortcutVersion);
                     }
                     catch (Exception ex)
                     {
-                        progress.Report($"Erro ao criar atalho: {ex.Message}");
-                        mainWindow.StatusMessage = $"Erro ao criar atalho para {mainWindow.SelectedShortcutComponent}";
+                        progress.Report(mainWindow.LocalizationManager.GetString("gui.status_bar.shortcut_create_error", ex.Message));
+                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.status_bar.shortcut_error", mainWindow.SelectedShortcutComponent);
                         DevStackConfig.WriteLog($"Erro ao criar atalho na GUI: {ex}");
                     }
                 });

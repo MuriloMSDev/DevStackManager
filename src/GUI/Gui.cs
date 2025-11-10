@@ -26,6 +26,14 @@ namespace DevStackManager
     /// </summary>
     public partial class DevStackGui : Window, INotifyPropertyChanged
     {
+        #region Constants
+        // Window Dimensions
+        private const double WINDOW_WIDTH = 1200;
+        private const double WINDOW_HEIGHT = 840;
+        private const double WINDOW_MIN_WIDTH = 1200;
+        private const double WINDOW_MIN_HEIGHT = 840;
+        #endregion
+        
         #region Private Fields
         private readonly DevStackShared.LocalizationManager _localizationManager;
         private readonly System.Timers.Timer _servicesUpdateTimer;
@@ -217,7 +225,7 @@ namespace DevStackManager
         public DevStackGui()
         {
             // Initialize localization for GUI (carregando idioma persistido se existir)
-            _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.GUI);
+            _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
             try
             {
                 var settings = DevStackConfig.GetSetting(new string[] { "language", "theme" }) as System.Collections.Generic.Dictionary<string, object?>;
@@ -267,7 +275,7 @@ namespace DevStackManager
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                StatusMessage = $"Erro ao carregar dados iniciais: {ex.Message}";
+                                StatusMessage = _localizationManager.GetString("gui.status_bar.error_loading_initial", ex.Message);
                             });
                         }
                     });
@@ -282,10 +290,10 @@ namespace DevStackManager
             var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
             var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
             Title = _localizationManager.GetString("gui.window.title", version);
-            Width = 1200;
-            Height = 840;
-            MinWidth = 1200;
-            MinHeight = 840;
+            Width = WINDOW_WIDTH;
+            Height = WINDOW_HEIGHT;
+            MinWidth = WINDOW_MIN_WIDTH;
+            MinHeight = WINDOW_MIN_HEIGHT;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Background = CurrentTheme.FormBackground;
             Foreground = CurrentTheme.Foreground;
@@ -532,7 +540,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao carregar componentes: {ex.Message}";
+                StatusMessage = _localizationManager.GetString("gui.status_bar.error_loading_components", ex.Message);
             }
         }
 
@@ -555,7 +563,7 @@ namespace DevStackManager
                 var versionData = await Task.Run(() => GetVersionDataForComponent(selectedComponent));
                 if (versionData.Status != "ok")
                 {
-                    throw new Exception(string.IsNullOrWhiteSpace(versionData.Message) ? "Failed to load versions" : versionData.Message);
+                    throw new Exception(string.IsNullOrWhiteSpace(versionData.Message) ? _localizationManager.GetString("gui.install_tab.messages.failed_to_load_versions") : versionData.Message);
                 }
 
                 AvailableVersions.Clear();
@@ -595,7 +603,7 @@ namespace DevStackManager
                 }
                 else
                 {
-                    return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = $"Component '{component}' not found" };
+                    return new VersionData { Status = "error", Versions = new System.Collections.Generic.List<string>(), Message = _localizationManager.GetString("gui.install_tab.messages.component_not_found", component) };
                 }
             }
             catch (Exception ex)
@@ -657,12 +665,12 @@ namespace DevStackManager
                                         }
                                         else
                                         {
-                                            pids = "Ativo";
+                                            pids = _localizationManager.GetString("gui.services_tab.status.active");
                                         }
                                     }
                                     catch
                                     {
-                                        pids = "Ativo";
+                                        pids = _localizationManager.GetString("gui.services_tab.status.active");
                                     }
                                 }
                             }
@@ -818,7 +826,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao carregar componentes para atalhos: {ex.Message}";
+                StatusMessage = _localizationManager.GetString("gui.status_bar.error_loading_shortcuts", ex.Message);
                 DevStackConfig.WriteLog($"Erro ao carregar componentes para atalhos na GUI: {ex}");
             }
         }
@@ -881,7 +889,7 @@ namespace DevStackManager
                 {
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        StatusMessage = $"Erro ao carregar versões para atalho: {ex.Message}";
+                        StatusMessage = _localizationManager.GetString("gui.status_bar.error_loading_versions", ex.Message);
                         DevStackConfig.WriteLog($"Erro ao carregar versões para atalho na GUI: {ex}");
                     });
                 }
@@ -1045,31 +1053,31 @@ namespace DevStackManager
         {
             try
             {
-                StatusMessage = "Iniciando carregamento de dados...";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_data");
                 DevStackConfig.WriteLog("Iniciando RefreshAllData");
                 
                 // Carregar componentes instalados primeiro (crítico para o funcionamento)
-                StatusMessage = "Carregando componentes instalados...";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_installed");
                 await LoadInstalledComponents();
                 
                 // Carregar componentes disponíveis
-                StatusMessage = "Carregando componentes disponíveis...";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_available");
                 await LoadAvailableComponents();
                 
                 // Carregar serviços em paralelo com shortcuts e uninstall
-                StatusMessage = "Carregando serviços e outras opções...";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_services");
                 var task1 = LoadServices();
                 var task2 = LoadShortcutComponents();
                 var task3 = LoadUninstallComponents();
                 
                 await Task.WhenAll(task1, task2, task3);
                 
-                StatusMessage = "Todos os dados carregados com sucesso";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_complete");
                 DevStackConfig.WriteLog("RefreshAllData concluído");
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao carregar dados: {ex.Message}";
+                StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_error", ex.Message);
                 DevStackConfig.WriteLog($"Erro em RefreshAllData: {ex}");
             }
         }

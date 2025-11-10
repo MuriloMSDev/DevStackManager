@@ -18,6 +18,26 @@ namespace DevStackManager
 {
     public class Program
     {
+        #region Constants
+        // Time Constants (milliseconds)
+        private const int RESTART_DELAY_MS = 1000;
+        
+        // Log Display Constants
+        private const int LOG_DISPLAY_LINES = 50;
+        
+        // IP Configuration Constants
+        private const string PHP_UPSTREAM_IP_PREFIX = "127.";
+        private const string PHP_UPSTREAM_PORT = ":9000";
+        
+        // Minimum Arguments Required
+        private const int SITE_MIN_ARGS = 4;
+        #endregion
+        
+        // LocalizationManager instance
+        private static DevStackShared.LocalizationManager? _localizationManager;
+        private static DevStackShared.LocalizationManager LocalizationManager => 
+            _localizationManager ?? throw new InvalidOperationException("LocalizationManager not initialized");
+        
         public static string baseDir => DevStackConfig.baseDir;
         public static string phpDir => DevStackConfig.phpDir;
         public static string nginxDir => DevStackConfig.nginxDir;
@@ -62,10 +82,10 @@ namespace DevStackManager
                 // Se não há argumentos, entrar em modo REPL
                 if (args.Length == 0)
                 {
-                    Console.WriteLine("DevStack Shell Interativo. Digite 'help' para ajuda ou digite 'exit' para sair.");
+                    Console.WriteLine(LocalizationManager.GetString("cli.shell.interactive_prompt"));
                     while (true)
                     {
-                        Console.Write("DevStack> ");
+                        Console.Write(LocalizationManager.GetString("cli.shell.prompt"));
                         string? input = Console.ReadLine();
                         if (input == null) continue;
                         input = input.Trim();
@@ -83,8 +103,8 @@ namespace DevStackManager
                         {
                             if (!IsAdministrator())
                             {
-                                WriteWarningMsg($"O comando '{command}' requer privilégios de administrador.");
-                                WriteInfo("Execute o DevStack como administrador ou use 'DevStack.exe " + input + "' em um prompt de comando como administrador.");
+                                WriteWarningMsg(LocalizationManager.GetString("cli.shell.command_requires_admin", command));
+                                WriteInfo(LocalizationManager.GetString("cli.shell.run_as_admin_hint", command));
                                 continue;
                             }
                         }
@@ -94,11 +114,11 @@ namespace DevStackManager
                             int result = ExecuteCommand(command, commandArgs);
                             // Opcional: mostrar código de saída se não for 0
                             if (result != 0)
-                                Console.WriteLine($"(código de saída: {result})");
+                                Console.WriteLine(LocalizationManager.GetString("cli.shell.exit_code", result));
                         }
                         catch (Exception ex)
                         {
-                            WriteErrorMsg($"Erro inesperado: {ex.Message}");
+                            WriteErrorMsg(LocalizationManager.GetString("cli.error.unexpected", ex.Message));
                             WriteLog($"Erro inesperado: {ex}");
                         }
                     }
@@ -112,7 +132,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                WriteErrorMsg($"Erro inesperado: {ex.Message}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.error.unexpected", ex.Message));
                 WriteLog($"Erro inesperado: {ex}");
                 return 1;
             }
@@ -162,7 +182,7 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                WriteErrorMsg($"Erro ao solicitar privilégios de administrador: {ex.Message}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.error.admin_request", ex.Message));
                 return 1;
             }
         }
@@ -179,6 +199,15 @@ namespace DevStackManager
         private static void LoadConfiguration()
         {
             DevStackConfig.Initialize();
+            
+            // Carregar idioma do settings.conf ou usar pt_BR como padrão
+            string defaultLanguage = "pt_BR";
+            string? savedLanguage = DevStackConfig.GetSetting("language") as string;
+            string languageToUse = savedLanguage ?? defaultLanguage;
+            
+            // Inicializar LocalizationManager com o idioma apropriado
+            _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
+            DevStackShared.LocalizationManager.ApplyLanguage(languageToUse);
         }
 
         private static void WriteInfo(string message)
@@ -234,7 +263,7 @@ namespace DevStackManager
                 return;
             }
             
-            WriteInfo($"{component} instalado(s):");
+            WriteInfo(LocalizationManager.GetString("cli.status.installed_versions", component));
             foreach (var version in status.versions)
             {
                 Console.WriteLine($"  {version}");
@@ -243,7 +272,7 @@ namespace DevStackManager
 
         private static void StatusAll()
         {
-            Console.WriteLine("Status do DevStack:");
+            Console.WriteLine(LocalizationManager.GetString("cli.status.title"));
             var allStatus = DevStackManager.DataManager.GetAllComponentsStatus();
             foreach (var comp in allStatus.Keys)
             {
@@ -252,13 +281,13 @@ namespace DevStackManager
                 {
                     // Detectar se é serviço monitorado
                     var isService = comp == "php" || comp == "nginx";
-                    WriteInfo($"{comp} instalado(s):");
+                    WriteInfo(LocalizationManager.GetString("cli.status.installed", comp));
                     foreach (var version in status.Versions)
                     {
                         if (isService)
                         {
                             bool running = status.RunningList != null && status.RunningList.TryGetValue(version, out var isRunning) && isRunning;
-                            string runningText = running ? "[executando]" : "[parado]";
+                            string runningText = running ? LocalizationManager.GetString("cli.status.running") : LocalizationManager.GetString("cli.status.stopped");
                             Console.WriteLine($"  {version} {runningText}");
                         }
                         else
@@ -272,7 +301,7 @@ namespace DevStackManager
 
         private static void TestAll()
         {
-            Console.WriteLine("Testando ferramentas instaladas:");
+            Console.WriteLine(LocalizationManager.GetString("cli.test.title"));
             
             var tools = new[]
             {
@@ -312,37 +341,37 @@ namespace DevStackManager
                     try
                     {
                         var output = ProcessManager.ExecuteProcess(found, tool.args);
-                        WriteInfo($"{tool.name}: {output}");
+                        WriteInfo(LocalizationManager.GetString("cli.test.tool_output", tool.name, output));
                     }
                     catch
                     {
-                        WriteErrorMsg($"{tool.name}: erro ao executar {found}");
+                        WriteErrorMsg(LocalizationManager.GetString("cli.test.error_executing", tool.name, found));
                     }
                 }
                 else
                 {
-                    WriteWarningMsg($"{tool.name}: não encontrado.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.test.not_found", tool.name));
                 }
             }
         }
 
         private static void DepsCheck()
         {
-            Console.WriteLine("Verificando dependências do sistema...");
+            Console.WriteLine(LocalizationManager.GetString("cli.deps.title"));
             var missing = new List<string>();
 
             if (!IsAdministrator())
             {
-                missing.Add("Permissão de administrador");
+                missing.Add(LocalizationManager.GetString("cli.deps.missing_admin"));
             }
 
             if (missing.Count == 0)
             {
-                WriteInfo("Todas as dependências estão presentes.");
+                WriteInfo(LocalizationManager.GetString("cli.deps.all_present"));
             }
             else
             {
-                WriteErrorMsg($"Dependências ausentes: {string.Join(", ", missing)}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.deps.missing_deps", string.Join(", ", missing)));
             }
         }
 
@@ -391,21 +420,21 @@ namespace DevStackManager
             {
                 string bat = Path.Combine(aliasDir, $"{component}{version}.bat");
                 File.WriteAllText(bat, $"@echo off\r\n\"{exe}\" %*", Encoding.UTF8);
-                WriteInfo($"Alias criado: {bat}");
+                WriteInfo(LocalizationManager.GetString("cli.alias.created", bat));
             }
             else
             {
-                WriteErrorMsg($"Executável não encontrado para {component} {version}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.alias.executable_not_found", component, version));
             }
         }
 
         private static void ShowUsage()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("DevStack CLI - Comandos disponíveis:");
+            Console.WriteLine(LocalizationManager.GetString("cli.commands.help_title"));
             Console.ResetColor();
             Console.WriteLine();
-            Console.WriteLine("Para interface gráfica, use: DevStackGUI.exe");
+            Console.WriteLine(LocalizationManager.GetString("cli.commands.gui_hint"));
             Console.WriteLine();
 
             // Obter a tabela como string e exibi-la com cores
@@ -458,110 +487,84 @@ namespace DevStackManager
         {
             WriteLog($"Comando executado: {command} {string.Join(" ", args)}");
 
-            switch (command)
+            return command switch
             {
-                case "help":
-                    ShowUsage();
-                    break;
+                "help" => ShowUsageAndReturn(),
+                "list" => HandleListCommand(args),
+                "site" => HandleSiteCommand(args),
+                "install" => HandleInstallCommand(args).Result,
+                "path" => HandlePathCommand(args),
+                "uninstall" => HandleUninstallCommand(args),
+                "start" => HandleStartCommand(args),
+                "stop" => HandleStopCommand(args),
+                "restart" => HandleRestartCommand(args),
+                "status" => ExecuteStatusCommand(),
+                "test" => ExecuteTestCommand(),
+                "deps" => ExecuteDepsCommand(),
+                "update" => HandleUpdateCommand(args),
+                "alias" => HandleAliasCommand(args),
+                "self-update" => HandleSelfUpdateCommand(),
+                "clean" => HandleCleanCommand(),
+                "backup" => HandleBackupCommand(),
+                "logs" => HandleLogsCommand(),
+                "enable" => HandleEnableCommand(args),
+                "disable" => HandleDisableCommand(args),
+                "config" => HandleConfigCommand(),
+                "reset" => HandleResetCommand(args),
+                "ssl" => HandleSslCommand(args).Result,
+                "db" => HandleDbCommand(args),
+                "service" => HandleServiceCommand(),
+                "doctor" => HandleDoctorCommand(),
+                "global" => HandleGlobalCommand(),
+                "language" or "lang" => HandleLanguageCommand(args),
+                _ => HandleUnknownCommand(command)
+            };
+        }
 
-                case "list":
-                    return HandleListCommand(args);
-
-                case "site":
-                    return HandleSiteCommand(args);
-
-                case "install":
-                    return HandleInstallCommand(args).Result;
-
-                case "path":
-                    return HandlePathCommand(args);
-
-                case "uninstall":
-                    return HandleUninstallCommand(args);
-
-                case "start":
-                    return HandleStartCommand(args);
-
-                case "stop":
-                    return HandleStopCommand(args);
-
-                case "restart":
-                    return HandleRestartCommand(args);
-
-                case "status":
-                    StatusAll();
-                    break;
-
-                case "test":
-                    TestAll();
-                    break;
-
-                case "deps":
-                    DepsCheck();
-                    break;
-
-                case "update":
-                    foreach (var component in args)
-                    {
-                        UpdateComponent(component);
-                    }
-                    break;
-
-                case "alias":
-                    return HandleAliasCommand(args);
-
-                case "self-update":
-                    return HandleSelfUpdateCommand();
-
-                case "clean":
-                    return HandleCleanCommand();
-
-                case "backup":
-                    return HandleBackupCommand();
-
-                case "logs":
-                    return HandleLogsCommand();
-
-                case "enable":
-                    return HandleEnableCommand(args);
-
-                case "disable":
-                    return HandleDisableCommand(args);
-
-                case "config":
-                    return HandleConfigCommand();
-
-                case "reset":
-                    return HandleResetCommand(args);
-
-                case "ssl":
-                    return HandleSslCommand(args).Result;
-
-                case "db":
-                    return HandleDbCommand(args);
-
-                case "service":
-                    return HandleServiceCommand();
-
-                case "doctor":
-                    return HandleDoctorCommand();
-
-                case "global":
-                    return HandleGlobalCommand();
-
-                default:
-                    Console.WriteLine($"Comando desconhecido: {command}");
-                    return 1;
-            }
-
+        private static int ShowUsageAndReturn()
+        {
+            ShowUsage();
             return 0;
+        }
+
+        private static int ExecuteStatusCommand()
+        {
+            StatusAll();
+            return 0;
+        }
+
+        private static int ExecuteTestCommand()
+        {
+            TestAll();
+            return 0;
+        }
+
+        private static int ExecuteDepsCommand()
+        {
+            DepsCheck();
+            return 0;
+        }
+
+        private static int HandleUpdateCommand(string[] args)
+        {
+            foreach (var component in args)
+            {
+                UpdateComponent(component);
+            }
+            return 0;
+        }
+
+        private static int HandleUnknownCommand(string command)
+        {
+            Console.WriteLine(LocalizationManager.GetString("cli.commands.unknown", command));
+            return 1;
         }
 
         private static int HandleListCommand(string[] args)
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Uso: DevStackManager list <php|node|python|composer|mysql|nginx|phpmyadmin|git|mongodb|pgsql|elasticsearch|wpcli|adminer|go|openssl|phpcsfixer|--installed>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.list"));
                 return 1;
             }
 
@@ -578,56 +581,96 @@ namespace DevStackManager
 
         private static int HandleSiteCommand(string[] args)
         {
-            if (args.Length < 4)
+            if (args.Length < SITE_MIN_ARGS)
             {
-                Console.WriteLine("Uso: DevStackManager site <dominio> -Root <diretorio> -PHP <php-upstream> -Nginx <nginx-version>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.site"));
                 return 1;
             }
 
-            string domain = args[0];
-            string root = "";
-            string phpUpstream = "";
-            string nginxVersion = "";
-
-            for (int i = 1; i < args.Length; i++)
+            var siteConfig = ParseSiteArguments(args);
+            
+            if (!ValidateSiteConfig(siteConfig))
             {
-                switch (args[i].ToLowerInvariant())
+                return 1;
+            }
+
+            InstallManager.CreateNginxSiteConfig(
+                siteConfig.Domain, 
+                siteConfig.Root, 
+                siteConfig.PhpUpstream, 
+                siteConfig.NginxVersion);
+            
+            return 0;
+        }
+
+        private static SiteConfig ParseSiteArguments(string[] args)
+        {
+            var config = new SiteConfig { Domain = args[0] };
+
+            for (int i = 1; i < args.Length - 1; i++)
+            {
+                var flag = args[i].ToLowerInvariant();
+                var value = args[i + 1];
+
+                switch (flag)
                 {
                     case "-root":
-                        root = args[i];
+                        config.Root = value;
+                        i++;
                         break;
                     case "-php":
-                        phpUpstream = $"127.{args[i]}:9000";
+                        config.PhpUpstream = BuildPhpUpstream(value);
+                        i++;
                         break;
                     case "-nginx":
-                        nginxVersion = args[i];
+                        config.NginxVersion = value;
+                        i++;
                         break;
                 }
             }
-            
-            if (string.IsNullOrWhiteSpace(domain))
-            {
-                Console.WriteLine("Erro: domínio é obrigatório.");
-                return 1;
-            }
-            if (string.IsNullOrWhiteSpace(root))
-            {
-                Console.WriteLine("Erro: Root é obrigatório.");
-                return 1;
-            }
-            if (string.IsNullOrWhiteSpace(phpUpstream))
-            {
-                Console.WriteLine("Erro: PHP é obrigatório.");
-                return 1;
-            }
-            if (string.IsNullOrWhiteSpace(nginxVersion))
-            {
-                Console.WriteLine("Erro: Nginx é obrigatório.");
-                return 1;
-            }
 
-            InstallManager.CreateNginxSiteConfig(domain, root, phpUpstream, nginxVersion);
-            return 0;
+            return config;
+        }
+
+        /// <summary>
+        /// Constrói o endereço PHP upstream no formato 127.x.x.x:9000
+        /// </summary>
+        private static string BuildPhpUpstream(string value)
+        {
+            return $"{PHP_UPSTREAM_IP_PREFIX}{value}{PHP_UPSTREAM_PORT}";
+        }
+
+        private static bool ValidateSiteConfig(SiteConfig config)
+        {
+            if (string.IsNullOrWhiteSpace(config.Domain))
+            {
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.site_error_domain"));
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.Root))
+            {
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.site_error_root"));
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.PhpUpstream))
+            {
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.site_error_php"));
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.NginxVersion))
+            {
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.site_error_nginx"));
+                return false;
+            }
+            return true;
+        }
+
+        private class SiteConfig
+        {
+            public string Domain { get; set; } = string.Empty;
+            public string Root { get; set; } = string.Empty;
+            public string PhpUpstream { get; set; } = string.Empty;
+            public string NginxVersion { get; set; } = string.Empty;
         }
 
         private static async Task<int> HandleInstallCommand(string[] args)
@@ -646,7 +689,7 @@ namespace DevStackManager
         {
             if (pathManager == null)
             {
-                WriteErrorMsg("PathManager não foi inicializado.");
+                WriteErrorMsg(LocalizationManager.GetString("cli.path.manager_not_initialized"));
                 return 1;
             }
 
@@ -680,18 +723,18 @@ namespace DevStackManager
                     break;
 
                 case "help":
-                    WriteInfo("Uso do comando path:");
-                    WriteInfo("  path         - Adiciona diretórios das ferramentas ao PATH");
-                    WriteInfo("  path add     - Adiciona diretórios das ferramentas ao PATH");
-                    WriteInfo("  path remove  - Remove todos os diretórios DevStack do PATH");
-                    WriteInfo("  path remove <dir1> <dir2> ... - Remove diretórios específicos do PATH");
-                    WriteInfo("  path list    - Lista todos os diretórios no PATH do usuário");
-                    WriteInfo("  path help    - Mostra esta ajuda");
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_title"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_add"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_add_explicit"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_remove"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_remove_specific"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_list"));
+                    WriteInfo(LocalizationManager.GetString("cli.path.help_help"));
                     break;
 
                 default:
-                    WriteErrorMsg($"Subcomando desconhecido: {subCommand}");
-                    WriteInfo("Use 'path help' para ver os comandos disponíveis.");
+                    WriteErrorMsg(LocalizationManager.GetString("cli.path.unknown_subcommand", subCommand));
+                    WriteInfo(LocalizationManager.GetString("cli.path.use_help"));
                     return 1;
             }
 
@@ -702,7 +745,7 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager start <nginx|php|--all> [<x.x.x>]");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.start"));
                 return 1;
             }
 
@@ -715,7 +758,7 @@ namespace DevStackManager
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do nginx não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.nginx_not_found"));
                 }
 
                 if (Directory.Exists(phpDir))
@@ -724,14 +767,14 @@ namespace DevStackManager
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do PHP não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.php_not_found"));
                 }
                 return 0;
             }
 
             if (args.Length < 2)
             {
-                Console.WriteLine("Uso: DevStackManager start <nginx|php> <x.x.x>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.start_version"));
                 return 1;
             }
 
@@ -744,7 +787,7 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager stop <nginx|php|--all> [<x.x.x>]");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.stop"));
                 return 1;
             }
 
@@ -757,7 +800,7 @@ namespace DevStackManager
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do nginx não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.nginx_not_found"));
                 }
 
                 if (Directory.Exists(phpDir))
@@ -766,14 +809,14 @@ namespace DevStackManager
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do PHP não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.php_not_found"));
                 }
                 return 0;
             }
 
             if (args.Length < 2)
             {
-                Console.WriteLine("Uso: DevStackManager stop <nginx|php> <x.x.x>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.stop_version"));
                 return 1;
             }
 
@@ -786,7 +829,7 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager restart <nginx|php|--all> [<x.x.x>]");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.restart"));
                 return 1;
             }
 
@@ -798,13 +841,13 @@ namespace DevStackManager
                     ProcessManager.ForEachVersion("nginx", v => 
                     {
                         ProcessManager.StopComponent("nginx", v);
-                        Thread.Sleep(1000);
+                        Thread.Sleep(RESTART_DELAY_MS);
                         ProcessManager.StartComponent("nginx", v);
                     });
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do nginx não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.nginx_not_found"));
                 }
 
                 if (Directory.Exists(phpDir))
@@ -812,26 +855,26 @@ namespace DevStackManager
                     ProcessManager.ForEachVersion("php", v => 
                     {
                         ProcessManager.StopComponent("php", v);
-                        Thread.Sleep(1000);
+                        Thread.Sleep(RESTART_DELAY_MS);
                         ProcessManager.StartComponent("php", v);
                     });
                 }
                 else
                 {
-                    WriteWarningMsg("Diretório do PHP não encontrado. Ignorando.");
+                    WriteWarningMsg(LocalizationManager.GetString("cli.directories.php_not_found"));
                 }
                 return 0;
             }
 
             if (args.Length < 2)
             {
-                Console.WriteLine("Uso: DevStackManager restart <nginx|php> <x.x.x>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.restart_version"));
                 return 1;
             }
 
             string version = args[1];
             ProcessManager.StopComponent(target, version);
-            Thread.Sleep(1000);
+            Thread.Sleep(RESTART_DELAY_MS);
             ProcessManager.StartComponent(target, version);
             return 0;
         }
@@ -840,7 +883,7 @@ namespace DevStackManager
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Uso: DevStackManager alias <componente> <versão>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.alias"));
                 return 1;
             }
 
@@ -853,20 +896,20 @@ namespace DevStackManager
             string repoDir = System.AppContext.BaseDirectory;
             if (Directory.Exists(Path.Combine(repoDir, ".git")))
             {
-                WriteInfo("Atualizando via git pull...");
+                WriteInfo(LocalizationManager.GetString("cli.self_update.updating"));
                 try
                 {
                     var result = ProcessManager.ExecuteProcess("git", "pull", repoDir);
-                    WriteInfo("DevStackManager atualizado com sucesso.");
+                    WriteInfo(LocalizationManager.GetString("cli.self_update.success"));
                 }
                 catch (Exception ex)
                 {
-                    WriteErrorMsg($"Erro ao atualizar via git: {ex.Message}");
+                    WriteErrorMsg(LocalizationManager.GetString("cli.self_update.error", ex.Message));
                 }
             }
             else
             {
-                WriteWarningMsg("Não é um repositório git. Atualize manualmente copiando os arquivos do repositório.");
+                WriteWarningMsg(LocalizationManager.GetString("cli.self_update.not_git_repo"));
             }
             return 0;
         }
@@ -896,7 +939,7 @@ namespace DevStackManager
                 count++;
             }
 
-            WriteInfo($"Limpeza concluída. ({count} itens removidos)");
+            WriteInfo(LocalizationManager.GetString("cli.clean.completed", count));
             return 0;
         }
 
@@ -920,7 +963,7 @@ namespace DevStackManager
                 }
             }
 
-            WriteInfo($"Backup criado em {backupDir}");
+            WriteInfo(LocalizationManager.GetString("cli.backup.created", backupDir));
             return 0;
         }
 
@@ -929,9 +972,9 @@ namespace DevStackManager
             string logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
             if (File.Exists(logFile))
             {
-                Console.WriteLine($"Últimas 50 linhas de {logFile}:");
+                Console.WriteLine(LocalizationManager.GetString("cli.logs.last_lines", LOG_DISPLAY_LINES, logFile));
                 var lines = File.ReadAllLines(logFile, Encoding.UTF8);
-                var lastLines = lines.Skip(Math.Max(0, lines.Length - 50));
+                var lastLines = lines.Skip(Math.Max(0, lines.Length - LOG_DISPLAY_LINES));
                 foreach (var line in lastLines)
                 {
                     Console.WriteLine(line);
@@ -939,7 +982,7 @@ namespace DevStackManager
             }
             else
             {
-                WriteWarningMsg("Arquivo de log não encontrado.");
+                WriteWarningMsg(LocalizationManager.GetString("cli.logs.not_found"));
             }
             return 0;
         }
@@ -948,7 +991,7 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager enable <serviço>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.enable"));
                 return 1;
             }
 
@@ -958,11 +1001,11 @@ namespace DevStackManager
             {
                 var service = new ServiceController(svc);
                 service.Start();
-                WriteInfo($"Serviço {svc} ativado.");
+                WriteInfo(LocalizationManager.GetString("cli.service.enabled", svc));
             }
             catch (Exception ex)
             {
-                WriteErrorMsg($"Erro ao ativar serviço {svc}: {ex.Message}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.service.error_enable", svc, ex.Message));
             }
 #pragma warning restore CA1416
             return 0;
@@ -972,7 +1015,7 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager disable <serviço>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.disable"));
                 return 1;
             }
 
@@ -982,11 +1025,11 @@ namespace DevStackManager
             {
                 var service = new ServiceController(svc);
                 service.Stop();
-                WriteInfo($"Serviço {svc} desativado.");
+                WriteInfo(LocalizationManager.GetString("cli.service.disabled", svc));
             }
             catch (Exception ex)
             {
-                WriteErrorMsg($"Erro ao desativar serviço {svc}: {ex.Message}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.service.error_disable", svc, ex.Message));
             }
 #pragma warning restore CA1416
             return 0;
@@ -998,11 +1041,11 @@ namespace DevStackManager
             if (Directory.Exists(configDir))
             {
                 Process.Start("explorer.exe", configDir);
-                WriteInfo("Diretório de configuração aberto.");
+                WriteInfo(LocalizationManager.GetString("cli.config.opened"));
             }
             else
             {
-                WriteWarningMsg("Diretório de configuração não encontrado.");
+                WriteWarningMsg(LocalizationManager.GetString("cli.config.not_found"));
             }
             return 0;
         }
@@ -1011,15 +1054,15 @@ namespace DevStackManager
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Uso: DevStackManager reset <componente>");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.reset"));
                 return 1;
             }
 
             string comp = args[0];
-            WriteInfo($"Resetando {comp}...");
+            WriteInfo(LocalizationManager.GetString("cli.reset.resetting", comp));
             UninstallCommands(new[] { comp });
             _ = InstallCommands(new[] { comp });
-            WriteInfo($"{comp} resetado.");
+            WriteInfo(LocalizationManager.GetString("cli.reset.completed", comp));
             return 0;
         }
 
@@ -1033,7 +1076,7 @@ namespace DevStackManager
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Uso: DevStackManager db <mysql|pgsql|mongo> <comando> [args...]");
+                Console.WriteLine(LocalizationManager.GetString("cli.usage.db"));
                 return 1;
             }
 
@@ -1047,7 +1090,7 @@ namespace DevStackManager
                         string? mysqlExe = FindFile(mysqlDir, "mysql.exe", true);
                         if (string.IsNullOrEmpty(mysqlExe))
                         {
-                            WriteErrorMsg("mysql.exe não encontrado.");
+                            WriteErrorMsg(LocalizationManager.GetString("cli.db.mysql_not_found"));
                             return 1;
                         }
 
@@ -1065,7 +1108,7 @@ namespace DevStackManager
                                     ProcessManager.ExecuteProcess(mysqlExe, $"-e \"DROP DATABASE {args[2]};\"");
                                 break;
                             default:
-                                Console.WriteLine("Comando db mysql desconhecido.");
+                                Console.WriteLine(LocalizationManager.GetString("cli.db.unknown_command_mysql"));
                                 break;
                         }
                         break;
@@ -1076,7 +1119,7 @@ namespace DevStackManager
                         string? psqlExe = FindFile(pgsqlDir, "psql.exe", true);
                         if (string.IsNullOrEmpty(psqlExe))
                         {
-                            WriteErrorMsg("psql.exe não encontrado.");
+                            WriteErrorMsg(LocalizationManager.GetString("cli.db.pgsql_not_found"));
                             return 1;
                         }
 
@@ -1094,7 +1137,7 @@ namespace DevStackManager
                                     ProcessManager.ExecuteProcess(psqlExe, $"-c \"DROP DATABASE {args[2]};\"");
                                 break;
                             default:
-                                Console.WriteLine("Comando db pgsql desconhecido.");
+                                Console.WriteLine(LocalizationManager.GetString("cli.db.unknown_command_pgsql"));
                                 break;
                         }
                         break;
@@ -1105,7 +1148,7 @@ namespace DevStackManager
                         string? mongoExe = FindFile(mongoDir, "mongo.exe", true);
                         if (string.IsNullOrEmpty(mongoExe))
                         {
-                            WriteErrorMsg("mongo.exe não encontrado.");
+                            WriteErrorMsg(LocalizationManager.GetString("cli.db.mongo_not_found"));
                             return 1;
                         }
 
@@ -1123,14 +1166,14 @@ namespace DevStackManager
                                     ProcessManager.ExecuteProcess(mongoExe, $"--eval \"db.getSiblingDB('{args[2]}').dropDatabase()\"");
                                 break;
                             default:
-                                Console.WriteLine("Comando db mongo desconhecido.");
+                                Console.WriteLine(LocalizationManager.GetString("cli.db.unknown_command_mongo"));
                                 break;
                         }
                         break;
                     }
 
                 default:
-                    Console.WriteLine($"Banco de dados não suportado: {db}");
+                    Console.WriteLine(LocalizationManager.GetString("cli.db.unsupported_db", db));
                     break;
             }
             return 0;
@@ -1147,7 +1190,7 @@ namespace DevStackManager
 
                 if (services.Any())
                 {
-                    Console.WriteLine($"{"Name".PadRight(20)} {"Status".PadRight(15)} {"DisplayName".PadRight(40)}");
+                    Console.WriteLine(LocalizationManager.GetString("cli.service.list_header"));
                     Console.WriteLine(new string('-', 75));
                     foreach (var service in services)
                     {
@@ -1156,12 +1199,12 @@ namespace DevStackManager
                 }
                 else
                 {
-                    Console.WriteLine("Nenhum serviço DevStack encontrado.");
+                    Console.WriteLine(LocalizationManager.GetString("cli.service.none_found"));
                 }
             }
             catch (Exception ex)
             {
-                WriteErrorMsg($"Erro ao listar serviços: {ex.Message}");
+                WriteErrorMsg(LocalizationManager.GetString("cli.error.list_services", ex.Message));
             }
 #pragma warning restore CA1416
             return 0;
@@ -1169,12 +1212,12 @@ namespace DevStackManager
 
         private static int HandleDoctorCommand()
         {
-            Console.WriteLine("Diagnóstico do ambiente DevStack:");
+            Console.WriteLine(LocalizationManager.GetString("cli.doctor.title"));
             ListManager.ListInstalledVersions();
 
             // Forçar sincronização do PATH com as configurações do usuário
             RefreshProcessPathFromUser();
-            WriteInfo("PATH sincronizado com configurações do usuário.");
+            WriteInfo(LocalizationManager.GetString("cli.doctor.path_synced"));
 
             // Tabela PATH (agora mostra o PATH atual do processo + do usuário)
             var processPath = Environment.GetEnvironmentVariable("PATH") ?? "";
@@ -1192,14 +1235,28 @@ namespace DevStackManager
             Console.WriteLine(headerPath);
             Console.Write("| ");
             Console.ForegroundColor = ConsoleColor.Gray;
-            string prefix = "PATH (Processo + Usuário + ";
-            Console.Write(prefix);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("DevStack");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(")");
-            string fullText = prefix + "DevStack)";
-            Console.WriteLine(new string(' ', maxPathLen - fullText.Length) + " |");
+            
+            // Get the full header text and split it to highlight "DevStack"
+            string fullHeaderText = LocalizationManager.GetString("cli.doctor.path_header");
+            int devstackIndex = fullHeaderText.IndexOf("DevStack", StringComparison.OrdinalIgnoreCase);
+            
+            if (devstackIndex >= 0)
+            {
+                string beforeDevstack = fullHeaderText.Substring(0, devstackIndex);
+                string afterDevstack = fullHeaderText.Substring(devstackIndex + 8); // 8 = "DevStack".Length
+                
+                Console.Write(beforeDevstack);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write("DevStack");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(afterDevstack);
+            }
+            else
+            {
+                Console.Write(fullHeaderText);
+            }
+            
+            Console.WriteLine(new string(' ', maxPathLen - fullHeaderText.Length) + " |");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine($"|{string.Concat(Enumerable.Repeat('-', maxPathLen + 2))}|");
@@ -1241,7 +1298,7 @@ namespace DevStackManager
             
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(headerUser);
-            Console.WriteLine($"| {"Usuário".PadRight(colUser)} |");
+            Console.WriteLine($"| {LocalizationManager.GetString("cli.doctor.user_header").PadRight(colUser)} |");
             Console.WriteLine($"|{string.Concat(Enumerable.Repeat('-', colUser + 2))}|");
             Console.ResetColor();
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -1262,7 +1319,7 @@ namespace DevStackManager
             
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(headerOS);
-            Console.WriteLine($"| {"Sistema".PadRight(colOS)} |");
+            Console.WriteLine($"| {LocalizationManager.GetString("cli.doctor.system_header").PadRight(colOS)} |");
             Console.WriteLine($"|{string.Concat(Enumerable.Repeat('-', colOS + 2))}|");
             Console.Write("| ");
             Console.ResetColor();
@@ -1286,21 +1343,115 @@ namespace DevStackManager
             {
                 Environment.SetEnvironmentVariable("Path", $"{currentPath};{devstackDir}", EnvironmentVariableTarget.User);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Diretório {devstackDir} adicionado ao PATH do usuário.");
+                Console.WriteLine(LocalizationManager.GetString("cli.global.added", devstackDir));
                 Console.ResetColor();
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Diretório {devstackDir} já está no PATH do usuário.");
+                Console.WriteLine(LocalizationManager.GetString("cli.global.already_exists", devstackDir));
                 Console.ResetColor();
             }
 
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Agora você pode rodar 'DevStackManager' de qualquer lugar no terminal.");
+            Console.WriteLine(LocalizationManager.GetString("cli.global.run_anywhere"));
             Console.ResetColor();
             
             return 0;
+        }
+
+        private static int HandleLanguageCommand(string[] args)
+        {
+            var localizationManager = DevStackShared.LocalizationManager.Instance 
+                ?? DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
+
+            // Se não há argumentos, listar idiomas disponíveis e mostrar o atual
+            if (args.Length == 0)
+            {
+                var availableLanguages = localizationManager.GetAvailableLanguages();
+                var currentLanguage = DevStackShared.LocalizationManager.CurrentLanguageStatic;
+
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.available_title"));
+                Console.ResetColor();
+                Console.WriteLine();
+
+                foreach (var lang in availableLanguages)
+                {
+                    var langName = localizationManager.GetLanguageName(lang);
+                    var isCurrent = lang == currentLanguage;
+
+                    if (isCurrent)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("  ▶ ");
+                        Console.Write($"{lang.PadRight(10)} - {langName}");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine(LocalizationManager.GetString("cli.language.current_marker"));
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine($"    {lang.PadRight(10)} - {langName}");
+                        Console.ResetColor();
+                    }
+                }
+
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.change_hint"));
+                Console.WriteLine(LocalizationManager.GetString("cli.language.example"));
+                Console.ResetColor();
+
+                return 0;
+            }
+
+            // Se há argumentos, alterar o idioma
+            string newLanguage = args[0];
+            var availableLangs = localizationManager.GetAvailableLanguages();
+
+            if (!availableLangs.Contains(newLanguage))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.not_found", newLanguage));
+                Console.ResetColor();
+                Console.WriteLine();
+                Console.WriteLine(LocalizationManager.GetString("cli.language.available_list"));
+                foreach (var lang in availableLangs)
+                {
+                    Console.WriteLine($"  - {lang} ({localizationManager.GetLanguageName(lang)})");
+                }
+                return 1;
+            }
+
+            try
+            {
+                // Aplicar o novo idioma
+                DevStackShared.LocalizationManager.ApplyLanguage(newLanguage);
+
+                // Salvar nas configurações
+                DevStackConfig.PersistSetting("language", newLanguage);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.changed", localizationManager.GetLanguageName(newLanguage), newLanguage));
+                Console.ResetColor();
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.note_gui"));
+                Console.WriteLine(LocalizationManager.GetString("cli.language.note_cli"));
+                Console.ResetColor();
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(LocalizationManager.GetString("cli.language.error_changing", ex.Message));
+                Console.ResetColor();
+                WriteLog($"Erro ao alterar idioma: {ex}");
+                return 1;
+            }
         }
 
         /// <summary>

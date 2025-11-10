@@ -9,6 +9,21 @@ namespace DevStackManager
     /// </summary>
     public static class GuiConfigTab
     {
+        // UI Dimensions Constants
+        private const int SCROLL_VIEWER_MARGIN = 10;
+        private const int PANEL_BOTTOM_MARGIN = 10;
+        private const int TITLE_FONT_SIZE = 18;
+        private const int TITLE_BOTTOM_MARGIN = 10;
+        private const int SECTION_TOP_MARGIN = 10;
+        private const int SECTION_BOTTOM_MARGIN = 5;
+        private const int BUTTON_WIDTH = 200;
+        private const int BUTTON_HEIGHT = 35;
+        private const int BUTTON_TOP_MARGIN = 10;
+        private const int BUTTON_VERTICAL_MARGIN = 5;
+        private const int COMBO_HEIGHT = 30;
+        private const int COMBO_TOP_MARGIN = 5;
+        private const int COMBO_BOTTOM_MARGIN = 5;
+
         /// <summary>
         /// Cria o conteúdo completo da aba "Configurações"
         /// </summary>
@@ -39,7 +54,7 @@ namespace DevStackManager
             var scrollViewer = new ScrollViewer
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Margin = new Thickness(10)
+                Margin = new Thickness(SCROLL_VIEWER_MARGIN)
             };
 
             // Aplicar scrollbar customizada do ThemeManager
@@ -62,13 +77,11 @@ namespace DevStackManager
         {
             var panel = new StackPanel
             {
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(0, 0, 0, PANEL_BOTTOM_MARGIN)
             };
 
             // Gerenciamento do PATH
-            var pathTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.title"), true);
-            pathTitleLabel.FontSize = 18;
-            pathTitleLabel.Margin = new Thickness(0, 0, 0, 10);
+            var pathTitleLabel = CreateSectionTitle(mainWindow, "gui.config_tab.title");
             panel.Children.Add(pathTitleLabel);
 
             // Descrição
@@ -77,59 +90,91 @@ namespace DevStackManager
             panel.Children.Add(pathLabel);
 
             // Botão Adicionar
-            var addPathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.add"), (s, e) => AddToPath(mainWindow));
-            addPathButton.Width = 200;
-            addPathButton.Height = 35;
-            addPathButton.Margin = new Thickness(10, 10, 0, 5);
-            addPathButton.HorizontalAlignment = HorizontalAlignment.Left;
+            var addPathButton = CreateActionButton(mainWindow, "gui.config_tab.path.buttons.add", AddToPath);
+            addPathButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_TOP_MARGIN, 0, BUTTON_VERTICAL_MARGIN);
             panel.Children.Add(addPathButton);
 
             // Botão Remover
-            var removePathButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.path.buttons.remove"), (s, e) => RemoveFromPath(mainWindow));
-            removePathButton.Width = 200;
-            removePathButton.Height = 35;
-            removePathButton.Margin = new Thickness(10, 5, 0, 10);
-            removePathButton.HorizontalAlignment = HorizontalAlignment.Left;
+            var removePathButton = CreateActionButton(mainWindow, "gui.config_tab.path.buttons.remove", RemoveFromPath);
+            removePathButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_VERTICAL_MARGIN, 0, BUTTON_TOP_MARGIN);
             panel.Children.Add(removePathButton);
 
             // Gerenciamento dos Diretórios
-            var dirsTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.title"), true);
-            dirsTitleLabel.Margin = new Thickness(0, 10, 0, 5);
+            var dirsTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.directories.title");
             panel.Children.Add(dirsTitleLabel);
 
             // Botão Abrir Pasta do Executável
-            var openExeFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.devstack_manager"), (s, e) => OpenExeFolder(mainWindow));
-            openExeFolderButton.Width = 200;
-            openExeFolderButton.Height = 35;
-            openExeFolderButton.Margin = new Thickness(10, 5, 0, 5);
-            openExeFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
+            var openExeFolderButton = CreateActionButton(mainWindow, "gui.config_tab.directories.buttons.devstack_manager", OpenExeFolder);
+            openExeFolderButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_VERTICAL_MARGIN, 0, BUTTON_VERTICAL_MARGIN);
             panel.Children.Add(openExeFolderButton);
 
             // Botão Abrir Pasta das Ferramentas
-            var openBaseDirFolderButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.config_tab.directories.buttons.tools"), (s, e) => OpenBaseDir(mainWindow));
-            openBaseDirFolderButton.Width = 200;
-            openBaseDirFolderButton.Height = 35;
-            openBaseDirFolderButton.Margin = new Thickness(10, 10, 0, 10);
-            openBaseDirFolderButton.HorizontalAlignment = HorizontalAlignment.Left;
+            var openBaseDirFolderButton = CreateActionButton(mainWindow, "gui.config_tab.directories.buttons.tools", OpenBaseDir);
+            openBaseDirFolderButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_TOP_MARGIN, 0, BUTTON_TOP_MARGIN);
             panel.Children.Add(openBaseDirFolderButton);
 
             // Gerenciamento da Linguagem
-            var languagesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.title"), true);
-            languagesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
+            var languagesTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.languages.title");
             panel.Children.Add(languagesTitleLabel);
 
             // Language ComboBox (nova lógica igual à StatusBar)
             var interfaceLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.labels.interface_language"));
             panel.Children.Add(interfaceLanguageLabel);
 
+            var languageComboBox = CreateLanguageComboBox(mainWindow);
+            panel.Children.Add(languageComboBox);
+
+            // Gerenciamento dos temas
+            var themesTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.themes.title");
+            panel.Children.Add(themesTitleLabel);
+
+            // tema ComboBox
+            var themeLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.labels.interface_theme"));
+            panel.Children.Add(themeLanguageLabel);
+
+            var themeComboBox = CreateThemeComboBox(mainWindow);
+            panel.Children.Add(themeComboBox);
+
+            return panel;
+        }
+
+        private static Label CreateSectionTitle(DevStackGui mainWindow, string localizationKey)
+        {
+            var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString(localizationKey), true);
+            titleLabel.FontSize = TITLE_FONT_SIZE;
+            titleLabel.Margin = new Thickness(0, 0, 0, TITLE_BOTTOM_MARGIN);
+            return titleLabel;
+        }
+
+        private static Label CreateSectionHeader(DevStackGui mainWindow, string localizationKey)
+        {
+            var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString(localizationKey), true);
+            headerLabel.Margin = new Thickness(0, SECTION_TOP_MARGIN, 0, SECTION_BOTTOM_MARGIN);
+            return headerLabel;
+        }
+
+        private static Button CreateActionButton(DevStackGui mainWindow, string localizationKey, Action<DevStackGui> action)
+        {
+            var button = DevStackShared.ThemeManager.CreateStyledButton(
+                mainWindow.LocalizationManager.GetString(localizationKey), 
+                (s, e) => action(mainWindow));
+            button.Width = BUTTON_WIDTH;
+            button.Height = BUTTON_HEIGHT;
+            button.HorizontalAlignment = HorizontalAlignment.Left;
+            return button;
+        }
+
+        private static ComboBox CreateLanguageComboBox(DevStackGui mainWindow)
+        {
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
-            languageComboBox.Height = 30;
-            languageComboBox.Margin = new Thickness(0, 5, 0, 5);
+            languageComboBox.Height = COMBO_HEIGHT;
+            languageComboBox.Margin = new Thickness(0, COMBO_TOP_MARGIN, 0, COMBO_BOTTOM_MARGIN);
             languageComboBox.Name = "LanguageComboBox";
 
             var localization = mainWindow.LocalizationManager;
             var availableLanguages = localization.GetAvailableLanguages();
             var languageItems = new System.Collections.Generic.Dictionary<string, ComboBoxItem>();
+            
             foreach (var lang in availableLanguages)
             {
                 var langName = localization.GetLanguageName(lang);
@@ -137,9 +182,11 @@ namespace DevStackManager
                 languageComboBox.Items.Add(item);
                 languageItems[lang] = item;
             }
+            
             languageComboBox.SelectedItem = languageItems.ContainsKey(DevStackShared.LocalizationManager.CurrentLanguageStatic)
                 ? languageItems[DevStackShared.LocalizationManager.CurrentLanguageStatic]
                 : languageItems.Values.FirstOrDefault();
+                
             languageComboBox.SelectionChanged += (s, e) =>
             {
                 if (languageComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is string code)
@@ -148,22 +195,19 @@ namespace DevStackManager
                     DevStackConfig.PersistSetting("language", code);
                 }
             };
-            panel.Children.Add(languageComboBox);
+            
+            return languageComboBox;
+        }
 
-            // Gerenciamento dos temas
-            var themesTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.title"), true);
-            themesTitleLabel.Margin = new Thickness(0, 10, 0, 5);
-            panel.Children.Add(themesTitleLabel);
-
-            // tema ComboBox
-            var themeLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.labels.interface_theme"));
-            panel.Children.Add(themeLanguageLabel);
-
+        private static ComboBox CreateThemeComboBox(DevStackGui mainWindow)
+        {
             var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
-            themeComboBox.Height = 30;
-            themeComboBox.Margin = new Thickness(0, 5, 0, 5);
+            themeComboBox.Height = COMBO_HEIGHT;
+            themeComboBox.Margin = new Thickness(0, COMBO_TOP_MARGIN, 0, COMBO_BOTTOM_MARGIN);
             themeComboBox.Name = "ThemeComboBox";
 
+            var localization = mainWindow.LocalizationManager;
+            
             // Popular opções de tema
             var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
             var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
@@ -181,9 +225,7 @@ namespace DevStackManager
                 }
             };
 
-            panel.Children.Add(themeComboBox);
-
-            return panel;
+            return themeComboBox;
         }
 
         /// <summary>
@@ -195,13 +237,17 @@ namespace DevStackManager
             {
                 try
                 {
-                    DevStackConfig.pathManager?.AddBinDirsToPath();
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_updated");
+                    ExecutePathOperation(
+                        () => DevStackConfig.pathManager?.AddBinDirsToPath(),
+                        mainWindow,
+                        "gui.config_tab.messages.path_updated",
+                        "gui.config_tab.messages.path_error",
+                        "gui.config_tab.messages.path_update_error",
+                        progress);
                 }
                 catch (Exception ex)
                 {
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_update_error");
+                    HandleOperationError(mainWindow, progress, ex, "gui.config_tab.messages.path_error", "gui.config_tab.messages.path_update_error");
                 }
                 await Task.CompletedTask;
             });
@@ -216,13 +262,17 @@ namespace DevStackManager
             {
                 try
                 {
-                    DevStackConfig.pathManager?.RemoveAllDevStackFromPath();
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_cleaned");
+                    ExecutePathOperation(
+                        () => DevStackConfig.pathManager?.RemoveAllDevStackFromPath(),
+                        mainWindow,
+                        "gui.config_tab.messages.path_cleaned",
+                        "gui.config_tab.messages.path_remove_error",
+                        "gui.config_tab.messages.path_clean_error",
+                        progress);
                 }
                 catch (Exception ex)
                 {
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_remove_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.path_clean_error");
+                    HandleOperationError(mainWindow, progress, ex, "gui.config_tab.messages.path_remove_error", "gui.config_tab.messages.path_clean_error");
                 }
                 await Task.CompletedTask;
             });
@@ -238,26 +288,17 @@ namespace DevStackManager
                 try
                 {
                     var folder = System.AppContext.BaseDirectory;
-                    if (!string.IsNullOrEmpty(folder))
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = folder,
-                            UseShellExecute = true,
-                            Verb = "open"
-                        });
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_opened");
-                    }
-                    else
-                    {
-                        progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_not_found"));
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error");
-                    }
+                    ExecuteFolderOperation(
+                        folder,
+                        mainWindow,
+                        progress,
+                        "gui.config_tab.messages.exe_folder_opened",
+                        "gui.config_tab.messages.exe_folder_not_found",
+                        "gui.config_tab.messages.exe_folder_error");
                 }
                 catch (Exception ex)
                 {
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.exe_folder_error");
+                    HandleOperationError(mainWindow, progress, ex, "gui.config_tab.messages.exe_folder_error", "gui.config_tab.messages.exe_folder_error");
                 }
                 await Task.CompletedTask;
             });
@@ -273,29 +314,78 @@ namespace DevStackManager
                 try
                 {
                     var baseDir = DevStackConfig.baseDir;
-                    if (!string.IsNullOrEmpty(baseDir) && System.IO.Directory.Exists(baseDir))
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = baseDir,
-                            UseShellExecute = true,
-                            Verb = "open"
-                        });
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_opened");
-                    }
-                    else
-                    {
-                        progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_not_found"));
-                        mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error");
-                    }
+                    ExecuteFolderOperation(
+                        baseDir,
+                        mainWindow,
+                        progress,
+                        "gui.config_tab.messages.tools_folder_opened",
+                        "gui.config_tab.messages.tools_folder_not_found",
+                        "gui.config_tab.messages.tools_folder_error",
+                        true);
                 }
                 catch (Exception ex)
                 {
-                    progress.Report(mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error", ex.Message));
-                    mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.config_tab.messages.tools_folder_error");
+                    HandleOperationError(mainWindow, progress, ex, "gui.config_tab.messages.tools_folder_error", "gui.config_tab.messages.tools_folder_error");
                 }
                 await Task.CompletedTask;
             });
+        }
+
+        private static void ExecutePathOperation(
+            Action operation,
+            DevStackGui mainWindow,
+            string successMessageKey,
+            string errorMessageKey,
+            string statusErrorMessageKey,
+            IProgress<string> progress)
+        {
+            try
+            {
+                operation();
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(successMessageKey);
+            }
+            catch (Exception ex)
+            {
+                progress.Report(mainWindow.LocalizationManager.GetString(errorMessageKey, ex.Message));
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(statusErrorMessageKey);
+            }
+        }
+
+        private static void ExecuteFolderOperation(
+            string folder,
+            DevStackGui mainWindow,
+            IProgress<string> progress,
+            string successMessageKey,
+            string notFoundMessageKey,
+            string errorMessageKey,
+            bool checkExists = false)
+        {
+            if (!string.IsNullOrEmpty(folder) && (!checkExists || System.IO.Directory.Exists(folder)))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(successMessageKey);
+            }
+            else
+            {
+                progress.Report(mainWindow.LocalizationManager.GetString(notFoundMessageKey));
+                mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(errorMessageKey);
+            }
+        }
+
+        private static void HandleOperationError(
+            DevStackGui mainWindow,
+            IProgress<string> progress,
+            Exception ex,
+            string errorMessageKey,
+            string statusMessageKey)
+        {
+            progress.Report(mainWindow.LocalizationManager.GetString(errorMessageKey, ex.Message));
+            mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString(statusMessageKey);
         }
     }
 }
