@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class GitVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Git component.
+        /// </summary>
         public string ComponentName => "Git";
+        /// <summary>
+        /// Gets the unique identifier for the Git component.
+        /// </summary>
         public string ComponentId => "git";
         
+        /// <summary>
+        /// List of available Git versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("2.9.2", "https://github.com/git-for-windows/git/releases/download/v2.9.2.windows.1/MinGit-2.9.2-64-bit.zip"),
@@ -110,16 +119,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("2.51.2", "https://github.com/git-for-windows/git/releases/download/v2.51.2.windows.1/MinGit-2.51.2-64-bit.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available Git versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Git version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Git version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

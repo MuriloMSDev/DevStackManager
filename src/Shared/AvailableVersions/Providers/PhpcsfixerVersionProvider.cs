@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class PhpcsfixerVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the PHP CS Fixer component.
+        /// </summary>
         public string ComponentName => "PHP CS Fixer";
+        /// <summary>
+        /// Gets the unique identifier for the PHP CS Fixer component.
+        /// </summary>
         public string ComponentId => "phpcsfixer";
         
+        /// <summary>
+        /// List of available PHP CS Fixer versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("1.11.4", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v1.11.4/php-cs-fixer.phar"),
@@ -318,16 +327,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("3.89.2", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.89.2/php-cs-fixer.phar")        
         };
         
+        /// <summary>
+        /// Gets the list of all available PHP CS Fixer versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available PHP CS Fixer version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific PHP CS Fixer version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

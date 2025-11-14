@@ -14,65 +14,217 @@ using System.Windows.Threading;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Dashboard" - visão geral do sistema reutilizando funcionalidades existentes
+    /// Dashboard tab component providing system overview with visual cards.
+    /// Displays installed components, running services, and quick access to key features.
+    /// Features auto-refresh timer and real-time status updates with interactive cards.
+    /// Reuses existing tab functionalities in a consolidated overview interface.
     /// </summary>
     public static class GuiDashboardTab
     {
-        // UI Dimensions Constants
+        /// <summary>
+        /// Main panel margin in pixels.
+        /// </summary>
         private const int MAIN_MARGIN = 10;
+        
+        /// <summary>
+        /// Bottom margin for header section in pixels.
+        /// </summary>
         private const int HEADER_BOTTOM_MARGIN = 20;
+        
+        /// <summary>
+        /// Bottom margin for top row in pixels.
+        /// </summary>
         private const int TOP_ROW_BOTTOM_MARGIN = 10;
+        
+        /// <summary>
+        /// Right margin for title element in pixels.
+        /// </summary>
         private const int TITLE_RIGHT_MARGIN = 20;
+        
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const int TITLE_FONT_SIZE = 28;
+        
+        /// <summary>
+        /// Right margin for status panel in pixels.
+        /// </summary>
         private const int STATUS_PANEL_RIGHT_MARGIN = 20;
+        
+        /// <summary>
+        /// Top margin for separator element in pixels.
+        /// </summary>
         private const int SEPARATOR_TOP_MARGIN = 5;
+        
+        /// <summary>
+        /// Bottom margin for cards grid in pixels.
+        /// </summary>
         private const int CARDS_GRID_BOTTOM_MARGIN = 30;
+        
+        /// <summary>
+        /// Margin around each card in pixels.
+        /// </summary>
         private const int CARD_MARGIN = 12;
+        
+        /// <summary>
+        /// Internal padding for card content in pixels.
+        /// </summary>
         private const int CARD_PADDING = 20;
+        
+        /// <summary>
+        /// Thickness of card border in pixels.
+        /// </summary>
         private const int CARD_BORDER_THICKNESS = 1;
+        
+        /// <summary>
+        /// Corner radius for card containers in pixels.
+        /// </summary>
         private const int CARD_CORNER_RADIUS = 12;
+        
+        /// <summary>
+        /// Bottom margin for card header in pixels.
+        /// </summary>
         private const int CARD_HEADER_BOTTOM_MARGIN = 15;
+        
+        /// <summary>
+        /// Corner radius for icon border in pixels.
+        /// </summary>
         private const int ICON_BORDER_CORNER_RADIUS = 8;
+        
+        /// <summary>
+        /// Padding for icon border in pixels.
+        /// </summary>
         private const int ICON_BORDER_PADDING = 8;
+        
+        /// <summary>
+        /// Right margin for icon border in pixels.
+        /// </summary>
         private const int ICON_BORDER_RIGHT_MARGIN = 12;
+        
+        /// <summary>
+        /// Font size for icon text.
+        /// </summary>
         private const int ICON_FONT_SIZE = 20;
+        
+        /// <summary>
+        /// Font size for card title text.
+        /// </summary>
         private const int TITLE_CARD_FONT_SIZE = 16;
+        
+        /// <summary>
+        /// Font size for subtitle text.
+        /// </summary>
         private const int SUBTITLE_FONT_SIZE = 11;
+        
+        /// <summary>
+        /// Height of separator in pixels.
+        /// </summary>
         private const int SEPARATOR_HEIGHT = 3;
+        
+        /// <summary>
+        /// Bottom margin for separator in pixels.
+        /// </summary>
         private const int SEPARATOR_BOTTOM_MARGIN = 12;
+        
+        /// <summary>
+        /// Font size for content text.
+        /// </summary>
         private const int CONTENT_FONT_SIZE = 14;
+        
+        /// <summary>
+        /// Font size for interaction hint icon.
+        /// </summary>
         private const int INTERACTION_HINT_FONT_SIZE = 48;
+        
+        /// <summary>
+        /// <summary>
+        /// Width of spacer element in pixels.
+        /// </summary>
         private const int SPACER_WIDTH = 1;
         
-        // Shadow Effect Constants
+        /// <summary>
+        /// Direction angle in degrees for drop shadow effect.
+        /// </summary>
         private const int SHADOW_DIRECTION = 315;
+        
+        /// <summary>
+        /// Depth of drop shadow in pixels.
+        /// </summary>
         private const int SHADOW_DEPTH = 2;
+        
+        /// <summary>
+        /// Opacity value for drop shadow effect.
+        /// </summary>
         private const double SHADOW_OPACITY = 0.1;
+        
+        /// <summary>
+        /// Blur radius for drop shadow in pixels.
+        /// </summary>
         private const int SHADOW_BLUR_RADIUS = 8;
         
-        // Opacity Constants
+        /// <summary>
+        /// Opacity value for card when hovered.
+        /// </summary>
         private const double CARD_HOVER_OPACITY = 0.8;
+        
+        /// <summary>
+        /// Normal opacity value for card.
+        /// </summary>
         private const double CARD_NORMAL_OPACITY = 1.0;
+        
+        /// <summary>
+        /// Opacity value for interaction hint text.
+        /// </summary>
         private const double INTERACTION_HINT_OPACITY = 0.7;
+        
+        /// <summary>
+        /// Opacity value for interaction hint text when hovered.
+        /// </summary>
         private const double INTERACTION_HINT_HOVER_OPACITY = 1.0;
         
-        // Animation Constants
+        /// <summary>
+        /// Delay in milliseconds before starting hover animation.
+        /// </summary>
         private const int HOVER_ANIMATION_DELAY_MS = 100;
+        
+        /// <summary>
+        /// Scale factor for card hover animation.
+        /// </summary>
         private const double CARD_HOVER_SCALE = 1.02;
         
-        // Navigation Indices
+        /// <summary>
+        /// Navigation index for Installed tab.
+        /// </summary>
         private const int NAV_INDEX_INSTALLED = 1;
+        
+        /// <summary>
+        /// Navigation index for Install tab.
+        /// </summary>
         private const int NAV_INDEX_INSTALL = 2;
+        
+        /// <summary>
+        /// Navigation index for Services tab.
+        /// </summary>
         private const int NAV_INDEX_SERVICES = 4;
         
-        // Timing Constants
+        /// <summary>
+        /// Delay in milliseconds before UI initialization.
+        /// </summary>
         private const int UI_INITIALIZATION_DELAY_MS = 500;
         
+        /// <summary>
+        /// Timer for automatic dashboard refresh to update component status.
+        /// </summary>
         private static DispatcherTimer? _refreshTimer;
         
         /// <summary>
-        /// Cria o conteúdo completo da aba "Dashboard"
+        /// Creates the complete Dashboard tab content with ScrollViewer container.
+        /// Layout: Header with title and status, overview cards grid, detailed content sections.
+        /// Initializes data bindings and starts automatic refresh timer.
+        /// Loads initial component and service data after 500ms delay.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding and operations</param>
+        /// <returns>ScrollViewer with complete dashboard UI</returns>
         public static ScrollViewer CreateDashboardContent(DevStackGui mainWindow)
         {
             var scrollViewer = new ScrollViewer
@@ -82,42 +234,35 @@ namespace DevStackManager
                 Margin = new Thickness(MAIN_MARGIN)
             };
 
-            // Aplicar scrollbar customizada do ThemeManager
             DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
             var mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Grid de cards
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Conteúdo detalhado
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // Header
             var headerPanel = CreateDashboardHeader(mainWindow);
             Grid.SetRow(headerPanel, 0);
             mainGrid.Children.Add(headerPanel);
 
-            // Grid de cards - overview resumido
             var cardsGrid = CreateOverviewCardsGrid(mainWindow);
             Grid.SetRow(cardsGrid, 1);
             mainGrid.Children.Add(cardsGrid);
 
-            // Conteúdo detalhado - painéis das outras tabs
             var detailGrid = CreateDetailedContentGrid(mainWindow);
             Grid.SetRow(detailGrid, 2);
             mainGrid.Children.Add(detailGrid);
 
             scrollViewer.Content = mainGrid;
             
-            // Configurar sistema de binding e atualizações
             SetupDataBindings(mainWindow);
             
-            // Carregar dados iniciais imediatamente
             Task.Run(async () => {
                 System.Threading.Thread.Sleep(UI_INITIALIZATION_DELAY_MS);
                 await mainWindow.Dispatcher.BeginInvoke(() => {
                     UpdateComponentsData(mainWindow);
                 });
                 
-                // Usar método principal otimizado para carregamento dos serviços
                 await mainWindow.LoadServices();
                 await mainWindow.Dispatcher.BeginInvoke(() => UpdateServicesData(mainWindow));
             });
@@ -126,8 +271,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o cabeçalho do dashboard
+        /// Creates the dashboard header with title and status indicators.
+        /// Layout: Title label (28pt font), status indicator panel.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization</param>
+        /// <returns>StackPanel with header elements</returns>
         private static StackPanel CreateDashboardHeader(DevStackGui mainWindow)
         {
             var headerPanel = new StackPanel
@@ -136,7 +284,6 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, HEADER_BOTTOM_MARGIN)
             };
 
-            // Row superior com título e botões
             var topRow = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -148,7 +295,6 @@ namespace DevStackManager
             titleLabel.Margin = new Thickness(0, 0, TITLE_RIGHT_MARGIN, 0);
             topRow.Children.Add(titleLabel);
 
-            // Status indicator
             var statusPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -158,11 +304,9 @@ namespace DevStackManager
 
             topRow.Children.Add(statusPanel);
 
-            // Spacer flexível
             var spacer = new Border { Width = SPACER_WIDTH, HorizontalAlignment = HorizontalAlignment.Stretch };
             topRow.Children.Add(spacer);
 
-            // Botões de ação
             var buttonsPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -172,7 +316,6 @@ namespace DevStackManager
             topRow.Children.Add(buttonsPanel);
             headerPanel.Children.Add(topRow);
 
-            // Separador visual elegante
             var separator = DevStackShared.ThemeManager.CreateStyledSeparator();
             separator.Margin = new Thickness(0, SEPARATOR_TOP_MARGIN, 0, 0);
             headerPanel.Children.Add(separator);
@@ -181,8 +324,15 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o grid de cards de overview
+        /// Creates grid of overview cards displaying component and service status.
+        /// Layout: 3-column grid with equal width (Star sizing).
+        /// Cards: Installed Components (navigates to Installed tab), 
+        ///        Install Actions (navigates to Install tab),
+        ///        Running Services (navigates to Services tab).
+        /// Each card is tagged for dynamic content updates.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for navigation and localization</param>
+        /// <returns>Grid with three interactive summary cards</returns>
         private static Grid CreateOverviewCardsGrid(DevStackGui mainWindow)
         {
             var grid = new Grid
@@ -190,12 +340,10 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, CARDS_GRID_BOTTOM_MARGIN)
             };
             
-            // 3 colunas para os cards com espaçamento melhor distribuído
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Card 1: Componentes Instalados (usando dados do GuiInstalledTab)
             var installedCard = CreateSummaryCard(
                 "📦", 
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.title"),
@@ -208,7 +356,6 @@ namespace DevStackManager
             Grid.SetColumn(installedCard, 0);
             grid.Children.Add(installedCard);
 
-            // Card 2: Instalar (ações rápidas do GuiInstallTab)
             var installCard = CreateSummaryCard(
                 "📥",
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.install.title"),
@@ -220,7 +367,6 @@ namespace DevStackManager
             Grid.SetColumn(installCard, 1);
             grid.Children.Add(installCard);
 
-            // Card 3: Serviços (usando dados do GuiServicesTab)
             var servicesCard = CreateSummaryCard(
                 "⚙️",
                 mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.services.title"),
@@ -237,8 +383,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um card de resumo clicável com animações e feedback visual
+        /// Creates interactive summary card with icon, title, and content.
+        /// Features: Click navigation, hover scaling animation, accent color border.
+        /// Visual: Drop shadow effect, rounded corners (12px), cursor hand on hover.
         /// </summary>
+        /// <param name="icon">Emoji icon displayed at top of card</param>
+        /// <param name="title">Card title text</param>
+        /// <param name="content">Card content/description text</param>
+        /// <param name="clickAction">Action executed when card is clicked</param>
+        /// <param name="accentColor">Border and title accent color</param>
+        /// <param name="mainWindow">Main window instance for theme access</param>
+        /// <returns>Border element with card UI and interaction handlers</returns>
         private static Border CreateSummaryCard(string icon, string title, string content, Action clickAction, SolidColorBrush accentColor, DevStackGui mainWindow)
         {
             var card = new Border
@@ -262,7 +417,6 @@ namespace DevStackManager
 
             var cardContent = new StackPanel();
 
-            // Header do card melhorado
             var headerPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -304,7 +458,6 @@ namespace DevStackManager
             headerPanel.Children.Add(titleStack);
             cardContent.Children.Add(headerPanel);
 
-            // Linha de separação com gradiente
             var separator = new Border
             {
                 Height = SEPARATOR_HEIGHT,
@@ -322,7 +475,6 @@ namespace DevStackManager
             };
             cardContent.Children.Add(separator);
 
-            // Conteúdo do card melhorado com seta alinhada
             var contentPanel = new Grid();
             contentPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             contentPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -336,10 +488,9 @@ namespace DevStackManager
             Grid.SetColumn(contentLabel, 0);
             contentPanel.Children.Add(contentLabel);
 
-            // Indicador visual de interação (seta) alinhado com o conteúdo
             var interactionHint = new Label
             {
-                Content = "⎘", // ícone de abrir em outra página
+                Content = "⎘",
                 FontSize = INTERACTION_HINT_FONT_SIZE,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -353,9 +504,7 @@ namespace DevStackManager
 
             card.Child = cardContent;
 
-            // Eventos de interação melhorados
             card.MouseLeftButtonUp += (s, e) => {
-                // Simular animação de clique
                 card.Opacity = CARD_HOVER_OPACITY;
                 var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(HOVER_ANIMATION_DELAY_MS) };
                 timer.Tick += (_, _) =>
@@ -371,7 +520,6 @@ namespace DevStackManager
             card.MouseEnter += (s, e) => {
                 card.Background = DevStackShared.ThemeManager.CurrentTheme.DashboardCardHover;
                 interactionHint.Opacity = INTERACTION_HINT_HOVER_OPACITY;
-                // Animação de hover
                 var scaleTransform = new ScaleTransform(CARD_HOVER_SCALE, CARD_HOVER_SCALE);
                 card.RenderTransform = scaleTransform;
                 card.RenderTransformOrigin = new Point(0.5, 0.5);
@@ -388,27 +536,29 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o grid de conteúdo detalhado
+        /// Creates detailed content grid with component and service summary panels.
+        /// Layout: 2-column grid (1 Star width each), 1 row (Star height, 300px minimum).
+        /// Left panel: Installed components summary with refresh button.
+        /// Right panel: Services summary with refresh button.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding</param>
+        /// <returns>Grid with two side-by-side summary panels</returns>
         private static Grid CreateDetailedContentGrid(DevStackGui mainWindow)
         {
             var grid = new Grid
             {
-                Margin = new Thickness(0, 10, 0, 0) // Adicionar margem superior para espaçamento
+                Margin = new Thickness(0, 10, 0, 0)
             };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Apenas uma linha com altura aumentada, já que removemos o console
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 300 });
 
-            // Painel 1: Componentes instalados resumidos (reutilizando GuiInstalledTab)
             var installedPanel = CreateInstalledSummaryPanel(mainWindow);
             Grid.SetColumn(installedPanel, 0);
             Grid.SetRow(installedPanel, 0);
             grid.Children.Add(installedPanel);
 
-            // Painel 2: Serviços (reutilizando GuiServicesTab)
             var servicesPanel = CreateServicesSummaryPanel(mainWindow);
             Grid.SetColumn(servicesPanel, 1);
             Grid.SetRow(servicesPanel, 0);
@@ -418,8 +568,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria painel resumido de componentes instalados com elementos visuais melhorados
+        /// Creates installed components summary panel with component cards.
+        /// Features: Drop shadow effect, rounded corners (12px), refresh button.
+        /// Layout: Header with icon/title/refresh button, separator, scrollable component cards, footer with "View All" link.
+        /// Component cards display: icon, name, version, launch button.
+        /// Uses data binding to InstalledComponents collection for automatic updates.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding and localization</param>
+        /// <returns>Border with complete installed components panel</returns>
         private static Border CreateInstalledSummaryPanel(DevStackGui mainWindow)
         {
             var panel = new Border
@@ -441,11 +597,10 @@ namespace DevStackManager
             };
 
             var content = new Grid();
-            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
-            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Footer
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Header melhorado com ícone e gradiente usando Grid para posicionamento
             var headerPanel = new Grid
             {
                 Margin = new Thickness(0, 0, 0, 15)
@@ -455,7 +610,6 @@ namespace DevStackManager
             headerPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             headerPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // Lado esquerdo: ícone e título
             var leftPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -488,13 +642,11 @@ namespace DevStackManager
             Grid.SetColumn(leftPanel, 0);
             headerPanel.Children.Add(leftPanel);
 
-            // Lado direito: botão de refresh
             var refreshComponentsButton = DevStackShared.ThemeManager.CreateStyledButton("🔄", async (s, e) => {
                 try
                 {
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.messages.updating_components");
                     
-                    // Carregar componentes instalados
                     await Task.Run(async () => {
                         await mainWindow.Dispatcher.InvokeAsync(async () => {
                             await mainWindow.LoadInstalledComponents();
@@ -520,16 +672,13 @@ namespace DevStackManager
 
             content.Children.Add(headerPanel);
 
-            // Container para o conteúdo principal
             var mainContentPanel = new StackPanel();
             Grid.SetRow(mainContentPanel, 1);
 
-            // Separador moderno
             var separator = DevStackShared.ThemeManager.CreateStyledSeparator();
             separator.Margin = new Thickness(0, 0, 0, 10);
             mainContentPanel.Children.Add(separator);
 
-            // Grid de componentes em cards para melhor aproveitamento do espaço
             var scrollViewer = new ScrollViewer
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -539,7 +688,6 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
-            // Aplicar scrollbar customizada
             DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
             var componentsGrid = new Grid
@@ -549,24 +697,20 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
-            // Criar grid dinâmico baseado na largura disponível
-            int columnsPerRow = 4; // Máximo de 4 colunas por linha
+            int columnsPerRow = 4;
             int currentRow = 0;
             int currentColumn = 0;
 
-            // Usar dados dos componentes instalados já carregados no mainWindow
             try
             {
-                // Ordenar: executáveis primeiro (ordenados por Label e Versão), depois não-executáveis (ordenados por Label e Versão)
                 var installedComponents = mainWindow.InstalledComponents?
                     .Where(c => c.Installed)
-                    .OrderByDescending(c => c.IsExecutable) // Executáveis primeiro
-                    .ThenBy(c => c.Label)                   // Ordenar por Label
+                    .OrderByDescending(c => c.IsExecutable)
+                    .ThenBy(c => c.Label)
                     .ToList() ?? new List<ComponentViewModel>();
                 
                 if (installedComponents.Count > 0)
                 {
-                    // Definir colunas do grid
                     for (int i = 0; i < columnsPerRow; i++)
                     {
                         componentsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -574,12 +718,10 @@ namespace DevStackManager
 
                     foreach (var component in installedComponents)
                     {
-                        // Criar um card para cada versão instalada do componente
                         if (component.Versions != null && component.Versions.Count > 0)
                         {
                             foreach (var version in component.Versions.OrderBy(v => v))
                             {
-                                // Adicionar nova linha se necessário
                                 if (currentColumn == 0)
                                 {
                                     componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -600,8 +742,6 @@ namespace DevStackManager
                         }
                         else
                         {
-                            // Se não há versões específicas, criar um card padrão
-                            // Adicionar nova linha se necessário
                             if (currentColumn == 0)
                             {
                                 componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -625,7 +765,6 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                // Se houver erro, mostrar mensagem de erro
                 var errorText = new TextBlock
                 {
                     Text = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.error_loading"),
@@ -644,14 +783,13 @@ namespace DevStackManager
 
             content.Children.Add(mainContentPanel);
 
-            // Footer com botões de ação
             var footerPanel = new Border
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.DashboardFooterBackground,
                 CornerRadius = new CornerRadius(0, 0, 12, 12),
-                Margin = new Thickness(-15, 10, -15, -15), // Margem negativa para ocupar toda a largura
+                Margin = new Thickness(-15, 10, -15, -15),
                 Padding = new Thickness(15, 10, 15, 10),
-                Height = 48 // Altura padrão do footer
+                Height = 48
             };
             Grid.SetRow(footerPanel, 2);
 
@@ -661,9 +799,8 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            // Botão para ir para Install Tab
             var installButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.install_button"), (s, e) => {
-                mainWindow.SelectedNavIndex = 2; // Navegar para tab Instalar
+                mainWindow.SelectedNavIndex = 2;
             }, DevStackShared.ThemeManager.ButtonStyle.Info);
             installButton.Width = 100;
             installButton.Height = 28;
@@ -671,10 +808,8 @@ namespace DevStackManager
             installButton.Margin = new Thickness(5, 0, 5, 0);
             footerContent.Children.Add(installButton);
 
-            // Botão para ir para Uninstall Tab
-            // Botão para ir para Uninstall Tab
             var uninstallButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.uninstall_button"), (s, e) => {
-                mainWindow.SelectedNavIndex = 3; // Navegar para tab Desinstalar
+                mainWindow.SelectedNavIndex = 3;
             }, DevStackShared.ThemeManager.ButtonStyle.Danger);
             uninstallButton.Width = 100;
             uninstallButton.Height = 28;
@@ -690,8 +825,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria painel resumido de serviços com elementos visuais modernos
+        /// Creates services summary panel with service status list.
+        /// Features: Drop shadow effect, rounded corners (12px), refresh button.
+        /// Layout: Header with icon/title/refresh button, separator, scrollable service list, footer with Start/Stop/Restart All buttons.
+        /// Service list displays: component name, version, status indicator, PID.
+        /// Includes bulk operations: Start All, Stop All, Restart All services.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for service operations and localization</param>
+        /// <returns>Border with complete services panel</returns>
         private static Border CreateServicesSummaryPanel(DevStackGui mainWindow)
         {
             var panel = new Border
@@ -713,11 +854,10 @@ namespace DevStackManager
             };
 
             var content = new Grid();
-            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
-            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Footer
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Header melhorado com ícone e gradiente usando Grid para posicionamento
             var headerPanel = new Grid
             {
                 Margin = new Thickness(0, 0, 0, 15)
@@ -727,7 +867,6 @@ namespace DevStackManager
             headerPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             headerPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // Lado esquerdo: ícone e título
             var leftPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -760,13 +899,11 @@ namespace DevStackManager
             Grid.SetColumn(leftPanel, 0);
             headerPanel.Children.Add(leftPanel);
 
-            // Lado direito: botão de refresh
             var refreshServicesButton = DevStackShared.ThemeManager.CreateStyledButton("🔄", async (s, e) => {
                 try
                 {
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.messages.updating_services");
                     
-                    // Carregar serviços usando o método principal otimizado
                     await Task.Run(async () => {
                         await mainWindow.Dispatcher.InvokeAsync(async () => {
                             await mainWindow.LoadServices();
@@ -792,16 +929,13 @@ namespace DevStackManager
 
             content.Children.Add(headerPanel);
 
-            // Container para o conteúdo principal
             var mainContentPanel = new StackPanel();
             Grid.SetRow(mainContentPanel, 1);
 
-            // Separador moderno
             var separator = DevStackShared.ThemeManager.CreateStyledSeparator();
             separator.Margin = new Thickness(0, 0, 0, 10);
             mainContentPanel.Children.Add(separator);
 
-            // Lista melhorada com scroll customizado ou mensagem vazia
             var contentArea = new Grid();
             
             var scrollViewer = new ScrollViewer
@@ -812,18 +946,15 @@ namespace DevStackManager
                 Background = Brushes.Transparent
             };
 
-            // Aplicar scrollbar customizada
             DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
             var servicesGrid = new Grid
             {
                 Background = Brushes.Transparent,
-                Tag = "ServicesList", // Manter a tag correta para o sistema de atualização
+                Tag = "ServicesList",
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
-            // Não carregar dados aqui - deixar para o sistema de atualização dinâmica
-            // Inicializar apenas com uma mensagem de carregamento
             var loadingText = new TextBlock
             {
                 Text = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.loading"),
@@ -841,14 +972,13 @@ namespace DevStackManager
 
             content.Children.Add(mainContentPanel);
 
-            // Footer com botões de ação para serviços
             var footerPanel = new Border
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.DashboardFooterBackground,
                 CornerRadius = new CornerRadius(0, 0, 12, 12),
-                Margin = new Thickness(-15, 10, -15, -15), // Margem negativa para ocupar toda a largura
+                Margin = new Thickness(-15, 10, -15, -15),
                 Padding = new Thickness(15, 8, 15, 8),
-                Height = 48 // Altura padrão do footer
+                Height = 48
             };
             Grid.SetRow(footerPanel, 2);
 
@@ -858,7 +988,6 @@ namespace DevStackManager
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            // Botão para iniciar todos os serviços
             var startAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.start_all"), async (s, e) => {
                 try
                 {
@@ -877,7 +1006,6 @@ namespace DevStackManager
             startAllButton.Margin = new Thickness(3, 0, 3, 0);
             footerContent.Children.Add(startAllButton);
 
-            // Botão para parar todos os serviços
             var stopAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.stop_all"), async (s, e) => {
                 try
                 {
@@ -896,7 +1024,6 @@ namespace DevStackManager
             stopAllButton.Margin = new Thickness(3, 0, 3, 0);
             footerContent.Children.Add(stopAllButton);
 
-            // Botão para reiniciar todos os serviços
             var restartAllButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.restart_all"), async (s, e) => {
                 try
                 {
@@ -923,13 +1050,16 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza o conteúdo de um card
+        /// Updates card content label text dynamically.
+        /// Searches for Label with "content" tag within Border's StackPanel or Grid structure.
+        /// Used to update card statistics without recreating entire card.
         /// </summary>
+        /// <param name="card">Border element containing card UI</param>
+        /// <param name="newContent">New text content to display</param>
         private static void UpdateCardContent(Border card, string newContent)
         {
             if (card.Child is StackPanel stackPanel)
             {
-                // Procurar diretamente por Labels com tag "content"
                 foreach (var child in stackPanel.Children)
                 {
                     if (child is Label label && label.Tag?.ToString() == "content")
@@ -937,7 +1067,6 @@ namespace DevStackManager
                         label.Content = newContent;
                         return;
                     }
-                    // Se o child for um Grid (nova estrutura), procurar dentro dele
                     else if (child is Grid grid)
                     {
                         foreach (var gridChild in grid.Children)
@@ -954,13 +1083,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza estatísticas específicas nos painéis do Dashboard
+        /// Updates panel statistics by finding element with specific tag and updating content.
+        /// Supports Label and TextBlock elements.
+        /// Fails silently if element not found or update fails.
         /// </summary>
+        /// <param name="mainWindow">Main window instance to search within</param>
+        /// <param name="tagName">Tag identifier of element to update</param>
+        /// <param name="newContent">New text content to display</param>
         private static void UpdatePanelStatistics(DevStackGui mainWindow, string tagName, string newContent)
         {
             try
             {
-                // Procurar pelo elemento com a tag específica na janela principal
                 var element = FindElementByTag(mainWindow, tagName);
                 if (element != null)
                 {
@@ -976,18 +1109,22 @@ namespace DevStackManager
             }
             catch (Exception)
             {
-                // Falhar silenciosamente se não conseguir atualizar
             }
         }
 
         /// <summary>
-        /// Atualiza a lista de componentes instalados no painel usando dados existentes
+        /// Updates installed components list in dashboard panel.
+        /// Clears and rebuilds component cards grid (4 columns per row).
+        /// Sorting: Executable components first, then by label, then by version.
+        /// Creates individual cards for each installed version.
+        /// Shows "no components" message when list is empty.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization</param>
+        /// <param name="installedComponents">List of ComponentViewModel objects to display</param>
         private static void UpdateInstalledComponentsList(DevStackGui mainWindow, List<object> installedComponents)
         {
             try
             {
-                // Buscar o Grid no MainContainer da janela
                 var element = FindElementByTag(mainWindow, "ComponentsList");
                 if (element is Grid componentsGrid)
                 {
@@ -997,18 +1134,16 @@ namespace DevStackManager
                     
                     if (installedComponents.Count > 0)
                     {
-                        // Ordenar: executáveis primeiro (ordenados por Label e Versão), depois não-executáveis (ordenados por Label e Versão)
                         var sortedComponents = installedComponents
                             .Cast<ComponentViewModel>()
-                            .OrderByDescending(c => c.IsExecutable) // Executáveis primeiro
-                            .ThenBy(c => c.Label)                   // Ordenar por Label
+                            .OrderByDescending(c => c.IsExecutable)
+                            .ThenBy(c => c.Label)
                             .ToList();
 
-                        int columnsPerRow = 4; // Máximo de 4 colunas por linha
+                        int columnsPerRow = 4;
                         int currentRow = 0;
                         int currentColumn = 0;
 
-                        // Definir colunas do grid
                         for (int i = 0; i < columnsPerRow; i++)
                         {
                             componentsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -1016,12 +1151,10 @@ namespace DevStackManager
 
                         foreach (var component in sortedComponents)
                         {
-                            // Criar um card para cada versão instalada do componente
                             if (component.Versions != null && component.Versions.Count > 0)
                             {
                                 foreach (var version in component.Versions.OrderBy(v => v))
                                 {
-                                    // Adicionar nova linha se necessário
                                     if (currentColumn == 0)
                                     {
                                         componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -1042,8 +1175,6 @@ namespace DevStackManager
                             }
                             else
                             {
-                                // Se não há versões específicas, criar um card padrão
-                                // Adicionar nova linha se necessário
                                 if (currentColumn == 0)
                                 {
                                     componentsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -1066,7 +1197,6 @@ namespace DevStackManager
                     }
                     else
                     {
-                        // Mostrar mensagem quando não há componentes
                         var noComponentsText = new TextBlock
                         {
                             Text = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.none"),
@@ -1082,13 +1212,17 @@ namespace DevStackManager
             }
             catch
             {
-                // Falha silenciosa se o elemento não for encontrado
             }
         }
 
         /// <summary>
-        /// Busca um elemento pela tag na árvore visual
+        /// Finds element in visual tree by Tag property.
+        /// Performs recursive depth-first search through visual tree hierarchy.
+        /// Returns first element matching the specified tag name.
         /// </summary>
+        /// <param name="parent">Starting point for visual tree search</param>
+        /// <param name="tagName">Tag value to search for</param>
+        /// <returns>FrameworkElement with matching tag, or null if not found</returns>
         private static FrameworkElement? FindElementByTag(DependencyObject parent, string tagName)
         {
             if (parent == null) return null;
@@ -1113,16 +1247,19 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Configura o data binding com as ObservableCollections do mainWindow
+        /// Configures data binding with main window's ObservableCollection properties.
+        /// Subscribes to InstalledComponents and Services CollectionChanged events.
+        /// Triggers automatic UI updates when collections change.
+        /// Loads initial data after 1-second delay to ensure UI is ready.
+        /// Calls LoadServices method for optimized service data loading.
         /// </summary>
+        /// <param name="mainWindow">Main window instance with ObservableCollection properties</param>
         private static void SetupDataBindings(DevStackGui mainWindow)
         {
-            // Subscrever aos eventos de mudança das coleções
             if (mainWindow.InstalledComponents != null)
             {
                 mainWindow.InstalledComponents.CollectionChanged += (sender, e) =>
                 {
-                    // Atualizar cards e listas quando componentes mudarem
                     mainWindow.Dispatcher.BeginInvoke(() => UpdateComponentsData(mainWindow));
                 };
             }
@@ -1131,21 +1268,18 @@ namespace DevStackManager
             {
                 mainWindow.Services.CollectionChanged += (sender, e) =>
                 {
-                    // Atualizar cards e listas quando serviços mudarem
                     mainWindow.Dispatcher.BeginInvoke(() => UpdateServicesData(mainWindow));
                 };
             }
 
-            // Carregar dados iniciais com delay para garantir que a UI esteja pronta
             Task.Run(async () =>
             {
-                await Task.Delay(1000); // Aguardar 1 segundo para a UI estar completamente carregada
+                await Task.Delay(1000);
                 await mainWindow.Dispatcher.BeginInvoke(() =>
                 {
                     UpdateComponentsData(mainWindow);
                 });
                 
-                // Usar método principal otimizado para carregamento dos serviços
                 await mainWindow.LoadServices();
                 await mainWindow.Dispatcher.BeginInvoke(() =>
                 {
@@ -1155,8 +1289,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um card visual para representar um componente instalado, com funcionalidade de clique opcional
+        /// Creates visual card representing installed component.
+        /// Features: Drop shadow effect, 3px gradient top border (lightning colors for executables, success color for non-executables),
+        ///          component icon, name label, version text, lightning button for executables.
+        /// Card height: 55px fixed, width: stretch to fill column.
+        /// Layout: 2-column grid (text left, icon/button right).
         /// </summary>
+        /// <param name="name">Component display name</param>
+        /// <param name="version">Version text to display</param>
+        /// <param name="component">Optional ComponentViewModel for executable detection</param>
+        /// <param name="mainWindow">Optional main window instance for executable launch functionality</param>
+        /// <returns>Border with complete component card UI</returns>
         private static Border CreateComponentCard(string name, string version, ComponentViewModel? component = null, DevStackGui? mainWindow = null)
         {
             var card = new Border
@@ -1184,11 +1327,9 @@ namespace DevStackManager
                 ClipToBounds = false
             };
 
-            // Definir colunas: texto à esquerda, ícone à direita
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // Determinar se o componente é executável para definir a cor da borda
             bool isExecutable = component != null && mainWindow != null;
             if (isExecutable)
             {
@@ -1196,32 +1337,28 @@ namespace DevStackManager
                 isExecutable = comp != null && comp.IsExecutable && component.Installed;
             }
 
-            // Borda superior com gradiente - posicionada para ignorar padding
             var topBorder = new Border
             {
                 Height = 3,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Top,
                 CornerRadius = new CornerRadius(6, 6, 0, 0),
-                Margin = new Thickness(-8, -9, -8, 0) // Margem negativa para anular o padding
+                Margin = new Thickness(-8, -9, -8, 0)
             };
             Grid.SetColumnSpan(topBorder, 2);
 
-            // Criar gradiente baseado na capacidade de execução do componente
             var gradientBrush = new LinearGradientBrush();
             gradientBrush.StartPoint = new Point(0, 0);
             gradientBrush.EndPoint = new Point(1, 0);
 
             if (isExecutable)
             {
-                // Gradiente azul para componentes executáveis
                 gradientBrush.GradientStops.Add(new GradientStop(DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color, 0.0));
                 gradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(180, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.R, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.G, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.B), 0.5));
                 gradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.R, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.G, DevStackShared.ThemeManager.CurrentTheme.DashboardAccentBlue.Color.B), 1.0));
             }
             else
             {
-                // Gradiente verde para componentes não executáveis
                 gradientBrush.GradientStops.Add(new GradientStop(DevStackShared.ThemeManager.CurrentTheme.Success.Color, 0.0));
                 gradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(180, DevStackShared.ThemeManager.CurrentTheme.Success.Color.R, DevStackShared.ThemeManager.CurrentTheme.Success.Color.G, DevStackShared.ThemeManager.CurrentTheme.Success.Color.B), 0.5));
                 gradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, DevStackShared.ThemeManager.CurrentTheme.Success.Color.R, DevStackShared.ThemeManager.CurrentTheme.Success.Color.G, DevStackShared.ThemeManager.CurrentTheme.Success.Color.B), 1.0));
@@ -1238,7 +1375,6 @@ namespace DevStackManager
             };
             Grid.SetColumn(stackPanel, 0);
 
-            // Nome do componente
             var nameText = new TextBlock
             {
                 Text = name,
@@ -1250,7 +1386,6 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, 2)
             };
 
-            // Versão do componente
             var versionText = new TextBlock
             {
                 Text = version,
@@ -1264,20 +1399,17 @@ namespace DevStackManager
             stackPanel.Children.Add(nameText);
             stackPanel.Children.Add(versionText);
 
-            // Adicionar elementos ao grid
             mainGrid.Children.Add(topBorder);
             mainGrid.Children.Add(stackPanel);
 
-            // Adicionar ícone de raio ao lado direito para componentes executáveis
             if (isExecutable)
             {
-                // Criar gradiente amarelo-laranja-vermelho
                 var iconGradientBrush = new LinearGradientBrush();
                 iconGradientBrush.StartPoint = new Point(0, 0);
                 iconGradientBrush.EndPoint = new Point(0, 1);
-                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 215, 0), 0.0));   // Amarelo (Gold)
-                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 140, 0), 0.5));  // Laranja (DarkOrange)
-                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(220, 20, 60), 1.0));  // Vermelho (Crimson)
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 215, 0), 0.0));
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 140, 0), 0.5));
+                iconGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(220, 20, 60), 1.0));
 
                 var iconText = new TextBlock
                 {
@@ -1296,7 +1428,6 @@ namespace DevStackManager
 
             card.Child = mainGrid;
 
-            // Verificar se deve adicionar funcionalidade de clique
             bool isClickable = component != null && mainWindow != null;
             if (isClickable)
             {
@@ -1305,13 +1436,11 @@ namespace DevStackManager
                 {
                     card.Cursor = System.Windows.Input.Cursors.Hand;
                     
-                    // Adicionar evento de clique
                     card.MouseLeftButtonUp += (s, e) =>
                     {
                         ExecuteComponent(component.Name, version, mainWindow!);
                     };
 
-                    // Melhorar feedback visual para componentes executáveis
                     card.MouseEnter += (s, e) =>
                     {
                         card.Background = DevStackShared.ThemeManager.CurrentTheme.DashboardCardHover;
@@ -1328,7 +1457,6 @@ namespace DevStackManager
                 }
             }
 
-            // Adicionar efeito hover padrão (para componentes não clicáveis)
             card.MouseEnter += (s, e) =>
             {
                 card.Background = DevStackShared.ThemeManager.CurrentTheme.DashboardCardHoverDefault;
@@ -1343,8 +1471,16 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Executa um componente específico com a versão especificada
+        /// Executes component executable for specified version.
+        /// Process: Locates component via ComponentsFactory, determines installation directory from ToolDir/SubDirectory/ExecutableFolder,
+        ///         searches for .exe files matching ExecutablePattern or uses first .exe found.
+        /// Command-line executables: Launches in Windows Terminal (wt.exe) or PowerShell with -NoExit flag.
+        /// GUI executables: Launches directly with working directory set to installation folder.
+        /// Updates status message with execution result or error information.
         /// </summary>
+        /// <param name="componentName">Component name to execute</param>
+        /// <param name="version">Version to execute</param>
+        /// <param name="mainWindow">Main window instance for status updates and localization</param>
         private static void ExecuteComponent(string componentName, string version, DevStackGui mainWindow)
         {
             try
@@ -1352,7 +1488,6 @@ namespace DevStackManager
                 var comp = DevStackManager.Components.ComponentsFactory.GetComponent(componentName);
                 if (comp != null && comp.IsExecutable)
                 {
-                    // local helper: procura executável no PATH
                     string? FindOnPath(string name)
                     {
                         try
@@ -1374,9 +1509,7 @@ namespace DevStackManager
                         return null;
                     }
 
-                    // Compute base tool dir and target (installed) directory following ComponentBase semantics
                     string baseToolDir = !string.IsNullOrEmpty(comp.ToolDir) ? comp.ToolDir! : System.IO.Path.Combine(DevStackConfig.baseDir, comp.Name);
-                    // Try to read SubDirectory from ComponentBase when available, otherwise fall back to default
                     string subDir = (comp is DevStackManager.Components.ComponentBase cb && !string.IsNullOrEmpty(cb.SubDirectory)) ? cb.SubDirectory! : $"{comp.Name}-{version}";
                     string installDir;
 
@@ -1384,7 +1517,6 @@ namespace DevStackManager
                     {
                         if (System.IO.Path.IsPathRooted(comp.ExecutableFolder))
                         {
-                            // legacy: ExecutableFolder contained the absolute tool directory
                             var toolDirArg = comp.ExecutableFolder!;
                             installDir = System.IO.Path.Combine(toolDirArg, subDir);
                         }
@@ -1401,7 +1533,6 @@ namespace DevStackManager
                     if (System.IO.Directory.Exists(installDir))
                     {
                         var exeFiles = System.IO.Directory.GetFiles(installDir, "*.exe", System.IO.SearchOption.TopDirectoryOnly);
-                        // Busca pelo padrão configurado
                         string? exePath = null;
                         if (!string.IsNullOrEmpty(comp.ExecutablePattern))
                         {
@@ -1412,7 +1543,6 @@ namespace DevStackManager
                                 exePath = patternPath;
                             }
                         }
-                        // Fallback: pega o primeiro .exe
                         if (exePath == null && exeFiles.Length > 0)
                         {
                             exePath = exeFiles[0];
@@ -1475,8 +1605,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um card visual para representar um serviço
+        /// Creates visual card representing service with status indicator.
+        /// Features: Drop shadow effect, 3px orange gradient top border, service name, version, status with color coding.
+        /// Card height: 55px fixed, width: stretch to fill column.
+        /// Status colors: Green (Running), Red (Stopped), Gray (Unknown).
+        /// Layout: Single column StackPanel with centered text elements.
         /// </summary>
+        /// <param name="name">Service display name</param>
+        /// <param name="version">Service version text</param>
+        /// <param name="status">Service status text (Running/Stopped/Unknown)</param>
+        /// <param name="mainWindow">Main window instance for theme access</param>
+        /// <returns>Border with complete service card UI</returns>
         private static Border CreateServiceCard(string name, string version, string status, DevStackGui mainWindow)
         {
             var card = new Border
@@ -1500,17 +1639,15 @@ namespace DevStackManager
 
             var mainGrid = new Grid();
 
-            // Borda superior laranja com gradiente - posicionada para ignorar padding
             var topBorder = new Border
             {
                 Height = 3,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Top,
                 CornerRadius = new CornerRadius(6, 6, 0, 0),
-                Margin = new Thickness(-6, -7, -6, 0) // Margem negativa para anular o padding
+                Margin = new Thickness(-6, -7, -6, 0)
             };
 
-            // Criar gradiente laranja que vai de opaco para transparente
             var gradientBrush = new LinearGradientBrush();
             gradientBrush.StartPoint = new Point(0, 0);
             gradientBrush.EndPoint = new Point(1, 0);
@@ -1528,7 +1665,6 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, 0)
             };
 
-            // Nome do serviço
             var nameText = new TextBlock
             {
                 Text = name,
@@ -1540,7 +1676,6 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, 1)
             };
 
-            // Versão do componente
             var versionText = new TextBlock
             {
                 Text = !string.IsNullOrEmpty(version) ? version : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.components.version_na"),
@@ -1552,7 +1687,6 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, 1)
             };
 
-            // Status do serviço
             var statusText = new TextBlock
             {
                 Text = status,
@@ -1566,13 +1700,11 @@ namespace DevStackManager
             stackPanel.Children.Add(versionText);
             stackPanel.Children.Add(statusText);
 
-            // Adicionar elementos ao grid
             mainGrid.Children.Add(topBorder);
             mainGrid.Children.Add(stackPanel);
 
             card.Child = mainGrid;
 
-            // Adicionar efeito hover
             card.MouseEnter += (s, e) =>
             {
                 card.Background = DevStackShared.ThemeManager.CurrentTheme.DashboardCardHoverDefault;
@@ -1587,8 +1719,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza os dados dos componentes na interface
+        /// Updates component data in dashboard interface.
+        /// Counts installed components, updates "installedCard" with count text,
+        /// refreshes installed components list panel.
+        /// Handles errors gracefully and updates status message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance with InstalledComponents collection</param>
         private static void UpdateComponentsData(DevStackGui mainWindow)
         {
             try
@@ -1596,13 +1732,11 @@ namespace DevStackManager
                 var installedComponents = mainWindow.InstalledComponents?.Where(c => c.Installed).ToList() ?? new List<ComponentViewModel>();
                 var totalComponents = mainWindow.InstalledComponents?.Count ?? 0;
                 
-                // Atualizar card de componentes
                 var cardText = installedComponents.Count > 0 
                     ? mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.installed_count", installedComponents.Count, totalComponents)
                     : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.components.none");
                 UpdateCardContentByTag(mainWindow, "installedCard", cardText);
                 
-                // Atualizar a lista de componentes instalados no painel
                 UpdateInstalledComponentsList(mainWindow, new List<object>(installedComponents.Cast<object>()));
             }
             catch (Exception ex)
@@ -1612,8 +1746,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza os dados dos serviços na interface
+        /// Updates service data in dashboard interface.
+        /// Counts running services, updates "servicesCard" with running/total count,
+        /// refreshes services list panel with current status.
+        /// Handles errors gracefully and updates status message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance with Services collection</param>
         private static void UpdateServicesData(DevStackGui mainWindow)
         {
             try
@@ -1621,13 +1759,11 @@ namespace DevStackManager
                 var services = mainWindow.Services?.OrderBy(s => s.Name).ToList() ?? new List<ServiceViewModel>();
                 var runningServices = services.Where(s => s.IsRunning).ToList();
                 
-                // Atualizar card de serviços - sempre mostrar contagem, mesmo se 0
                 var cardText = runningServices.Count > 0 
                     ? mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.services.active_count", runningServices.Count, services.Count)
                     : mainWindow.LocalizationManager.GetString("gui.dashboard_tab.cards.services.none");
                 UpdateCardContentByTag(mainWindow, "servicesCard", cardText);
                 
-                // Atualizar a lista de serviços no painel
                 UpdateServicesList(mainWindow, services);
             }
             catch (Exception ex)
@@ -1637,8 +1773,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza o conteúdo de um card específico usando sua tag
+        /// Updates card content by finding card using tag identifier.
+        /// Searches main content ScrollViewer for Border element with specified tag,
+        /// then calls UpdateCardContent to modify label text.
         /// </summary>
+        /// <param name="mainWindow">Main window instance to search within</param>
+        /// <param name="tag">Tag identifier of card to update</param>
+        /// <param name="newContent">New content text to display</param>
         private static void UpdateCardContentByTag(DevStackGui mainWindow, string tag, string newContent)
         {
             if (mainWindow._mainContent?.Content is ScrollViewer scrollViewer &&
@@ -1653,8 +1794,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Atualiza a lista de serviços no painel
+        /// Updates services list in dashboard panel.
+        /// Clears and rebuilds services grid (2 columns per row).
+        /// Creates service cards for each service with name, version, and status.
+        /// Shows "no services" message when list is empty.
+        /// Finds grid by "ServicesList" tag in visual tree.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and theme access</param>
+        /// <param name="services">List of ServiceViewModel objects to display</param>
         private static void UpdateServicesList(DevStackGui mainWindow, List<ServiceViewModel> services)
         {
             if (mainWindow._mainContent?.Content is ScrollViewer scrollViewer &&
@@ -1669,20 +1816,17 @@ namespace DevStackManager
                     
                     if (services.Count > 0)
                     {
-                        int columnsPerRow = 4; // Máximo de 4 colunas por linha
+                        int columnsPerRow = 4;
                         int currentRow = 0;
                         int currentColumn = 0;
 
-                        // Definir colunas do grid
                         for (int i = 0; i < columnsPerRow; i++)
                         {
                             servicesGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                         }
 
-                        // Sempre mostrar os serviços organizados em grid
                         foreach (var service in services)
                         {
-                            // Adicionar nova linha se necessário
                             if (currentColumn == 0)
                             {
                                 servicesGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -1704,7 +1848,6 @@ namespace DevStackManager
                     }
                     else
                     {
-                        // Mostrar mensagem quando não há serviços
                         var noServicesText = new TextBlock
                         {
                             Text = mainWindow.LocalizationManager.GetString("gui.dashboard_tab.panels.services.none"),
@@ -1721,7 +1864,9 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cleanup quando o Dashboard é destruído
+        /// Cleanup resources when Dashboard tab is destroyed.
+        /// Stops and disposes refresh timer if active.
+        /// Call this method when switching away from dashboard or closing application.
         /// </summary>
         public static void Cleanup()
         {
@@ -1730,8 +1875,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Inicia todos os serviços de forma otimizada
+        /// Starts all services using optimized batch processing.
+        /// Executes ProcessManager.StartAllComponents in background thread,
+        /// then reloads services and updates dashboard UI.
+        /// Logs errors with localized message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for service operations</param>
+        /// <returns>Task representing async operation</returns>
         private static async Task StartAllServicesOptimized(DevStackGui mainWindow)
         {
             await Task.Run(() =>
@@ -1747,14 +1897,18 @@ namespace DevStackManager
                 }
             });
 
-            // Recarregar serviços e atualizar interface
             await mainWindow.LoadServices();
             UpdateServicesData(mainWindow);
         }
 
         /// <summary>
-        /// Para todos os serviços de forma otimizada
+        /// Stops all services using optimized batch processing.
+        /// Executes ProcessManager.StopAllComponents in background thread,
+        /// then reloads services and updates dashboard UI.
+        /// Logs errors with localized message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for service operations</param>
+        /// <returns>Task representing async operation</returns>
         private static async Task StopAllServicesOptimized(DevStackGui mainWindow)
         {
             await Task.Run(() =>
@@ -1770,23 +1924,27 @@ namespace DevStackManager
                 }
             });
 
-            // Recarregar serviços e atualizar interface
             await mainWindow.LoadServices();
             UpdateServicesData(mainWindow);
         }
 
         /// <summary>
-        /// Reinicia todos os serviços de forma otimizada
+        /// Restarts all services using optimized batch processing.
+        /// Executes ProcessManager.StopAllComponents, waits 2 seconds,
+        /// then ProcessManager.StartAllComponents in background thread.
+        /// Reloads services and updates dashboard UI after restart.
+        /// Logs errors with localized message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for service operations</param>
+        /// <returns>Task representing async operation</returns>
         private static async Task RestartAllServicesOptimized(DevStackGui mainWindow)
         {
             await Task.Run(() =>
             {
                 try
                 {
-                    // Parar todos e depois iniciar todos
                     ProcessManager.StopAllComponents();
-                    System.Threading.Thread.Sleep(2000); // Aguardar 2 segundos
+                    System.Threading.Thread.Sleep(2000);
                     ProcessManager.StartAllComponents();
                 }
                 catch (Exception ex)
@@ -1796,7 +1954,6 @@ namespace DevStackManager
                 }
             });
 
-            // Recarregar serviços e atualizar interface
             await mainWindow.LoadServices();
             UpdateServicesData(mainWindow);
         }

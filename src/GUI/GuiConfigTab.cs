@@ -5,40 +5,94 @@ using System.Windows.Controls;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Configurações" - gerencia configurações do sistema
+    /// Configuration tab component for managing DevStack system settings.
+    /// Provides interface for PATH management (add/remove DevStack tools), directory access (executable and tools folders),
+    /// language selection, and theme selection (Dark/Light mode).
+    /// Two-column layout: configuration panel (left) and console output panel (right).
     /// </summary>
     public static class GuiConfigTab
     {
-        // UI Dimensions Constants
+        /// <summary>
+        /// Margin for scroll viewer in pixels.
+        /// </summary>
         private const int SCROLL_VIEWER_MARGIN = 10;
+        
+        /// <summary>
+        /// Bottom margin for panel in pixels.
+        /// </summary>
         private const int PANEL_BOTTOM_MARGIN = 10;
+        
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const int TITLE_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Bottom margin for title in pixels.
+        /// </summary>
         private const int TITLE_BOTTOM_MARGIN = 10;
+        
+        /// <summary>
+        /// Top margin for section in pixels.
+        /// </summary>
         private const int SECTION_TOP_MARGIN = 10;
+        
+        /// <summary>
+        /// Bottom margin for section in pixels.
+        /// </summary>
         private const int SECTION_BOTTOM_MARGIN = 5;
+        
+        /// <summary>
+        /// Width of buttons in pixels.
+        /// </summary>
         private const int BUTTON_WIDTH = 200;
+        
+        /// <summary>
+        /// Height of buttons in pixels.
+        /// </summary>
         private const int BUTTON_HEIGHT = 35;
+        
+        /// <summary>
+        /// Top margin for buttons in pixels.
+        /// </summary>
         private const int BUTTON_TOP_MARGIN = 10;
+        
+        /// <summary>
+        /// Vertical margin for buttons in pixels.
+        /// </summary>
         private const int BUTTON_VERTICAL_MARGIN = 5;
+        
+        /// <summary>
+        /// Height of combo boxes in pixels.
+        /// </summary>
         private const int COMBO_HEIGHT = 30;
+        
+        /// <summary>
+        /// Top margin for combo boxes in pixels.
+        /// </summary>
         private const int COMBO_TOP_MARGIN = 5;
+        
+        /// <summary>
+        /// Bottom margin for combo boxes in pixels.
+        /// </summary>
         private const int COMBO_BOTTOM_MARGIN = 5;
 
         /// <summary>
-        /// Cria o conteúdo completo da aba "Configurações"
+        /// Creates the complete Configuration tab content.
+        /// Two-column layout: configuration selection panel (left) and console output panel (right).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and data binding.</param>
+        /// <returns>Grid with configuration interface and console panel.</returns>
         public static Grid CreateConfigContent(DevStackGui mainWindow)
         {
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Painel esquerdo - Configurações
             var leftPanel = CreateConfigSelectionPanel(mainWindow);
             Grid.SetColumn(leftPanel, 0);
             grid.Children.Add(leftPanel);
 
-            // Painel direito - Console de saída
             var rightPanel = GuiConsolePanel.CreateConsolePanel(GuiConsolePanel.ConsoleTab.Config);
             Grid.SetColumn(rightPanel, 1);
             grid.Children.Add(rightPanel);
@@ -47,8 +101,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de seleção de configurações
+        /// Creates the configuration selection panel with scrollable content.
+        /// Contains PATH management, directory access, language selection, and theme selection sections.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>ScrollViewer with configuration options.</returns>
         private static ScrollViewer CreateConfigSelectionPanel(DevStackGui mainWindow)
         {
             var scrollViewer = new ScrollViewer
@@ -57,12 +114,10 @@ namespace DevStackManager
                 Margin = new Thickness(SCROLL_VIEWER_MARGIN)
             };
 
-            // Aplicar scrollbar customizada do ThemeManager
             DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
             var panel = new StackPanel();
 
-            // Configurações de Path
             var pathPanel = CreatePathConfigPanel(mainWindow);
             panel.Children.Add(pathPanel);
 
@@ -71,8 +126,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de configurações do PATH (StackPanel estilizado)
+        /// Creates the PATH configuration panel with management sections.
+        /// Sections: PATH management (add/remove buttons), directory management (open folders buttons),
+        /// language selection (ComboBox), and theme selection (ComboBox).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and data binding.</param>
+        /// <returns>StackPanel with all configuration sections.</returns>
         private static StackPanel CreatePathConfigPanel(DevStackGui mainWindow)
         {
             var panel = new StackPanel
@@ -80,55 +139,44 @@ namespace DevStackManager
                 Margin = new Thickness(0, 0, 0, PANEL_BOTTOM_MARGIN)
             };
 
-            // Gerenciamento do PATH
             var pathTitleLabel = CreateSectionTitle(mainWindow, "gui.config_tab.title");
             panel.Children.Add(pathTitleLabel);
 
-            // Descrição
             var pathLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.path.title"));
             pathLabel.FontWeight = FontWeights.Bold;
             panel.Children.Add(pathLabel);
 
-            // Botão Adicionar
             var addPathButton = CreateActionButton(mainWindow, "gui.config_tab.path.buttons.add", AddToPath);
             addPathButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_TOP_MARGIN, 0, BUTTON_VERTICAL_MARGIN);
             panel.Children.Add(addPathButton);
 
-            // Botão Remover
             var removePathButton = CreateActionButton(mainWindow, "gui.config_tab.path.buttons.remove", RemoveFromPath);
             removePathButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_VERTICAL_MARGIN, 0, BUTTON_TOP_MARGIN);
             panel.Children.Add(removePathButton);
 
-            // Gerenciamento dos Diretórios
             var dirsTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.directories.title");
             panel.Children.Add(dirsTitleLabel);
 
-            // Botão Abrir Pasta do Executável
             var openExeFolderButton = CreateActionButton(mainWindow, "gui.config_tab.directories.buttons.devstack_manager", OpenExeFolder);
             openExeFolderButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_VERTICAL_MARGIN, 0, BUTTON_VERTICAL_MARGIN);
             panel.Children.Add(openExeFolderButton);
 
-            // Botão Abrir Pasta das Ferramentas
             var openBaseDirFolderButton = CreateActionButton(mainWindow, "gui.config_tab.directories.buttons.tools", OpenBaseDir);
             openBaseDirFolderButton.Margin = new Thickness(BUTTON_TOP_MARGIN, BUTTON_TOP_MARGIN, 0, BUTTON_TOP_MARGIN);
             panel.Children.Add(openBaseDirFolderButton);
 
-            // Gerenciamento da Linguagem
             var languagesTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.languages.title");
             panel.Children.Add(languagesTitleLabel);
 
-            // Language ComboBox (nova lógica igual à StatusBar)
             var interfaceLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.languages.labels.interface_language"));
             panel.Children.Add(interfaceLanguageLabel);
 
             var languageComboBox = CreateLanguageComboBox(mainWindow);
             panel.Children.Add(languageComboBox);
 
-            // Gerenciamento dos temas
             var themesTitleLabel = CreateSectionHeader(mainWindow, "gui.config_tab.themes.title");
             panel.Children.Add(themesTitleLabel);
 
-            // tema ComboBox
             var themeLanguageLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.config_tab.themes.labels.interface_theme"));
             panel.Children.Add(themeLanguageLabel);
 
@@ -138,6 +186,12 @@ namespace DevStackManager
             return panel;
         }
 
+        /// <summary>
+        /// Creates a main section title label with large font size.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="localizationKey">Localization key for title text.</param>
+        /// <returns>Styled label for section title.</returns>
         private static Label CreateSectionTitle(DevStackGui mainWindow, string localizationKey)
         {
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString(localizationKey), true);
@@ -146,6 +200,12 @@ namespace DevStackManager
             return titleLabel;
         }
 
+        /// <summary>
+        /// Creates a subsection header label with bold formatting.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="localizationKey">Localization key for header text.</param>
+        /// <returns>Styled label for subsection header.</returns>
         private static Label CreateSectionHeader(DevStackGui mainWindow, string localizationKey)
         {
             var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString(localizationKey), true);
@@ -153,6 +213,13 @@ namespace DevStackManager
             return headerLabel;
         }
 
+        /// <summary>
+        /// Creates an action button with fixed dimensions and click handler.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="localizationKey">Localization key for button text.</param>
+        /// <param name="action">Action to execute when button is clicked.</param>
+        /// <returns>Styled button with configured click handler.</returns>
         private static Button CreateActionButton(DevStackGui mainWindow, string localizationKey, Action<DevStackGui> action)
         {
             var button = DevStackShared.ThemeManager.CreateStyledButton(
@@ -164,6 +231,13 @@ namespace DevStackManager
             return button;
         }
 
+        /// <summary>
+        /// Creates the language selection ComboBox with all available languages.
+        /// Automatically selects current language and persists changes to DevStackConfig.
+        /// Updates entire application UI when language is changed.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>ComboBox with language options.</returns>
         private static ComboBox CreateLanguageComboBox(DevStackGui mainWindow)
         {
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -199,6 +273,13 @@ namespace DevStackManager
             return languageComboBox;
         }
 
+        /// <summary>
+        /// Creates the theme selection ComboBox with Dark and Light options.
+        /// Automatically selects current theme and persists changes to DevStackConfig.
+        /// Applies theme immediately when changed.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>ComboBox with theme options.</returns>
         private static ComboBox CreateThemeComboBox(DevStackGui mainWindow)
         {
             var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -208,14 +289,12 @@ namespace DevStackManager
 
             var localization = mainWindow.LocalizationManager;
             
-            // Popular opções de tema
             var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
             var lightItem = new ComboBoxItem { Content = localization.GetString("common.themes.light"), Tag = DevStackShared.ThemeManager.ThemeType.Light };
             themeComboBox.Items.Add(darkItem);
             themeComboBox.Items.Add(lightItem);
             themeComboBox.SelectedItem = DevStackShared.ThemeManager.CurrentThemeType == DevStackShared.ThemeManager.ThemeType.Light ? lightItem : darkItem;
 
-            // Evento para troca de tema
             themeComboBox.SelectionChanged += (s, e) =>
             {
                 if (themeComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is DevStackShared.ThemeManager.ThemeType type)
@@ -229,11 +308,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Adiciona as ferramentas do DevStack ao PATH do sistema
+        /// Adds DevStack tool directories to system PATH environment variable.
+        /// Executes via PathManager.AddBinDirsToPath with console output reporting.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates and console output.</param>
         private static void AddToPath(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
                 try
                 {
@@ -254,11 +335,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Remove as ferramentas do DevStack do PATH do sistema
+        /// Removes all DevStack tool directories from system PATH environment variable.
+        /// Executes via PathManager.RemoveAllDevStackFromPath with console output reporting.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates and console output.</param>
         private static void RemoveFromPath(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
                 try
                 {
@@ -279,11 +362,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Abre a pasta onde está o executável DevStackGUI.exe
+        /// Opens the folder containing the DevStackGUI.exe executable in Windows Explorer.
+        /// Uses AppContext.BaseDirectory to locate the executable folder.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates and console output.</param>
         private static void OpenExeFolder(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
                 try
                 {
@@ -305,11 +390,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Abre a pasta base das ferramentas (DevStackConfig.baseDir)
+        /// Opens the base tools directory (DevStackConfig.baseDir) in Windows Explorer.
+        /// This is the root directory where all DevStack tools are installed.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates and console output.</param>
         private static void OpenBaseDir(DevStackGui mainWindow)
         {
-            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, mainWindow, async progress =>
+            _ = GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Config, async progress =>
             {
                 try
                 {
@@ -331,6 +418,16 @@ namespace DevStackManager
             });
         }
 
+        /// <summary>
+        /// Executes a PATH operation with error handling and status reporting.
+        /// Updates status bar with success or error messages based on operation result.
+        /// </summary>
+        /// <param name="operation">PATH operation to execute.</param>
+        /// <param name="mainWindow">Main window instance for status updates.</param>
+        /// <param name="successMessageKey">Localization key for success message.</param>
+        /// <param name="errorMessageKey">Localization key for console error message.</param>
+        /// <param name="statusErrorMessageKey">Localization key for status bar error message.</param>
+        /// <param name="progress">Progress reporter for console output.</param>
         private static void ExecutePathOperation(
             Action operation,
             DevStackGui mainWindow,
@@ -351,6 +448,17 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Executes a folder open operation with validation and error handling.
+        /// Opens folder in Windows Explorer with UseShellExecute.
+        /// </summary>
+        /// <param name="folder">Folder path to open.</param>
+        /// <param name="mainWindow">Main window instance for status updates.</param>
+        /// <param name="progress">Progress reporter for console output.</param>
+        /// <param name="successMessageKey">Localization key for success message.</param>
+        /// <param name="notFoundMessageKey">Localization key for folder not found message.</param>
+        /// <param name="errorMessageKey">Localization key for error message.</param>
+        /// <param name="checkExists">Whether to check if folder exists before opening.</param>
         private static void ExecuteFolderOperation(
             string folder,
             DevStackGui mainWindow,
@@ -377,6 +485,14 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Handles operation errors by reporting to console and status bar.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates.</param>
+        /// <param name="progress">Progress reporter for console output.</param>
+        /// <param name="ex">Exception that occurred.</param>
+        /// <param name="errorMessageKey">Localization key for console error message.</param>
+        /// <param name="statusMessageKey">Localization key for status bar error message.</param>
         private static void HandleOperationError(
             DevStackGui mainWindow,
             IProgress<string> progress,

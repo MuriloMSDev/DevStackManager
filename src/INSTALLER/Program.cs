@@ -20,17 +20,21 @@ using System.Net.Http;
 
 namespace DevStackInstaller
 {
+    /// <summary>
+    /// Main program class for the DevStack installer application.
+    /// </summary>
     public partial class Program
     {
+        /// <summary>
+        /// Entry point for the DevStack installer application.
+        /// </summary>
         [STAThread]
         public static void Main()
         {
             try
             {
-                // Initialize localization for installer
                 var locManager = LocalizationManager.Initialize(ApplicationType.Installer);
                 
-                // Log available languages
                 var availableLanguages = locManager.GetAvailableLanguages();
                 System.Diagnostics.Debug.WriteLine($"Available languages: {string.Join(", ", availableLanguages)}");
                 
@@ -61,133 +65,445 @@ namespace DevStackInstaller
         Finished
     }
 
+    /// <summary>
+    /// Main window class for the DevStack installer wizard interface.
+    /// </summary>
     public class InstallerWindow : Window
     {
         #region Constants
-        // Window Dimensions
+        /// <summary>
+        /// Default window width in pixels.
+        /// </summary>
         private const double WINDOW_WIDTH = 750;
+        
+        /// <summary>
+        /// Default window height in pixels.
+        /// </summary>
         private const double WINDOW_HEIGHT = 650;
         
-        // Layout Heights
+        /// <summary>
+        /// Height of the header section in pixels.
+        /// </summary>
         private const double HEADER_HEIGHT = 105;
+        
+        /// <summary>
+        /// Height of the button bar section in pixels.
+        /// </summary>
         private const double BUTTON_BAR_HEIGHT = 80;
         
-        // Margins and Padding
+        /// <summary>
+        /// Standard content margin in pixels.
+        /// </summary>
         private const double CONTENT_MARGIN = 20;
+        
+        /// <summary>
+        /// Header horizontal margin in pixels.
+        /// </summary>
         private const double HEADER_MARGIN = 25;
+        
+        /// <summary>
+        /// Header vertical margin in pixels.
+        /// </summary>
         private const double HEADER_VERTICAL_MARGIN = 20;
+        
+        /// <summary>
+        /// Button panel horizontal margin in pixels.
+        /// </summary>
         private const double BUTTON_PANEL_MARGIN = 25;
+        
+        /// <summary>
+        /// Button panel vertical margin in pixels.
+        /// </summary>
         private const double BUTTON_PANEL_VERTICAL_MARGIN = 18;
+        
+        /// <summary>
+        /// Spacing between buttons in pixels.
+        /// </summary>
         private const double BUTTON_SPACING = 12;
         
-        // Font Sizes
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const double TITLE_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Font size for description text.
+        /// </summary>
         private const double DESCRIPTION_FONT_SIZE = 13;
+        
+        /// <summary>
+        /// Font size for label text.
+        /// </summary>
         private const double LABEL_FONT_SIZE = 15;
+        
+        /// <summary>
+        /// Font size for welcome screen title.
+        /// </summary>
         private const double WELCOME_TITLE_FONT_SIZE = 28;
+        
+        /// <summary>
+        /// Font size for version text.
+        /// </summary>
         private const double VERSION_FONT_SIZE = 15;
+        
+        /// <summary>
+        /// Font size for console output text.
+        /// </summary>
         private const double CONSOLE_FONT_SIZE = 12;
+        
+        /// <summary>
+        /// Standard font size for text.
+        /// </summary>
         private const double TEXT_FONT_SIZE = 14;
+        
+        /// <summary>
+        /// Font size for button text.
+        /// </summary>
         private const double BUTTON_FONT_SIZE = 14;
         
-        // Button Dimensions
+        /// <summary>
+        /// Width of Back button in pixels.
+        /// </summary>
         private const double BACK_BUTTON_WIDTH = 90;
+        
+        /// <summary>
+        /// Width of Next button in pixels.
+        /// </summary>
         private const double NEXT_BUTTON_WIDTH = 130;
+        
+        /// <summary>
+        /// Width of Cancel button in pixels.
+        /// </summary>
         private const double CANCEL_BUTTON_WIDTH = 90;
+        
+        /// <summary>
+        /// Height of buttons in pixels.
+        /// </summary>
         private const double BUTTON_HEIGHT = 36;
+        
+        /// <summary>
+        /// Width of Browse button in pixels.
+        /// </summary>
         private const double BROWSE_BUTTON_WIDTH = 130;
+        
+        /// <summary>
+        /// Height of input fields in pixels.
+        /// </summary>
         private const double INPUT_HEIGHT = 40;
         
-        // Progress Bar
+        /// <summary>
+        /// Width of step progress bar in pixels.
+        /// </summary>
         private const double PROGRESS_BAR_WIDTH = 220;
+        
+        /// <summary>
+        /// Height of step progress bar in pixels.
+        /// </summary>
         private const double PROGRESS_BAR_HEIGHT = 6;
+        
+        /// <summary>
+        /// Height of installation progress bar in pixels.
+        /// </summary>
         private const double INSTALL_PROGRESS_HEIGHT = 8;
         
-        // Icon Dimensions
+        /// <summary>
+        /// Size of logo icon in pixels.
+        /// </summary>
         private const double LOGO_SIZE = 80;
+        
+        /// <summary>
+        /// Font size for success icon.
+        /// </summary>
         private const double SUCCESS_ICON_FONT_SIZE = 48;
         
-        // Card and Container
+        /// <summary>
+        /// Corner radius for card containers in pixels.
+        /// </summary>
         private const double CARD_CORNER_RADIUS = 12;
+        
+        /// <summary>
+        /// Corner radius for standard containers in pixels.
+        /// </summary>
         private const double CONTAINER_CORNER_RADIUS = 8;
+        
+        /// <summary>
+        /// Corner radius for small containers in pixels.
+        /// </summary>
         private const double CONTAINER_CORNER_RADIUS_SMALL = 6;
+        
+        /// <summary>
+        /// Horizontal padding for card containers in pixels.
+        /// </summary>
         private const double CARD_PADDING = 40;
+        
+        /// <summary>
+        /// Vertical padding for card containers in pixels.
+        /// </summary>
         private const double CARD_PADDING_VERTICAL = 35;
+        
+        /// <summary>
+        /// Horizontal padding for standard containers in pixels.
+        /// </summary>
         private const double CONTAINER_PADDING = 20;
+        
+        /// <summary>
+        /// Vertical padding for standard containers in pixels.
+        /// </summary>
         private const double CONTAINER_PADDING_VERTICAL = 18;
+        
+        /// <summary>
+        /// Spacing between option elements in pixels.
+        /// </summary>
         private const double OPTION_SPACING = 15;
         
-        // Spacing
+        /// <summary>
+        /// Vertical margin for welcome screen in pixels.
+        /// </summary>
         private const double WELCOME_MARGIN_VERTICAL = 20;
+        
+        /// <summary>
+        /// Bottom margin for title elements in pixels.
+        /// </summary>
         private const double TITLE_MARGIN_BOTTOM = 8;
+        
+        /// <summary>
+        /// Bottom margin for version text in pixels.
+        /// </summary>
         private const double VERSION_MARGIN_BOTTOM = 25;
+        
+        /// <summary>
+        /// Bottom margin for label elements in pixels.
+        /// </summary>
         private const double LABEL_MARGIN_BOTTOM = 15;
+        
+        /// <summary>
+        /// Bottom margin for container elements in pixels.
+        /// </summary>
         private const double CONTAINER_MARGIN_BOTTOM = 20;
+        
+        /// <summary>
+        /// Top margin for description text in pixels.
+        /// </summary>
         private const double DESCRIPTION_MARGIN_TOP = 6;
+        
+        /// <summary>
+        /// Top margin for info panel in pixels.
+        /// </summary>
         private const double INFO_PANEL_MARGIN_TOP = 10;
         
-        // Progress Values
+        /// <summary>
+        /// Progress percentage after ZIP extraction (5%).
+        /// </summary>
         private const int PROGRESS_ZIP_EXTRACTED = 5;
+        
+        /// <summary>
+        /// Progress percentage after source extraction (10%).
+        /// </summary>
         private const int PROGRESS_SOURCE_EXTRACTED = 10;
+        
+        /// <summary>
+        /// Progress percentage after SDK download (35%).
+        /// </summary>
         private const int PROGRESS_SDK_DOWNLOADED = 35;
+        
+        /// <summary>
+        /// Progress percentage after directory creation (40%).
+        /// </summary>
         private const int PROGRESS_DIR_CREATED = 40;
+        
+        /// <summary>
+        /// Progress percentage after compilation (85%).
+        /// </summary>
         private const int PROGRESS_COMPILED = 85;
+        
+        /// <summary>
+        /// Progress percentage after registry setup (90%).
+        /// </summary>
         private const int PROGRESS_REGISTERED = 90;
+        
+        /// <summary>
+        /// Progress percentage after desktop shortcuts creation (95%).
+        /// </summary>
         private const int PROGRESS_DESKTOP_SHORTCUTS = 95;
+        
+        /// <summary>
+        /// Progress percentage after Start Menu shortcuts creation (97%).
+        /// </summary>
         private const int PROGRESS_START_MENU = 97;
+        
+        /// <summary>
+        /// Progress percentage after PATH addition (99%).
+        /// </summary>
         private const int PROGRESS_PATH_ADDED = 99;
+        
+        /// <summary>
+        /// Progress percentage for completed installation (100%).
+        /// </summary>
         private const int PROGRESS_COMPLETE = 100;
         
-        // Delays
+        /// <summary>
+        /// Delay in milliseconds before showing completion screen.
+        /// </summary>
         private const int COMPLETION_DELAY_MS = 1000;
         
-        // GUID Length
+        /// <summary>
+        /// Length of shortened GUID used for temporary paths.
+        /// </summary>
         private const int GUID_SHORT_LENGTH = 8;
         
-        // SDK Download
+        /// <summary>
+        /// Timeout in minutes for .NET SDK download.
+        /// </summary>
         private const int SDK_DOWNLOAD_TIMEOUT_MINUTES = 15;
+        
+        /// <summary>
+        /// Minimum file size in MB for SDK validation.
+        /// </summary>
         private const int SDK_MIN_FILE_SIZE_MB = 1;
+        
+        /// <summary>
+        /// Timeout in minutes for install script execution.
+        /// </summary>
         private const int INSTALL_SCRIPT_TIMEOUT_MINUTES = 5;
+        
+        /// <summary>
+        /// Buffer size for file operations in bytes.
+        /// </summary>
         private const int BUFFER_SIZE = 8192;
         #endregion
         
+        /// <summary>
+        /// Current installation step in the wizard workflow.
+        /// </summary>
         private InstallerStep currentStep = InstallerStep.Welcome;
+        
+        /// <summary>
+        /// Main grid container for the window layout.
+        /// </summary>
         private Grid mainGrid = null!;
+        
+        /// <summary>
+        /// Grid container for the dynamic content area.
+        /// </summary>
         private Grid contentGrid = null!;
+        
+        /// <summary>
+        /// Text block displaying the current step title.
+        /// </summary>
         private TextBlock stepTitleText = null!;
+        
+        /// <summary>
+        /// Text block displaying the current step description.
+        /// </summary>
         private TextBlock stepDescriptionText = null!;
+        
+        /// <summary>
+        /// Back button to navigate to previous step.
+        /// </summary>
         private Button backButton = null!;
+        
+        /// <summary>
+        /// Next button to proceed to next step.
+        /// </summary>
         private Button nextButton = null!;
+        
+        /// <summary>
+        /// Cancel button to abort the installation.
+        /// </summary>
         private Button cancelButton = null!;
+        
+        /// <summary>
+        /// Progress bar showing wizard step progress.
+        /// </summary>
         private ProgressBar stepProgressBar = null!;
         
-        // Localization
+        /// <summary>
+        /// Localization manager for multi-language support.
+        /// </summary>
         private LocalizationManager localization = LocalizationManager.Instance!;
+        
+        /// <summary>
+        /// Combo box for language selection.
+        /// </summary>
         private ComboBox languageComboBox = null!;
+        
+        /// <summary>
+        /// Label for language selection control.
+        /// </summary>
         private Label languageLabel = null!;
+        
+        /// <summary>
+        /// Panel containing language selection controls.
+        /// </summary>
         private StackPanel languagePanel = null!;
         
-        // Installation settings
+        /// <summary>
+        /// Target directory path for installation.
+        /// </summary>
         private string installationPath = "";
+        
+        /// <summary>
+        /// Indicates whether to create desktop shortcuts.
+        /// </summary>
         private bool createDesktopShortcuts = true;
+        
+        /// <summary>
+        /// Indicates whether to create Start Menu shortcuts.
+        /// </summary>
         private bool createStartMenuShortcuts = true;
+        
+        /// <summary>
+        /// Indicates whether to add DevStack to system PATH.
+        /// </summary>
         private bool addToPath = false;
+        
+        /// <summary>
+        /// Indicates whether to launch DevStack after installation completes.
+        /// </summary>
         private bool launchAfterInstall = true;
         
-        // Step-specific controls
+        /// <summary>
+        /// Text box for entering installation path.
+        /// </summary>
         private TextBox pathTextBox = null!;
+        
+        /// <summary>
+        /// Check box for desktop shortcuts option.
+        /// </summary>
         private CheckBox desktopShortcutCheckBox = null!;
+        
+        /// <summary>
+        /// Check box for Start Menu shortcuts option.
+        /// </summary>
         private CheckBox startMenuShortcutCheckBox = null!;
+        
+        /// <summary>
+        /// Check box for adding to PATH option.
+        /// </summary>
         private CheckBox addToPathCheckBox = null!;
+        
+        /// <summary>
+        /// Progress bar showing installation progress percentage.
+        /// </summary>
         private ProgressBar installProgressBar = null!;
+        
+        /// <summary>
+        /// Label displaying current installation status message.
+        /// </summary>
         private Label installStatusText = null!;
+        
+        /// <summary>
+        /// List box displaying installation log messages.
+        /// </summary>
         private ListBox installLogListBox = null!;
 
+        /// <summary>
+        /// Initializes a new instance of the InstallerWindow class.
+        /// </summary>
         public InstallerWindow()
         {
             try
             {
-                // Assinar mudança de idioma antes de construir a UI
                 localization.LanguageChanged += Localization_LanguageChanged;
                 InitializeComponent();
             }
@@ -199,6 +515,10 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Retrieves the version of the installer from assembly attributes.
+        /// </summary>
+        /// <returns>The version string or "Unknown" if not available.</returns>
         private string GetVersion()
         {
             try
@@ -213,11 +533,14 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Extracts the embedded DevStackSource.zip resource to a temporary file.
+        /// </summary>
+        /// <returns>The path to the extracted temporary zip file.</returns>
         private string ExtractEmbeddedZip()
         {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             
-            // Try to find the source resource
             var resourceNames = assembly.GetManifestResourceNames();
             var zipResourceName = resourceNames.FirstOrDefault(r => r.EndsWith("DevStackSource.zip"));
             
@@ -244,14 +567,15 @@ namespace DevStackInstaller
             return tempPath;
         }
 
+        /// <summary>
+        /// Initializes the installer window components, sets up the UI, and applies theme.
+        /// </summary>
         private void InitializeComponent()
         {
             string version = GetVersion();
             
-            // Log version info for debugging
             System.Diagnostics.Debug.WriteLine($"Installer version: {version}");
             
-            // Obter window title com formatação explícita
             Title = localization.GetString("installer.window_title", version);
             System.Diagnostics.Debug.WriteLine($"Window title set to: {Title}");
             Width = WINDOW_WIDTH;
@@ -259,41 +583,41 @@ namespace DevStackInstaller
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             ResizeMode = ResizeMode.NoResize;
             
-            // Aplicar tema usando DevStackShared.ThemeManager
             DevStackShared.ThemeManager.ApplyThemeToWindow(this);
 
-            // Initialize installation path
             installationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DevStack");
 
-            // Add window closing event handler
             Closing += OnWindowClosing;
 
             CreateMainLayout();
             UpdateStepContent();
         }
 
+        /// <summary>
+        /// Creates the main grid layout with header, content, and button bar sections.
+        /// </summary>
         private void CreateMainLayout()
         {
             mainGrid = new Grid();
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(HEADER_HEIGHT) }); // Header
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Content
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BUTTON_BAR_HEIGHT) }); // Buttons
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(HEADER_HEIGHT) });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BUTTON_BAR_HEIGHT) });
 
-            // Header
             CreateHeader();
 
-            // Content area
             contentGrid = new Grid();
             contentGrid.Margin = new Thickness(CONTENT_MARGIN);
             Grid.SetRow(contentGrid, 1);
             mainGrid.Children.Add(contentGrid);
 
-            // Buttons
             CreateButtonBar();
 
             Content = mainGrid;
         }
 
+        /// <summary>
+        /// Creates the header section with step title, description, and progress bar.
+        /// </summary>
         private void CreateHeader()
         {
             var headerBorder = new Border
@@ -331,7 +655,6 @@ namespace DevStackInstaller
             headerStackPanel.Children.Add(stepTitleText);
             headerStackPanel.Children.Add(stepDescriptionText);
 
-            // Progress indicator usando ThemeManager
             stepProgressBar = DevStackShared.ThemeManager.CreateStyledProgressBar(0, 6, false);
             stepProgressBar.Width = PROGRESS_BAR_WIDTH;
             stepProgressBar.Height = PROGRESS_BAR_HEIGHT;
@@ -348,6 +671,9 @@ namespace DevStackInstaller
             mainGrid.Children.Add(headerBorder);
         }
 
+        /// <summary>
+        /// Creates the button bar with Back, Next/Install/Finish, and Cancel buttons.
+        /// </summary>
         private void CreateButtonBar()
         {
             var buttonBorder = new Border
@@ -357,12 +683,10 @@ namespace DevStackInstaller
                 BorderThickness = new Thickness(0, 1, 0, 0)
             };
 
-            // Grid para organizar language selector à esquerda e botões à direita
             var buttonGrid = new Grid();
             buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // Language selector panel no lado esquerdo
             languagePanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -379,7 +703,6 @@ namespace DevStackInstaller
 
             languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
 
-            // Populate language options
             var languages = localization.GetAvailableLanguages();
             foreach (var lang in languages)
             {
@@ -403,7 +726,6 @@ namespace DevStackInstaller
             languagePanel.Children.Add(languageLabel);
             languagePanel.Children.Add(languageComboBox);
 
-            // Buttons panel no lado direito
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -412,7 +734,6 @@ namespace DevStackInstaller
                 Margin = new Thickness(BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN, BUTTON_PANEL_MARGIN, BUTTON_PANEL_VERTICAL_MARGIN)
             };
 
-            // Botões usando ThemeManager
             backButton = DevStackShared.ThemeManager.CreateStyledButton(
                 localization.GetString("common.buttons.back"), 
                 BackButton_Click, 
@@ -451,25 +772,23 @@ namespace DevStackInstaller
             mainGrid.Children.Add(buttonBorder);
         }
 
+        /// <summary>
+        /// Updates the content area based on the current installation step.
+        /// </summary>
         private void UpdateStepContent()
         {
-            // Clear content
             contentGrid.Children.Clear();
             contentGrid.RowDefinitions.Clear();
             contentGrid.ColumnDefinitions.Clear();
 
-            // Atualizar área de conteúdo com tema do ThemeManager
             contentGrid.Background = DevStackShared.ThemeManager.CurrentTheme.FormBackground;
             contentGrid.Margin = new Thickness(HEADER_MARGIN);
 
-            // Update progress
             stepProgressBar.Value = (int)currentStep;
 
-            // Update buttons
             backButton.IsEnabled = currentStep != InstallerStep.Welcome;
-            cancelButton.Visibility = Visibility.Visible; // Reset cancel button visibility
+            cancelButton.Visibility = Visibility.Visible;
             
-            // Show language panel only on welcome step
             languagePanel.Visibility = currentStep == InstallerStep.Welcome ? Visibility.Visible : Visibility.Collapsed;
             
             switch (currentStep)
@@ -514,9 +833,11 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Creates the welcome step UI with branding and version information.
+        /// </summary>
         private void CreateWelcomeStep()
         {
-            // Log detailed diagnostic info
             System.Diagnostics.Debug.WriteLine("=========== CREATING WELCOME STEP ===========");
             
             var title = localization.GetString("installer.welcome.title");
@@ -529,7 +850,6 @@ namespace DevStackInstaller
 
             contentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // Welcome panel com design moderno usando ThemeManager
             var welcomePanel = new StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -585,7 +905,6 @@ namespace DevStackInstaller
             innerPanel.Children.Add(versionText);
             innerPanel.Children.Add(descriptionText);
 
-            // Container principal com borda arredondada usando ThemeManager
             var welcomeContainer = DevStackShared.ThemeManager.CreateStyledCard(innerPanel, CARD_CORNER_RADIUS, true);
             welcomeContainer.Padding = new Thickness(CARD_PADDING, CARD_PADDING_VERTICAL, CARD_PADDING, CARD_PADDING_VERTICAL);
 
@@ -595,6 +914,11 @@ namespace DevStackInstaller
             contentGrid.Children.Add(welcomePanel);
         }
 
+        /// <summary>
+        /// Handles language selection changes in the language combo box.
+        /// </summary>
+        /// <param name="sender">The combo box that triggered the event.</param>
+        /// <param name="e">Event arguments containing selection change data.</param>
         private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (languageComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string languageCode)
@@ -603,11 +927,15 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles language changes by updating all localized UI elements.
+        /// </summary>
+        /// <param name="sender">The object that triggered the language change.</param>
+        /// <param name="newLanguage">The new language code.</param>
         private void Localization_LanguageChanged(object? sender, string newLanguage)
         {
             try
             {
-                // Atualizar título e rótulos fixos
                 Title = localization.GetString("installer.window_title", GetVersion());
                 if (languageLabel != null)
                     languageLabel.Content = localization.GetString("installer.welcome.language_label");
@@ -616,12 +944,14 @@ namespace DevStackInstaller
                 if (cancelButton != null)
                     cancelButton.Content = localization.GetString("common.buttons.cancel");
 
-                // Atualizar conteúdo específico do passo
                 UpdateStepContent();
             }
             catch { }
         }
 
+        /// <summary>
+        /// Creates the license agreement step with scrollable text and accept checkbox.
+        /// </summary>
         private void CreateLicenseStep()
         {
             stepTitleText.Text = localization.GetString("installer.license.title");
@@ -664,6 +994,9 @@ namespace DevStackInstaller
             contentGrid.Children.Add(licenseContainer);
         }
 
+        /// <summary>
+        /// Creates the installation path selection step with path input and browse button.
+        /// </summary>
         private void CreateInstallationPathStep()
         {
             stepTitleText.Text = localization.GetString("installer.installation_path.title");
@@ -717,7 +1050,6 @@ namespace DevStackInstaller
             browserButton.BorderThickness = new Thickness(1, 0, 0, 0);
             browserButton.Margin = new Thickness(0);
 
-            // Aplicar cantos arredondados personalizados ao botão browser mantendo o estilo do CreateStyledButton
             var browseStyle = new Style(typeof(Button), browserButton.Style);
             var template = new ControlTemplate(typeof(Button));
             var border = new FrameworkElementFactory(typeof(Border));
@@ -753,7 +1085,6 @@ namespace DevStackInstaller
             spaceLabel.FontSize = 12;
             spaceLabel.Margin = new Thickness(0, 0, 0, 20);
 
-            // Adicionar informações adicionais usando notification panel
             var infoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
                 localization.GetString("installer.installation_path.info"), 
                 DevStackShared.ThemeManager.NotificationType.Info);
@@ -770,6 +1101,9 @@ namespace DevStackInstaller
             contentGrid.Children.Add(infoPanel);
         }
 
+        /// <summary>
+        /// Creates the components selection step with checkboxes for shortcuts and system path.
+        /// </summary>
         private void CreateComponentsStep()
         {
             stepTitleText.Text = localization.GetString("installer.components.title");
@@ -788,7 +1122,6 @@ namespace DevStackInstaller
             optionsLabel.FontSize = 15;
             optionsLabel.Margin = new Thickness(0, 0, 0, 15);
 
-            // Container para as opções
             var optionsContainer = new Border
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
@@ -800,7 +1133,6 @@ namespace DevStackInstaller
 
             var optionsPanel = new StackPanel();
 
-            // CheckBoxes usando ThemeManager
             desktopShortcutCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(
                 localization.GetString("installer.components.desktop_shortcuts"));
             desktopShortcutCheckBox.IsChecked = createDesktopShortcuts;
@@ -828,7 +1160,6 @@ namespace DevStackInstaller
 
             optionsContainer.Child = optionsPanel;
 
-            // Adicionar informações sobre PATH usando notification panel
             var pathInfoPanel = DevStackShared.ThemeManager.CreateNotificationPanel(
                 localization.GetString("installer.components.path_info"), 
                 DevStackShared.ThemeManager.NotificationType.Warning);
@@ -843,6 +1174,9 @@ namespace DevStackInstaller
             contentGrid.Children.Add(pathInfoPanel);
         }
 
+        /// <summary>
+        /// Creates the ready to install step displaying installation summary.
+        /// </summary>
         private void CreateReadyToInstallStep()
         {
             stepTitleText.Text = localization.GetString("installer.ready_to_install.title");
@@ -885,6 +1219,9 @@ namespace DevStackInstaller
             contentGrid.Children.Add(summaryContainer);
         }
 
+        /// <summary>
+        /// Creates the installing step with progress indicators and log display.
+        /// </summary>
         private void CreateInstallingStep()
         {
             stepTitleText.Text = localization.GetString("installer.installing.title");
@@ -901,7 +1238,6 @@ namespace DevStackInstaller
             installStatusText.FontSize = 15;
             installStatusText.Margin = new Thickness(0, 0, 0, 15);
 
-            // Container para progress bar
             var progressContainer = new Border
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.ControlBackground,
@@ -914,11 +1250,10 @@ namespace DevStackInstaller
 
             installProgressBar = DevStackShared.ThemeManager.CreateStyledProgressBar(0, 100, false);
             installProgressBar.Height = 8;
-            installProgressBar.Value = 0; // Start at 0
+            installProgressBar.Value = 0;
 
             progressContainer.Child = installProgressBar;
 
-            // Container para log
             var logContainer = new Border
             {
                 Background = DevStackShared.ThemeManager.CurrentTheme.ConsoleBackground,
@@ -938,11 +1273,9 @@ namespace DevStackInstaller
                 Padding = new Thickness(15, 10, 15, 10)
             };
 
-            // Configurar scroll bars
             ScrollViewer.SetHorizontalScrollBarVisibility(installLogListBox, ScrollBarVisibility.Disabled);
             ScrollViewer.SetVerticalScrollBarVisibility(installLogListBox, ScrollBarVisibility.Auto);
 
-            // Estilo para itens do log
             var logItemStyle = new Style(typeof(ListBoxItem));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.BorderThicknessProperty, new Thickness(0)));
@@ -950,7 +1283,6 @@ namespace DevStackInstaller
             logItemStyle.Setters.Add(new Setter(ListBoxItem.MarginProperty, new Thickness(0)));
             logItemStyle.Setters.Add(new Setter(ListBoxItem.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.ConsoleForeground));
 
-            // Remove hover e seleção
             var hoverTrigger = new Trigger { Property = ListBoxItem.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent));
             logItemStyle.Triggers.Add(hoverTrigger);
@@ -972,6 +1304,9 @@ namespace DevStackInstaller
             contentGrid.Children.Add(logContainer);
         }
 
+        /// <summary>
+        /// Creates the finished step displaying success message and installation details.
+        /// </summary>
         private void CreateFinishedStep()
         {
             stepTitleText.Text = localization.GetString("installer.finished.title");
@@ -1015,7 +1350,6 @@ namespace DevStackInstaller
             };
             finishedMessage.Margin = new Thickness(40, 0, 40, 20);
 
-            // Painel de informações da instalação
             var infoPanel = DevStackShared.ThemeManager.CreateStyledCard(
                 new StackPanel
                 {
@@ -1060,6 +1394,10 @@ namespace DevStackInstaller
             contentGrid.Children.Add(finishedPanel);
         }
 
+        /// <summary>
+        /// Calculates the required disk space in bytes for installation.
+        /// </summary>
+        /// <returns>The required space in bytes.</returns>
         private long GetRequiredSpaceBytes()
         {
             try
@@ -1074,29 +1412,30 @@ namespace DevStackInstaller
                     {
                         if (resourceStream != null)
                         {
-                            // Adiciona 20% de margem de segurança para arquivos temporários e instalação
                             return (long)(resourceStream.Length * 1.2);
                         }
                     }
                 }
                 
-                // Fallback: tamanho estimado se não conseguir ler o recurso
-                return 50 * 1024 * 1024; // 50MB
+                return 50 * 1024 * 1024;
             }
             catch
             {
-                // Fallback: tamanho estimado em caso de erro
-                return 50 * 1024 * 1024; // 50MB
+                return 50 * 1024 * 1024;
             }
         }
 
+        /// <summary>
+        /// Generates a formatted text string showing required and available disk space.
+        /// </summary>
+        /// <returns>A formatted string with space requirements.</returns>
         private string GetSpaceRequirementText()
         {
             try
             {
                 var drive = new DriveInfo(Path.GetPathRoot(installationPath) ?? "C:\\");
-                var availableSpaceMB = drive.AvailableFreeSpace / (1024 * 1024); // MB
-                var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0); // MB
+                var availableSpaceMB = drive.AvailableFreeSpace / (1024 * 1024);
+                var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0);
                 
                 string availableSpaceText;
                 if (availableSpaceMB >= 1024)
@@ -1114,11 +1453,15 @@ namespace DevStackInstaller
             }
             catch
             {
-                var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0); // MB
+                var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0);
                 return localization.GetString("installer.installation_path.space_required", $"{requiredSpace:F1}");
             }
         }
 
+        /// <summary>
+        /// Generates a summary text of the installation settings for review.
+        /// </summary>
+        /// <returns>A formatted summary of installation configuration.</returns>
         private string GetInstallationSummary()
         {
             var summary = $@"{localization.GetString("installer.ready_to_install.destination")}
@@ -1139,12 +1482,16 @@ namespace DevStackInstaller
             if (addToPath)
                 summary += $"\n{localization.GetString("installer.ready_to_install.add_path")}";
 
-            var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0); // MB
+            var requiredSpace = GetRequiredSpaceBytes() / (1024.0 * 1024.0);
             summary += $"\n\n{localization.GetString("installer.ready_to_install.space_required_summary").Replace("{0}", requiredSpace.ToString("F1"))}";
 
             return summary;
         }
 
+        /// <summary>
+        /// Adds a timestamped message to the installation log display.
+        /// </summary>
+        /// <param name="message">The message to add to the log.</param>
         private void AddInstallationLog(string message)
         {
             if (installLogListBox != null)
@@ -1157,6 +1504,11 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles the Back button click to navigate to the previous installation step.
+        /// </summary>
+        /// <param name="sender">The button that triggered the event.</param>
+        /// <param name="e">Event arguments for the click event.</param>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentStep > InstallerStep.Welcome)
@@ -1166,6 +1518,11 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles the Next/Install/Finish button click to proceed with installation or navigate steps.
+        /// </summary>
+        /// <param name="sender">The button that triggered the event.</param>
+        /// <param name="e">Event arguments for the click event.</param>
         private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
             switch (currentStep)
@@ -1177,7 +1534,6 @@ namespace DevStackInstaller
                 case InstallerStep.ReadyToInstall:
                     if (currentStep == InstallerStep.ReadyToInstall)
                     {
-                        // Start installation
                         currentStep = InstallerStep.Installing;
                         UpdateStepContent();
                         await PerformInstallation();
@@ -1189,7 +1545,6 @@ namespace DevStackInstaller
                     }
                     break;
                 case InstallerStep.Finished:
-                    // Launch DevStackGUI if requested
                     if (launchAfterInstall)
                     {
                         try
@@ -1215,6 +1570,11 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles the Cancel button click to confirm and exit the installer.
+        /// </summary>
+        /// <param name="sender">The button that triggered the event.</param>
+        /// <param name="e">Event arguments for the click event.</param>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("installer.dialogs.cancel_message"), 
@@ -1226,9 +1586,13 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles the window closing event to prevent accidental closure during installation.
+        /// </summary>
+        /// <param name="sender">The window that is closing.</param>
+        /// <param name="e">Event arguments for the closing event.</param>
         private void OnWindowClosing(object? sender, CancelEventArgs e)
         {
-            // Only show confirmation if installation hasn't finished
             if (currentStep != InstallerStep.Finished)
             {
                 var result = DevStackShared.ThemeManager.CreateStyledMessageBox(localization.GetString("installer.dialogs.cancel_message"), 
@@ -1236,11 +1600,16 @@ namespace DevStackInstaller
                 
                 if (result != MessageBoxResult.Yes)
                 {
-                    e.Cancel = true; // Cancel the window closing
+                    e.Cancel = true;
                 }
             }
         }
 
+        /// <summary>
+        /// Downloads the .NET SDK required for building DevStack components.
+        /// </summary>
+        /// <param name="tempDir">Temporary directory containing build information.</param>
+        /// <returns>Path to the extracted .NET SDK directory.</returns>
         private async Task<string> DownloadDotNetSDK(string tempDir)
         {
             var buildInfoPath = Path.Combine(tempDir, "build_info.json");
@@ -1264,7 +1633,6 @@ namespace DevStackInstaller
             
             string zipPath = Path.Combine(dotnetTempDir, "dotnet-sdk.zip");
             
-            // Multiple fallback URLs for .NET 9 SDK
             var downloadUrls = new[]
             {
                 "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.304/dotnet-sdk-9.0.304-win-x64.zip",
@@ -1274,7 +1642,7 @@ namespace DevStackInstaller
             
             using (var client = new System.Net.Http.HttpClient())
             {
-                client.Timeout = TimeSpan.FromMinutes(15); // 15 minute timeout for large download
+                client.Timeout = TimeSpan.FromMinutes(15);
                 client.DefaultRequestHeaders.Add("User-Agent", "DevStack-Installer/1.0");
                 
                 Exception? lastException = null;
@@ -1308,7 +1676,7 @@ namespace DevStackInstaller
                                 }
                                 
                                 AddInstallationLog("Download completed successfully");
-                                break; // Success, exit the loop
+                                break;
                             }
                             else
                             {
@@ -1322,7 +1690,6 @@ namespace DevStackInstaller
                         AddInstallationLog($"Download attempt failed: {ex.Message}");
                         lastException = ex;
                         
-                        // Clean up partial download
                         if (File.Exists(zipPath))
                         {
                             try { File.Delete(zipPath); } catch { }
@@ -1330,10 +1697,8 @@ namespace DevStackInstaller
                     }
                 }
                 
-                // Check if download was successful
-                if (!File.Exists(zipPath) || new FileInfo(zipPath).Length < 1024 * 1024) // Less than 1MB means failure
+                if (!File.Exists(zipPath) || new FileInfo(zipPath).Length < 1024 * 1024)
                 {
-                    // Fallback: Try using dotnet install script
                     AddInstallationLog("Direct download failed, trying dotnet install script...");
                     return await TryDotNetInstallScript(dotnetTempDir, dotnetVersion);
                 }
@@ -1353,11 +1718,17 @@ namespace DevStackInstaller
                 throw new Exception($"Failed to extract .NET SDK: {ex.Message}");
             }
             
-            File.Delete(zipPath); // Clean up zip file
+            File.Delete(zipPath);
             
             return dotnetDir;
         }
 
+        /// <summary>
+        /// Attempts to install .NET SDK using the official dotnet-install PowerShell script.
+        /// </summary>
+        /// <param name="dotnetTempDir">Temporary directory for .NET installation.</param>
+        /// <param name="dotnetVersion">Version of .NET SDK to install.</param>
+        /// <returns>Path to the installed .NET SDK directory.</returns>
         private async Task<string> TryDotNetInstallScript(string dotnetTempDir, string dotnetVersion)
         {
             try
@@ -1367,7 +1738,6 @@ namespace DevStackInstaller
                 string scriptPath = Path.Combine(dotnetTempDir, "dotnet-install.ps1");
                 string dotnetDir = Path.Combine(dotnetTempDir, "dotnet");
                 
-                // Download the official dotnet install script
                 using (var client = new System.Net.Http.HttpClient())
                 {
                     client.Timeout = TimeSpan.FromMinutes(5);
@@ -1411,7 +1781,6 @@ namespace DevStackInstaller
                     AddInstallationLog("dotnet install script completed successfully");
                 }
                 
-                // Verify installation
                 string dotnetExe = Path.Combine(dotnetDir, "dotnet.exe");
                 if (!File.Exists(dotnetExe))
                 {
@@ -1426,6 +1795,12 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Compiles all DevStack projects using the provided .NET SDK.
+        /// </summary>
+        /// <param name="sourceDir">Directory containing the source code.</param>
+        /// <param name="dotnetDir">Directory containing the .NET SDK.</param>
+        /// <param name="installPath">Target installation directory.</param>
         private async Task CompileProjects(string sourceDir, string dotnetDir, string installPath)
         {
             var buildInfoPath = Path.Combine(sourceDir, "build_info.json");
@@ -1447,7 +1822,6 @@ namespace DevStackInstaller
             int projectCount = projects.Count;
             int currentProject = 0;
             
-            // Create temporary build directory
             string tempBuildDir = Path.Combine(Path.GetTempPath(), "DevStackBuild_" + Guid.NewGuid().ToString("N")[..8]);
             Directory.CreateDirectory(tempBuildDir);
             
@@ -1468,12 +1842,10 @@ namespace DevStackInstaller
                         throw new Exception($"Project file not found: {fullProjectPath}");
                     }
                     
-                    // Set progress: 35% (after SDK download) + 50% (compilation) distributed across projects
                     var baseProgress = 35;
                     var compilationProgress = (currentProject - 1) * 50 / projectCount;
                     installProgressBar.Value = baseProgress + compilationProgress;
                     
-                    // Build to temporary directory
                     string projectTempDir = Path.Combine(tempBuildDir, projectName);
                     Directory.CreateDirectory(projectTempDir);
                     
@@ -1495,7 +1867,6 @@ namespace DevStackInstaller
                             throw new Exception($"Failed to start dotnet process for {projectName}");
                         }
                         
-                        // Read output asynchronously to prevent deadlock
                         var outputTask = process.StandardOutput.ReadToEndAsync();
                         var errorTask = process.StandardError.ReadToEndAsync();
                         
@@ -1514,14 +1885,12 @@ namespace DevStackInstaller
                         AddInstallationLog($"Successfully built {projectName}");
                     }
                     
-                    // Copy only .exe files to the installation directory
                     var exeFiles = Directory.GetFiles(projectTempDir, "*.exe", SearchOption.AllDirectories);
                     foreach (var exeFile in exeFiles)
                     {
                         var fileName = Path.GetFileName(exeFile);
                         var targetPath = Path.Combine(installPath, fileName);
                         
-                        // Use the specified output name if it's the main executable
                         if (fileName.Equals(projectName + ".exe", StringComparison.OrdinalIgnoreCase))
                         {
                             targetPath = Path.Combine(installPath, outputName.ToString());
@@ -1534,7 +1903,6 @@ namespace DevStackInstaller
             }
             finally
             {
-                // Clean up temporary build directory
                 try
                 {
                     if (Directory.Exists(tempBuildDir))
@@ -1549,7 +1917,6 @@ namespace DevStackInstaller
                 }
             }
             
-            // Copy additional files
             var iconsrc = Path.Combine(sourceDir, "src", "Shared", "DevStack.ico");
             var iconDest = Path.Combine(installPath, "DevStack.ico");
             if (File.Exists(iconsrc))
@@ -1557,7 +1924,6 @@ namespace DevStackInstaller
                 File.Copy(iconsrc, iconDest, true);
             }
             
-            // Copy configs if exists
             var configsDir = Path.Combine(sourceDir, "configs");
             if (Directory.Exists(configsDir))
             {
@@ -1570,6 +1936,12 @@ namespace DevStackInstaller
             AddInstallationLog("All projects compiled successfully!");
         }
 
+        /// <summary>
+        /// Recursively copies all files and subdirectories from source to destination.
+        /// </summary>
+        /// <param name="sourceDirName">Source directory path.</param>
+        /// <param name="destDirName">Destination directory path.</param>
+        /// <param name="copySubDirs">Whether to copy subdirectories recursively.</param>
         private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
@@ -1596,6 +1968,9 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Executes the complete installation process including extraction, compilation, and configuration.
+        /// </summary>
         private async Task PerformInstallation()
         {
             string? tempZipPath = null;
@@ -1604,18 +1979,15 @@ namespace DevStackInstaller
             
             try
             {
-                // Reset progress bar
                 installProgressBar.Value = 0;
                 
                 installStatusText.Content = localization.GetString("installer.installing.extracting");
                 AddInstallationLog(localization.GetString("installer.log_messages.starting"));
                 
-                // Extract embedded source package
                 tempZipPath = await Task.Run(() => ExtractEmbeddedZip());
-                installProgressBar.Value = 5; // 5% complete
+                installProgressBar.Value = 5;
                 AddInstallationLog("Source package extracted");
 
-                // Extract source files to temporary directory
                 tempSourceDir = Path.Combine(Path.GetTempPath(), "DevStackSource_" + Guid.NewGuid().ToString("N")[..8]);
                 Directory.CreateDirectory(tempSourceDir);
                 
@@ -1623,30 +1995,27 @@ namespace DevStackInstaller
                 {
                     ExtractZipWithDeflate(tempZipPath, tempSourceDir);
                 });
-                installProgressBar.Value = 10; // 10% complete
+                installProgressBar.Value = 10;
                 AddInstallationLog(localization.GetString("installer.log_messages.source_extracted"));
 
                 installStatusText.Content = localization.GetString("installer.installing.downloading_sdk");
                 AddInstallationLog(localization.GetString("installer.log_messages.downloading_sdk"));
                 
-                // Download and extract .NET SDK
                 dotnetTempDir = await DownloadDotNetSDK(tempSourceDir);
-                installProgressBar.Value = 35; // 35% complete
+                installProgressBar.Value = 35;
                 AddInstallationLog(localization.GetString("installer.log_messages.sdk_downloaded"));
 
                 installStatusText.Content = localization.GetString("installer.installing.creating_directory");
                 AddInstallationLog(localization.GetString("installer.log_messages.creating_dir", installationPath));
                 Directory.CreateDirectory(installationPath);
-                installProgressBar.Value = 40; // 40% complete
+                installProgressBar.Value = 40;
 
-                // Compile projects using temporary .NET SDK
                 installStatusText.Content = localization.GetString("installer.installing.compiling_projects");
                 AddInstallationLog(localization.GetString("installer.log_messages.compiling"));
                 await CompileProjects(tempSourceDir, dotnetTempDir, installationPath);
-                installProgressBar.Value = 85; // 85% complete
+                installProgressBar.Value = 85;
                 AddInstallationLog(localization.GetString("installer.log_messages.compilation_complete"));
 
-                // Create settings.conf with selected language using DevStackConfig
                 try
                 {
                     DevStackConfig.PersistSetting("language", localization.CurrentLanguage, installationPath);
@@ -1656,14 +2025,14 @@ namespace DevStackInstaller
                 installStatusText.Content = localization.GetString("installer.installing.registering");
                 AddInstallationLog(localization.GetString("installer.log_messages.registering"));
                 await Task.Run(() => RegisterInstallation(installationPath));
-                installProgressBar.Value = 90; // 90% complete
+                installProgressBar.Value = 90;
 
                 if (createDesktopShortcuts)
                 {
                     installStatusText.Content = localization.GetString("installer.installing.creating_desktop");
                     AddInstallationLog(localization.GetString("installer.log_messages.desktop_shortcuts"));
                     CreateDesktopShortcuts(installationPath);
-                    installProgressBar.Value = 95; // 95% complete
+                    installProgressBar.Value = 95;
                 }
 
                 if (createStartMenuShortcuts)
@@ -1671,7 +2040,7 @@ namespace DevStackInstaller
                     installStatusText.Content = localization.GetString("installer.installing.creating_start_menu");
                     AddInstallationLog(localization.GetString("installer.log_messages.start_menu_shortcuts"));
                     CreateStartMenuShortcuts(installationPath);
-                    installProgressBar.Value = 97; // 97% complete
+                    installProgressBar.Value = 97;
                 }
 
                 if (addToPath)
@@ -1679,14 +2048,14 @@ namespace DevStackInstaller
                     installStatusText.Content = localization.GetString("installer.installing.adding_path");
                     AddInstallationLog(localization.GetString("installer.log_messages.adding_path"));
                     AddToSystemPath(installationPath);
-                    installProgressBar.Value = 99; // 99% complete
+                    installProgressBar.Value = 99;
                 }
 
                 installStatusText.Content = localization.GetString("installer.installing.completed");
-                installProgressBar.Value = 100; // 100% complete
+                installProgressBar.Value = 100;
                 AddInstallationLog(localization.GetString("installer.log_messages.completed_success"));
 
-                await Task.Delay(1000); // Give user time to see completion
+                await Task.Delay(1000);
 
                 currentStep = InstallerStep.Finished;
                 UpdateStepContent();
@@ -1701,13 +2070,11 @@ namespace DevStackInstaller
                 installStatusText.Content = localization.GetString("installer.dialogs.installation_error_title");
                 installProgressBar.Value = 0;
                 
-                // Re-enable navigation
                 backButton.IsEnabled = true;
                 cancelButton.IsEnabled = true;
             }
             finally
             {
-                // Clean up temporary files
                 if (tempZipPath != null && File.Exists(tempZipPath))
                 {
                     try
@@ -1749,6 +2116,10 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Creates shortcuts in the Windows Start Menu for DevStack applications.
+        /// </summary>
+        /// <param name="installPath">Path where DevStack is installed.</param>
         private void CreateStartMenuShortcuts(string installPath)
         {
             try
@@ -1756,21 +2127,18 @@ namespace DevStackInstaller
                 string startMenuPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu), "Programs", "DevStack Manager");
                 Directory.CreateDirectory(startMenuPath);
                 
-                // Create shortcut for CLI
                 string cliPath = Path.Combine(installPath, "DevStack.exe");
                 if (File.Exists(cliPath))
                 {
                     CreateShortcut(Path.Combine(startMenuPath, "DevStack CLI.lnk"), cliPath, "DevStack Command Line Interface");
                 }
 
-                // Create shortcut for GUI
                 string guiPath = Path.Combine(installPath, "DevStackGUI.exe");
                 if (File.Exists(guiPath))
                 {
                     CreateShortcut(Path.Combine(startMenuPath, "DevStack GUI.lnk"), guiPath, "DevStack Graphical Interface");
                 }
 
-                // Create uninstaller shortcut
                 string uninstallerPath = Path.Combine(installPath, "DevStack-Uninstaller.exe");
                 if (File.Exists(uninstallerPath))
                 {
@@ -1783,11 +2151,14 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Adds the DevStack installation directory to the user's system PATH environment variable.
+        /// </summary>
+        /// <param name="installPath">Path where DevStack is installed.</param>
         private void AddToSystemPath(string installPath)
         {
             try
             {
-                // Add to user PATH environment variable
                 var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? "";
                 if (!userPath.Contains(installPath))
                 {
@@ -1806,9 +2177,13 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Handles the browse button click to select a custom installation directory.
+        /// </summary>
+        /// <param name="sender">The button that triggered the event.</param>
+        /// <param name="e">Event arguments for the click event.</param>
         private void BrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            // Use SaveFileDialog to select folder (workaround)
             var dialog = new SaveFileDialog
             {
                 Title = localization.GetString("installer.dialogs.folder_dialog_title"),
@@ -1828,20 +2203,22 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Creates desktop shortcuts for DevStack applications.
+        /// </summary>
+        /// <param name="installPath">Path where DevStack is installed.</param>
         private void CreateDesktopShortcuts(string installPath)
         {
             try
             {
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 
-                // Create shortcut for CLI
                 string cliPath = Path.Combine(installPath, "DevStack.exe");
                 if (File.Exists(cliPath))
                 {
                     CreateShortcut(Path.Combine(desktopPath, "DevStack CLI.lnk"), cliPath, "DevStack Command Line Interface");
                 }
 
-                // Create shortcut for GUI
                 string guiPath = Path.Combine(installPath, "DevStackGUI.exe");
                 if (File.Exists(guiPath))
                 {
@@ -1854,16 +2231,20 @@ namespace DevStackInstaller
             }
         }
 
+        /// <summary>
+        /// Creates a Windows shortcut (.lnk file) for the specified target.
+        /// </summary>
+        /// <param name="shortcutPath">Path where the shortcut will be created.</param>
+        /// <param name="targetPath">Target executable path.</param>
+        /// <param name="description">Description for the shortcut.</param>
         private void CreateShortcut(string shortcutPath, string targetPath, string description)
         {
             try
             {
-                // Create a simple batch file shortcut as fallback
                 string batchContent = $"@echo off\ncd /d \"{Path.GetDirectoryName(targetPath)}\"\nstart \"\" \"{Path.GetFileName(targetPath)}\"";
                 string batchPath = shortcutPath.Replace(".lnk", ".bat");
                 File.WriteAllText(batchPath, batchContent);
                 
-                // Try to create proper shortcut using PowerShell
                 string psScript = $@"
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut('{shortcutPath}')
@@ -1887,7 +2268,6 @@ $Shortcut.Save()
                 process.Start();
                 process.WaitForExit();
                 
-                // If PowerShell succeeded, remove the batch file
                 if (process.ExitCode == 0 && File.Exists(shortcutPath))
                 {
                     try { File.Delete(batchPath); } catch { }
@@ -1895,10 +2275,13 @@ $Shortcut.Save()
             }
             catch
             {
-                // Fallback already created above
             }
         }
 
+        /// <summary>
+        /// Registers the DevStack installation in the Windows registry for uninstaller support.
+        /// </summary>
+        /// <param name="installPath">Path where DevStack is installed.</param>
         private void RegisterInstallation(string installPath)
         {
             try
@@ -1907,13 +2290,11 @@ $Shortcut.Save()
                 var uninstallerPath = Path.Combine(installPath, "DevStack-Uninstaller.exe");
                 var displayName = "DevStack Manager";
                 
-                // Register installation path in HKCU for easy access by uninstaller
                 using var userKey = Registry.CurrentUser.CreateSubKey(@"Software\DevStack");
                 userKey.SetValue("InstallPath", installPath);
                 userKey.SetValue("Version", version);
                 userKey.SetValue("InstallDate", DateTime.Now.ToString("yyyy-MM-dd"));
                 
-                // Register in Windows Programs and Features (if running as admin)
                 try
                 {
                     using var uninstallKey = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DevStack");
@@ -1932,21 +2313,22 @@ $Shortcut.Save()
                 }
                 catch
                 {
-                    // Not running as admin, skip HKLM registration
-                    // The program will still appear in user-specific locations
                 }
             }
             catch
             {
-                // Registry operations failed, continue anyway
             }
         }
 
+        /// <summary>
+        /// Extracts a ZIP file using DEFLATE compression to the specified directory.
+        /// </summary>
+        /// <param name="zipPath">Path to the ZIP file to extract.</param>
+        /// <param name="extractPath">Destination directory for extraction.</param>
         private void ExtractZipWithDeflate(string zipPath, string extractPath)
         {
             try
             {
-                // Use standard .NET extraction for DEFLATE-compressed ZIP files
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath, true);
                 AddInstallationLog("Successfully extracted ZIP with DEFLATE compression");
             }
@@ -1957,13 +2339,18 @@ $Shortcut.Save()
             }
         }
 
+        /// <summary>
+        /// Calculates the total size of a directory in kilobytes.
+        /// </summary>
+        /// <param name="path">Directory path to calculate size for.</param>
+        /// <returns>Total size in kilobytes.</returns>
         private int GetDirectorySize(string path)
         {
             try
             {
                 var dirInfo = new DirectoryInfo(path);
                 var size = dirInfo.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
-                return (int)(size / 1024); // Size in KB
+                return (int)(size / 1024);
             }
             catch
             {

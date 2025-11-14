@@ -10,27 +10,68 @@ using System.Threading.Tasks;
 namespace DevStackManager
 {
     /// <summary>
-    /// ConsolePanel multi-abas: cada aba (Install, Uninstall, Sites) tem seu próprio buffer persistente.
-    /// Outputs de execuções em background continuam sendo enviados para o buffer correto.
+    /// Multi-tab console panel component for operation output display.
+    /// Each tab (Install, Uninstall, Sites, Config) maintains its own persistent message buffer.
+    /// Supports thread-safe message appending from background operations with automatic UI updates.
+    /// Provides Console.Out redirection for capturing all console output.
     /// </summary>
     public static class GuiConsolePanel
     {
+        /// <summary>
+        /// Console tab types for different operation categories.
+        /// </summary>
         public enum ConsoleTab { Install, Uninstall, Sites, Config }
 
-        // Console Panel Dimensions
+        /// <summary>
+        /// Panel margin in pixels.
+        /// </summary>
         private const double PANEL_MARGIN = 10;
+        
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const double TITLE_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Bottom margin for title in pixels.
+        /// </summary>
         private const double TITLE_MARGIN_BOTTOM = 10;
+        
+        /// <summary>
+        /// Height of output text box in pixels.
+        /// </summary>
         private const double OUTPUT_BOX_HEIGHT = 600;
+        
+        /// <summary>
+        /// Font size for output text.
+        /// </summary>
         private const double OUTPUT_BOX_FONT_SIZE = 12;
+        
+        /// <summary>
+        /// Height of clear button in pixels.
+        /// </summary>
         private const double CLEAR_BUTTON_HEIGHT = 35;
+        
+        /// <summary>
+        /// Top margin for clear button in pixels.
+        /// </summary>
         private const double CLEAR_BUTTON_MARGIN_TOP = 10;
 
-        // Buffer persistente para cada aba
+        /// <summary>
+        /// Persistent message buffers for each console tab.
+        /// Thread-safe concurrent dictionary storing StringBuilder for each tab type.
+        /// </summary>
         private static readonly ConcurrentDictionary<ConsoleTab, StringBuilder> Buffers = new();
-        // Lista de TextBox ativos por aba (atualiza output ao alternar)
+        
+        /// <summary>
+        /// Active TextBox UI elements for each console tab.
+        /// Used to update visible output when appending messages.
+        /// </summary>
         private static readonly ConcurrentDictionary<ConsoleTab, TextBox> ActiveTextBoxes = new();
-        // Lock para escrita
+        
+        /// <summary>
+        /// Lock object for thread-safe buffer write operations.
+        /// </summary>
         private static readonly object _lock = new();
 
         static GuiConsolePanel()
@@ -40,8 +81,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria painel de console para uma aba específica
+        /// Creates a console panel for a specific tab.
+        /// Panel contains: localized title label, read-only output TextBox (600px height), and Clear button.
+        /// Registers TextBox in ActiveTextBoxes for message updates.
         /// </summary>
+        /// <param name="tab">Console tab type to create panel for.</param>
+        /// <returns>StackPanel containing the complete console panel.</returns>
         public static StackPanel CreateConsolePanel(ConsoleTab tab)
         {
             var panel = new StackPanel { Margin = new Thickness(PANEL_MARGIN) };
@@ -50,7 +95,7 @@ namespace DevStackManager
             var titleLabel = CreateConsoleTitleLabel(tab, mainWindow);
             panel.Children.Add(titleLabel);
 
-            var outputBox = CreateOutputTextBox(tab);
+            var outputBox = CreateOutputTextBox(mainWindow, tab);
             panel.Children.Add(outputBox);
 
             var clearButton = CreateClearButton(tab, mainWindow);
@@ -60,8 +105,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o label de título do console
+        /// Creates the console title label with localized text.
         /// </summary>
+        /// <param name="tab">Console tab type for title text.</param>
+        /// <param name="mainWindow">Main window instance for theme and localization access.</param>
+        /// <returns>Styled label with console title.</returns>
         private static Label CreateConsoleTitleLabel(ConsoleTab tab, DevStackGui mainWindow)
         {
             var title = GetTabTitle(tab, mainWindow);
@@ -72,8 +120,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Obtém o título localizado para a aba
+        /// Gets the localized title for a console tab.
         /// </summary>
+        /// <param name="tab">Console tab type.</param>
+        /// <param name="mainWindow">Main window instance for localization access.</param>
+        /// <returns>Localized title string.</returns>
         private static string GetTabTitle(ConsoleTab tab, DevStackGui mainWindow)
         {
             return tab switch
@@ -87,9 +138,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o TextBox de output do console
+        /// Creates the output TextBox for console messages.
+        /// Read-only, 600px height, Consolas font, with initial buffer content.
         /// </summary>
-        private static TextBox CreateOutputTextBox(ConsoleTab tab)
+        /// <param name="gui">Main window instance for theme access.</param>
+        /// <param name="tab">Console tab type for buffer retrieval.</param>
+        /// <returns>Styled TextBox with current buffer content.</returns>
+        private static TextBox CreateOutputTextBox(DevStackGui gui, ConsoleTab tab)
         {
             var outputBox = DevStackShared.ThemeManager.CreateStyledTextBox(true);
             outputBox.Height = OUTPUT_BOX_HEIGHT;
@@ -106,8 +161,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o botão Clear do console
+        /// Creates the Clear button for console output.
+        /// Styled with Danger theme and clears buffer on click.
         /// </summary>
+        /// <param name="tab">Console tab type to clear.</param>
+        /// <param name="mainWindow">Main window instance for theme and localization access.</param>
+        /// <returns>Styled Clear button.</returns>
         private static Button CreateClearButton(ConsoleTab tab, DevStackGui mainWindow)
         {
             var clearButton = DevStackShared.ThemeManager.CreateStyledButton(
@@ -120,8 +179,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Limpa o buffer do console da aba
+        /// Clears the console buffer for a specific tab.
+        /// Removes buffer content and updates UI if TextBox is active.
         /// </summary>
+        /// <param name="tab">Console tab type to clear.</param>
         public static void Clear(ConsoleTab tab)
         {
             lock (_lock)
@@ -135,15 +196,19 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Adiciona output ao buffer da aba (thread-safe, pode ser chamado de qualquer thread)
+        /// Appends a message to the console buffer for a specific tab (thread-safe).
+        /// Prefixes message with [HH:mm:ss] timestamp.
+        /// Updates UI TextBox if active and scrolls to end.
+        /// Can be called from any thread - marshals UI updates to Dispatcher.
         /// </summary>
-        public static void Append(ConsoleTab tab, string text, DevStackGui mainWindow)
+        /// <param name="tab">Console tab type to append to.</param>
+        /// <param name="message">Message text to append.</param>
+        public static void Append(ConsoleTab tab, string message)
         {
             lock (_lock)
             {
                 var timestamp = DateTime.Now.ToString("HH:mm:ss");
-                Buffers[tab].AppendLine($"[{timestamp}] {text}");
-                // Atualiza textbox se a aba estiver visível
+                Buffers[tab].AppendLine($"[{timestamp}] {message}");
                 if (ActiveTextBoxes.TryGetValue(tab, out var box))
                 {
                     Application.Current?.Dispatcher.Invoke(() =>
@@ -156,8 +221,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Recupera o buffer atual da aba (para restaurar ao alternar)
+        /// Retrieves the current buffer content for a tab.
+        /// Used to restore output when switching between tabs.
         /// </summary>
+        /// <param name="tab">Console tab type to get buffer for.</param>
+        /// <returns>Current buffer content as string.</returns>
         public static string GetBuffer(ConsoleTab tab)
         {
             lock (_lock)
@@ -167,8 +235,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Deve ser chamado ao alternar para uma aba para restaurar o output
+        /// Should be called when switching to a tab to restore its buffer content.
+        /// Updates the active TextBox with current buffer and scrolls to end.
         /// </summary>
+        /// <param name="tab">Console tab type being activated.</param>
         public static void OnTabActivated(ConsoleTab tab)
         {
             if (ActiveTextBoxes.TryGetValue(tab, out var box))
@@ -182,11 +252,16 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Permite executar uma ação e enviar output para o buffer correto, mesmo em background
+        /// Executes an action with console output redirection to a specific tab.
+        /// Redirects Console.Out to send all output to the tab's buffer, even in background.
+        /// Restores original Console.Out after execution.
         /// </summary>
-        public static async Task RunWithConsoleOutput(ConsoleTab tab, DevStackGui mainWindow, Func<IProgress<string>, Task> action)
+        /// <param name="tab">Console tab type to send output to.</param>
+        /// <param name="action">Async action to execute.</param>
+        /// <returns>Task representing the async operation.</returns>
+        public static async Task RunWithConsoleOutput(ConsoleTab tab, Func<IProgress<string>, Task> action)
         {
-            var progress = new Progress<string>(msg => Append(tab, msg, mainWindow));
+            var progress = new Progress<string>(msg => Append(tab, msg));
             var originalOut = Console.Out;
             try
             {
@@ -202,13 +277,35 @@ namespace DevStackManager
             }
         }
 
-        // Writer que envia tudo para progress.Report
+        /// <summary>
+        /// Custom TextWriter that redirects Console.Out to progress reporting.
+        /// Sends all written text to IProgress for appending to console buffer.
+        /// </summary>
         private class ProgressTextWriter : System.IO.TextWriter
         {
+            /// <summary>
+            /// Progress reporter for sending console output to buffer.
+            /// </summary>
             private readonly IProgress<string> _progress;
+            
+            /// <summary>
+            /// Initializes a new instance of ProgressTextWriter with progress reporting.
+            /// </summary>
+            /// <param name="progress">Progress reporter for console output.</param>
             public ProgressTextWriter(IProgress<string> progress) { _progress = progress; }
+            /// <summary>
+            /// Gets the character encoding used for console output (UTF-8).
+            /// </summary>
             public override Encoding Encoding => Encoding.UTF8;
+            /// <summary>
+            /// Writes a line to the console output.
+            /// </summary>
+            /// <param name="value">The value to write.</param>
             public override void WriteLine(string? value) => _progress.Report(value ?? "");
+            /// <summary>
+            /// Writes text to the console output.
+            /// </summary>
+            /// <param name="value">The value to write.</param>
             public override void Write(string? value) => _progress.Report(value ?? "");
         }
     }

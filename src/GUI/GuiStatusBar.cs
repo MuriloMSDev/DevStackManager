@@ -8,33 +8,60 @@ using System.Collections.Generic;
 namespace DevStackManager
 {
     /// <summary>
-    /// Classe responsável pela criação e gerenciamento da barra de status
+    /// Status bar component responsible for creating and managing the bottom status bar.
+    /// Provides status message display, theme selector (Dark/Light), and language selector.
+    /// Integrates with ThemeManager and LocalizationManager for real-time UI updates.
+    /// Persists user preferences to DevStackConfig.
     /// </summary>
     public static class GuiStatusBar
     {
-        // Status Bar Dimensions
+        /// <summary>
+        /// Height of the status bar.
+        /// </summary>
         private const double STATUS_BAR_HEIGHT = 30;
+        
+        /// <summary>
+        /// Left padding for status bar content.
+        /// </summary>
         private const double STATUS_BAR_PADDING_LEFT = 5;
+        
+        /// <summary>
+        /// Top border thickness for status bar.
+        /// </summary>
         private const double STATUS_BAR_BORDER_TOP = 1;
         
-        // ComboBox Dimensions
+        /// <summary>
+        /// Minimum width for theme selector combo box.
+        /// </summary>
         private const double THEME_COMBOBOX_MIN_WIDTH = 120;
+        
+        /// <summary>
+        /// Minimum width for language selector combo box.
+        /// </summary>
         private const double LANGUAGE_COMBOBOX_MIN_WIDTH = 160;
         
-        // Font Sizes
+        /// <summary>
+        /// Font size for status label text.
+        /// </summary>
         private const double STATUS_LABEL_FONT_SIZE = 12;
         
-        // Arrow Path Dimensions
+        /// <summary>
+        /// Right margin for dropdown arrow path.
+        /// </summary>
         private const double ARROW_PATH_MARGIN_RIGHT = 8;
         
-        // Popup Border Color
+        /// <summary>
+        /// Background color for combo box popup border.
+        /// </summary>
         private const string POPUP_BORDER_BACKGROUND = "#FF2D2D30";
         
         /// <summary>
-        /// Cria a barra de status para a interface principal
+        /// Creates the complete status bar for the main interface.
+        /// Layout: status label (left) + theme selector (center-right) + language selector (right).
+        /// Status label uses data binding to display real-time status messages.
         /// </summary>
-        /// <param name="mainGrid">Grid principal onde a barra será adicionada</param>
-        /// <param name="gui">Instância da interface principal para binding</param>
+        /// <param name="mainGrid">Main grid where the status bar will be added.</param>
+        /// <param name="gui">Main window instance for data binding and theme access.</param>
         public static void CreateStatusBar(Grid mainGrid, DevStackGui gui)
         {
             var localization = gui.LocalizationManager;
@@ -47,12 +74,10 @@ namespace DevStackManager
             Grid.SetColumn(statusLabel, 0);
             statusGrid.Children.Add(statusLabel);
 
-            // ComboBox para seleção de tema (Light/Dark) com estilo do ThemeManager
             var themeComboBox = CreateThemeComboBox(gui, localization);
             Grid.SetColumn(themeComboBox, 1);
             statusGrid.Children.Add(themeComboBox);
 
-            // Language selector (substitui o botão de atualizar)
             var languageComboBox = CreateLanguageComboBox(gui, localization);
             Grid.SetColumn(languageComboBox, 2);
             statusGrid.Children.Add(languageComboBox);
@@ -62,8 +87,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o border da status bar
+        /// Creates the border container for the status bar with theme styling.
         /// </summary>
+        /// <param name="gui">Main window instance for theme access.</param>
+        /// <returns>Styled border with background and top separator line.</returns>
         private static Border CreateStatusBarBorder(DevStackGui gui)
         {
             return new Border
@@ -77,8 +104,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o grid interno da status bar
+        /// Creates the internal grid layout for status bar components.
+        /// Three columns: status label (auto width) + theme selector (150px) + language selector (150px).
         /// </summary>
+        /// <returns>Grid with three-column layout.</returns>
         private static Grid CreateStatusGrid()
         {
             var statusGrid = new Grid();
@@ -89,8 +118,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o label de status com binding
+        /// Creates the status label with data binding to StatusMessage property.
+        /// Displays real-time status updates from background operations.
         /// </summary>
+        /// <param name="gui">Main window instance for data binding.</param>
+        /// <returns>Label with status message binding.</returns>
         private static Label CreateStatusLabel(DevStackGui gui)
         {
             var statusLabel = new Label
@@ -108,8 +140,13 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o ComboBox de seleção de tema
+        /// Creates the theme selector ComboBox (Dark/Light).
+        /// Applies custom borderless template and synchronizes with ThemeManager.
+        /// Persists selection to DevStackConfig and triggers UI-wide theme update.
         /// </summary>
+        /// <param name="gui">Main window instance for theme access.</param>
+        /// <param name="localization">Localization manager for translated theme names.</param>
+        /// <returns>ComboBox with theme options and custom styling.</returns>
         private static ComboBox CreateThemeComboBox(DevStackGui gui, DevStackShared.LocalizationManager localization)
         {
             var themeComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -119,18 +156,21 @@ namespace DevStackManager
             themeComboBox.HorizontalAlignment = HorizontalAlignment.Right;
             themeComboBox.Margin = new Thickness(0);
 
-            // Substituir o template para remover bordas (mantendo o Background atual via TemplateBinding)
             ApplyComboBoxTemplate(themeComboBox);
 
-            // Popular temas
             PopulateThemeItems(themeComboBox, localization);
 
             return themeComboBox;
         }
 
         /// <summary>
-        /// Cria o ComboBox de seleção de idioma
+        /// Creates the language selector ComboBox with available languages.
+        /// Applies custom borderless template and synchronizes with LocalizationManager.
+        /// Persists selection to DevStackConfig and triggers UI-wide language update.
         /// </summary>
+        /// <param name="gui">Main window instance for theme access.</param>
+        /// <param name="localization">Localization manager for available languages.</param>
+        /// <returns>ComboBox with language options and custom styling.</returns>
         private static ComboBox CreateLanguageComboBox(DevStackGui gui, DevStackShared.LocalizationManager localization)
         {
             var languageComboBox = DevStackShared.ThemeManager.CreateStyledComboBox();
@@ -140,18 +180,22 @@ namespace DevStackManager
             languageComboBox.HorizontalAlignment = HorizontalAlignment.Right;
             languageComboBox.Margin = new Thickness(0, 0, 0, 0);
 
-            // Substituir o template para remover bordas
             ApplyComboBoxTemplate(languageComboBox);
 
-            // Popular idiomas
             PopulateLanguageItems(languageComboBox, localization);
 
             return languageComboBox;
         }
 
         /// <summary>
-        /// Aplica template customizado ao ComboBox
+        /// Applies custom borderless template to ComboBox.
+        /// Creates XAML ControlTemplate with custom dropdown styling:
+        /// - Borderless Border container
+        /// - ContentPresenter for selected item
+        /// - ToggleButton with dropdown arrow
+        /// - Popup with scrollable items list
         /// </summary>
+        /// <param name="comboBox">ComboBox to apply template to.</param>
         private static void ApplyComboBoxTemplate(ComboBox comboBox)
         {
             try
@@ -231,7 +275,6 @@ namespace DevStackManager
                 var template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse(templateXaml);
 
                 comboBox.Template = template;
-                // Garantir que nenhuma borda de controle seja aplicada
                 comboBox.BorderThickness = new Thickness(0);
                 comboBox.BorderBrush = Brushes.Transparent;
                 comboBox.FocusVisualStyle = null;
@@ -240,8 +283,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Popula o ComboBox de temas
+        /// Populates the theme ComboBox with Dark and Light options.
+        /// Synchronizes selection with current ThemeManager theme type.
+        /// Applies theme changes via ThemeManager.ApplyTheme and persists to DevStackConfig.
         /// </summary>
+        /// <param name="themeComboBox">ComboBox to populate.</param>
+        /// <param name="localization">Localization manager for translated theme names.</param>
         private static void PopulateThemeItems(ComboBox themeComboBox, DevStackShared.LocalizationManager localization)
         {
             var darkItem = new ComboBoxItem { Content = localization.GetString("common.themes.dark"), Tag = DevStackShared.ThemeManager.ThemeType.Dark };
@@ -261,8 +308,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Popula o ComboBox de idiomas
+        /// Populates the language ComboBox with available languages from LocalizationManager.
+        /// Synchronizes selection with current language code.
+        /// Applies language changes via LocalizationManager.ApplyLanguage and persists to DevStackConfig.
         /// </summary>
+        /// <param name="languageComboBox">ComboBox to populate.</param>
+        /// <param name="localization">Localization manager for available languages and names.</param>
         private static void PopulateLanguageItems(ComboBox languageComboBox, DevStackShared.LocalizationManager localization)
         {
             var languages = localization.GetAvailableLanguages();
@@ -276,12 +327,10 @@ namespace DevStackManager
                 languageItems[lang] = item;
             }
             
-            // Definir item selecionado baseado no idioma atual estático (igual ao tema)
             languageComboBox.SelectedItem = languageItems.ContainsKey(DevStackShared.LocalizationManager.CurrentLanguageStatic) 
                 ? languageItems[DevStackShared.LocalizationManager.CurrentLanguageStatic] 
                 : languageItems.Values.FirstOrDefault();
             
-            // Alterar idioma usando ApplyLanguage (exatamente como o tema)
             languageComboBox.SelectionChanged += (s, e) =>
             {
                 if (languageComboBox.SelectedItem is ComboBoxItem selected && selected.Tag is string code)

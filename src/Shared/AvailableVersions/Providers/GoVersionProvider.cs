@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class GoVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Go component.
+        /// </summary>
         public string ComponentName => "Go";
+        /// <summary>
+        /// Gets the unique identifier for the Go component.
+        /// </summary>
         public string ComponentId => "go";
         
+        /// <summary>
+        /// List of available Go versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("1.2.2", "https://go.dev/dl/go1.2.2.windows-amd64.zip"),
@@ -261,16 +270,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("1.24.5", "https://go.dev/dl/go1.24.5.windows-amd64.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available Go versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Go version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Go version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

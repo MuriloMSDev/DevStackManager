@@ -6,25 +6,67 @@ using System.Linq;
 
 namespace DevStackShared
 {
+    /// <summary>
+    /// Specifies the type of application for localization context.
+    /// </summary>
     public enum ApplicationType
     {
         Installer,
         Uninstaller,
-        DevStack  // Usado tanto para CLI quanto para GUI
+        DevStack
     }
 
+    /// <summary>
+    /// Manages application localization with support for multiple languages and JSON translation files.
+    /// Provides translation loading from embedded resources, external files, and C# provider classes.
+    /// Supports multi-level translation keys with dot notation and fallback mechanisms.
+    /// </summary>
     public class LocalizationManager
     {
+        /// <summary>
+        /// Singleton instance of the LocalizationManager.
+        /// </summary>
         private static LocalizationManager? _instance;
+        
+        /// <summary>
+        /// Dictionary storing all loaded translations with multi-level key hierarchy.
+        /// </summary>
         private Dictionary<string, object> _translations = new();
+        
+        /// <summary>
+        /// Current active language code (e.g., "en_US", "pt_BR").
+        /// </summary>
         private string _currentLanguage = "pt_BR";
+        
+        /// <summary>
+        /// The type of application context for this localization manager.
+        /// </summary>
         private readonly ApplicationType _applicationType;
+        
+        /// <summary>
+        /// Path to the log file for diagnostic messages.
+        /// </summary>
         private string _logPath = string.Empty;
         
+        /// <summary>
+        /// Event raised when the language is changed.
+        /// </summary>
         public event EventHandler<string>? LanguageChanged;
+        
+        /// <summary>
+        /// Flag to suppress LanguageChanged event during initialization or bulk operations.
+        /// </summary>
         private bool _suppressLanguageChangedEvent = false;
 
+        /// <summary>
+        /// Static cached copy of the current language code for quick access.
+        /// </summary>
         private static string _currentLanguageStatic = "pt_BR";
+        
+        /// <summary>
+        /// Gets or sets the static current language code.
+        /// Setting this property invokes the OnLanguageChangedStatic event.
+        /// </summary>
         public static string CurrentLanguageStatic 
         { 
             get => _currentLanguageStatic; 
@@ -35,34 +77,52 @@ namespace DevStackShared
             } 
         }
 
+        /// <summary>
+        /// Gets the current active language code for this LocalizationManager instance.
+        /// </summary>
         public string CurrentLanguage => _currentLanguage;
+        
+        /// <summary>
+        /// Gets the application type context for this LocalizationManager.
+        /// </summary>
         public ApplicationType ApplicationType => _applicationType;
+        
+        /// <summary>
+        /// Static event raised when the language is changed via CurrentLanguageStatic setter.
+        /// </summary>
         public static event Action<string>? OnLanguageChangedStatic;
 
+        /// <summary>
+        /// Gets the singleton instance of the LocalizationManager.
+        /// </summary>
         public static LocalizationManager? Instance { get; private set; }
 
-        // Private constructor to prevent direct instantiation
+        /// <summary>
+        /// Private constructor to enforce singleton pattern.
+        /// </summary>
+        /// <param name="applicationType">Type of application for loading appropriate translation files.</param>
         private LocalizationManager(ApplicationType applicationType)
         {
             _applicationType = applicationType;
             LoadLanguage(_currentLanguage);
         }
 
-        // Static method to create and initialize the instance
+        /// <summary>
+        /// Initializes the LocalizationManager singleton instance with diagnostic logging.
+        /// Scans for embedded translation resources and available language providers.
+        /// </summary>
+        /// <param name="applicationType">Type of application context for loading appropriate translations.</param>
+        /// <returns>The initialized LocalizationManager instance.</returns>
         public static LocalizationManager Initialize(ApplicationType applicationType)
         {
-            // Debug information
             var errorMessage = "**********************************************************************\n";
             errorMessage += $"Initializing LocalizationManager for {applicationType}\n";
             
-            // Create an instance with basic initialization
             _instance = new LocalizationManager(applicationType);
             Instance = _instance;
             
-            // Inicializar idioma estático com o valor da instância
             _currentLanguageStatic = _instance._currentLanguage;
             
-            // Log detailed information about embedded resources
             try
             {
                 var assembly = Assembly.GetExecutingAssembly();
@@ -76,7 +136,6 @@ namespace DevStackShared
                 {
                     errorMessage += $"  - {resource}\n";
                     
-                    // Try to load the resource
                     try
                     {
                         using var stream = assembly.GetManifestResourceStream(resource);
@@ -84,7 +143,6 @@ namespace DevStackShared
                         {
                             errorMessage += $"    Successfully opened stream for {resource}, Length: {stream.Length} bytes\n";
                             
-                            // If this is a JSON file, try reading its content
                             if (resource.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                             {
                                 try
@@ -111,12 +169,10 @@ namespace DevStackShared
                     }
                 }
                 
-                // Display expected resource path for the current language
                 string resourceBaseName = $"{assembly.GetName().Name}.locale.pt_BR.";
                 errorMessage += $"Expected resource base: {resourceBaseName}\n";
                 errorMessage += $"Expected files: common.json, shared.json, gui.json, installer.json, uninstaller.json\n";
                 
-                // Try to directly load pt_BR resources to see if they're available
                 string[] expectedFiles = { "common.json", "shared.json", "gui.json", "installer.json", "uninstaller.json" };
                 foreach (var fileName in expectedFiles)
                 {
@@ -132,15 +188,11 @@ namespace DevStackShared
                     }
                 }
                 
-                // Check application directory for locale folders
                 try
                 {
-                    // Use AppContext.BaseDirectory as the reliable way to get the app's directory 
-                    // in both single-file and traditional deployments
                     string baseDirectory = AppContext.BaseDirectory;
                     errorMessage += $"Application directory: {baseDirectory}\n";
                     
-                    // Check if locale language directories exist on disk
                     string localeDirectory = Path.Combine(baseDirectory, "locale");
                     if (Directory.Exists(localeDirectory))
                     {
@@ -152,7 +204,6 @@ namespace DevStackShared
                             string langCode = Path.GetFileName(dir);
                             errorMessage += $"  - {langCode}/\n";
                             
-                            // List files in each language directory
                             try
                             {
                                 var files = Directory.GetFiles(dir, "*.json");
@@ -184,17 +235,14 @@ namespace DevStackShared
             
             errorMessage += "**********************************************************************";
             
-            // Write to debug output
             System.Diagnostics.Debug.WriteLine(errorMessage);
             
-            // Also create a log file
             try
             {
                 string logPath = Path.Combine(Path.GetTempPath(), $"devstack_localization_{applicationType}.log");
                 File.WriteAllText(logPath, errorMessage);
                 System.Diagnostics.Debug.WriteLine($"Log written to: {logPath}");
                 
-                // Set _logPath for further logging
                 _instance._logPath = logPath;
             }
             catch (Exception ex)
@@ -205,29 +253,31 @@ namespace DevStackShared
             return _instance;
         }
 
+        /// <summary>
+        /// Loads translations for the specified language code.
+        /// Attempts loading from C# providers, embedded resources, external files, or falls back to hardcoded translations.
+        /// Fires LanguageChanged event upon successful load.
+        /// </summary>
+        /// <param name="languageCode">Language code to load (e.g., "pt_BR", "en_US").</param>
         public void LoadLanguage(string languageCode)
         {
             string logMessage = $"[LoadLanguage] Loading language: {languageCode} (current: {_currentLanguage})\n";
             
             try
             {
-                // Check if we're already using this language
                 if (_currentLanguage == languageCode && _translations.Count > 0)
                 {
                     logMessage += $"[LoadLanguage] Language {languageCode} is already loaded and has translations. Forcing reload to ensure UI update.\n";
                     System.Diagnostics.Debug.WriteLine(logMessage);
                     AppendToLogFile(logMessage);
                     
-                    // Clear existing translations to force a reload
                     _translations.Clear();
                 }
                 
                 _currentLanguage = languageCode;
                 
-                // NOVA ABORDAGEM: Usar provedores de idioma em C# (primeira tentativa)
                 bool loaded = TryLoadFromProvider(languageCode, ref logMessage);
                 
-                // Fallback para traduções básicas hardcoded se o provedor não estiver disponível
                 if (!loaded)
                 {
                     logMessage += "[LoadLanguage] Provider not found, using hardcoded basic translations\n";
@@ -237,11 +287,9 @@ namespace DevStackShared
                 
                 logMessage += $"[LoadLanguage] Successfully loaded language {languageCode}. Translation sections: {string.Join(", ", _translations.Keys)}\n";
                 
-                // Escrever log para saída de depuração e arquivo
                 System.Diagnostics.Debug.WriteLine(logMessage);
                 AppendToLogFile(logMessage);
 
-                // Always fire the language changed event
                 if (!_suppressLanguageChangedEvent)
                 {
                     logMessage += $"[LoadLanguage] Firing LanguageChanged event for {languageCode}\n";
@@ -256,13 +304,11 @@ namespace DevStackShared
             }
             catch (Exception ex)
             {
-                // Se tudo falhar, crie um dicionário vazio para evitar falhas
                 _translations = new Dictionary<string, object>();
                 logMessage += $"[LoadLanguage] Failed to load language {languageCode}: {ex.Message}\n";
                 System.Diagnostics.Debug.WriteLine(logMessage);
                 AppendToLogFile(logMessage);
                 
-                // Garantir que temos pelo menos traduções básicas
                 UseHardcodedTranslations(languageCode);
 
                 if (!_suppressLanguageChangedEvent)
@@ -273,15 +319,18 @@ namespace DevStackShared
         }
         
         /// <summary>
-        /// Tenta carregar traduções de um provedor C# (nova abordagem)
+        /// Attempts to load translations from a C# language provider class.
+        /// Searches for a class named after the language code in the DevStackShared.Localization namespace.
         /// </summary>
+        /// <param name="languageCode">Language code matching the provider class name.</param>
+        /// <param name="logMessage">Diagnostic logging message reference.</param>
+        /// <returns>True if provider loaded successfully, false otherwise.</returns>
         private bool TryLoadFromProvider(string languageCode, ref string logMessage)
         {
             try
             {
                 logMessage += $"[TryLoadFromProvider] Looking for provider for {languageCode}\n";
                 
-                // Procurar por classe de provedor usando reflection
                 var assembly = Assembly.GetExecutingAssembly();
                 
                 logMessage += $"[TryLoadFromProvider] Searching for type: {languageCode}\n";
@@ -297,7 +346,6 @@ namespace DevStackShared
                     var provider = Activator.CreateInstance(providerType);
                     if (provider != null)
                     {
-                        // Tentar obter método GetAllTranslations
                         var method = providerType.GetMethod("GetAllTranslations");
                         if (method != null)
                         {
@@ -343,6 +391,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Attempts to load translations from embedded resources in the assembly.
+        /// </summary>
+        /// <param name="languageCode">The language code to load translations for.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool TryLoadFromEmbeddedResource(string languageCode, string logMessage)
         {
             try
@@ -350,7 +404,6 @@ namespace DevStackShared
                 var assembly = Assembly.GetExecutingAssembly();
                 string assemblyName = assembly.GetName().Name ?? "";
                 
-                // Log embedded resources for debugging
                 var resources = assembly.GetManifestResourceNames();
                 logMessage += $"[TryLoadFromEmbeddedResource] Assembly: {assemblyName}, Found {resources.Length} resources\n";
                 foreach (var resource in resources)
@@ -358,7 +411,6 @@ namespace DevStackShared
                     logMessage += $"[TryLoadFromEmbeddedResource] Resource: {resource}\n";
                 }
                 
-                // List of files to load for each language
                 string[] localeFiles = { "common.json", "shared.json" };
                 string[] appSpecificFiles = _applicationType switch
                 {
@@ -371,18 +423,15 @@ namespace DevStackShared
                 var mergedTranslations = new Dictionary<string, object>();
                 bool anyFileLoaded = false;
                 
-                // Find all resources for the specified language code
                 var langResources = resources.Where(r => r.Contains($".locale.{languageCode}")).ToList();
                 logMessage += $"[TryLoadFromEmbeddedResource] Found {langResources.Count} resources for language {languageCode}\n";
                 
-                // Try to load each known file type
                 foreach (var fileName in localeFiles)
                 {
-                    // Look for resources that match the pattern and end with the file name
                     var matchingResources = langResources.Where(r => r.EndsWith(fileName, StringComparison.OrdinalIgnoreCase)).ToList();
                     if (matchingResources.Count > 0)
                     {
-                        string resourceName = matchingResources[0]; // Use the first matching resource
+                        string resourceName = matchingResources[0];
                         logMessage += $"[TryLoadFromEmbeddedResource] Loading resource: {resourceName}\n";
                         
                         using var stream = assembly.GetManifestResourceStream(resourceName);
@@ -391,7 +440,6 @@ namespace DevStackShared
                             var fileTranslations = LoadDictionaryFromStream(stream, logMessage);
                             if (fileTranslations != null)
                             {
-                                // Add as separate section based on filename
                                 string sectionName = Path.GetFileNameWithoutExtension(fileName);
                                 mergedTranslations[sectionName] = fileTranslations;
                                 anyFileLoaded = true;
@@ -406,13 +454,12 @@ namespace DevStackShared
                     }
                 }
                 
-                // Load application-specific files (pode haver múltiplos para DevStack)
                 foreach (var appSpecificFile in appSpecificFiles)
                 {
                     var appMatchingResources = langResources.Where(r => r.EndsWith(appSpecificFile, StringComparison.OrdinalIgnoreCase)).ToList();
                     if (appMatchingResources.Count > 0)
                     {
-                        string resourceName = appMatchingResources[0]; // Use the first matching resource
+                        string resourceName = appMatchingResources[0];
                         logMessage += $"[TryLoadFromEmbeddedResource] Loading app-specific resource: {resourceName}\n";
                         
                         using var stream = assembly.GetManifestResourceStream(resourceName);
@@ -421,7 +468,6 @@ namespace DevStackShared
                             var appTranslations = LoadDictionaryFromStream(stream, logMessage);
                             if (appTranslations != null)
                             {
-                                // Add app section with its own key
                                 string appSectionName = Path.GetFileNameWithoutExtension(appSpecificFile);
                                 mergedTranslations[appSectionName] = appTranslations;
                                 anyFileLoaded = true;
@@ -444,7 +490,6 @@ namespace DevStackShared
                     return true;
                 }
                 
-                // Try fallback to Portuguese (Brazil)
                 if (languageCode != "pt_BR")
                 {
                     logMessage += "[TryLoadFromEmbeddedResource] Trying fallback to pt_BR\n";
@@ -461,12 +506,16 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Attempts to load translations from a specific embedded resource by full resource name.
+        /// </summary>
+        /// <param name="fullResourceName">The full name of the embedded resource.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool TryLoadFromSpecificEmbeddedResource(string fullResourceName, string logMessage)
         {
             try
             {
-                // This method is used as a fallback for the old naming convention
-                // We'll try to extract the language code from the full resource name and use the new method
                 if (fullResourceName.Contains(".locale.") && fullResourceName.EndsWith(".json"))
                 {
                     int localeIndex = fullResourceName.IndexOf(".locale.") + 8;
@@ -501,15 +550,19 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Attempts to load translations from external JSON files on disk.
+        /// </summary>
+        /// <param name="languageCode">The language code to load translations for.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool TryLoadFromExternalFile(string languageCode, string logMessage)
         {
             try
             {
-                // Use AppContext.BaseDirectory como a maneira confiável de obter o diretório do aplicativo
                 string baseDir = AppContext.BaseDirectory;
                 logMessage += $"[TryLoadFromExternalFile] Base directory: {baseDir}\n";
                 
-                // Lista de arquivos para carregar para cada idioma
                 string[] localeFiles = { "common.json", "shared.json" };
                 string[] appSpecificFiles = _applicationType switch
                 {
@@ -519,7 +572,6 @@ namespace DevStackShared
                     _ => new[] { "gui.json", "cli.json" }
                 };
                 
-                // Tenta: ./locale/[lang]/
                 string langDir1 = Path.Combine(baseDir, "locale", languageCode);
                 logMessage += $"[TryLoadFromExternalFile] Checking language directory: {langDir1}\n";
                 
@@ -535,7 +587,6 @@ namespace DevStackShared
                     logMessage += $"[TryLoadFromExternalFile] Directory does not exist: {langDir1}\n";
                 }
                 
-                // Tenta: ../Shared/locale/[lang]/ (relativo ao executável)
                 string langDir2 = Path.Combine(baseDir, "..", "Shared", "locale", languageCode);
                 langDir2 = Path.GetFullPath(langDir2);
                 logMessage += $"[TryLoadFromExternalFile] Checking language directory: {langDir2}\n";
@@ -552,7 +603,6 @@ namespace DevStackShared
                     logMessage += $"[TryLoadFromExternalFile] Directory does not exist: {langDir2}\n";
                 }
                 
-                // Tenta: ./src/Shared/locale/[lang]/ (ambiente de desenvolvimento)
                 string langDir3 = Path.Combine(baseDir, "src", "Shared", "locale", languageCode);
                 langDir3 = Path.GetFullPath(langDir3);
                 logMessage += $"[TryLoadFromExternalFile] Checking development language directory: {langDir3}\n";
@@ -569,7 +619,6 @@ namespace DevStackShared
                     logMessage += $"[TryLoadFromExternalFile] Directory does not exist: {langDir3}\n";
                 }
                 
-                // Adicional: tenta o diretório raiz do workspace diretamente em desenvolvimento
                 string langDir4 = Path.Combine(baseDir, "..", "src", "Shared", "locale", languageCode);
                 langDir4 = Path.GetFullPath(langDir4);
                 logMessage += $"[TryLoadFromExternalFile] Checking alternative development directory: {langDir4}\n";
@@ -586,7 +635,6 @@ namespace DevStackShared
                     logMessage += $"[TryLoadFromExternalFile] Directory does not exist: {langDir4}\n";
                 }
                 
-                // Se não encontrado e não pt_BR, tenta com pt_BR
                 if (languageCode != "pt_BR")
                 {
                     logMessage += "[TryLoadFromExternalFile] Trying fallback to pt_BR\n";
@@ -604,6 +652,14 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Loads translations from a specific language directory containing JSON files.
+        /// </summary>
+        /// <param name="languageDir">Path to the language directory.</param>
+        /// <param name="localeFiles">Array of locale file names to load.</param>
+        /// <param name="appSpecificFiles">Array of application-specific file names to load.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool LoadFromLanguageDirectory(string languageDir, string[] localeFiles, string[] appSpecificFiles, string logMessage)
         {
             try
@@ -611,7 +667,6 @@ namespace DevStackShared
                 var mergedTranslations = new Dictionary<string, object>();
                 bool anyFileLoaded = false;
                 
-                // Load common files first
                 foreach (var fileName in localeFiles)
                 {
                     string filePath = Path.Combine(languageDir, fileName);
@@ -623,10 +678,8 @@ namespace DevStackShared
                         var fileTranslations = LoadDictionaryFromFile(filePath, logMessage);
                         if (fileTranslations != null)
                         {
-                            // Get the section name from filename (without extension)
                             string sectionName = Path.GetFileNameWithoutExtension(fileName);
                             
-                            // Add the translations to the root dictionary with the section name as the key
                             mergedTranslations[sectionName] = fileTranslations;
                             anyFileLoaded = true;
                             
@@ -639,7 +692,6 @@ namespace DevStackShared
                     }
                 }
                 
-                // Load application-specific files (pode haver múltiplos para DevStack)
                 foreach (var appSpecificFile in appSpecificFiles)
                 {
                     string appFilePath = Path.Combine(languageDir, appSpecificFile);
@@ -653,7 +705,6 @@ namespace DevStackShared
                         var appTranslations = LoadDictionaryFromFile(appFilePath, logMessage);
                         if (appTranslations != null)
                         {
-                            // Add the application-specific translations with the proper section name
                             mergedTranslations[appSectionName] = appTranslations;
                             anyFileLoaded = true;
                             
@@ -682,6 +733,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Loads and deserializes a JSON translation dictionary from a file.
+        /// </summary>
+        /// <param name="filePath">Path to the JSON file.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>Dictionary containing translations, or null if loading failed.</returns>
         private Dictionary<string, object>? LoadDictionaryFromFile(string filePath, string logMessage)
         {
             try
@@ -699,7 +756,6 @@ namespace DevStackShared
                 var dictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
                 logMessage += $"[LoadDictionaryFromFile] Successfully deserialized JSON with {dictionary?.Count ?? 0} root items\n";
                 
-                // Return the dictionary directly for the new file structure
                 return dictionary;
             }
             catch (Exception ex)
@@ -709,6 +765,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Loads and deserializes a JSON translation dictionary from a stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>Dictionary containing translations, or null if loading failed.</returns>
         private Dictionary<string, object>? LoadDictionaryFromStream(Stream stream, string logMessage)
         {
             try
@@ -727,7 +789,6 @@ namespace DevStackShared
                 var dictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
                 logMessage += $"[LoadDictionaryFromStream] Successfully deserialized JSON with {dictionary?.Count ?? 0} root items\n";
                 
-                // Return the dictionary directly for the new file structure
                 return dictionary;
             }
             catch (Exception ex)
@@ -737,17 +798,20 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Recursively merges two translation dictionaries, combining nested objects.
+        /// </summary>
+        /// <param name="target">The target dictionary to merge into.</param>
+        /// <param name="source">The source dictionary to merge from.</param>
         private void MergeDictionaries(Dictionary<string, object> target, Dictionary<string, object> source)
         {
             foreach (var kvp in source)
             {
                 if (target.ContainsKey(kvp.Key))
                 {
-                    // If both values are dictionaries, merge them recursively
                     if (target[kvp.Key] is JsonElement targetElement && targetElement.ValueKind == JsonValueKind.Object &&
                         kvp.Value is JsonElement sourceElement && sourceElement.ValueKind == JsonValueKind.Object)
                     {
-                        // For JsonElement dictionaries, we need to convert them to regular dictionaries first
                         var targetDict = JsonSerializer.Deserialize<Dictionary<string, object>>(targetElement.GetRawText()) ?? new Dictionary<string, object>();
                         var sourceDict = JsonSerializer.Deserialize<Dictionary<string, object>>(sourceElement.GetRawText()) ?? new Dictionary<string, object>();
                         MergeDictionaries(targetDict, sourceDict);
@@ -759,7 +823,6 @@ namespace DevStackShared
                     }
                     else
                     {
-                        // Overwrite with source value
                         target[kvp.Key] = kvp.Value;
                     }
                 }
@@ -770,6 +833,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Loads translations from a stream containing JSON data.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool LoadFromStream(Stream stream, string logMessage)
         {
             try
@@ -787,6 +856,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Loads translations from a JSON file on disk.
+        /// </summary>
+        /// <param name="filePath">Path to the JSON file.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if translations were successfully loaded, false otherwise.</returns>
         private bool LoadFromFile(string filePath, string logMessage)
         {
             try
@@ -803,6 +878,12 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Deserializes JSON string into the translations dictionary.
+        /// </summary>
+        /// <param name="json">JSON string to deserialize.</param>
+        /// <param name="logMessage">Log message string for debugging.</param>
+        /// <returns>True if deserialization was successful, false otherwise.</returns>
         private bool DeserializeJson(string json, string logMessage)
         {
             try
@@ -832,12 +913,14 @@ namespace DevStackShared
             }
         }
         
+        /// <summary>
+        /// Fallback method that uses hardcoded translations when loading from resources fails.
+        /// </summary>
+        /// <param name="languageCode">The language code for which to generate hardcoded translations.</param>
         private void UseHardcodedTranslations(string languageCode)
         {
-            // Create basic translations in memory as a last resort
             _translations = new Dictionary<string, object>();
             
-            // Common buttons (always needed)
             var buttons = new Dictionary<string, object>
             {
                 { "back", "← Voltar" },
@@ -848,7 +931,6 @@ namespace DevStackShared
                 { "cancel", "Cancelar" }
             };
             
-            // Common items
             var common = new Dictionary<string, object>
             {
                 { "language_name", languageCode == "pt_BR" ? "Português (Brasil)" : 
@@ -857,13 +939,10 @@ namespace DevStackShared
                 { "unknown", "Desconhecido" }
             };
             
-            // Add to root dictionary as sections
             _translations["common"] = common;
             
-            // App-specific strings (minimal set)
             var appStrings = new Dictionary<string, object>();
             
-            // Add welcome section with basic items
             var welcome = new Dictionary<string, object>
             {
                 { "title", "Welcome" },
@@ -876,14 +955,12 @@ namespace DevStackShared
             appStrings["welcome"] = welcome;
             appStrings["window_title"] = "DevStack Manager v{0}";
             
-            // Add shared section
             var shared = new Dictionary<string, object>
             {
                 { "unknown", "Desconhecido" }
             };
             _translations["shared"] = shared;
 
-            // Add app-specific section based on application type
             if (_applicationType == ApplicationType.Installer)
             {
                 _translations["installer"] = appStrings;
@@ -900,6 +977,10 @@ namespace DevStackShared
             System.Diagnostics.Debug.WriteLine($"[UseHardcodedTranslations] Created basic translations with {_translations.Count} root keys");
         }
         
+        /// <summary>
+        /// Appends a message to the localization debug log file.
+        /// </summary>
+        /// <param name="message">The message to append to the log.</param>
         private void AppendToLogFile(string message)
         {
             if (!string.IsNullOrEmpty(_logPath))
@@ -910,11 +991,18 @@ namespace DevStackShared
                 }
                 catch
                 {
-                    // Ignore errors when writing to log file
                 }
             }
         }
 
+        /// <summary>
+        /// Retrieves a translated string for the specified key with optional formatting arguments.
+        /// Supports dot-notation keys (e.g., "gui.config_tab.title") for nested translations.
+        /// Falls back to the key itself if translation is not found.
+        /// </summary>
+        /// <param name="key">Translation key, potentially with dot notation for nested values.</param>
+        /// <param name="args">Optional formatting arguments for string.Format.</param>
+        /// <returns>The translated string, or the key if not found.</returns>
         public string GetString(string key, params object[] args)
         {
             string logMessage = $"[GetString] Looking for key '{key}'\n";
@@ -923,34 +1011,26 @@ namespace DevStackShared
             {
                 object? value = null;
                 
-                // With the new merged structure, handle dotted and non-dotted keys
                 if (key.Contains('.'))
                 {
-                    // For dot-notation keys like "common.unknown" or "buttons.next"
                     string[] parts = key.Split('.');
                     if (parts.Length >= 2)
                     {
                         string section = parts[0];
                         
-                        // CRITICAL: Special handling for JSON file sections like "gui.config_tab.themes.title"
-                        // In this case, "gui" is the actual name of a JSON file (gui.json) 
-                        // that has been loaded into the translations dictionary
                         if (section == "gui" || section == "installer" || section == "uninstaller" 
                             || section == "common" || section == "shared")
                         {
                             logMessage += $"[GetString] Processing file-section key '{key}' where '{section}' is a JSON file\n";
                             
-                            // Try to get the file section from root
                             if (_translations.ContainsKey(section))
                             {
                                 logMessage += $"[GetString] Found file section '{section}' in root\n";
                                 
-                                // For example, in "gui.config_tab.themes.title", get "config_tab.themes.title"
                                 string subPath = string.Join(".", parts.Skip(1));
                                 
                                 if (_translations[section] is Dictionary<string, object> sectionDict)
                                 {
-                                    // Navigate through the section dictionary with the subpath
                                     value = GetNestedValue(sectionDict, subPath);
                                     if (value != null)
                                     {
@@ -959,13 +1039,11 @@ namespace DevStackShared
                                 }
                                 else if (_translations[section] is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
                                 {
-                                    // Special handling for multi-level keys in JsonElement
                                     try
                                     {
                                         JsonElement currentElement = jsonElement;
                                         bool found = true;
                                         
-                                        // Navigate through the remaining parts of the key after the section
                                         for (int i = 1; i < parts.Length; i++)
                                         {
                                             string part = parts[i];
@@ -973,7 +1051,6 @@ namespace DevStackShared
                                             {
                                                 currentElement = property;
                                                 
-                                                // If this is the last part, we found the value
                                                 if (i == parts.Length - 1)
                                                 {
                                                     value = property;
@@ -1004,12 +1081,10 @@ namespace DevStackShared
                                 logMessage += $"[GetString] File section '{section}' not found in root dictionary\n";
                             }
                         }
-                        // Handle other section types normally
                         else if (_translations.ContainsKey(section))
                         {
                             logMessage += $"[GetString] Found section '{section}' in root, trying to access nested key\n";
                             
-                            // Extract the remaining key parts after the section
                             string remainingKey = string.Join(".", parts.Skip(1));
                             
                             if (_translations[section] is Dictionary<string, object> sectionDict)
@@ -1018,13 +1093,11 @@ namespace DevStackShared
                             }
                             else if (_translations[section] is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
                             {
-                                // Special handling for multi-level keys in JsonElement
                                 try
                                 {
                                     JsonElement currentElement = jsonElement;
                                     bool found = true;
                                     
-                                    // Navigate through each part of the key
                                     foreach (string part in parts.Skip(1))
                                     {
                                         if (currentElement.TryGetProperty(part, out JsonElement property))
@@ -1057,12 +1130,10 @@ namespace DevStackShared
                         }
                     }
                     
-                    // Special handling for common button patterns (buttons.xxx)
                     if (value == null && key.StartsWith("buttons."))
                     {
                         string buttonKey = key.Substring("buttons.".Length);
                         
-                        // Look for root-level buttons object
                         if (_translations.ContainsKey("buttons"))
                         {
                             logMessage += $"[GetString] Looking for button '{buttonKey}' in buttons section\n";
@@ -1082,25 +1153,21 @@ namespace DevStackShared
                         }
                     }
                     
-                    // Special handling for file-specific sections (like gui.config_tab.themes.title)
                     if (value == null && parts.Length >= 3)
                     {
-                        string fileSection = parts[0]; // For example "gui"
-                        string secondLevel = parts[1]; // For example "config_tab"
+                        string fileSection = parts[0];
+                        string secondLevel = parts[1];
                         
-                        // Try to navigate directly in the JSON structure
                         if (_translations.ContainsKey(fileSection))
                         {
                             logMessage += $"[GetString] Trying multi-level key navigation in '{fileSection}' section\n";
                             
                             if (_translations[fileSection] is Dictionary<string, object> fileSectionDict)
                             {
-                                // Try to navigate through all remaining parts
                                 Dictionary<string, object> currentDict = fileSectionDict;
                                 bool success = true;
                                 object? currentValue = null;
                                 
-                                // Start from the second part (skip the file section name)
                                 for (int i = 1; i < parts.Length; i++)
                                 {
                                     string part = parts[i];
@@ -1109,7 +1176,6 @@ namespace DevStackShared
                                     {
                                         currentValue = currentDict[part];
                                         
-                                        // If this is the last part, we've found our value
                                         if (i == parts.Length - 1)
                                         {
                                             value = currentValue;
@@ -1117,27 +1183,23 @@ namespace DevStackShared
                                             break;
                                         }
                                         
-                                        // If not the last part, the value should be another dictionary
                                         if (currentValue is Dictionary<string, object> nextDict)
                                         {
                                             currentDict = nextDict;
                                         }
                                         else if (currentValue is JsonElement nextElement && nextElement.ValueKind == JsonValueKind.Object)
                                         {
-                                            // If it's a JsonElement, we need to change our approach
                                             try
                                             {
                                                 JsonElement currentElement = nextElement;
                                                 bool found = true;
                                                 
-                                                // Continue from the current position in the path
                                                 for (int j = i + 1; j < parts.Length; j++)
                                                 {
                                                     if (currentElement.TryGetProperty(parts[j], out JsonElement property))
                                                     {
                                                         currentElement = property;
                                                         
-                                                        // If this is the last part, we've found our value
                                                         if (j == parts.Length - 1)
                                                         {
                                                             value = currentElement;
@@ -1153,7 +1215,7 @@ namespace DevStackShared
                                                 
                                                 if (found && value != null)
                                                 {
-                                                    break; // We found the value, exit the outer loop
+                                                    break;
                                                 }
                                             }
                                             catch (Exception ex)
@@ -1165,14 +1227,12 @@ namespace DevStackShared
                                         }
                                         else
                                         {
-                                            // Not a dictionary or object JsonElement, can't continue navigation
                                             success = false;
                                             break;
                                         }
                                     }
                                     else
                                     {
-                                        // Key not found at this level
                                         success = false;
                                         break;
                                     }
@@ -1185,19 +1245,16 @@ namespace DevStackShared
                             }
                             else if (_translations[fileSection] is JsonElement rootElement && rootElement.ValueKind == JsonValueKind.Object)
                             {
-                                // Direct JsonElement navigation for all parts
                                 try
                                 {
                                     JsonElement currentElement = rootElement;
                                     
-                                    // Start from the second part
                                     for (int i = 1; i < parts.Length; i++)
                                     {
                                         if (currentElement.TryGetProperty(parts[i], out JsonElement property))
                                         {
                                             currentElement = property;
                                             
-                                            // If this is the last part, we've found our value
                                             if (i == parts.Length - 1)
                                             {
                                                 value = currentElement;
@@ -1219,7 +1276,6 @@ namespace DevStackShared
                         }
                     }
                     
-                    // If still not found, try direct access as fallback
                     if (value == null)
                     {
                         logMessage += $"[GetString] Trying direct access for dotted key '{key}'\n";
@@ -1228,9 +1284,7 @@ namespace DevStackShared
                 }
                 else
                 {
-                    // For simple keys without dots, try various sections
                     
-                    // Try direct access first (might be a root key)
                     logMessage += $"[GetString] Trying direct access for simple key '{key}'\n";
                     if (_translations.ContainsKey(key))
                     {
@@ -1238,7 +1292,6 @@ namespace DevStackShared
                         logMessage += $"[GetString] Found value for '{key}' at root level\n";
                     }
                     
-                    // Try common section first (most likely for simple keys)
                     if (value == null && _translations.ContainsKey("common"))
                     {
                         logMessage += $"[GetString] Trying common section for '{key}'\n";
@@ -1257,7 +1310,6 @@ namespace DevStackShared
                         }
                     }
                     
-                    // Try application-specific section
                     if (value == null)
                     {
                         string applicationKey = _applicationType switch
@@ -1286,7 +1338,6 @@ namespace DevStackShared
                         }
                     }
                     
-                    // Try shared section
                     if (value == null && _translations.ContainsKey("shared"))
                     {
                         logMessage += $"[GetString] Trying shared section for '{key}'\n";
@@ -1305,7 +1356,6 @@ namespace DevStackShared
                         }
                     }
                     
-                    // Try buttons section as a special case for common UI elements
                     if (value == null && _translations.ContainsKey("buttons"))
                     {
                         logMessage += $"[GetString] Trying buttons section for '{key}'\n";
@@ -1324,15 +1374,12 @@ namespace DevStackShared
                         }
                     }
                     
-                    // If still not found, try with the old nested access method
                     if (value == null)
                     {
-                        // Try common section
                         string commonKey = $"common.{key}";
                         logMessage += $"[GetString] Trying old-style common section '{commonKey}'\n";
                         value = GetNestedValue(_translations, commonKey);
                         
-                        // Try application-specific section
                         if (value == null)
                         {
                             string applicationKey = _applicationType switch
@@ -1346,7 +1393,6 @@ namespace DevStackShared
                             value = GetNestedValue(_translations, appKey);
                         }
                         
-                        // Try shared section
                         if (value == null)
                         {
                             string sharedKey = $"shared.{key}";
@@ -1354,7 +1400,6 @@ namespace DevStackShared
                             value = GetNestedValue(_translations, sharedKey);
                         }
                         
-                        // Try buttons section
                         if (value == null)
                         {
                             string buttonsKey = $"buttons.{key}";
@@ -1377,14 +1422,12 @@ namespace DevStackShared
                         }
                         else
                         {
-                            // Not a string value
                             result = jsonElement.ToString() ?? key;
                             logMessage += $"[GetString] Warning: Value for '{key}' is not a string but {jsonElement.ValueKind}\n";
                         }
                     }
                     else if (value is Dictionary<string, object> dict)
                     {
-                        // Value is a dictionary, not a string
                         result = key;
                         logMessage += $"[GetString] Warning: Value for '{key}' is a dictionary, not a string\n";
                     }
@@ -1393,7 +1436,6 @@ namespace DevStackShared
                         result = value.ToString() ?? key;
                     }
                     
-                    // Format if needed
                     if (args.Length > 0)
                     {
                         try
@@ -1403,7 +1445,6 @@ namespace DevStackShared
                         catch (FormatException ex)
                         {
                             logMessage += $"[GetString] Format error for '{key}': {ex.Message}\n";
-                            // Return original if formatting fails
                         }
                     }
                     
@@ -1412,11 +1453,9 @@ namespace DevStackShared
                 }
                 else
                 {
-                    // Special case for debugging - log missing translations in detail
                     logMessage += $"[GetString] *** MISSING TRANSLATION: '{key}' ***\n";
                     logMessage += $"[GetString] Available root keys: {string.Join(", ", _translations.Keys)}\n";
                     
-                    // Print translation dictionary structure for debugging
                     if (_translations.Count > 0)
                     {
                         logMessage += "[GetString] Translation structure:\n";
@@ -1424,7 +1463,6 @@ namespace DevStackShared
                         {
                             logMessage += $"[GetString]   - {rootKey}: {_translations[rootKey]?.GetType().Name ?? "null"}\n";
                             
-                            // For top-level dictionaries, show second level keys
                             if (_translations[rootKey] is JsonElement rootElement && 
                                 rootElement.ValueKind == JsonValueKind.Object)
                             {
@@ -1460,17 +1498,23 @@ namespace DevStackShared
             {
                 logMessage += $"[GetString] Error looking up '{key}': {ex.Message}\n";
                 AppendToLogFile(logMessage);
-                return key; // Return the key itself if translation fails
+                return key;
             }
         }
 
+        /// <summary>
+        /// Retrieves a nested value from a dictionary hierarchy using dot-notation key.
+        /// Supports both Dictionary and JsonElement objects.
+        /// </summary>
+        /// <param name="dict">Root dictionary to search.</param>
+        /// <param name="key">Dot-separated key path (e.g., "section.subsection.key").</param>
+        /// <returns>The nested value if found, null otherwise.</returns>
         private object? GetNestedValue(Dictionary<string, object> dict, string key)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"GetNestedValue: Looking for nested key '{key}'");
                 
-                // Special case for empty dictionaries
                 if (dict.Count == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("GetNestedValue: Dictionary is empty");
@@ -1479,7 +1523,6 @@ namespace DevStackShared
                 
                 System.Diagnostics.Debug.WriteLine($"GetNestedValue: Dictionary has {dict.Count} root keys: {string.Join(", ", dict.Keys)}");
                 
-                // Split the key by dots
                 string[] keyParts = key.Split('.');
                 object current = dict;
                 
@@ -1502,7 +1545,6 @@ namespace DevStackShared
                     }
                     else if (current is JsonElement jsonElement)
                     {
-                        // Check the value kind before attempting to access properties
                         if (jsonElement.ValueKind == JsonValueKind.Object)
                         {
                             if (jsonElement.TryGetProperty(keyPart, out JsonElement property))
@@ -1512,7 +1554,6 @@ namespace DevStackShared
                             }
                             else
                             {
-                                // Print available properties for debugging
                                 try 
                                 {
                                     var availableKeys = new List<string>();
@@ -1531,7 +1572,6 @@ namespace DevStackShared
                         }
                         else if (jsonElement.ValueKind == JsonValueKind.Array)
                         {
-                            // Handle array indexing if the key part is a number
                             if (int.TryParse(keyPart, out int index) && index >= 0)
                             {
                                 try
@@ -1583,11 +1623,15 @@ namespace DevStackShared
             }
         }
 
+        /// <summary>
+        /// Gets an array of available language codes by scanning for C# provider classes.
+        /// Falls back to a default list if no providers are found.
+        /// </summary>
+        /// <returns>Array of language codes (e.g., ["pt_BR", "en_US", "de_DE"]).</returns>
         public string[] GetAvailableLanguages()
         {
             try
             {
-                // Coletar idiomas disponíveis a partir dos provedores C#
                 HashSet<string> allLanguages = new HashSet<string>();
                 
                 try
@@ -1602,7 +1646,6 @@ namespace DevStackShared
                     
                     foreach (var providerType in providerTypes)
                     {
-                        // O nome da classe é o código do idioma (ex: pt_BR, en_US)
                         allLanguages.Add(providerType.Name);
                         System.Diagnostics.Debug.WriteLine($"Found language provider: {providerType.Name}");
                     }
@@ -1612,14 +1655,12 @@ namespace DevStackShared
                     System.Diagnostics.Debug.WriteLine($"Error checking for language providers: {ex.Message}");
                 }
                 
-                // Se nenhum provedor foi encontrado, retornar lista padrão
                 if (allLanguages.Count == 0)
                 {
                     allLanguages = new HashSet<string> { "pt_BR", "en_US", "de_DE", "es_ES", "fr_FR", "it_IT" };
                     System.Diagnostics.Debug.WriteLine("No providers found, using default language list");
                 }
                 
-                // Ordenar idiomas e remover duplicatas
                 var result = allLanguages.OrderBy(l => l).ToArray();
                 System.Diagnostics.Debug.WriteLine($"Final available languages: {string.Join(", ", result)}");
                 
@@ -1632,11 +1673,16 @@ namespace DevStackShared
             }
         }
 
+        /// <summary>
+        /// Gets the display name for a language code (e.g., "Português (Brasil)" for "pt_BR").
+        /// Uses a default mapping if translation loading fails.
+        /// </summary>
+        /// <param name="languageCode">Language code to get name for.</param>
+        /// <returns>The display name for the language.</returns>
         public string GetLanguageName(string languageCode)
         {
             System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Getting language name for {languageCode}");
             
-            // Mapa de nomes de idiomas padrão caso a tradução falhe
             Dictionary<string, string> defaultNames = new Dictionary<string, string>
             {
                 { "pt_BR", "Português (Brasil)" },
@@ -1649,7 +1695,6 @@ namespace DevStackShared
             
             try
             {
-                // Para evitar chamadas recursivas e interferências, vamos usar apenas os nomes padrão por enquanto
                 if (defaultNames.ContainsKey(languageCode))
                 {
                     System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Using default name for {languageCode}: {defaultNames[languageCode]}");
@@ -1663,7 +1708,6 @@ namespace DevStackShared
             {
                 System.Diagnostics.Debug.WriteLine($"[GetLanguageName] Error getting language name: {ex.Message}");
                 
-                // Em caso de erro, use os nomes padrão
                 if (defaultNames.ContainsKey(languageCode))
                 {
                     return defaultNames[languageCode];
@@ -1674,9 +1718,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica um idioma em tempo real, dispara evento e faz fallback se necessário
-        /// Implementação idêntica ao ApplyTheme do ThemeManager
+        /// Applies a language change at runtime, updating the static language and firing events.
+        /// Reloads translations for the specified language with fallback to Portuguese (Brazil) on error.
         /// </summary>
+        /// <param name="languageCode">Language code to apply.</param>
         public static void ApplyLanguage(string languageCode)
         {
             string logMessage = $"[ApplyLanguage] Applying language: {languageCode}\n";
@@ -1687,7 +1732,6 @@ namespace DevStackShared
                     _currentLanguageStatic = languageCode;
                     logMessage += $"[ApplyLanguage] Language set to: {_currentLanguageStatic}\n";
                     
-                    // Chama LoadLanguage na instância se existir
                     if (Instance != null)
                     {
                         Instance._suppressLanguageChangedEvent = false;
@@ -1705,7 +1749,6 @@ namespace DevStackShared
                 System.Diagnostics.Debug.WriteLine(logMessage);
                 Instance?.AppendToLogFile(logMessage);
                 
-                // Fallback para idioma padrão
                 _currentLanguageStatic = "pt_BR";
                 OnLanguageChangedStatic?.Invoke(_currentLanguageStatic);
             }

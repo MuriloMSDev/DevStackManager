@@ -10,21 +10,51 @@ using System.Windows.Data;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Instalar" - instala novas ferramentas
+    /// Install tab component for installing new development tools and creating shortcuts.
+    /// Provides component selection, version selection, installation progress, and shortcut creation.
+    /// Uses GuiConsolePanel for installation output display.
     /// </summary>
     public static class GuiInstallTab
     {
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const double TITLE_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Font size for section headers.
+        /// </summary>
         private const double SECTION_FONT_SIZE = 14;
+        
+        /// <summary>
+        /// Font size for buttons.
+        /// </summary>
         private const double BUTTON_FONT_SIZE = 14;
+        
+        /// <summary>
+        /// Height of input controls (ComboBoxes, TextBoxes).
+        /// </summary>
         private const double CONTROL_HEIGHT = 30;
+        
+        /// <summary>
+        /// Height of action buttons.
+        /// </summary>
         private const double BUTTON_HEIGHT = 40;
 
         /// <summary>
-        /// Converter que transforma o Name técnico (string) em Label do componente
+        /// Converter that transforms technical component Name to user-friendly Label.
+        /// Used in ComboBox ItemTemplates to display localized component names.
         /// </summary>
         public class NameToLabelConverter : IValueConverter
         {
+            /// <summary>
+            /// Converts component Name string to Label using ComponentsFactory.
+            /// </summary>
+            /// <param name="value">Component Name string.</param>
+            /// <param name="targetType">Target property type.</param>
+            /// <param name="parameter">Converter parameter (unused).</param>
+            /// <param name="culture">Culture info.</param>
+            /// <returns>Component Label or original Name if component not found.</returns>
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 if (value is string name && !string.IsNullOrWhiteSpace(name))
@@ -35,6 +65,9 @@ namespace DevStackManager
                 return value ?? string.Empty;
             }
 
+            /// <summary>
+            /// Not implemented - one-way conversion only.
+            /// </summary>
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 return Binding.DoNothing;
@@ -42,8 +75,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o conteúdo completo da aba "Instalar"
+        /// Creates the complete Install tab content with two-column layout.
+        /// Left column: component selection and installation controls.
+        /// Right column: console output for installation progress.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding and localization.</param>
+        /// <returns>Grid with install controls and console panel.</returns>
         public static Grid CreateInstallContent(DevStackGui mainWindow)
         {
             var grid = CreateTwoColumnGrid();
@@ -59,6 +96,10 @@ namespace DevStackManager
             return grid;
         }
 
+        /// <summary>
+        /// Creates two-column grid layout for Install tab.
+        /// </summary>
+        /// <returns>Grid with two equal-width columns.</returns>
         private static Grid CreateTwoColumnGrid()
         {
             var grid = new Grid();
@@ -68,8 +109,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de seleção de componentes para instalação
+        /// Creates the component selection panel with installation and shortcut sections.
+        /// Includes loading overlay for installation progress feedback.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
+        /// <returns>UIElement with selection controls and loading overlay.</returns>
         private static UIElement CreateInstallSelectionPanel(DevStackGui mainWindow)
         {
             var grid = new Grid();
@@ -87,6 +131,11 @@ namespace DevStackManager
             return grid;
         }
 
+        /// <summary>
+        /// Adds the title section to the install panel.
+        /// </summary>
+        /// <param name="panel">StackPanel to add title to.</param>
+        /// <param name="mainWindow">Main window instance for localization.</param>
         private static void AddTitleSection(StackPanel panel, DevStackGui mainWindow)
         {
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(
@@ -97,6 +146,11 @@ namespace DevStackManager
             panel.Children.Add(titleLabel);
         }
 
+        /// <summary>
+        /// Adds the component installation section with selectors and install button.
+        /// </summary>
+        /// <param name="panel">StackPanel to add controls to.</param>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
         private static void AddInstallSection(StackPanel panel, DevStackGui mainWindow)
         {
             var sectionLabel = CreateSectionLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.sections.install_component"));
@@ -112,6 +166,11 @@ namespace DevStackManager
             panel.Children.Add(installButton);
         }
 
+        /// <summary>
+        /// Creates a styled section label with bold font.
+        /// </summary>
+        /// <param name="text">Label text.</param>
+        /// <returns>Styled Label with section formatting.</returns>
         private static Label CreateSectionLabel(string text)
         {
             var label = DevStackShared.ThemeManager.CreateStyledLabel(text, true);
@@ -120,6 +179,13 @@ namespace DevStackManager
             return label;
         }
 
+        /// <summary>
+        /// Creates the component selection ComboBox with data binding.
+        /// Binds to AvailableComponents and SelectedComponent properties.
+        /// Uses NameToLabelConverter to display user-friendly names.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
+        /// <returns>UIElement with label and ComboBox.</returns>
         private static UIElement CreateComponentComboBox(DevStackGui mainWindow)
         {
             var container = new StackPanel();
@@ -143,6 +209,11 @@ namespace DevStackManager
             return container;
         }
 
+        /// <summary>
+        /// Creates DataTemplate for component ComboBox items.
+        /// Uses NameToLabelConverter to display component Labels instead of Names.
+        /// </summary>
+        /// <returns>DataTemplate with TextBlock and converter binding.</returns>
         private static DataTemplate CreateComponentItemTemplate()
         {
             var template = new DataTemplate();
@@ -153,6 +224,13 @@ namespace DevStackManager
             return template;
         }
 
+        /// <summary>
+        /// Creates the version selection ComboBox with data binding.
+        /// Binds to AvailableVersions and SelectedVersion properties.
+        /// Automatically populated when component is selected.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
+        /// <returns>UIElement with label and ComboBox.</returns>
         private static UIElement CreateVersionComboBox(DevStackGui mainWindow)
         {
             var container = new StackPanel();
@@ -175,6 +253,12 @@ namespace DevStackManager
             return container;
         }
 
+        /// <summary>
+        /// Creates the Install button with click handler.
+        /// Styled with Success theme and calls HandleInstallButtonClick on click.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for event handling.</param>
+        /// <returns>Styled Install button.</returns>
         private static Button CreateInstallButton(DevStackGui mainWindow)
         {
             var button = DevStackShared.ThemeManager.CreateStyledButton(
@@ -189,6 +273,12 @@ namespace DevStackManager
             return button;
         }
 
+        /// <summary>
+        /// Handles Install button click event.
+        /// Sets IsInstallingComponent flag, calls InstallComponent, and resets state.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
+        /// <returns>Task representing the async operation.</returns>
         private static async Task HandleInstallButtonClick(DevStackGui mainWindow)
         {
             mainWindow.IsInstallingComponent = true;
@@ -202,6 +292,11 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Resets installation state after completion.
+        /// Clears IsInstallingComponent flag and selected component/version.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
         private static void ResetInstallState(DevStackGui mainWindow)
         {
             mainWindow.IsInstallingComponent = false;
@@ -209,6 +304,12 @@ namespace DevStackManager
             mainWindow.SelectedVersion = string.Empty;
         }
 
+        /// <summary>
+        /// Creates loading overlay that displays during component installation.
+        /// Visibility bound to IsInstallingComponent property.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for property change notification.</param>
+        /// <returns>UIElement with loading indicator.</returns>
         private static UIElement CreateLoadingOverlay(DevStackGui mainWindow)
         {
             var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
@@ -227,12 +328,17 @@ namespace DevStackManager
             return overlay;
         }
 
+        /// <summary>
+        /// Adds the shortcut creation section to the install panel.
+        /// Provides component/version selection and shortcut creation button.
+        /// </summary>
+        /// <param name="panel">StackPanel to add shortcut controls to.</param>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
         private static void AddShortcutSection(StackPanel panel, DevStackGui mainWindow)
         {
             var sectionLabel = CreateSectionLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.sections.create_shortcuts"));
             panel.Children.Add(sectionLabel);
 
-            // Componente Instalado
             var installedComponentLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.installed_component"));
             panel.Children.Add(installedComponentLabel);
 
@@ -241,13 +347,12 @@ namespace DevStackManager
             installedComponentCombo.Height = 30;
             installedComponentCombo.Name = "ShortcutComponentCombo";
             
-            // Binding para a coleção de componentes que suportam shortcuts
             var shortcutComponentsBinding = new Binding("ShortcutComponents") { Source = mainWindow };
             installedComponentCombo.SetBinding(ComboBox.ItemsSourceProperty, shortcutComponentsBinding);
             
             var selectedShortcutComponentBinding = new Binding("SelectedShortcutComponent") { Source = mainWindow };
             installedComponentCombo.SetBinding(ComboBox.SelectedValueProperty, selectedShortcutComponentBinding);
-            // Mostrar Label para cada item (items são strings com o Name técnico)
+            
             var shortcutItemTemplate = new DataTemplate();
             var shortcutTextFactory = new FrameworkElementFactory(typeof(TextBlock));
             shortcutTextFactory.SetBinding(TextBlock.TextProperty, new Binding(".") { Converter = new NameToLabelConverter() });
@@ -255,7 +360,6 @@ namespace DevStackManager
             installedComponentCombo.ItemTemplate = shortcutItemTemplate;
             panel.Children.Add(installedComponentCombo);
 
-            // Versão Instalada
             var installedVersionLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.install_tab.labels.installed_version"));
             panel.Children.Add(installedVersionLabel);
 
@@ -264,7 +368,6 @@ namespace DevStackManager
             installedVersionCombo.Height = 30;
             installedVersionCombo.Name = "ShortcutVersionCombo";
             
-            // Binding para a coleção de versões do componente selecionado
             var shortcutVersionsBinding = new Binding("ShortcutVersions") { Source = mainWindow };
             installedVersionCombo.SetBinding(ComboBox.ItemsSourceProperty, shortcutVersionsBinding);
             
@@ -272,7 +375,6 @@ namespace DevStackManager
             installedVersionCombo.SetBinding(ComboBox.SelectedValueProperty, selectedShortcutVersionBinding);
             panel.Children.Add(installedVersionCombo);
 
-            // Botão Criar Atalho
             var createShortcutButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.install_tab.buttons.create_shortcut"), async (s, e) =>
             {
                 await CreateShortcutForComponent(mainWindow);
@@ -283,8 +385,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Instala o componente selecionado
+        /// Installs the selected component with optional version specification.
+        /// Uses InstallManager for installation and updates PATH environment variable.
+        /// Outputs progress to Install console tab and updates installed components list.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
+        /// <returns>Task representing the async installation operation.</returns>
         public static async Task InstallComponent(DevStackGui mainWindow)
         {
             if (string.IsNullOrEmpty(mainWindow.SelectedComponent))
@@ -295,7 +401,7 @@ namespace DevStackManager
 
             mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.installing", mainWindow.SelectedComponent);
 
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, mainWindow, async progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, async progress =>
             {
                 try
                 {
@@ -305,7 +411,6 @@ namespace DevStackManager
 
                     await InstallManager.InstallCommands(args);
 
-                    // Atualizar PATH após instalação bem-sucedida
                     if (DevStackConfig.pathManager != null)
                     {
                         DevStackConfig.pathManager.AddBinDirsToPath();
@@ -317,7 +422,6 @@ namespace DevStackManager
 
                     mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.install_tab.messages.success", mainWindow.SelectedComponent);
 
-                    // Recarregar lista de instalados
                     await mainWindow.LoadInstalledComponents();
                     await mainWindow.LoadShortcutComponents();
                 }
@@ -331,8 +435,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria atalho para o componente selecionado
+        /// Creates a desktop/bin shortcut for the selected component and version.
+        /// Validates component supports shortcuts, locates installation directory, and creates global bin shortcut.
+        /// Outputs progress to Install console tab.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
+        /// <returns>Task representing the async shortcut creation operation.</returns>
         public static async Task CreateShortcutForComponent(DevStackGui mainWindow)
         {
             if (string.IsNullOrEmpty(mainWindow.SelectedShortcutComponent))
@@ -349,26 +457,23 @@ namespace DevStackManager
 
             mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.status_bar.creating_shortcut", mainWindow.SelectedShortcutComponent, mainWindow.SelectedShortcutVersion);
 
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, mainWindow, async progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Install, async progress =>
             {
                 await Task.Run(() =>
                 {
                     try
                     {
-                        // Obter o componente
                         var comp = Components.ComponentsFactory.GetComponent(mainWindow.SelectedShortcutComponent);
                         if (comp == null)
                         {
                             throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_component_not_found", mainWindow.SelectedShortcutComponent));
                         }
 
-                        // Verificar se o componente tem CreateBinShortcut definido
                         if (string.IsNullOrEmpty(comp.CreateBinShortcut))
                         {
                             throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_not_supported", mainWindow.SelectedShortcutComponent));
                         }
 
-                        // Construir caminhos
                         string baseToolDir = !string.IsNullOrEmpty(comp.ToolDir) ? comp.ToolDir : System.IO.Path.Combine(DevStackConfig.baseDir, comp.Name);
                         string subDir = $"{comp.Name}-{mainWindow.SelectedShortcutVersion}";
                         string targetDir = System.IO.Path.Combine(baseToolDir, subDir);
@@ -378,17 +483,14 @@ namespace DevStackManager
                             throw new Exception(mainWindow.LocalizationManager.GetString("gui.install_tab.messages.shortcut_install_dir_not_found", targetDir));
                         }
 
-                        // Criar atalho
                         string shortcutName = comp.CreateBinShortcut.Replace("{version}", mainWindow.SelectedShortcutVersion);
                         string sourceDir = targetDir;
                         string sourcePattern;
 
-                        // Se ExecutablePattern estiver definido, usar ele como source file
                         if (!string.IsNullOrEmpty(comp.ExecutablePattern))
                         {
                             sourcePattern = comp.ExecutablePattern;
 
-                            // Se ExecutableFolder estiver definido, usar ele como source directory
                             if (!string.IsNullOrEmpty(comp.ExecutableFolder))
                             {
                                 if (System.IO.Path.IsPathRooted(comp.ExecutableFolder))
@@ -403,7 +505,6 @@ namespace DevStackManager
                         }
                         else
                         {
-                            // Fallback para usar o próprio CreateBinShortcut como source
                             sourcePattern = shortcutName;
                         }
 
@@ -415,7 +516,7 @@ namespace DevStackManager
                     {
                         progress.Report(mainWindow.LocalizationManager.GetString("gui.status_bar.shortcut_create_error", ex.Message));
                         mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.status_bar.shortcut_error", mainWindow.SelectedShortcutComponent);
-                        DevStackConfig.WriteLog($"Erro ao criar atalho na GUI: {ex}");
+                        DevStackConfig.WriteLog($"Error creating shortcut in GUI: {ex}");
                     }
                 });
             });

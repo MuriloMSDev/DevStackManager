@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class PhpVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the PHP component.
+        /// </summary>
         public string ComponentName => "PHP";
+        /// <summary>
+        /// Gets the unique identifier for the PHP component.
+        /// </summary>
         public string ComponentId => "php";
         
+        /// <summary>
+        /// List of available PHP versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("5.5.0", "https://windows.php.net/downloads/releases/archives/php-5.5.0-Win32-VC11-x64.zip"),
@@ -401,16 +410,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("8.4.14", "https://windows.php.net/downloads/releases/php-8.4.14-Win32-vs17-x64.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available PHP versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available PHP version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific PHP version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

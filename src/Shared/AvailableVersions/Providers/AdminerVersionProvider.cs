@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class AdminerVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Adminer component.
+        /// </summary>
         public string ComponentName => "Adminer";
+        /// <summary>
+        /// Gets the unique identifier for the Adminer component.
+        /// </summary>
         public string ComponentId => "adminer";
         
+        /// <summary>
+        /// List of available Adminer versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("4.2.5", "https://github.com/vrana/adminer/releases/download/v4.2.5/adminer-4.2.5.php"),
@@ -54,16 +63,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("5.4.1", "https://github.com/vrana/adminer/releases/download/v5.4.1/adminer-5.4.1.php")
         };
         
+        /// <summary>
+        /// Gets the list of all available Adminer versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Adminer version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Adminer version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

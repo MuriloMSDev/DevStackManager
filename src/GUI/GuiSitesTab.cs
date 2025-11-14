@@ -10,35 +10,76 @@ using Microsoft.Win32;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Sites" - gerencia configurações de sites Nginx
+    /// Sites tab component for managing Nginx site configurations and SSL certificates.
+    /// Provides interface for creating Nginx virtual hosts with PHP-FPM upstream configuration,
+    /// generating SSL certificates via OpenSSL, and restarting Nginx services after configuration changes.
+    /// Two-column layout: site creation panel (left) with domain/root/PHP/Nginx inputs and SSL section,
+    /// console output panel (right) for operation feedback.
     /// </summary>
     public static class GuiSitesTab
     {
-        // Constantes de dimensões e configuração
-        private const int INPUT_HEIGHT = 30;
-        private const int BUTTON_HEIGHT = 40;
-        private const int BUTTON_FONT_SIZE = 14;
-        private const int BROWSE_BUTTON_WIDTH = 120;
-        private const int TITLE_FONT_SIZE = 18;
-        private const int SECTION_FONT_SIZE = 16;
-        private const int INPUT_MARGIN_BOTTOM = 15;
-        private const int SECTION_MARGIN_TOP = 10;
-        private const int SECTION_MARGIN_BOTTOM = 10;
         /// <summary>
-        /// Cria o conteúdo completo da aba "Sites"
+        /// Height of input fields.
         /// </summary>
+        private const int INPUT_HEIGHT = 30;
+        
+        /// <summary>
+        /// Height of action buttons.
+        /// </summary>
+        private const int BUTTON_HEIGHT = 40;
+        
+        /// <summary>
+        /// Font size for buttons.
+        /// </summary>
+        private const int BUTTON_FONT_SIZE = 14;
+        
+        /// <summary>
+        /// Width of browse button.
+        /// </summary>
+        private const int BROWSE_BUTTON_WIDTH = 120;
+        
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
+        private const int TITLE_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Font size for section headers.
+        /// </summary>
+        private const int SECTION_FONT_SIZE = 16;
+        
+        /// <summary>
+        /// Bottom margin for input fields.
+        /// </summary>
+        private const int INPUT_MARGIN_BOTTOM = 15;
+        
+        /// <summary>
+        /// Top margin for section headers.
+        /// </summary>
+        private const int SECTION_MARGIN_TOP = 10;
+        
+        /// <summary>
+        /// Bottom margin for section headers.
+        /// </summary>
+        private const int SECTION_MARGIN_BOTTOM = 10;
+
+        /// <summary>
+        /// Creates the complete Sites tab content with two-column layout.
+        /// Left column: site creation panel with inputs and buttons.
+        /// Right column: console output panel for Sites tab operations.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and data binding.</param>
+        /// <returns>Grid with site management interface and console panel.</returns>
         public static Grid CreateSitesContent(DevStackGui mainWindow)
         {
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Painel esquerdo - Criar site
             var leftPanel = CreateSiteCreationPanel(mainWindow);
             Grid.SetColumn(leftPanel, 0);
             grid.Children.Add(leftPanel);
 
-            // Painel direito - Console dedicado da aba Sites
             var rightPanel = GuiConsolePanel.CreateConsolePanel(GuiConsolePanel.ConsoleTab.Sites);
             Grid.SetColumn(rightPanel, 1);
             grid.Children.Add(rightPanel);
@@ -47,24 +88,26 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de criação de sites
+        /// Creates the site creation panel with all input controls, buttons, and loading overlay.
+        /// Grid overlay structure allows loading spinner to be displayed during operations.
+        /// Sections: domain input, root directory browser, PHP version selector, Nginx version selector,
+        /// SSL checkbox, create site button, standalone SSL generation section, info notification.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and data binding.</param>
+        /// <returns>Grid with site creation controls and loading overlay.</returns>
         private static UIElement CreateSiteCreationPanel(DevStackGui mainWindow)
         {
-            // Usar Grid para permitir overlay
             var grid = new Grid();
             var panel = new StackPanel
             {
                 Margin = new Thickness(10)
             };
 
-            // Título
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.title"), true);
             titleLabel.FontSize = 18;
             titleLabel.Margin = new Thickness(0, 0, 0, 20);
             panel.Children.Add(titleLabel);
 
-            // Domínio
             var domainLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.domain"));
             panel.Children.Add(domainLabel);
 
@@ -73,7 +116,6 @@ namespace DevStackManager
             domainTextBox.Name = "DomainTextBox";
             panel.Children.Add(domainTextBox);
 
-            // Diretório raiz com botão procurar
             var rootLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.root_directory"));
             panel.Children.Add(rootLabel);
 
@@ -113,7 +155,6 @@ namespace DevStackManager
             browseButton.Height = 30;
             browseButton.Padding = new Thickness(12, 3, 12, 3);
 
-            // Aplicar cantos arredondados personalizados ao botão browser mantendo o estilo do CreateStyledButton
             var browseStyle = new Style(typeof(Button), browseButton.Style);
             var template = new ControlTemplate(typeof(Button));
             var border = new FrameworkElementFactory(typeof(Border));
@@ -141,7 +182,6 @@ namespace DevStackManager
             rootPanel.Children.Add(browseButton);
             panel.Children.Add(rootPanel);
 
-            // PHP Upstream com ComboBox para versões instaladas
             var phpLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.php_upstream"));
             panel.Children.Add(phpLabel);
 
@@ -150,11 +190,9 @@ namespace DevStackManager
             phpComboBox.Margin = new Thickness(0, 5, 0, 15);
             phpComboBox.Name = "PhpComboBox";
             
-            // Carregar versões PHP instaladas
             LoadPhpVersions(phpComboBox);
             panel.Children.Add(phpComboBox);
 
-            // Nginx Version ComboBox
             var nginxLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sites_tab.labels.nginx_version"));
             panel.Children.Add(nginxLabel);
 
@@ -163,17 +201,13 @@ namespace DevStackManager
             nginxComboBox.Margin = new Thickness(0, 5, 0, 15);
             nginxComboBox.Name = "NginxComboBox";
 
-            // Carregar versões Nginx instaladas
             LoadNginxVersions(nginxComboBox);
             panel.Children.Add(nginxComboBox);
 
-            // Checkbox SSL
             var sslCheckBox = DevStackShared.ThemeManager.CreateStyledCheckBox(mainWindow.LocalizationManager.GetString("gui.sites_tab.ssl.generate_ssl"));
             panel.Children.Add(sslCheckBox);
 
-            // Overlay de loading (spinner)
             var overlay = DevStackShared.ThemeManager.CreateLoadingOverlay();
-            // Overlay sempre visível se criando site
             overlay.Visibility = mainWindow.IsCreatingSite ? Visibility.Visible : Visibility.Collapsed;
             mainWindow.PropertyChanged += (sender, args) =>
             {
@@ -183,7 +217,6 @@ namespace DevStackManager
                 }
             };
 
-            // Botão Criar Site
             var createButton = DevStackShared.ThemeManager.CreateStyledButton(mainWindow.LocalizationManager.GetString("gui.sites_tab.buttons.create_site"), async (s, e) =>
             {
                 mainWindow.IsCreatingSite = true;
@@ -197,14 +230,12 @@ namespace DevStackManager
 
                     bool siteCreated = await CreateSite(mainWindow, domain, root, phpUpstream, nginxVersion);
 
-                    // Se o checkbox SSL estiver marcado, gerar SSL
                     bool sslCreated = true;
                     if (siteCreated && sslCheckBox.IsChecked == true)
                     {
                         sslCreated = await GenerateSslCertificate(mainWindow, domain);
                     }
 
-                    // Reiniciar serviços do Nginx apenas se o site e SSL foram criados
                     if (siteCreated && sslCreated)
                     {
                         phpComboBox.SelectedIndex = -1;
@@ -258,7 +289,6 @@ namespace DevStackManager
                     {
                         sslDomainTextBox.Text = "";
 
-                        // Reiniciar serviços do Nginx após criar a configuração
                         mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.restarting_nginx");
                         await RestartNginxServices(mainWindow);
                     }
@@ -276,7 +306,6 @@ namespace DevStackManager
             generateSslButton.Margin = new Thickness(0, 10, 0, 0);
             panel.Children.Add(generateSslButton);
 
-            // Info
             var infoNotification = DevStackShared.ThemeManager.CreateNotificationPanel(
                 mainWindow.LocalizationManager.GetString("gui.sites_tab.info"),
                 DevStackShared.ThemeManager.NotificationType.Info
@@ -284,7 +313,6 @@ namespace DevStackManager
             infoNotification.Margin = new Thickness(0, 20, 0, 0);
             panel.Children.Add(infoNotification);
 
-            // Adiciona painel e overlay ao grid
             grid.Children.Add(panel);
             grid.Children.Add(overlay);
 
@@ -292,8 +320,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Carrega as versões PHP instaladas no ComboBox
+        /// Loads installed PHP versions into ComboBox by scanning the PHP directory for folders starting with 'php-'.
+        /// Extracts version numbers and populates the ComboBox items.
         /// </summary>
+        /// <param name="phpComboBox">ComboBox to populate with PHP versions</param>
         private static void LoadPhpVersions(ComboBox phpComboBox)
         {
             try
@@ -317,8 +347,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Carrega as versões Nginx instaladas no ComboBox
+        /// Loads installed Nginx versions into ComboBox by scanning the Nginx directory for folders starting with 'nginx-'.
+        /// Extracts version numbers and populates the ComboBox items.
         /// </summary>
+        /// <param name="nginxComboBox">ComboBox to populate with Nginx versions</param>
         private static void LoadNginxVersions(ComboBox nginxComboBox)
         {
             try
@@ -342,8 +374,15 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria uma configuração de site Nginx
+        /// Creates an Nginx site configuration with PHP-FPM upstream.
+        /// Validates inputs, constructs PHP upstream address (127.{phpUpstream}:9000), and calls InstallManager to create the configuration file.
         /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for status updates and console output</param>
+        /// <param name="domain">Domain name for the site</param>
+        /// <param name="root">Root directory path for the site</param>
+        /// <param name="phpUpstream">PHP version number for upstream configuration</param>
+        /// <param name="nginxVersion">Nginx version to use</param>
+        /// <returns>True if site was created successfully, false otherwise</returns>
         private static async Task<bool> CreateSite(DevStackGui mainWindow, string domain, string root, string phpUpstream, string nginxVersion)
         {
             if (!ValidateSiteInputs(mainWindow, domain, root, phpUpstream, nginxVersion))
@@ -365,6 +404,16 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Validates all required inputs for site creation.
+        /// Checks domain, root directory, PHP upstream version, and Nginx version are provided.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for showing warnings</param>
+        /// <param name="domain">Domain name to validate</param>
+        /// <param name="root">Root directory to validate</param>
+        /// <param name="phpUpstream">PHP upstream version to validate</param>
+        /// <param name="nginxVersion">Nginx version to validate</param>
+        /// <returns>True if all inputs are valid, false otherwise</returns>
         private static bool ValidateSiteInputs(
             DevStackGui mainWindow,
             string domain,
@@ -399,6 +448,11 @@ namespace DevStackManager
             return true;
         }
 
+        /// <summary>
+        /// Shows a warning message dialog to the user.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for localization</param>
+        /// <param name="messageKey">Localization key for the warning message</param>
         private static void ShowWarning(DevStackGui mainWindow, string messageKey)
         {
             DevStackShared.ThemeManager.CreateStyledMessageBox(
@@ -409,10 +463,17 @@ namespace DevStackManager
             );
         }
 
+        /// <summary>
+        /// Handles errors that occur during site creation.
+        /// Logs error to console, updates status bar, and shows error dialog to the user.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for status and localization</param>
+        /// <param name="domain">Domain name that was being configured</param>
+        /// <param name="ex">Exception that occurred</param>
         private static void HandleSiteError(DevStackGui mainWindow, string domain, Exception ex)
         {
             var errorMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_error", domain, ex.Message);
-            GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, errorMessage, mainWindow);
+            GuiConsolePanel.Append(GuiConsolePanel.ConsoleTab.Sites, errorMessage);
             mainWindow.StatusMessage = errorMessage;
             DevStackShared.ThemeManager.CreateStyledMessageBox(
                 mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.site_config_error", ex.Message),
@@ -423,8 +484,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Gera um certificado SSL para o domínio especificado
+        /// Generates an SSL certificate for the specified domain.
+        /// Validates domain and checks DNS resolution before calling GenerateManager to create the certificate.
         /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for status updates and console output</param>
+        /// <param name="domain">Domain name for SSL certificate generation</param>
+        /// <returns>True if SSL certificate was generated successfully, false otherwise</returns>
         private static async Task<bool> GenerateSslCertificate(DevStackGui mainWindow, string domain)
         {
             if (!await ValidateSslDomain(mainWindow, domain))
@@ -435,6 +500,13 @@ namespace DevStackManager
             return await ExecuteSslGeneration(mainWindow, domain);
         }
 
+        /// <summary>
+        /// Validates SSL domain input and checks DNS resolution.
+        /// Ensures domain is not empty and can be resolved via DNS before SSL generation.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for showing warnings</param>
+        /// <param name="domain">Domain name to validate</param>
+        /// <returns>True if domain is valid and resolves, false otherwise</returns>
         private static async Task<bool> ValidateSslDomain(DevStackGui mainWindow, string domain)
         {
             if (string.IsNullOrEmpty(domain))
@@ -463,6 +535,12 @@ namespace DevStackManager
             return true;
         }
 
+        /// <summary>
+        /// Checks if a domain name resolves via DNS.
+        /// Uses System.Net.Dns.GetHostEntry to verify domain exists and has valid address records.
+        /// </summary>
+        /// <param name="domain">Domain name to check</param>
+        /// <returns>True if domain resolves successfully, false otherwise</returns>
         private static async Task<bool> CheckDomainResolution(string domain)
         {
             try
@@ -486,10 +564,17 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Executes SSL certificate generation process via GenerateManager.
+        /// Runs with console output progress reporting and handles success/error states.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for status updates</param>
+        /// <param name="domain">Domain name for SSL certificate</param>
+        /// <returns>True if SSL generation succeeded, false if error occurred</returns>
         private static async Task<bool> ExecuteSslGeneration(DevStackGui mainWindow, string domain)
         {
             bool success = true;
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, mainWindow, async progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, async progress =>
             {
                 try
                 {
@@ -507,6 +592,14 @@ namespace DevStackManager
             return success;
         }
 
+        /// <summary>
+        /// Handles errors that occur during SSL certificate generation.
+        /// Logs error to progress reporter, updates status bar, and shows error dialog to the user.
+        /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for status and localization</param>
+        /// <param name="domain">Domain name that was being configured</param>
+        /// <param name="ex">Exception that occurred</param>
+        /// <param name="progress">Progress reporter for console output</param>
         private static void HandleSslError(DevStackGui mainWindow, string domain, Exception ex, IProgress<string> progress)
         {
             var errorMessage = mainWindow.LocalizationManager.GetString("gui.sites_tab.messages.ssl_error", ex.Message);
@@ -521,11 +614,15 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Reinicia os serviços do Nginx
+        /// Restarts all installed Nginx services after configuration changes.
+        /// Filters InstalledComponents collection for nginx components and calls ProcessManager.RestartComponent for each version.
+        /// Reports progress to the Sites console tab including success/error status for each restart.
         /// </summary>
+        /// <param name="mainWindow">Main GUI window reference for accessing InstalledComponents and localization</param>
+        /// <returns>Task representing the asynchronous restart operation</returns>
         private static async Task RestartNginxServices(DevStackGui mainWindow)
         {
-            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, mainWindow, progress =>
+            await GuiConsolePanel.RunWithConsoleOutput(GuiConsolePanel.ConsoleTab.Sites, progress =>
             {
                 try
                 {

@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class ElasticsearchVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Elasticsearch component.
+        /// </summary>
         public string ComponentName => "Elasticsearch";
+        /// <summary>
+        /// Gets the unique identifier for the Elasticsearch component.
+        /// </summary>
         public string ComponentId => "elasticsearch";
         
+        /// <summary>
+        /// List of available Elasticsearch versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("7.2.0", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.2.0-windows-x86_64.zip"),
@@ -183,6 +192,7 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("8.19.4", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.4-windows-x86_64.zip"),
             new VersionInfo("8.19.5", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.5-windows-x86_64.zip"),
             new VersionInfo("8.19.6", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.6-windows-x86_64.zip"),
+            new VersionInfo("8.19.7", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.19.7-windows-x86_64.zip"),
             new VersionInfo("9.0.0", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.0-windows-x86_64.zip"),
             new VersionInfo("9.0.1", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.1-windows-x86_64.zip"),
             new VersionInfo("9.0.2", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.2-windows-x86_64.zip"),
@@ -199,19 +209,34 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("9.1.4", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.4-windows-x86_64.zip"),
             new VersionInfo("9.1.5", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.5-windows-x86_64.zip"),
             new VersionInfo("9.1.6", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.6-windows-x86_64.zip"),
-            new VersionInfo("9.2.0", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.2.0-windows-x86_64.zip")
+            new VersionInfo("9.1.7", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.7-windows-x86_64.zip"),
+            new VersionInfo("9.2.0", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.2.0-windows-x86_64.zip"),
+            new VersionInfo("9.2.1", "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.2.1-windows-x86_64.zip")        
         };
         
+        /// <summary>
+        /// Gets the list of all available Elasticsearch versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Elasticsearch version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Elasticsearch version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

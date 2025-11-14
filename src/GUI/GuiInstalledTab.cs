@@ -12,52 +12,174 @@ using System.Windows.Input;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Instalados" - lista e exibe ferramentas instaladas
+    /// Installed Components tab component for displaying and managing installed development tools.
+    /// Provides DataGrid display with executable component launch buttons.
+    /// Shows component name, installed versions, and installation status.
+    /// Executable components display launch buttons with lightning icon gradient.
     /// </summary>
     public static class GuiInstalledTab
     {
-        // UI Dimensions Constants
+        /// <summary>
+        /// Font size for header text.
+        /// </summary>
         private const int HEADER_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Font size for column headers.
+        /// </summary>
         private const int HEADER_FONT_SIZE_COLUMN = 14;
+        
+        /// <summary>
+        /// Bottom margin for title in pixels.
+        /// </summary>
         private const int TITLE_BOTTOM_MARGIN = 20;
+        
+        /// <summary>
+        /// Width of refresh button in pixels.
+        /// </summary>
         private const int REFRESH_BUTTON_WIDTH = 150;
+        
+        /// <summary>
+        /// Height of refresh button in pixels.
+        /// </summary>
         private const int REFRESH_BUTTON_HEIGHT = 35;
+        
+        /// <summary>
+        /// Left margin for refresh button in pixels.
+        /// </summary>
         private const int REFRESH_BUTTON_LEFT_MARGIN = 20;
+        
+        /// <summary>
+        /// Width of version launch buttons in pixels.
+        /// </summary>
         private const int VERSION_BUTTON_WIDTH = 80;
+        
+        /// <summary>
+        /// Height of version launch buttons in pixels.
+        /// </summary>
         private const int VERSION_BUTTON_HEIGHT = 25;
+        
+        /// <summary>
+        /// Margin around version buttons in pixels.
+        /// </summary>
         private const int VERSION_BUTTON_MARGIN = 2;
+        
+        /// <summary>
+        /// Font size for version button icon.
+        /// </summary>
         private const int VERSION_ICON_FONT_SIZE = 16;
+        
+        /// <summary>
+        /// Left margin for version icon in pixels.
+        /// </summary>
         private const int VERSION_ICON_LEFT_MARGIN = 4;
+        
+        /// <summary>
+        /// Width of Name column in pixels.
+        /// </summary>
         private const int COLUMN_NAME_WIDTH = 200;
+        
+        /// <summary>
+        /// Width of Versions column in pixels.
+        /// </summary>
         private const int COLUMN_VERSIONS_WIDTH = 400;
+        
+        /// <summary>
+        /// Width of Status column in pixels.
+        /// </summary>
         private const int COLUMN_STATUS_WIDTH = 100;
+        
+        /// <summary>
+        /// Panel margin in pixels.
+        /// </summary>
         private const int PANEL_MARGIN = 10;
+        
+        /// <summary>
+        /// Left padding for text in pixels.
+        /// </summary>
         private const int TEXT_PADDING_LEFT = 12;
+        
+        /// <summary>
+        /// Left padding for versions text in pixels.
+        /// </summary>
         private const int TEXT_PADDING_LEFT_VERSIONS = 13;
+        
+        /// <summary>
+        /// Maximum depth for visual tree traversal.
+        /// </summary>
         private const int VISUAL_TREE_DEPTH_LIMIT = 10;
         
-        // Color Constants for Version Icon Gradient
+        /// <summary>
+        /// Red component of gradient gold color.
+        /// </summary>
         private const byte GRADIENT_GOLD_R = 255;
+        
+        /// <summary>
+        /// Green component of gradient gold color.
+        /// </summary>
         private const byte GRADIENT_GOLD_G = 215;
+        
+        /// <summary>
+        /// Blue component of gradient gold color.
+        /// </summary>
         private const byte GRADIENT_GOLD_B = 0;
+        
+        /// <summary>
+        /// Red component of gradient orange color.
+        /// </summary>
         private const byte GRADIENT_ORANGE_R = 255;
+        
+        /// <summary>
+        /// Green component of gradient orange color.
+        /// </summary>
         private const byte GRADIENT_ORANGE_G = 140;
+        
+        /// <summary>
+        /// Blue component of gradient orange color.
+        /// </summary>
         private const byte GRADIENT_ORANGE_B = 0;
+        
+        /// <summary>
+        /// Red component of gradient crimson color.
+        /// </summary>
         private const byte GRADIENT_CRIMSON_R = 220;
+        
+        /// <summary>
+        /// Green component of gradient crimson color.
+        /// </summary>
         private const byte GRADIENT_CRIMSON_G = 20;
+        
+        /// <summary>
+        /// Blue component of gradient crimson color.
+        /// </summary>
         private const byte GRADIENT_CRIMSON_B = 60;
         
-        // Gradient Stop Positions
+        /// <summary>
+        /// Start position for gradient stop (0.0).
+        /// </summary>
         private const double GRADIENT_STOP_START = 0.0;
+        
+        /// <summary>
+        /// Middle position for gradient stop (0.5).
+        /// </summary>
         private const double GRADIENT_STOP_MIDDLE = 0.5;
+        
+        /// <summary>
+        /// End position for gradient stop (1.0).
+        /// </summary>
         private const double GRADIENT_STOP_END = 1.0;
         
-        // Icon Constants
+        /// <summary>
+        /// Lightning icon character for executable components.
+        /// </summary>
         private const string LIGHTNING_ICON = " 🗲";
 
         /// <summary>
-        /// Cria o conteúdo completo da aba "Instalados"
+        /// Creates the complete Installed Components tab content.
+        /// Layout: header with title and refresh button, DataGrid with installed components, info panel.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding and localization.</param>
+        /// <returns>Grid with installed components display.</returns>
         public static Grid CreateInstalledContent(DevStackGui mainWindow)
         {
             var grid = new Grid();
@@ -65,17 +187,14 @@ namespace DevStackManager
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Header
             var headerPanel = CreateInstalledHeader(mainWindow);
             Grid.SetRow(headerPanel, 0);
             grid.Children.Add(headerPanel);
 
-            // DataGrid
             var dataGridContainer = CreateInstalledDataGrid(mainWindow);
             Grid.SetRow(dataGridContainer, 1);
             grid.Children.Add(dataGridContainer);
 
-            // Info panel
             var infoPanel = CreateInstalledInfoPanel(mainWindow);
             Grid.SetRow(infoPanel, 2);
             grid.Children.Add(infoPanel);
@@ -84,8 +203,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de cabeçalho da aba instalados
+        /// Creates the header panel for Installed tab with title and refresh button.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>StackPanel with title label and refresh button.</returns>
         private static StackPanel CreateInstalledHeader(DevStackGui mainWindow)
         {
             var headerPanel = new StackPanel
@@ -103,6 +224,11 @@ namespace DevStackManager
             return headerPanel;
         }
 
+        /// <summary>
+        /// Creates the title label for the Installed tab header.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization</param>
+        /// <returns>Styled label with "Installed Components" title</returns>
         private static Label CreateTitleLabel(DevStackGui mainWindow)
         {
             var titleLabel = DevStackShared.ThemeManager.CreateStyledLabel(
@@ -113,6 +239,12 @@ namespace DevStackManager
             return titleLabel;
         }
 
+        /// <summary>
+        /// Creates the refresh button for reloading installed components.
+        /// Calls mainWindow.LoadInstalledComponents() on click.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and component loading</param>
+        /// <returns>Styled button with async refresh handler</returns>
         private static Button CreateRefreshButton(DevStackGui mainWindow)
         {
             var refreshButton = DevStackShared.ThemeManager.CreateStyledButton(
@@ -125,41 +257,40 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o DataGrid para exibir as ferramentas instaladas
+        /// Creates the DataGrid container with fixed header and scrollable content for installed components.
+        /// Uses two-DataGrid approach: header-only DataGrid for fixed column headers, content DataGrid wrapped in ScrollViewer.
+        /// Columns: Tool Name (200px), Installed Versions (400px with launch buttons), Status (100px).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding and localization</param>
+        /// <returns>Grid container with fixed header and scrollable content DataGrid</returns>
         private static Grid CreateInstalledDataGrid(DevStackGui mainWindow)
         {
-            // Criar um Grid para separar header fixo do conteúdo scrollável
             var containerGrid = new Grid
             {
                 Margin = new Thickness(PANEL_MARGIN)
             };
             
-            containerGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header fixo
-            containerGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Conteúdo scrollável
+            containerGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            containerGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // Criar DataGrid apenas para extrair o header
             var headerDataGrid = new DataGrid
             {
                 AutoGenerateColumns = false,
                 HeadersVisibility = DataGridHeadersVisibility.Column,
-                IsHitTestVisible = false // Não interativo, apenas visual
+                IsHitTestVisible = false
             };
 
-            // Criar ScrollViewer customizado para o conteúdo
             var scrollViewer = new ScrollViewer
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                CanContentScroll = false, // Importante para scroll suave da roda do mouse
+                CanContentScroll = false,
                 PanningMode = PanningMode.VerticalOnly,
                 IsManipulationEnabled = true
             };
 
-            // Aplicar scrollbar customizada do ThemeManager
             DevStackShared.ThemeManager.ApplyCustomScrollbar(scrollViewer);
 
-            // Criar DataGrid para conteúdo SEM header
             var contentDataGrid = new DataGrid
             {
                 AutoGenerateColumns = false,
@@ -170,13 +301,12 @@ namespace DevStackManager
                 BorderThickness = new Thickness(0),
                 HeadersVisibility = DataGridHeadersVisibility.None,
                 GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
-                ColumnHeaderHeight = 0, // Remove completely the header height
+                ColumnHeaderHeight = 0,
                 CanUserResizeColumns = false,
                 CanUserReorderColumns = false,
                 CanUserSortColumns = false
             };
 
-            // Configurar colunas para ambos DataGrids
             void ConfigureColumns(DataGrid dataGrid, bool isHeader = false)
             {
                 var nameColumn = new DataGridTemplateColumn
@@ -196,62 +326,49 @@ namespace DevStackManager
 
                 dataGrid.Columns.Add(nameColumn);
 
-                // Coluna Versões Instaladas
                 var versionsColumn = new DataGridTemplateColumn
                 {
                     Header = isHeader ? mainWindow.LocalizationManager.GetString("gui.installed_tab.headers.versions") : null,
                     Width = new DataGridLength(COLUMN_VERSIONS_WIDTH)
                 };
                 var versionsTemplate = new DataTemplate();
-                // StackPanel para botões ou texto
                 var versionsPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
                 versionsPanelFactory.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
                 versionsPanelFactory.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Left);
-                // MultiBinding para visibilidade dos botões
                 var multiBinding = new System.Windows.Data.MultiBinding { Converter = new InstalledAndExecutableToVisibilityConverter() };
                 multiBinding.Bindings.Add(new Binding("Installed"));
                 multiBinding.Bindings.Add(new Binding("IsExecutable"));
-                // Botões para cada versão
                 var versionsBinding = new Binding("Versions");
                 versionsPanelFactory.SetBinding(FrameworkElement.TagProperty, versionsBinding);
-                // ItemsControl para botões
                 var itemTemplate = new DataTemplate();
                 var buttonFactory = new FrameworkElementFactory(typeof(Button));
                 buttonFactory.SetValue(Button.WidthProperty, (double)VERSION_BUTTON_WIDTH);
                 buttonFactory.SetValue(Button.HeightProperty, (double)VERSION_BUTTON_HEIGHT);
                 buttonFactory.SetValue(Button.MarginProperty, new Thickness(VERSION_BUTTON_MARGIN));
                 buttonFactory.SetValue(Button.StyleProperty, DevStackShared.ThemeManager.CreateStyledButton("", null, DevStackShared.ThemeManager.ButtonStyle.Secondary).Style);
-                // StackPanel para versão + ícone
                 var btnStackPanel = new FrameworkElementFactory(typeof(StackPanel));
                 btnStackPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
                 btnStackPanel.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-                // Texto da versão
                 var btnTextBlock = new FrameworkElementFactory(typeof(TextBlock));
                 btnTextBlock.SetBinding(TextBlock.TextProperty, new Binding("."));
                 btnTextBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
                 btnStackPanel.AppendChild(btnTextBlock);
-                // Ícone 🗲 com gradiente
                 var btnIconBlock = CreateVersionIconWithGradient();
                 btnStackPanel.AppendChild(btnIconBlock);
                 buttonFactory.AppendChild(btnStackPanel);
                 buttonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler((sender, e) => ExecuteComponentVersionButton_Click(sender, e, mainWindow)));
                 itemTemplate.VisualTree = buttonFactory;
-                // ItemsControl para botões horizontalmente
                 var itemsControlFactory = new FrameworkElementFactory(typeof(ItemsControl));
                 itemsControlFactory.SetBinding(ItemsControl.ItemsSourceProperty, versionsBinding);
                 itemsControlFactory.SetValue(ItemsControl.ItemTemplateProperty, itemTemplate);
-                // WrapPanel para layout horizontal dos botões
                 var itemsPanelTemplate = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(WrapPanel)));
                 itemsControlFactory.SetValue(ItemsControl.ItemsPanelProperty, itemsPanelTemplate);
-                // Visibilidade dos botões
                 itemsControlFactory.SetBinding(ItemsControl.VisibilityProperty, multiBinding);
                 versionsPanelFactory.AppendChild(itemsControlFactory);
-                // TextBlock para texto das versões
                 var versionsTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
                 versionsTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("VersionsText"));
                 versionsTextBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(TEXT_PADDING_LEFT_VERSIONS, 0, 0, 0));
                 versionsTextBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-                // Visibilidade do texto: inverso do MultiBinding
                 var inverseMultiBinding = new System.Windows.Data.MultiBinding { Converter = new InstalledAndExecutableToCollapsedConverter() };
                 inverseMultiBinding.Bindings.Add(new Binding("Installed"));
                 inverseMultiBinding.Bindings.Add(new Binding("IsExecutable"));
@@ -267,7 +384,6 @@ namespace DevStackManager
                     Width = new DataGridLength(COLUMN_STATUS_WIDTH)
                 };
                 
-                // Centralizar o header da coluna Status apenas se for header
                 if (isHeader)
                 {
                     var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
@@ -280,7 +396,6 @@ namespace DevStackManager
                 }
                 else
                 {
-                    // Hide headers if not header row - apply to all columns
                     var hiddenHeaderStyle = new Style(typeof(DataGridColumnHeader));
                     hiddenHeaderStyle.Setters.Add(new Setter(DataGridColumnHeader.VisibilityProperty, Visibility.Collapsed));
                     nameColumn.HeaderStyle = hiddenHeaderStyle;
@@ -302,21 +417,17 @@ namespace DevStackManager
                 dataGrid.Columns.Add(statusColumn);
             }
 
-            // Configurar colunas
             ConfigureColumns(headerDataGrid, true);
             ConfigureColumns(contentDataGrid, false);
 
             var installedBinding = new Binding("InstalledComponents") { Source = mainWindow };
             contentDataGrid.SetBinding(DataGrid.ItemsSourceProperty, installedBinding);
 
-            // Apply dark theme to both DataGrids
             DevStackShared.ThemeManager.SetDataGridDarkTheme(headerDataGrid);
             DevStackShared.ThemeManager.SetDataGridDarkTheme(contentDataGrid);
 
-            // Colocar DataGrid do conteúdo dentro do ScrollViewer
             scrollViewer.Content = contentDataGrid;
 
-            // Fix mouse wheel scrolling - redirect DataGrid mouse wheel events to ScrollViewer
             contentDataGrid.PreviewMouseWheel += (sender, e) =>
             {
                 if (!e.Handled)
@@ -331,9 +442,8 @@ namespace DevStackManager
                 }
             };
 
-            // Adicionar ao Grid principal
-            Grid.SetRow(headerDataGrid, 0); // Header fixo
-            Grid.SetRow(scrollViewer, 1);   // Conteúdo scrollável
+            Grid.SetRow(headerDataGrid, 0);
+            Grid.SetRow(scrollViewer, 1);
             
             containerGrid.Children.Add(headerDataGrid);
             containerGrid.Children.Add(scrollViewer);
@@ -342,8 +452,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de informações no rodapé da aba
+        /// Creates the info panel displayed at the footer of the Installed tab.
+        /// Shows informational notification with usage instructions.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization</param>
+        /// <returns>StackPanel with centered info notification</returns>
         private static StackPanel CreateInstalledInfoPanel(DevStackGui mainWindow)
         {
             var infoPanel = new StackPanel
@@ -363,8 +476,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o ícone de raio com gradiente para os botões de versão
+        /// Creates a lightning icon (🗲) with gradient foreground for version launch buttons.
+        /// Gradient transitions from Gold → Orange → Crimson for visual emphasis on executable components.
         /// </summary>
+        /// <returns>FrameworkElementFactory for TextBlock with lightning icon and gradient brush</returns>
         private static FrameworkElementFactory CreateVersionIconWithGradient()
         {
             var btnIconBlock = new FrameworkElementFactory(typeof(TextBlock));
@@ -373,7 +488,6 @@ namespace DevStackManager
             btnIconBlock.SetValue(TextBlock.MarginProperty, new Thickness(VERSION_ICON_LEFT_MARGIN, 0, 0, 0));
             btnIconBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
             
-            // Gradiente amarelo → laranja → vermelho
             var iconGradientBrush = CreateLightningGradientBrush();
             btnIconBlock.SetValue(TextBlock.ForegroundProperty, iconGradientBrush);
             
@@ -381,8 +495,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o brush de gradiente para o ícone de raio (Gold → DarkOrange → Crimson)
+        /// Creates a linear gradient brush for the lightning icon.
+        /// Gradient colors: Gold (255,215,0) → Orange (255,140,0) → Crimson (220,20,60).
+        /// Gradient stops at 0.0, 0.5, and 1.0 for smooth color transition.
         /// </summary>
+        /// <returns>LinearGradientBrush with Gold to Crimson gradient</returns>
         private static LinearGradientBrush CreateLightningGradientBrush()
         {
             var iconGradientBrush = new LinearGradientBrush
@@ -407,15 +524,19 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Executa o componente na versão selecionada ao clicar no botão
+        /// Handles click event on component version launch buttons.
+        /// Traverses visual tree to find parent ComponentViewModel (max 10 levels), determines if component is command-line or GUI-based,
+        /// then executes via ProcessManager.ExecuteComponent. Command-line components open in external terminal.
         /// </summary>
+        /// <param name="sender">Button that was clicked</param>
+        /// <param name="e">Routed event arguments</param>
+        /// <param name="mainWindow">Main window reference for error dialogs and localization</param>
         private static void ExecuteComponentVersionButton_Click(object sender, RoutedEventArgs e, DevStackGui mainWindow)
         {
             try
             {
                 if (sender is Button btn && btn.DataContext is string version)
                 {
-                    // Buscar o ItemsControl e seu DataContext (ComponentViewModel) usando VisualTreeHelper
                     DependencyObject parent = btn;
                     ComponentViewModel? vm = null;
                     for (int i = 0; i < VISUAL_TREE_DEPTH_LIMIT && parent != null; i++)
@@ -432,7 +553,6 @@ namespace DevStackManager
                         var comp = DevStackManager.Components.ComponentsFactory.GetComponent(vm.Name);
                         if (comp != null && comp.IsExecutable && vm.Installed)
                         {
-                            // local helper: procura executável no PATH
                             string? FindOnPath(string name)
                             {
                                 try
@@ -453,9 +573,7 @@ namespace DevStackManager
                                 catch { }
                                 return null;
                             }
-                            // Compute base tool dir and target (installed) directory following ComponentBase semantics
                             string baseToolDir = !string.IsNullOrEmpty(comp.ToolDir) ? comp.ToolDir! : System.IO.Path.Combine(DevStackConfig.baseDir, comp.Name);
-                            // Try to read SubDirectory from ComponentBase when available, otherwise fall back to default
                             string subDir = (comp is DevStackManager.Components.ComponentBase cb && !string.IsNullOrEmpty(cb.SubDirectory)) ? cb.SubDirectory! : $"{comp.Name}-{version}";
                             string installDir;
 
@@ -463,7 +581,6 @@ namespace DevStackManager
                             {
                                 if (System.IO.Path.IsPathRooted(comp.ExecutableFolder))
                                 {
-                                    // legacy: ExecutableFolder contained the absolute tool directory
                                     var toolDirArg = comp.ExecutableFolder!;
                                     installDir = System.IO.Path.Combine(toolDirArg, subDir);
                                 }
@@ -480,7 +597,6 @@ namespace DevStackManager
                             if (System.IO.Directory.Exists(installDir))
                             {
                                 var exeFiles = System.IO.Directory.GetFiles(installDir, "*.exe", System.IO.SearchOption.TopDirectoryOnly);
-                                // Busca pelo padrão configurado
                                 string? exePath = null;
                                 if (!string.IsNullOrEmpty(comp.ExecutablePattern))
                                 {
@@ -491,7 +607,6 @@ namespace DevStackManager
                                         exePath = patternPath;
                                     }
                                 }
-                                // Fallback: pega o primeiro .exe
                                 if (exePath == null && exeFiles.Length > 0)
                                 {
                                     exePath = exeFiles[0];
@@ -563,10 +678,20 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Converter para mostrar o painel de execução apenas se Installed e IsExecutable forem verdadeiros
+        /// Multi-value converter for showing executable version buttons.
+        /// Shows buttons (Visible) only when component is both Installed and IsExecutable are true.
+        /// Otherwise returns Collapsed visibility.
         /// </summary>
         public class InstalledAndExecutableToVisibilityConverter : System.Windows.Data.IMultiValueConverter
         {
+            /// <summary>
+            /// Converts installed and executable status to visibility.
+            /// </summary>
+            /// <param name="values">Array of two booleans: installed status and executable status.</param>
+            /// <param name="targetType">The type of the binding target property.</param>
+            /// <param name="parameter">The converter parameter to use.</param>
+            /// <param name="culture">The culture to use in the converter.</param>
+            /// <returns>Visible if both installed and executable, otherwise Collapsed.</returns>
             public object Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
             {
                 if (values.Length == 2 && values[0] is bool installed && values[1] is bool isExecutable)
@@ -575,6 +700,14 @@ namespace DevStackManager
                 }
                 return System.Windows.Visibility.Collapsed;
             }
+            /// <summary>
+            /// Converts back from visibility to installed and executable status (not implemented).
+            /// </summary>
+            /// <param name="value">The value produced by the binding target.</param>
+            /// <param name="targetTypes">The array of types to convert to.</param>
+            /// <param name="parameter">The converter parameter to use.</param>
+            /// <param name="culture">The culture to use in the converter.</param>
+            /// <returns>Array of values for the binding sources.</returns>
             public object[] ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
             {
                 throw new System.NotImplementedException();
@@ -582,10 +715,20 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Converter para mostrar o texto das versões apenas se NÃO for executável ou não estiver instalado
+        /// Multi-value converter for showing version text instead of buttons.
+        /// Shows text (Visible) when component is NOT executable or NOT installed.
+        /// Returns Collapsed when component is both installed and executable (buttons shown instead).
         /// </summary>
         public class InstalledAndExecutableToCollapsedConverter : System.Windows.Data.IMultiValueConverter
         {
+            /// <summary>
+            /// Converts installed and executable status to collapsed visibility.
+            /// </summary>
+            /// <param name="values">Array of two booleans: installed status and executable status.</param>
+            /// <param name="targetType">The type of the binding target property.</param>
+            /// <param name="parameter">The converter parameter to use.</param>
+            /// <param name="culture">The culture to use in the converter.</param>
+            /// <returns>Collapsed if both installed and executable, otherwise Visible.</returns>
             public object Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
             {
                 if (values.Length == 2 && values[0] is bool installed && values[1] is bool isExecutable)
@@ -594,6 +737,14 @@ namespace DevStackManager
                 }
                 return System.Windows.Visibility.Visible;
             }
+            /// <summary>
+            /// Converts back from visibility to installed and executable status (not implemented).
+            /// </summary>
+            /// <param name="value">The value produced by the binding target.</param>
+            /// <param name="targetTypes">The array of types to convert to.</param>
+            /// <param name="parameter">The converter parameter to use.</param>
+            /// <param name="culture">The culture to use in the converter.</param>
+            /// <returns>Array of values for the binding sources.</returns>
             public object[] ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
             {
                 throw new System.NotImplementedException();

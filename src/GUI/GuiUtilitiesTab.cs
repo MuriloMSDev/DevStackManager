@@ -10,83 +10,183 @@ using System.Windows.Media;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela aba "Utilitários" - console e ferramentas de diagnóstico
+    /// Utilities tab component for executing DevStack commands and viewing console output.
+    /// Provides interactive console interface with command input, quick action buttons, and real-time output display.
+    /// Features: command execution (status, list, doctor, test, help), clear console button overlay,
+    /// direct CLI integration via DevStack.exe or fallback to C# managers.
     /// </summary>
     public static class GuiUtilitiesTab
     {
-        // UI Dimensions Constants
+        /// <summary>
+        /// Font size for header text.
+        /// </summary>
         private const int HEADER_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Margin for header element.
+        /// </summary>
         private const int HEADER_MARGIN = 10;
+        
+        /// <summary>
+        /// Size of the clear console button.
+        /// </summary>
         private const int CLEAR_BUTTON_SIZE = 32;
+        
+        /// <summary>
+        /// Top margin for clear button.
+        /// </summary>
         private const int CLEAR_BUTTON_TOP_MARGIN = 1;
+        
+        /// <summary>
+        /// Right margin for clear button when scrollbar is not visible.
+        /// </summary>
         private const int CLEAR_BUTTON_RIGHT_MARGIN_DEFAULT = 6;
+        
+        /// <summary>
+        /// Right margin for clear button when scrollbar is visible.
+        /// </summary>
         private const int CLEAR_BUTTON_RIGHT_MARGIN_WITH_SCROLLBAR = 23;
+        
+        /// <summary>
+        /// Z-index for clear button to ensure it appears above console output.
+        /// </summary>
         private const int CLEAR_BUTTON_Z_INDEX = 10;
+        
+        /// <summary>
+        /// Width of command label.
+        /// </summary>
         private const int COMMAND_LABEL_WIDTH = 90;
+        
+        /// <summary>
+        /// Height of command input field.
+        /// </summary>
         private const int COMMAND_INPUT_HEIGHT = 30;
+        
+        /// <summary>
+        /// Horizontal margin for command input.
+        /// </summary>
         private const int COMMAND_INPUT_HORIZONTAL_MARGIN = 5;
+        
+        /// <summary>
+        /// Width of execute button.
+        /// </summary>
         private const int EXECUTE_BUTTON_WIDTH = 100;
+        
+        /// <summary>
+        /// Height of execute button.
+        /// </summary>
         private const int EXECUTE_BUTTON_HEIGHT = 30;
+        
+        /// <summary>
+        /// Left margin for execute button.
+        /// </summary>
         private const int EXECUTE_BUTTON_LEFT_MARGIN = 5;
+        
+        /// <summary>
+        /// Horizontal padding for execute button.
+        /// </summary>
         private const int EXECUTE_BUTTON_HORIZONTAL_PADDING = 12;
+        
+        /// <summary>
+        /// Vertical padding for execute button.
+        /// </summary>
         private const int EXECUTE_BUTTON_VERTICAL_PADDING = 4;
+        
+        /// <summary>
+        /// Font size for console output text.
+        /// </summary>
         private const int CONSOLE_FONT_SIZE = 12;
+        
+        /// <summary>
+        /// Margin for console container.
+        /// </summary>
         private const int CONSOLE_MARGIN = 5;
+        
+        /// <summary>
+        /// Horizontal margin for console output.
+        /// </summary>
         private const int CONSOLE_HORIZONTAL_MARGIN = 10;
+        
+        /// <summary>
+        /// Width of quick action buttons.
+        /// </summary>
         private const int QUICK_BUTTON_WIDTH = 120;
+        
+        /// <summary>
+        /// Height of quick action buttons.
+        /// </summary>
         private const int QUICK_BUTTON_HEIGHT = 35;
+        
+        /// <summary>
+        /// Margin between quick action buttons.
+        /// </summary>
         private const int QUICK_BUTTON_MARGIN = 5;
+        
+        /// <summary>
+        /// Top margin for buttons panel.
+        /// </summary>
         private const int BUTTONS_PANEL_TOP_MARGIN = 10;
+        
+        /// <summary>
+        /// Margin for input panel.
+        /// </summary>
         private const int INPUT_PANEL_MARGIN = 10;
+        
+        /// <summary>
+        /// Top margin for input panel.
+        /// </summary>
         private const int INPUT_PANEL_TOP_MARGIN = 5;
+        
+        /// <summary>
+        /// Bottom margin for input panel.
+        /// </summary>
         private const int INPUT_PANEL_BOTTOM_MARGIN = 10;
 
-        // Font Constants
+        /// <summary>
+        /// Font family for console output (monospaced).
+        /// </summary>
         private const string CONSOLE_FONT_FAMILY = "Consolas";
 
         /// <summary>
-        /// Cria o conteúdo completo da aba "Utilitários"
+        /// Creates the complete Utilities tab content with console interface.
+        /// Four-row layout: header (title), quick buttons panel, console output with clear button overlay, command input panel.
+        /// Console output displays command results with read-only Consolas font text.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and data binding.</param>
+        /// <returns>Grid with utilities console interface.</returns>
         public static Grid CreateUtilitiesContent(DevStackGui mainWindow)
         {
             var grid = new Grid();
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Buttons
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Console output
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Command input
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Header
             var headerLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.utilities_tab.console_title"), true);
             headerLabel.FontSize = HEADER_FONT_SIZE;
             headerLabel.Margin = new Thickness(HEADER_MARGIN, HEADER_MARGIN, HEADER_MARGIN, 0);
             Grid.SetRow(headerLabel, 0);
             grid.Children.Add(headerLabel);
 
-            // Command input panel
             var inputPanel = CreateCommandInputPanel(mainWindow);
             Grid.SetRow(inputPanel, 3);
             grid.Children.Add(inputPanel);
 
-            // Console output (with overlay Clear button)
             var consoleGrid = new Grid();
-            // Layer 0: Console
 
             var consoleScrollViewer = CreateConsoleScrollViewer(mainWindow);
             consoleGrid.Children.Add(consoleScrollViewer);
 
-            // Layer 1: Clear button (top-right)
             var clearButton = CreateClearButton(mainWindow);
             clearButton.Click += (s, e) => ClearConsole(mainWindow);
             Panel.SetZIndex(clearButton, CLEAR_BUTTON_Z_INDEX);
             consoleGrid.Children.Add(clearButton);
 
-            // Ajuste dinâmico da margem do botão Clear conforme o scroll horizontal
             SetupClearButtonMarginAdjustment(consoleScrollViewer, clearButton);
 
             Grid.SetRow(consoleGrid, 2);
             grid.Children.Add(consoleGrid);
 
-            // Buttons panel (without Clear button)
             var buttonsPanel = CreateQuickButtonsPanel(mainWindow, includeClearButton: false);
             Grid.SetRow(buttonsPanel, 1);
             grid.Children.Add(buttonsPanel);
@@ -95,8 +195,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o painel de entrada de comandos
+        /// Creates the command input panel with label, TextBox, and execute button.
+        /// TextBox supports Enter key to execute commands.
+        /// Three-column layout: label (auto) | TextBox (star) | execute button (auto).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>Grid with command input controls.</returns>
         private static Grid CreateCommandInputPanel(DevStackGui mainWindow)
         {
             var inputPanel = new Grid
@@ -104,7 +208,6 @@ namespace DevStackManager
                 Margin = new Thickness(INPUT_PANEL_MARGIN, INPUT_PANEL_TOP_MARGIN, INPUT_PANEL_MARGIN, INPUT_PANEL_BOTTOM_MARGIN)
             };
             
-            // Definir colunas: Label (auto) | TextBox (star) | Button (auto)
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             inputPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -126,6 +229,12 @@ namespace DevStackManager
             return inputPanel;
         }
 
+        /// <summary>
+        /// Creates the command input TextBox with Enter key execution support.
+        /// Named "UtilsCommandTextBox" for UI element lookup.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for styling.</param>
+        /// <returns>TextBox for command input.</returns>
         private static TextBox CreateCommandTextBox(DevStackGui mainWindow)
         {
             var commandTextBox = DevStackShared.ThemeManager.CreateStyledTextBox();
@@ -133,7 +242,6 @@ namespace DevStackManager
             commandTextBox.Margin = new Thickness(COMMAND_INPUT_HORIZONTAL_MARGIN, 0, COMMAND_INPUT_HORIZONTAL_MARGIN, 0);
             commandTextBox.Name = "UtilsCommandTextBox";
             
-            // Enter para executar comando
             commandTextBox.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Enter)
@@ -146,6 +254,13 @@ namespace DevStackManager
             return commandTextBox;
         }
 
+        /// <summary>
+        /// Creates the execute button with Success style.
+        /// Executes command from TextBox and clears input after execution.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="commandTextBox">TextBox containing the command to execute.</param>
+        /// <returns>Execute button with click handler.</returns>
         private static Button CreateExecuteButton(DevStackGui mainWindow, TextBox commandTextBox)
         {
             var executeButton = DevStackShared.ThemeManager.CreateStyledButton(
@@ -165,6 +280,13 @@ namespace DevStackManager
             return executeButton;
         }
 
+        /// <summary>
+        /// Creates the clear console button (❌) overlaid on top-right corner of console.
+        /// Transparent background with custom ControlTemplate to remove hover/pressed effects.
+        /// Z-Index 10 to float above console output.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization and tooltip.</param>
+        /// <returns>Clear button with transparent styling.</returns>
         private static Button CreateClearButton(DevStackGui mainWindow)
         {
             var clearButton = new Button
@@ -180,21 +302,18 @@ namespace DevStackManager
                 ToolTip = mainWindow.LocalizationManager.GetString("gui.utilities_tab.clear_console_tooltip")
             };
             
-            // Custom ControlTemplate: always transparent background, even on hover/press
             var buttonTemplate = new ControlTemplate(typeof(Button));
             var borderFactory = new FrameworkElementFactory(typeof(Border));
             borderFactory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
             borderFactory.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
             borderFactory.SetValue(Border.SnapsToDevicePixelsProperty, true);
             
-            // ContentPresenter for the icon
             var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
             contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
             borderFactory.AppendChild(contentPresenterFactory);
             buttonTemplate.VisualTree = borderFactory;
             
-            // Remove highlight/hover/pressed background
             var style = new Style(typeof(Button));
             style.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
             style.Setters.Add(new Setter(Button.ForegroundProperty, DevStackShared.ThemeManager.CurrentTheme.Danger));
@@ -207,11 +326,16 @@ namespace DevStackManager
             return clearButton;
         }
 
+        /// <summary>
+        /// Sets up dynamic margin adjustment for clear button based on scrollbar visibility.
+        /// Adjusts right margin when vertical scrollbar appears to prevent button overlap.
+        /// </summary>
+        /// <param name="consoleScrollViewer">ScrollViewer containing console output.</param>
+        /// <param name="clearButton">Clear button to adjust margin for.</param>
         private static void SetupClearButtonMarginAdjustment(ScrollViewer consoleScrollViewer, Button clearButton)
         {
             void UpdateClearButtonMargin()
             {
-                // Se o ScrollViewer mostrar a barra de rolagem vertical, aumente a margem da direita
                 if (consoleScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
                 {
                     clearButton.Margin = new Thickness(0, CLEAR_BUTTON_TOP_MARGIN, CLEAR_BUTTON_RIGHT_MARGIN_WITH_SCROLLBAR, 0);
@@ -222,15 +346,17 @@ namespace DevStackManager
                 }
             }
             
-            // Atualiza ao carregar e ao rolar
             consoleScrollViewer.ScrollChanged += (s, e) => UpdateClearButtonMargin();
             consoleScrollViewer.SizeChanged += (s, e) => UpdateClearButtonMargin();
             consoleScrollViewer.Loaded += (s, e) => UpdateClearButtonMargin();
         }
 
         /// <summary>
-        /// Cria o ScrollViewer para o console de saída
+        /// Creates the ScrollViewer for console output display.
+        /// Contains read-only TextBox named "UtilsConsoleOutput" with Consolas font and console colors.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for initial help text.</param>
+        /// <returns>ScrollViewer with console TextBox.</returns>
         private static ScrollViewer CreateConsoleScrollViewer(DevStackGui mainWindow)
         {
             var consoleScrollViewer = new ScrollViewer
@@ -240,7 +366,6 @@ namespace DevStackManager
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
-            // Aplicar scrollbar customizada do ThemeManager
             DevStackShared.ThemeManager.ApplyCustomScrollbar(consoleScrollViewer);
 
             var consoleTextBox = CreateConsoleTextBox(mainWindow);
@@ -249,6 +374,13 @@ namespace DevStackManager
             return consoleScrollViewer;
         }
 
+        /// <summary>
+        /// Creates the console output TextBox with initial help text.
+        /// Read-only, Consolas font, console theme colors, text wrapping enabled.
+        /// Named "UtilsConsoleOutput" for UI element lookup.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>TextBox configured for console output display.</returns>
         private static TextBox CreateConsoleTextBox(DevStackGui mainWindow)
         {
             var consoleTextBox = new TextBox
@@ -263,21 +395,29 @@ namespace DevStackManager
                 Name = "UtilsConsoleOutput"
             };
 
-            // Texto inicial de ajuda usando o LocalizationManager da mainWindow
             consoleTextBox.Text = GetInitialHelpText(mainWindow);
 
             return consoleTextBox;
         }
 
         /// <summary>
-        /// Cria o painel de botões rápidos
+        /// Creates the quick action buttons panel with predefined commands.
+        /// Buttons: Status, Installed, Diagnostic, Test, Help.
+        /// Overload allows excluding clear button (already overlaid on console).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>WrapPanel with quick action buttons.</returns>
         private static WrapPanel CreateQuickButtonsPanel(DevStackGui mainWindow)
         {
             return CreateQuickButtonsPanel(mainWindow, includeClearButton: true);
         }
 
-        // Nova sobrecarga para permitir remover o botão de limpar
+        /// <summary>
+        /// Creates the quick action buttons panel with optional clear button inclusion.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="includeClearButton">Whether to include clear button (obsolete - now overlaid on console).</param>
+        /// <returns>WrapPanel with quick action buttons.</returns>
         private static WrapPanel CreateQuickButtonsPanel(DevStackGui mainWindow, bool includeClearButton)
         {
             var buttonsPanel = new WrapPanel
@@ -301,11 +441,17 @@ namespace DevStackManager
                 buttonsPanel.Children.Add(button);
             }
 
-            // O botão de limpar não é mais adicionado aqui, pois agora é sobreposto ao console
-
             return buttonsPanel;
         }
 
+        /// <summary>
+        /// Creates a quick action button for predefined commands.
+        /// Help command receives special handling to show help text without execution.
+        /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <param name="text">Button display text.</param>
+        /// <param name="command">Command to execute when button is clicked.</param>
+        /// <returns>Button with command execution handler.</returns>
         private static Button CreateQuickButton(DevStackGui mainWindow, string text, string command)
         {
             var button = DevStackShared.ThemeManager.CreateStyledButton(text);
@@ -313,7 +459,6 @@ namespace DevStackManager
             button.Height = QUICK_BUTTON_HEIGHT;
             button.Margin = new Thickness(QUICK_BUTTON_MARGIN);
             
-            // Tratamento especial para o botão de ajuda
             if (command == "help")
             {
                 button.Click += (s, e) => ShowHelpInConsole(mainWindow);
@@ -327,8 +472,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Executa um comando no console do DevStack
+        /// Executes a DevStack command and displays output in console.
+        /// First attempts to execute via DevStack.exe, falls back to direct C# manager calls.
+        /// Special handling for "help" command to display initial help text.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for status updates.</param>
+        /// <param name="command">Command to execute (e.g., "status", "list --installed", "doctor").</param>
         private static async void ExecuteCommand(DevStackGui mainWindow, string command)
         {
             if (string.IsNullOrWhiteSpace(command)) return;
@@ -336,7 +485,6 @@ namespace DevStackManager
             var consoleOutput = GuiHelpers.FindChild<TextBox>(mainWindow, "UtilsConsoleOutput");
             if (consoleOutput == null) return;
 
-            // Tratamento especial para comando help
             if (command.Trim().ToLowerInvariant() == "help")
             {
                 consoleOutput.Text = GetInitialHelpText(mainWindow);
@@ -346,7 +494,6 @@ namespace DevStackManager
 
             mainWindow.StatusMessage = mainWindow.LocalizationManager.GetString("gui.utilities_tab.status.executing", command);
             
-            // Adicionar comando ao console
             consoleOutput.AppendText($"\n> {command}\n");
             consoleOutput.ScrollToEnd();
 
@@ -357,13 +504,11 @@ namespace DevStackManager
                     var output = "";
                     var devStackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DevStack.exe");
                     
-                    // Verificar se o arquivo DevStack.exe existe no diretório atual
                     if (!File.Exists(devStackPath))
                     {
                         devStackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "DevStack.exe");
                     }
                     
-                    // Verificar no diretório raiz do workspace
                     if (!File.Exists(devStackPath))
                     {
                         devStackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "DevStack.exe");
@@ -408,13 +553,11 @@ namespace DevStackManager
                     }
                     else
                     {
-                        // Fallback: usar managers C# diretamente
                         output = ExecuteCommandDirect(command);
                     }
 
                     mainWindow.Dispatcher.Invoke(() =>
                     {
-                        // Verificar se é o comando help especial
                         if (output == "help_command_special")
                         {
                             consoleOutput.Text = GetInitialHelpText(mainWindow);
@@ -441,13 +584,16 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Executa comandos diretamente usando os managers C#
+        /// Executes commands directly using C# managers when DevStack.exe is not available.
+        /// Supports: status (ProcessManager), list (ListManager), help (special signal).
+        /// Returns "help_command_special" signal for help command to trigger UI update.
         /// </summary>
+        /// <param name="command">Command to execute.</param>
+        /// <returns>Command output or special help signal.</returns>
         private static string ExecuteCommandDirect(string command)
         {
             try
             {
-                // Usar a instância existente ao invés de criar uma nova
                 var localizationManager = DevStackShared.LocalizationManager.Instance ?? DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
                 
                 var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -492,7 +638,7 @@ namespace DevStackManager
                         }
                         return localizationManager.GetString("gui.utilities_tab.messages.list_usage");
                     case "help":
-                        return "help_command_special"; // Sinal especial para limpar console
+                        return "help_command_special";
                     default:
                         return localizationManager.GetString("gui.utilities_tab.messages.command_not_recognized", parts[0]);
                 }
@@ -505,8 +651,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Limpa o console de utilitários
+        /// Clears the utilities console output.
+        /// Displays localized "console cleared" message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
         private static void ClearConsole(DevStackGui mainWindow)
         {
             var consoleOutput = GuiHelpers.FindChild<TextBox>(mainWindow, "UtilsConsoleOutput");
@@ -518,8 +666,9 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Mostra a ajuda no console (limpa e exibe o texto inicial)
+        /// Shows help text in console by clearing and displaying initial help content.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
         private static void ShowHelpInConsole(DevStackGui mainWindow)
         {
             var consoleOutput = GuiHelpers.FindChild<TextBox>(mainWindow, "UtilsConsoleOutput");
@@ -531,8 +680,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Obtém o texto inicial de ajuda para o console
+        /// Gets the initial help text displayed in console on tab load.
+        /// Includes localized header, available commands list from DevStackConfig.ShowHelpTable(), and tip message.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>Formatted help text with command table.</returns>
         private static string GetInitialHelpText(DevStackGui mainWindow)
         {
             var localizationManager = mainWindow.LocalizationManager;

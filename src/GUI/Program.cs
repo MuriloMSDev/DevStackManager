@@ -6,27 +6,28 @@ using System.Windows;
 namespace DevStackManager
 {
     /// <summary>
-    /// Ponto de entrada exclusivo para a interface gráfica (DevStackGUI.exe)
-    /// Este programa será compilado como WinExe para não mostrar console
+    /// GUI application entry point for DevStack Manager.
+    /// This program is compiled as WinExe to launch without console window.
+    /// Initializes WPF application and displays the main DevStack GUI window.
     /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Application entry point.
+        /// </summary>
+        /// <param name="args">Command line arguments (not used in GUI mode).</param>
+        /// <returns>0 on success, 1 on error.</returns>
         [STAThread]
         public static int Main(string[] args)
         {
             try
             {
-                // Carregar configurações necessárias
                 LoadConfiguration();
 
-                // Inicializar aplicação WPF
                 var app = new Application();
-
-                // Criar e mostrar a janela principal
                 var mainWindow = new DevStackGui();
                 app.MainWindow = mainWindow;
 
-                // Executar aplicação
                 var result = app.Run(mainWindow);
 
                 return result;
@@ -43,6 +44,9 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Loads DevStack configuration from disk.
+        /// </summary>
         private static void LoadConfiguration()
         {
             DevStackConfig.Initialize();

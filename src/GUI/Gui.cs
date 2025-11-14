@@ -21,42 +21,150 @@ using System.Windows.Threading;
 namespace DevStackManager
 {
     /// <summary>
-    /// Interface gráfica moderna WPF para o DevStackManager
-    /// Convertida do arquivo gui.ps1 original mantendo funcionalidades e layout
+    /// Modern WPF graphical interface for DevStack Manager.
+    /// Provides visual interface for installing, uninstalling, and managing development stack components.
+    /// Implements real-time service monitoring, component management, and multi-language support.
+    /// Converted from original PowerShell GUI (gui.ps1) while maintaining functionality and layout.
     /// </summary>
     public partial class DevStackGui : Window, INotifyPropertyChanged
     {
         #region Constants
-        // Window Dimensions
+        /// <summary>
+        /// Default window width in pixels.
+        /// </summary>
         private const double WINDOW_WIDTH = 1200;
+        
+        /// <summary>
+        /// Default window height in pixels.
+        /// </summary>
         private const double WINDOW_HEIGHT = 840;
+        
+        /// <summary>
+        /// Minimum allowed window width in pixels.
+        /// </summary>
         private const double WINDOW_MIN_WIDTH = 1200;
+        
+        /// <summary>
+        /// Minimum allowed window height in pixels.
+        /// </summary>
         private const double WINDOW_MIN_HEIGHT = 840;
         #endregion
         
         #region Private Fields
+        /// <summary>
+        /// Localization manager for multi-language support.
+        /// </summary>
         private readonly DevStackShared.LocalizationManager _localizationManager;
+        
+        /// <summary>
+        /// Timer for periodic services status updates.
+        /// </summary>
         private readonly System.Timers.Timer _servicesUpdateTimer;
-        private readonly Dictionary<string, bool> _serviceStatusCache = new(); // Cache para status dos serviços
+        
+        /// <summary>
+        /// Cache for service status to improve performance.
+        /// </summary>
+        private readonly Dictionary<string, bool> _serviceStatusCache = new();
+        
+        /// <summary>
+        /// Timestamp of last services cache update.
+        /// </summary>
         private DateTime _lastServicesCacheUpdate = DateTime.MinValue;
+        
+        /// <summary>
+        /// Status bar message displayed at the bottom of the window.
+        /// </summary>
         private string _statusMessage = "";
+        
+        /// <summary>
+        /// Collection of installed components displayed in the dashboard.
+        /// </summary>
         private ObservableCollection<ComponentViewModel> _installedComponents = new();
+        
+        /// <summary>
+        /// List of available components for installation.
+        /// </summary>
         private ObservableCollection<string> _availableComponents = new();
+        
+        /// <summary>
+        /// List of available versions for the selected component.
+        /// </summary>
         private ObservableCollection<string> _availableVersions = new();
+        
+        /// <summary>
+        /// Collection of running services with their status.
+        /// </summary>
         private ObservableCollection<ServiceViewModel> _services = new();
+        
+        /// <summary>
+        /// List of components with available shortcuts.
+        /// </summary>
         private ObservableCollection<string> _shortcutComponents = new();
+        
+        /// <summary>
+        /// List of versions for the selected shortcut component.
+        /// </summary>
         private ObservableCollection<string> _shortcutVersions = new();
+        
+        /// <summary>
+        /// Currently selected component for installation.
+        /// </summary>
         private string _selectedComponent = "";
+        
+        /// <summary>
+        /// Currently selected version for installation.
+        /// </summary>
         private string _selectedVersion = "";
+        
+        /// <summary>
+        /// Currently selected component for uninstallation.
+        /// </summary>
         private string _selectedUninstallComponent = "";
+        
+        /// <summary>
+        /// Currently selected version for uninstallation.
+        /// </summary>
         private string _selectedUninstallVersion = "";
+        
+        /// <summary>
+        /// Currently selected component for shortcut operations.
+        /// </summary>
         private string _selectedShortcutComponent = "";
+        
+        /// <summary>
+        /// Currently selected version for shortcut operations.
+        /// </summary>
         private string _selectedShortcutVersion = "";
+        
+        /// <summary>
+        /// Console output text displayed in the console panel.
+        /// </summary>
         private string _consoleOutput = "";
+        
+        /// <summary>
+        /// Indicates whether a component installation is in progress.
+        /// </summary>
         private bool _isInstallingComponent = false;
+        
+        /// <summary>
+        /// Indicates whether a component uninstallation is in progress.
+        /// </summary>
         private bool _isUninstallingComponent = false;
+        
+        /// <summary>
+        /// Indicates whether services are currently being loaded.
+        /// </summary>
         private bool _isLoadingServices = false;
+        
+        /// <summary>
+        /// Indicates whether a site is currently being created.
+        /// </summary>
         private bool _isCreatingSite = false;
+        
+        /// <summary>
+        /// Gets or sets whether a component installation is in progress.
+        /// When installation completes, automatically reloads installed components and shortcuts.
+        /// </summary>
         public bool IsInstallingComponent
         {
             get => _isInstallingComponent;
@@ -66,7 +174,6 @@ namespace DevStackManager
                 _isInstallingComponent = value; 
                 OnPropertyChanged();
                 
-                // Se mudou de true para false (instalação concluída), recarregar dados
                 if (oldValue && !value)
                 {
                     _ = Task.Run(async () =>
@@ -77,6 +184,11 @@ namespace DevStackManager
                 }
             }
         }
+        
+        /// <summary>
+        /// Gets or sets whether a component uninstallation is in progress.
+        /// When uninstallation completes, automatically reloads installed components, services, and shortcuts.
+        /// </summary>
         public bool IsUninstallingComponent
         {
             get => _isUninstallingComponent;
@@ -86,7 +198,6 @@ namespace DevStackManager
                 _isUninstallingComponent = value; 
                 OnPropertyChanged();
                 
-                // Se mudou de true para false (desinstalação concluída), recarregar dados
                 if (oldValue && !value)
                 {
                     _ = Task.Run(async () =>
@@ -98,108 +209,180 @@ namespace DevStackManager
                 }
             }
         }
+        
+        /// <summary>
+        /// Gets or sets whether services are currently being loaded.
+        /// </summary>
         public bool IsLoadingServices
         {
             get => _isLoadingServices;
             set { _isLoadingServices = value; OnPropertyChanged(); }
         }
+        
+        /// <summary>
+        /// Gets or sets whether a site is currently being created.
+        /// </summary>
         public bool IsCreatingSite
         {
             get => _isCreatingSite;
             set { _isCreatingSite = value; OnPropertyChanged(); }
         }
+        
+        /// <summary>
+        /// Main content control that displays the current active tab.
+        /// </summary>
         public ContentControl? _mainContent;
+        
+        /// <summary>
+        /// Index of the currently selected navigation item (0=Dashboard, 1=Install, 2=Uninstall, etc.).
+        /// </summary>
         private int _selectedNavIndex = 0;
+        
+        /// <summary>
+        /// Gets the current theme colors.
+        /// </summary>
         public DevStackShared.ThemeManager.ThemeColors CurrentTheme => DevStackShared.ThemeManager.CurrentTheme;
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Gets the localization manager for internationalization support.
+        /// </summary>
         public DevStackShared.LocalizationManager LocalizationManager => _localizationManager;
         
+        /// <summary>
+        /// Gets or sets the status bar message displayed at the bottom of the window.
+        /// </summary>
         public string StatusMessage
         {
             get => _statusMessage;
             set { _statusMessage = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the collection of installed components displayed in the dashboard.
+        /// </summary>
         public ObservableCollection<ComponentViewModel> InstalledComponents
         {
             get => _installedComponents;
             set { _installedComponents = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the list of available components for installation.
+        /// </summary>
         public ObservableCollection<string> AvailableComponents
         {
             get => _availableComponents;
             set { _availableComponents = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the list of available versions for the selected component.
+        /// </summary>
         public ObservableCollection<string> AvailableVersions
         {
             get => _availableVersions;
             set { _availableVersions = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the collection of running services with their status.
+        /// </summary>
         public ObservableCollection<ServiceViewModel> Services
         {
             get => _services;
             set { _services = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the list of components with available shortcuts.
+        /// </summary>
         public ObservableCollection<string> ShortcutComponents
         {
             get => _shortcutComponents;
             set { _shortcutComponents = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the list of versions for the selected shortcut component.
+        /// </summary>
         public ObservableCollection<string> ShortcutVersions
         {
             get => _shortcutVersions;
             set { _shortcutVersions = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected component for installation.
+        /// When changed, automatically loads available versions.
+        /// </summary>
         public string SelectedComponent
         {
             get => _selectedComponent;
             set { _selectedComponent = value; OnPropertyChanged(); _ = LoadVersionsForComponent(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected version for installation.
+        /// </summary>
         public string SelectedVersion
         {
             get => _selectedVersion;
             set { _selectedVersion = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected component for uninstallation.
+        /// When changed, automatically loads installed versions.
+        /// </summary>
         public string SelectedUninstallComponent
         {
             get => _selectedUninstallComponent;
             set { _selectedUninstallComponent = value; OnPropertyChanged(); _ = LoadUninstallVersions(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected version for uninstallation.
+        /// </summary>
         public string SelectedUninstallVersion
         {
             get => _selectedUninstallVersion;
             set { _selectedUninstallVersion = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected component for shortcut operations.
+        /// When changed, automatically loads available versions.
+        /// </summary>
         public string SelectedShortcutComponent
         {
             get => _selectedShortcutComponent;
             set { _selectedShortcutComponent = value; OnPropertyChanged(); _ = LoadShortcutVersions(); }
         }
 
+        /// <summary>
+        /// Gets or sets the currently selected version for shortcut operations.
+        /// </summary>
         public string SelectedShortcutVersion
         {
             get => _selectedShortcutVersion;
             set { _selectedShortcutVersion = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the console output text displayed in the console panel.
+        /// </summary>
         public string ConsoleOutput
         {
             get => _consoleOutput;
             set { _consoleOutput = value; OnPropertyChanged(); }
         }
         
+        /// <summary>
+        /// Gets or sets the selected navigation index (0=Dashboard, 1=Install, 2=Uninstall, etc.).
+        /// When changed, navigates to the corresponding section.
+        /// </summary>
         public int SelectedNavIndex
         {
             get => _selectedNavIndex;
@@ -213,8 +396,15 @@ namespace DevStackManager
         #endregion
 
         #region INotifyPropertyChanged Implementation
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
         
+        /// <summary>
+        /// Raises the PropertyChanged event for the specified property.
+        /// </summary>
+        /// <param name="propertyName">Name of the property that changed.</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -222,9 +412,13 @@ namespace DevStackManager
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Initializes a new instance of the DevStackGui window.
+        /// Loads saved language and theme preferences, sets up service monitoring timer,
+        /// and initializes component data when the window is shown.
+        /// </summary>
         public DevStackGui()
         {
-            // Initialize localization for GUI (carregando idioma persistido se existir)
             _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
             try
             {
@@ -240,28 +434,22 @@ namespace DevStackManager
             _statusMessage = _localizationManager.GetString("gui.window.ready_status");
             _localizationManager.LanguageChanged += OnLanguageChanged;
 
-            // Listener para troca de idioma em tempo real (similar ao tema)
             DevStackShared.LocalizationManager.OnLanguageChangedStatic += OnLanguageChangedStatic;
 
-            // Listener para troca de tema em tempo real
             DevStackShared.ThemeManager.OnThemeChanged += OnThemeChanged;
 
-            // Inicializar timer para atualização periódica dos serviços (mais frequente para detectar mudanças)
-            _servicesUpdateTimer = new System.Timers.Timer(5000); // 5 segundos para detectar rapidamente mudanças de status
+            _servicesUpdateTimer = new System.Timers.Timer(5000);
             _servicesUpdateTimer.Elapsed += async (sender, e) => await LoadServices(false);
             _servicesUpdateTimer.AutoReset = true;
             _servicesUpdateTimer.Start();
 
-            // Inicializar o ProcessRegistry (carregar dados salvos)
             ProcessRegistry.LoadFromFile();
 
             InitializeComponent();
             DataContext = this;
 
-            // Carregar dados iniciais após a janela estar pronta
             this.Loaded += (s, e) => 
             {
-                // Se estamos no Dashboard (índice 0), carregar dados
                 if (SelectedNavIndex == 0)
                 {
                     _ = Task.Run(async () =>
@@ -285,6 +473,10 @@ namespace DevStackManager
         #endregion
 
         #region Initialization Methods
+        /// <summary>
+        /// Initializes all WPF UI components and builds the window layout.
+        /// Creates navigation panel, main content area, status bar, and console output panel.
+        /// </summary>
         private void InitializeComponent()
         {
             var exePath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "DevStackGUI.exe");
@@ -298,33 +490,45 @@ namespace DevStackManager
             Background = CurrentTheme.FormBackground;
             Foreground = CurrentTheme.Foreground;
 
-            // Grid principal
             var mainGrid = new Grid();
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Conteúdo principal
             CreateMainContent(mainGrid);
 
-            // Barra de status
             CreateStatusBar(mainGrid);
 
             Content = mainGrid;
         }
 
+        /// <summary>
+        /// Creates the main content area with navigation and content panels.
+        /// Delegates to GuiMainContent helper class.
+        /// </summary>
+        /// <param name="mainGrid">Parent grid to add content to.</param>
         private void CreateMainContent(Grid mainGrid)
         {
             GuiMainContent.CreateMainContent(mainGrid, this);
         }
 
+        /// <summary>
+        /// Creates the status bar at the bottom of the window.
+        /// Delegates to GuiStatusBar helper class.
+        /// </summary>
+        /// <param name="mainGrid">Parent grid to add status bar to.</param>
         private void CreateStatusBar(Grid mainGrid)
         {
             GuiStatusBar.CreateStatusBar(mainGrid, this);
         }
         
+        /// <summary>
+        /// Handles language change event from LocalizationManager.
+        /// Rebuilds entire UI to reflect new language strings while preserving navigation state.
+        /// </summary>
+        /// <param name="sender">Event sender.</param>
+        /// <param name="newLang">New language code (e.g., "en_US", "pt_BR").</param>
         private void OnLanguageChanged(object? sender, string newLang)
         {
-            // Rebuild main window texts and content to reflect new language
             Dispatcher.Invoke(() =>
             {
                 try
@@ -335,7 +539,6 @@ namespace DevStackManager
                     var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
                     Title = _localizationManager.GetString("gui.window.title", version);
 
-                    // Recreate main layout while preserving selected index
                     int currentIndex = SelectedNavIndex;
                     var mainGrid = Content as Grid;
                     if (mainGrid != null)
@@ -355,7 +558,6 @@ namespace DevStackManager
                     }
                     else
                     {
-                        // Fallback: rebuild the whole content
                         System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Falling back to InitializeComponent");
                         InitializeComponent();
                     }
@@ -367,7 +569,6 @@ namespace DevStackManager
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[OnLanguageChanged] Error during language change: {ex.Message}");
-                    // Fallback to InitializeComponent in case of any error
                     try
                     {
                         InitializeComponent();
@@ -380,9 +581,13 @@ namespace DevStackManager
             });
         }
 
+        /// <summary>
+        /// Static handler for language change events.
+        /// Rebuilds entire UI to reflect new language strings while preserving navigation state.
+        /// </summary>
+        /// <param name="newLang">New language code (e.g., "en_US", "pt_BR").</param>
         private void OnLanguageChangedStatic(string newLang)
         {
-            // Método estático para mudança de idioma (similar ao OnThemeChanged)
             Dispatcher.Invoke(() =>
             {
                 try
@@ -393,7 +598,6 @@ namespace DevStackManager
                     var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath).FileVersion ?? _localizationManager.GetString("common.unknown");
                     Title = _localizationManager.GetString("gui.window.title", version);
 
-                    // Recreate main layout while preserving selected index
                     int currentIndex = SelectedNavIndex;
                     var mainGrid = Content as Grid;
                     if (mainGrid != null)
@@ -413,7 +617,6 @@ namespace DevStackManager
                     }
                     else
                     {
-                        // Fallback: rebuild the whole content
                         System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Falling back to InitializeComponent");
                         InitializeComponent();
                     }
@@ -425,7 +628,6 @@ namespace DevStackManager
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[OnLanguageChangedStatic] Error during language change: {ex.Message}");
-                    // Fallback to InitializeComponent in case of any error
                     try
                     {
                         InitializeComponent();
@@ -438,15 +640,17 @@ namespace DevStackManager
             });
         }
 
+        /// <summary>
+        /// Handles theme change event from ThemeManager.
+        /// Updates window colors and rebuilds UI to apply new theme while preserving navigation state.
+        /// </summary>
         private void OnThemeChanged()
         {
-            // Atualiza o tema da interface em tempo real
             Dispatcher.Invoke(() =>
             {
                 Background = CurrentTheme.FormBackground;
                 Foreground = CurrentTheme.Foreground;
 
-                // Recria layout principal para aplicar novas cores
                 int currentIndex = SelectedNavIndex;
                 var mainGrid = Content as Grid;
                 if (mainGrid != null)
@@ -462,7 +666,6 @@ namespace DevStackManager
                 }
                 else
                 {
-                    // Fallback: rebuild the whole content
                     InitializeComponent();
                 }
                 StatusMessage = _localizationManager.GetString("common.themes.messages.theme_changed", _localizationManager.GetString("common.themes." + DevStackShared.ThemeManager.CurrentThemeType.ToString().ToLower()));
@@ -472,24 +675,25 @@ namespace DevStackManager
 
         #region Data Loading Methods
         /// <summary>
-        /// Carrega a lista de componentes instalados de forma assíncrona
+        /// Loads the list of installed components asynchronously.
+        /// Queries DataManager for installed versions and updates InstalledComponents collection.
         /// </summary>
         public async Task LoadInstalledComponents()
         {
             try
             {
                 StatusMessage = LocalizationManager.GetString("gui.installed_tab.loading");
-                DevStackConfig.WriteLog("Iniciando LoadInstalledComponents");
+                DevStackConfig.WriteLog("Starting LoadInstalledComponents");
                 
                 var data = await Task.Run(() => 
                 {
-                    DevStackConfig.WriteLog("Chamando DataManager.GetInstalledVersions()");
+                    DevStackConfig.WriteLog("Calling DataManager.GetInstalledVersions()");
                     var result = DataManager.GetInstalledVersions();
-                    DevStackConfig.WriteLog($"DataManager.GetInstalledVersions() retornou {result.Components.Count} componentes");
+                    DevStackConfig.WriteLog($"DataManager.GetInstalledVersions() returned {result.Components.Count} components");
                     return result;
                 });
                 
-                DevStackConfig.WriteLog("Processando componentes para ViewModels");
+                DevStackConfig.WriteLog("Processing components to ViewModels");
                 var components = new List<ComponentViewModel>();
                 
                 foreach (var comp in data.Components)
@@ -497,8 +701,8 @@ namespace DevStackManager
                     var compDef = Components.ComponentsFactory.GetComponent(comp.Name);
                     components.Add(new ComponentViewModel
                     {
-                        Name = comp.Name, // technical key
-                        Label = compDef?.Label ?? comp.Name, // display label
+                        Name = comp.Name,
+                        Label = compDef?.Label ?? comp.Name,
                         Installed = comp.Installed,
                         IsExecutable = comp.IsExecutable,
                         Versions = comp.Versions,
@@ -507,31 +711,29 @@ namespace DevStackManager
                     });
                 }
                 
-                DevStackConfig.WriteLog("Ordenando e atualizando UI");
-                // Ordena: instalados primeiro
+                DevStackConfig.WriteLog("Sorting and updating UI");
                 var ordered = components.OrderByDescending(c => c.Installed).ThenBy(c => c.Label).ToList();
                 InstalledComponents = new ObservableCollection<ComponentViewModel>(ordered);
                 StatusMessage = LocalizationManager.GetString("gui.installed_tab.loaded", ordered.Count);
-                DevStackConfig.WriteLog($"LoadInstalledComponents concluído com {ordered.Count} componentes");
+                DevStackConfig.WriteLog($"LoadInstalledComponents completed with {ordered.Count} components");
             }
             catch (Exception ex)
             {
                 StatusMessage = LocalizationManager.GetString("gui.installed_tab.error", ex.Message);
-                DevStackConfig.WriteLog($"Erro em LoadInstalledComponents: {ex}");
+                DevStackConfig.WriteLog($"Error in LoadInstalledComponents: {ex}");
             }
         }
 
         /// <summary>
-        /// Carrega a lista de componentes disponíveis para instalação
+        /// Loads the list of available components for installation.
+        /// Populates AvailableComponents collection from DevStackConfig.
         /// </summary>
         public async Task LoadAvailableComponents()
         {
             try
             {
-                // Carregar dados em background
                 var components = await Task.Run(() => DevStackConfig.components.ToList());
                 
-                // Atualizar UI no thread principal
                 AvailableComponents.Clear();
                 foreach (var component in components)
                 {
@@ -545,7 +747,8 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Carrega as versões disponíveis para o componente selecionado
+        /// Loads available versions for the currently selected component.
+        /// Queries component provider and populates AvailableVersions collection sorted by version number.
         /// </summary>
         public async Task LoadVersionsForComponent()
         {
@@ -559,7 +762,7 @@ namespace DevStackManager
             {
                 StatusMessage = LocalizationManager.GetString("gui.install_tab.messages.loading_versions", SelectedComponent);
 
-                var selectedComponent = SelectedComponent; // capture safely
+                var selectedComponent = SelectedComponent;
                 var versionData = await Task.Run(() => GetVersionDataForComponent(selectedComponent));
                 if (versionData.Status != "ok")
                 {
@@ -584,8 +787,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Obtém os dados de versão para um componente específico
+        /// Retrieves version data for a specific component.
         /// </summary>
+        /// <param name="component">Component name to query.</param>
+        /// <returns>VersionData object containing status, versions list, and error message if any.</returns>
         private VersionData GetVersionDataForComponent(string component)
         {
             try
@@ -613,8 +818,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Carrega a lista de serviços de forma instantânea com atualização forçada quando necessário
+        /// Loads services status with optional forced refresh.
+        /// Uses hybrid approach: checks ProcessRegistry first for speed, then verifies running processes.
+        /// Updates Services collection with running status and PIDs for each service version.
         /// </summary>
+        /// <param name="status">Whether to update status message.</param>
         public async Task LoadServices(bool status = true)
         {
             try
@@ -622,15 +830,12 @@ namespace DevStackManager
                 if (status)
                     StatusMessage = LocalizationManager.GetString("gui.services_tab.messages.loading");
                 
-                // Fazer tudo de forma super-rápida
                 var serviceList = new List<ServiceViewModel>();
                 
-                // Obter apenas componentes que são serviços
                 var serviceComponents = Components.ComponentsFactory.GetAll()
                     .Where(c => c.IsService && Directory.Exists(c.ToolDir))
                     .ToList();
                 
-                // Usar híbrido: ProcessRegistry primeiro, verificação real se necessário
                 foreach (var component in serviceComponents)
                 {
                     var installedVersions = component.ListInstalled();
@@ -643,7 +848,6 @@ namespace DevStackManager
                             bool isRunning = false;
                             string pids = "-";
                             
-                            // Primeiro: verificar ProcessRegistry (ultra-rápido)
                             var registryType = typeof(ProcessRegistry);
                             var registeredProcessesField = registryType.GetField("_registeredProcesses", 
                                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
@@ -654,13 +858,11 @@ namespace DevStackManager
                                 
                                 if (isRunning)
                                 {
-                                    // Se está no registry, obter PIDs dos processos principais registrados
                                     try
                                     {
                                         var servicePids = ProcessRegistry.GetServicePids(component.Name, version, component.MaxWorkers);
                                         if (servicePids.Count > 0)
                                         {
-                                            // Mostrar todos os PIDs dos processos principais registrados
                                             pids = string.Join(", ", servicePids);
                                         }
                                         else
@@ -675,7 +877,6 @@ namespace DevStackManager
                                 }
                             }
                             
-                            // Se não está no registry, fazer verificação rápida por nome de processo
                             if (!isRunning && component.ServicePattern != null)
                             {
                                 var processName = Path.GetFileNameWithoutExtension(component.ServicePattern);
@@ -704,10 +905,8 @@ namespace DevStackManager
                                     {
                                         isRunning = true;
                                         
-                                        // Registrar todos os processos encontrados como processos principais
                                         ProcessRegistry.RegisterServiceWithMultipleProcesses(component.Name, version, foundPids, serviceExe);
                                         
-                                        // Mostrar todos os PIDs
                                         pids = string.Join(", ", foundPids);
                                     }
                                 }
@@ -727,7 +926,6 @@ namespace DevStackManager
                         }
                         catch
                         {
-                            // Em caso de erro, adicionar como parado
                             serviceList.Add(new ServiceViewModel 
                             { 
                                 Name = component.Name, 
@@ -743,10 +941,8 @@ namespace DevStackManager
                     }
                 }
                 
-                // Ordenar lista
                 var orderedServices = serviceList.OrderBy(s => s.Label).ThenBy(s => s.Version).ToList();
                 
-                // Atualizar UI
                 await Dispatcher.InvokeAsync(() =>
                 {
                     Services.Clear();
@@ -772,22 +968,22 @@ namespace DevStackManager
 
         #region Shortcut Methods
         /// <summary>
-        /// Carrega os componentes instalados que têm CreateBinShortcut definido
+        /// Loads installed components that have CreateBinShortcut defined.
+        /// Filters InstalledComponents for those with shortcut creation support and populates ShortcutComponents collection.
         /// </summary>
+        /// <returns>Task representing the async load operation</returns>
         public async Task LoadShortcutComponents()
         {
             try
             {
-                DevStackConfig.WriteLog("LoadShortcutComponents: Iniciando");
+                DevStackConfig.WriteLog("LoadShortcutComponents: Starting");
                 
-                // Limpar a coleção antes de carregar
                 await Dispatcher.InvokeAsync(() => ShortcutComponents.Clear());
                 
                 DevStackConfig.WriteLog($"LoadShortcutComponents: InstalledComponents.Count = {InstalledComponents.Count}");
 
-                // Obter componentes instalados que têm CreateBinShortcut definido
                 var installedComponents = InstalledComponents.Where(c => c.Installed).ToList();
-                DevStackConfig.WriteLog($"LoadShortcutComponents: Componentes instalados = {installedComponents.Count}");
+                DevStackConfig.WriteLog($"LoadShortcutComponents: Installed components = {installedComponents.Count}");
                 
                 var shortcutComponents = new List<string>();
 
@@ -801,19 +997,18 @@ namespace DevStackManager
                             if (!string.IsNullOrEmpty(component.CreateBinShortcut))
                             {
                                 shortcutComponents.Add(comp.Name);
-                                DevStackConfig.WriteLog($"LoadShortcutComponents: Componente {comp.Name} adicionado (CreateBinShortcut = '{component.CreateBinShortcut}')");
+                                DevStackConfig.WriteLog($"LoadShortcutComponents: Component {comp.Name} added (CreateBinShortcut = '{component.CreateBinShortcut}')");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        DevStackConfig.WriteLog($"Erro ao verificar componente {comp.Name} para atalhos: {ex}");
+                        DevStackConfig.WriteLog($"Error checking component {comp.Name} for shortcuts: {ex}");
                     }
                 }
 
-                DevStackConfig.WriteLog($"LoadShortcutComponents: Total de componentes com shortcut = {shortcutComponents.Count}");
+                DevStackConfig.WriteLog($"LoadShortcutComponents: Total components with shortcut = {shortcutComponents.Count}");
 
-                // Atualizar a ObservableCollection na UI thread
                 await Dispatcher.InvokeAsync(() =>
                 {
                     foreach (var componentName in shortcutComponents)
@@ -822,23 +1017,24 @@ namespace DevStackManager
                     }
                 });
                 
-                DevStackConfig.WriteLog($"LoadShortcutComponents: Concluído. ShortcutComponents.Count = {ShortcutComponents.Count}");
+                DevStackConfig.WriteLog($"LoadShortcutComponents: Completed. ShortcutComponents.Count = {ShortcutComponents.Count}");
             }
             catch (Exception ex)
             {
                 StatusMessage = _localizationManager.GetString("gui.status_bar.error_loading_shortcuts", ex.Message);
-                DevStackConfig.WriteLog($"Erro ao carregar componentes para atalhos na GUI: {ex}");
+                DevStackConfig.WriteLog($"Error loading components for shortcuts in GUI: {ex}");
             }
         }
 
         /// <summary>
-        /// Carrega as versões instaladas do componente selecionado para criação de atalho
+        /// Loads installed versions of the selected component for shortcut creation.
+        /// Sorts versions in descending order and updates ShortcutVersions collection.
         /// </summary>
+        /// <returns>Task representing the async load operation</returns>
         public async Task LoadShortcutVersions()
         {
             if (string.IsNullOrEmpty(SelectedShortcutComponent))
             {
-                // Limpar versões se nenhum componente selecionado
                 await Dispatcher.InvokeAsync(() => ShortcutVersions.Clear());
                 return;
             }
@@ -852,11 +1048,9 @@ namespace DevStackManager
 
                     if (status.Installed && status.Versions.Any())
                     {
-                        // Ordena as versões em ordem decrescente
                         foreach (var version in status.Versions
                             .OrderByDescending(v => 
                             {
-                                // Extrair apenas a parte da versão, removendo o nome do componente se presente
                                 var versionNumber = v;
                                 if (v.StartsWith($"{SelectedShortcutComponent}-"))
                                 {
@@ -865,7 +1059,6 @@ namespace DevStackManager
                                 return Version.TryParse(versionNumber, out var parsed) ? parsed : new Version(0, 0);
                             }))
                         {
-                            // Extrair apenas a parte da versão, removendo o nome do componente
                             var versionNumber = version;
                             if (version.StartsWith($"{SelectedShortcutComponent}-"))
                             {
@@ -875,7 +1068,6 @@ namespace DevStackManager
                         }
                     }
 
-                    // Atualizar a ObservableCollection na UI thread
                     await Dispatcher.InvokeAsync(() =>
                     {
                         ShortcutVersions.Clear();
@@ -908,7 +1100,6 @@ namespace DevStackManager
                 var componentCombo = GuiHelpers.FindChild<ComboBox>(this, "UninstallComponentCombo");
                 if (componentCombo == null)
                 {
-                    // Se não encontrou o combo, tentar novamente após um delay
                     await Task.Delay(200);
                     await Dispatcher.InvokeAsync(async () => await LoadUninstallComponents());
                     return;
@@ -916,7 +1107,6 @@ namespace DevStackManager
                 
                 componentCombo.Items.Clear();
                 
-                // Obter componentes instalados
                 var installedComponents = InstalledComponents.Where(c => c.Installed).ToList();
                 
                 if (installedComponents.Any())
@@ -932,7 +1122,6 @@ namespace DevStackManager
                 }
                 else
                 {
-                    // Sem componentes instalados: não reagendar carregamento infinito
                     componentCombo.Items.Clear();
                     componentCombo.SelectedIndex = -1;
                     StatusMessage = LocalizationManager.GetString("gui.uninstall_tab.status.components_count", 0);
@@ -952,7 +1141,6 @@ namespace DevStackManager
         {
             if (string.IsNullOrEmpty(SelectedUninstallComponent))
             {
-                // Limpar versões se nenhum componente selecionado
                 var versionCombo = GuiHelpers.FindChild<ComboBox>(this, "UninstallVersionCombo");
                 if (versionCombo != null)
                 {
@@ -976,7 +1164,6 @@ namespace DevStackManager
                             versionCombo.Items.Clear();
                             if (status.Installed && status.Versions.Any())
                             {
-                                // Ordena as versões em ordem decrescente
                                 foreach (var version in status.Versions
                                     .OrderByDescending(v => Version.TryParse(
                                         SelectedUninstallComponent == "git" && v.StartsWith("git-")
@@ -986,11 +1173,10 @@ namespace DevStackManager
                                                 : v,
                                         out var parsed) ? parsed : new Version(0, 0)))
                                 {
-                                    // Extrair apenas a parte da versão, removendo o nome do componente
                                     var versionNumber = version;
                                     if (SelectedUninstallComponent == "git" && version.StartsWith("git-"))
                                     {
-                                        versionNumber = version.Substring(4); // Remove "git-"
+                                        versionNumber = version.Substring(4);
                                     }
                                     else if (version.StartsWith($"{SelectedUninstallComponent}-"))
                                     {
@@ -1049,6 +1235,9 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Refreshes all data in the application including installed components, available components, services, and shortcuts.
+        /// </summary>
         public async void RefreshAllData()
         {
             try
@@ -1056,15 +1245,12 @@ namespace DevStackManager
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_data");
                 DevStackConfig.WriteLog("Iniciando RefreshAllData");
                 
-                // Carregar componentes instalados primeiro (crítico para o funcionamento)
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_installed");
                 await LoadInstalledComponents();
                 
-                // Carregar componentes disponíveis
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_available");
                 await LoadAvailableComponents();
                 
-                // Carregar serviços em paralelo com shortcuts e uninstall
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_services");
                 var task1 = LoadServices();
                 var task2 = LoadShortcutComponents();
@@ -1073,18 +1259,20 @@ namespace DevStackManager
                 await Task.WhenAll(task1, task2, task3);
                 
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_complete");
-                DevStackConfig.WriteLog("RefreshAllData concluído");
+                DevStackConfig.WriteLog("RefreshAllData completed");
             }
             catch (Exception ex)
             {
                 StatusMessage = LocalizationManager.GetString("gui.status_bar.loading_error", ex.Message);
-                DevStackConfig.WriteLog($"Erro em RefreshAllData: {ex}");
+                DevStackConfig.WriteLog($"Error in RefreshAllData: {ex}");
             }
         }
         
         /// <summary>
-        /// Limpa o cache de status dos serviços e força atualização imediata
+        /// Clears the service status cache and forces immediate update.
+        /// Use after manually starting/stopping services.
         /// </summary>
+        /// <returns>Task representing the async refresh operation</returns>
         public async Task RefreshServicesStatus()
         {
             ClearServicesCache();
@@ -1092,14 +1280,20 @@ namespace DevStackManager
         }
         
         /// <summary>
-        /// Limpa o cache de status dos serviços (usar quando serviços são iniciados/parados manualmente)
+        /// Clears the service status cache.
+        /// Forces next LoadServices call to query actual service status instead of using cached data.
         /// </summary>
         public void ClearServicesCache()
         {
             _serviceStatusCache.Clear();
             _lastServicesCacheUpdate = DateTime.MinValue;
         }
-        
+
+        /// <summary>
+        /// Handles the window closed event and performs cleanup operations.
+        /// </summary>
+        /// <param name="sender">The window that was closed.</param>
+        /// <param name="e">Event arguments for the closed event.</param>
         protected override void OnClosed(EventArgs e)
         {
             _servicesUpdateTimer?.Stop();
