@@ -16,70 +16,169 @@ using Microsoft.Win32;
 
 namespace DevStackManager
 {
+    /// <summary>
+    /// Main entry point for the DevStack Command Line Interface (CLI).
+    /// Provides interactive shell and direct command execution for managing development stack components.
+    /// </summary>
     public class Program
     {
         #region Constants
-        // Time Constants (milliseconds)
+        /// <summary>
+        /// Delay in milliseconds before restarting a service.
+        /// </summary>
         private const int RESTART_DELAY_MS = 1000;
         
-        // Log Display Constants
+        /// <summary>
+        /// Number of log lines to display in log commands.
+        /// </summary>
         private const int LOG_DISPLAY_LINES = 50;
         
-        // IP Configuration Constants
+        /// <summary>
+        /// IP prefix for PHP upstream configuration (localhost prefix).
+        /// </summary>
         private const string PHP_UPSTREAM_IP_PREFIX = "127.";
+        
+        /// <summary>
+        /// Port number for PHP upstream configuration.
+        /// </summary>
         private const string PHP_UPSTREAM_PORT = ":9000";
         
-        // Minimum Arguments Required
+        /// <summary>
+        /// Minimum number of arguments required for site commands.
+        /// </summary>
         private const int SITE_MIN_ARGS = 4;
         #endregion
         
-        // LocalizationManager instance
+        /// <summary>
+        /// Localization manager instance for language support.
+        /// </summary>
         private static DevStackShared.LocalizationManager? _localizationManager;
+        
+        /// <summary>
+        /// Gets the localization manager for translation support.
+        /// </summary>
         private static DevStackShared.LocalizationManager LocalizationManager => 
             _localizationManager ?? throw new InvalidOperationException("LocalizationManager not initialized");
         
+        /// <summary>
+        /// Gets the base directory path for DevStack installation.
+        /// </summary>
         public static string baseDir => DevStackConfig.baseDir;
+        
+        /// <summary>
+        /// Gets the PHP installation directory path.
+        /// </summary>
         public static string phpDir => DevStackConfig.phpDir;
+        
+        /// <summary>
+        /// Gets the Nginx installation directory path.
+        /// </summary>
         public static string nginxDir => DevStackConfig.nginxDir;
+        
+        /// <summary>
+        /// Gets the MySQL installation directory path.
+        /// </summary>
         public static string mysqlDir => DevStackConfig.mysqlDir;
+        
+        /// <summary>
+        /// Gets the Node.js installation directory path.
+        /// </summary>
         public static string nodeDir => DevStackConfig.nodeDir;
+        
+        /// <summary>
+        /// Gets the Python installation directory path.
+        /// </summary>
         public static string pythonDir => DevStackConfig.pythonDir;
+        
+        /// <summary>
+        /// Gets the Composer installation directory path.
+        /// </summary>
         public static string composerDir => DevStackConfig.composerDir;
+        
+        /// <summary>
+        /// Gets the phpMyAdmin installation directory path.
+        /// </summary>
         public static string pmaDir => DevStackConfig.pmaDir;
+        
+        /// <summary>
+        /// Gets the MongoDB installation directory path.
+        /// </summary>
         public static string mongoDir => DevStackConfig.mongoDir;
+        
+        /// <summary>
+        /// Gets the PostgreSQL installation directory path.
+        /// </summary>
         public static string pgsqlDir => DevStackConfig.pgsqlDir;
+        
+        /// <summary>
+        /// Gets the Elasticsearch installation directory path.
+        /// </summary>
         public static string elasticDir => DevStackConfig.elasticDir;
+        
+        /// <summary>
+        /// Gets the WP-CLI installation directory path.
+        /// </summary>
         public static string wpcliDir => DevStackConfig.wpcliDir;
+        
+        /// <summary>
+        /// Gets the Adminer installation directory path.
+        /// </summary>
         public static string adminerDir => DevStackConfig.adminerDir;
+        
+        /// <summary>
+        /// Gets the Go installation directory path.
+        /// </summary>
         public static string goDir => DevStackConfig.goDir;
+        
+        /// <summary>
+        /// Gets the OpenSSL installation directory path.
+        /// </summary>
         public static string openSSLDir => DevStackConfig.openSSLDir;
+        
+        /// <summary>
+        /// Gets the PHP CS Fixer installation directory path.
+        /// </summary>
         public static string phpcsfixerDir => DevStackConfig.phpcsfixerDir;
+        
+        /// <summary>
+        /// Gets the Nginx sites-enabled directory path.
+        /// </summary>
         public static string nginxSitesDir => DevStackConfig.nginxSitesDir;
+        
+        /// <summary>
+        /// Gets the temporary files directory path.
+        /// </summary>
         public static string tmpDir => DevStackConfig.tmpDir;
         
+        /// <summary>
+        /// Gets the PATH manager instance for system PATH manipulation.
+        /// </summary>
         public static PathManager? pathManager => DevStackConfig.pathManager;
 
+        /// <summary>
+        /// Main entry point for the DevStack CLI application.
+        /// Supports both interactive REPL mode and direct command execution.
+        /// Automatically elevates to administrator privileges when required by specific commands.
+        /// </summary>
+        /// <param name="args">Command line arguments. Empty for REPL mode, or command followed by arguments for direct execution.</param>
+        /// <returns>Exit code: 0 for success, non-zero for failure.</returns>
         public static int Main(string[] args)
         {
-            // Configurar console para CLI
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
 
             try
             {
-                // Verificar se o comando requer privilégios de administrador
                 if (RequiresAdministrator(args))
                 {
                     if (!IsAdministrator())
                     {
-                        // Solicitar elevação e reexecutar com privilégios de administrador
                         return RestartAsAdministrator(args);
                     }
                 }
 
                 LoadConfiguration();
 
-                // Se não há argumentos, entrar em modo REPL
                 if (args.Length == 0)
                 {
                     Console.WriteLine(LocalizationManager.GetString("cli.shell.interactive_prompt"));
@@ -93,12 +192,10 @@ namespace DevStackManager
                         if (input.Equals("exit", StringComparison.OrdinalIgnoreCase) || input.Equals("quit", StringComparison.OrdinalIgnoreCase))
                             break;
 
-                        // Separar comando e argumentos
                         var split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                         string command = split[0].ToLowerInvariant();
                         string[] commandArgs = split.Skip(1).ToArray();
                         
-                        // Verificar se o comando requer privilégios de administrador
                         if (RequiresAdministrator(new[] { command }))
                         {
                             if (!IsAdministrator())
@@ -112,7 +209,6 @@ namespace DevStackManager
                         try
                         {
                             int result = ExecuteCommand(command, commandArgs);
-                            // Opcional: mostrar código de saída se não for 0
                             if (result != 0)
                                 Console.WriteLine(LocalizationManager.GetString("cli.shell.exit_code", result));
                         }
@@ -125,7 +221,6 @@ namespace DevStackManager
                     return 0;
                 }
 
-                // Modo tradicional (com argumentos)
                 string commandArg = args[0].ToLowerInvariant();
                 string[] commandArgsArr = args.Skip(1).ToArray();
                 return ExecuteCommand(commandArg, commandArgsArr);
@@ -139,16 +234,17 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Verifica se o comando atual requer privilégios de administrador
+        /// Determines if a command requires administrator privileges to execute.
         /// </summary>
+        /// <param name="args">Command line arguments where the first element is the command name.</param>
+        /// <returns>True if the command requires administrator privileges, false otherwise.</returns>
         private static bool RequiresAdministrator(string[] args)
         {
             if (args.Length == 0)
-                return false; // Modo REPL não requer admin
+                return false;
 
             string command = args[0].ToLowerInvariant();
             
-            // Comandos que requerem privilégios de administrador
             string[] adminCommands = {
                 "install", "uninstall", "start", "stop", "restart", 
                 "site", "enable", "disable", "service", "global"
@@ -158,8 +254,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Reinicia a aplicação como administrador
+        /// Restarts the application with administrator privileges using UAC elevation.
         /// </summary>
+        /// <param name="args">Original command line arguments to pass to the elevated process.</param>
+        /// <returns>Exit code from the elevated process, or 1 if elevation failed.</returns>
         private static int RestartAsAdministrator(string[] args)
         {
             try
@@ -169,7 +267,7 @@ namespace DevStackManager
                     FileName = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "DevStack.exe"),
                     Arguments = string.Join(" ", args.Select(arg => $"\"{arg}\"")),
                     UseShellExecute = true,
-                    Verb = "runas" // Solicita elevação
+                    Verb = "runas"
                 };
 
                 var process = Process.Start(startInfo);
@@ -187,7 +285,11 @@ namespace DevStackManager
             }
         }
 
-#pragma warning disable CA1416 // Validate platform compatibility
+        /// <summary>
+        /// Checks if the current process is running with administrator privileges.
+        /// </summary>
+        /// <returns>True if running as administrator, false otherwise.</returns>
+#pragma warning disable CA1416
         private static bool IsAdministrator()
         {
             using var identity = WindowsIdentity.GetCurrent();
@@ -196,20 +298,26 @@ namespace DevStackManager
         }
 #pragma warning restore CA1416
 
+        /// <summary>
+        /// Loads application configuration including DevStack base configuration and localization settings.
+        /// Initializes the localization manager with the saved language preference or defaults to pt_BR.
+        /// </summary>
         private static void LoadConfiguration()
         {
             DevStackConfig.Initialize();
             
-            // Carregar idioma do settings.conf ou usar pt_BR como padrão
             string defaultLanguage = "pt_BR";
             string? savedLanguage = DevStackConfig.GetSetting("language") as string;
             string languageToUse = savedLanguage ?? defaultLanguage;
             
-            // Inicializar LocalizationManager com o idioma apropriado
             _localizationManager = DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
             DevStackShared.LocalizationManager.ApplyLanguage(languageToUse);
         }
 
+        /// <summary>
+        /// Writes an informational message to the console in cyan color.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
         private static void WriteInfo(string message)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -217,6 +325,10 @@ namespace DevStackManager
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// Writes a warning message to the console in yellow color.
+        /// </summary>
+        /// <param name="message">The warning message to display.</param>
         private static void WriteWarningMsg(string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -224,6 +336,10 @@ namespace DevStackManager
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// Writes an error message to the console in red color.
+        /// </summary>
+        /// <param name="message">The error message to display.</param>
         private static void WriteErrorMsg(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -231,6 +347,11 @@ namespace DevStackManager
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// Writes a message to the console with a specified color.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        /// <param name="color">The console color to use for the message.</param>
         public static void WriteColoredLine(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -238,6 +359,11 @@ namespace DevStackManager
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// Appends a timestamped log entry to the devstack.log file.
+        /// Silently ignores any logging errors to prevent application interruption.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
         public static void WriteLog(string message)
         {
             try
@@ -249,10 +375,14 @@ namespace DevStackManager
             }
             catch
             {
-                // Ignore logging errors
             }
         }
 
+        /// <summary>
+        /// Displays the installation status for a specific component.
+        /// Shows all installed versions or a warning message if the component is not installed.
+        /// </summary>
+        /// <param name="component">The name of the component to check.</param>
         private static void StatusComponent(string component)
         {
             var status = GetComponentStatus(component);
@@ -270,6 +400,10 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Displays the installation and running status for all DevStack components.
+        /// For service components (PHP, Nginx), also indicates whether each version is running or stopped.
+        /// </summary>
         private static void StatusAll()
         {
             Console.WriteLine(LocalizationManager.GetString("cli.status.title"));
@@ -279,7 +413,6 @@ namespace DevStackManager
                 var status = allStatus[comp];
                 if (status.Installed && status.Versions.Count > 0)
                 {
-                    // Detectar se é serviço monitorado
                     var isService = comp == "php" || comp == "nginx";
                     WriteInfo(LocalizationManager.GetString("cli.status.installed", comp));
                     foreach (var version in status.Versions)
@@ -299,6 +432,10 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Tests all installed DevStack components by executing version commands.
+        /// Verifies that each tool is properly installed and can be executed.
+        /// </summary>
         private static void TestAll()
         {
             Console.WriteLine(LocalizationManager.GetString("cli.test.title"));
@@ -355,6 +492,10 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Checks system dependencies required to run DevStack.
+        /// Verifies administrator privileges and displays missing requirements.
+        /// </summary>
         private static void DepsCheck()
         {
             Console.WriteLine(LocalizationManager.GetString("cli.deps.title"));
@@ -375,6 +516,12 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Centers text within a specified width by adding padding spaces.
+        /// </summary>
+        /// <param name="text">The text to center.</param>
+        /// <param name="width">The total width to center the text within.</param>
+        /// <returns>The centered text with appropriate padding.</returns>
         private static string CenterText(string text, int width)
         {
             int pad = Math.Max(0, width - text.Length);
@@ -383,11 +530,22 @@ namespace DevStackManager
             return new string(' ', padLeft) + text + new string(' ', padRight);
         }
 
+        /// <summary>
+        /// Updates a component by triggering its installation process.
+        /// This effectively downloads and installs the latest version of the component.
+        /// </summary>
+        /// <param name="component">The name of the component to update.</param>
         private static void UpdateComponent(string component)
         {
             _ = HandleInstallCommand([component]);
         }
 
+        /// <summary>
+        /// Creates a command-line alias (batch file) for a specific component version.
+        /// The alias allows quick access to the component executable from any directory.
+        /// </summary>
+        /// <param name="component">The name of the component to alias.</param>
+        /// <param name="version">The version of the component to create an alias for.</param>
         private static void AliasComponent(string component, string version)
         {
             string aliasDir = Path.Combine(baseDir, "aliases");
@@ -428,6 +586,10 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Displays the CLI help information with all available commands and their descriptions.
+        /// Shows a formatted table with color-coded command names and descriptions.
+        /// </summary>
         private static void ShowUsage()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -437,7 +599,6 @@ namespace DevStackManager
             Console.WriteLine(LocalizationManager.GetString("cli.commands.gui_hint"));
             Console.WriteLine();
 
-            // Obter a tabela como string e exibi-la com cores
             var helpTable = DevStackConfig.ShowHelpTable();
             var lines = helpTable.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             
@@ -451,12 +612,10 @@ namespace DevStackManager
                 }
                 else if (line.StartsWith("║"))
                 {
-                    // Linha de comando - colorir diferente
                     Console.ForegroundColor = ConsoleColor.Gray;
                     Console.Write("║");
                     Console.ResetColor();
                     
-                    // Extrair comando e descrição
                     var parts = line.Split('║');
                     if (parts.Length >= 3)
                     {
@@ -483,6 +642,13 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Routes and executes the specified command with its arguments.
+        /// Logs the command execution and returns the appropriate exit code.
+        /// </summary>
+        /// <param name="command">The command name to execute.</param>
+        /// <param name="args">Arguments to pass to the command handler.</param>
+        /// <returns>Exit code: 0 for success, non-zero for failure.</returns>
         private static int ExecuteCommand(string command, string[] args)
         {
             WriteLog($"Comando executado: {command} {string.Join(" ", args)}");
@@ -521,30 +687,51 @@ namespace DevStackManager
             };
         }
 
+        /// <summary>
+        /// Displays usage information and returns success code.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int ShowUsageAndReturn()
         {
             ShowUsage();
             return 0;
         }
 
+        /// <summary>
+        /// Executes the status command to display all component statuses.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int ExecuteStatusCommand()
         {
             StatusAll();
             return 0;
         }
 
+        /// <summary>
+        /// Executes the test command to verify all installed components.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int ExecuteTestCommand()
         {
             TestAll();
             return 0;
         }
 
+        /// <summary>
+        /// Executes the dependencies check command.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int ExecuteDepsCommand()
         {
             DepsCheck();
             return 0;
         }
 
+        /// <summary>
+        /// Handles the update command for one or more components.
+        /// </summary>
+        /// <param name="args">Array of component names to update.</param>
+        /// <returns>Always returns 0.</returns>
         private static int HandleUpdateCommand(string[] args)
         {
             foreach (var component in args)
@@ -554,12 +741,22 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles unknown commands by displaying an error message.
+        /// </summary>
+        /// <param name="command">The unknown command that was attempted.</param>
+        /// <returns>Always returns 1 to indicate error.</returns>
         private static int HandleUnknownCommand(string command)
         {
             Console.WriteLine(LocalizationManager.GetString("cli.commands.unknown", command));
             return 1;
         }
 
+        /// <summary>
+        /// Handles the list command to display available or installed versions of components.
+        /// </summary>
+        /// <param name="args">Command arguments. Use "--installed" to list installed versions, or component name to list available versions.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleListCommand(string[] args)
         {
             if (args.Length == 0)
@@ -579,6 +776,12 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the site command to create an Nginx site configuration.
+        /// Creates a site configuration file with the specified domain, root directory, PHP upstream, and Nginx version.
+        /// </summary>
+        /// <param name="args">Command arguments including domain, -root, -php, and -nginx flags with their values.</param>
+        /// <returns>0 on success, 1 if arguments are invalid or configuration fails.</returns>
         private static int HandleSiteCommand(string[] args)
         {
             if (args.Length < SITE_MIN_ARGS)
@@ -603,6 +806,12 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Parses site command arguments into a SiteConfig object.
+        /// Extracts domain, root directory, PHP upstream, and Nginx version from command line arguments.
+        /// </summary>
+        /// <param name="args">Command line arguments for site configuration.</param>
+        /// <returns>A SiteConfig object populated with the parsed values.</returns>
         private static SiteConfig ParseSiteArguments(string[] args)
         {
             var config = new SiteConfig { Domain = args[0] };
@@ -633,13 +842,20 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Constrói o endereço PHP upstream no formato 127.x.x.x:9000
+        /// Builds the PHP upstream address in the format 127.x.x.x:9000.
         /// </summary>
+        /// <param name="value">The IP address suffix to append to 127.</param>
+        /// <returns>A complete PHP upstream address string.</returns>
         private static string BuildPhpUpstream(string value)
         {
             return $"{PHP_UPSTREAM_IP_PREFIX}{value}{PHP_UPSTREAM_PORT}";
         }
 
+        /// <summary>
+        /// Validates the site configuration to ensure all required fields are present.
+        /// </summary>
+        /// <param name="config">The site configuration to validate.</param>
+        /// <returns>True if configuration is valid, false otherwise.</returns>
         private static bool ValidateSiteConfig(SiteConfig config)
         {
             if (string.IsNullOrWhiteSpace(config.Domain))
@@ -665,26 +881,61 @@ namespace DevStackManager
             return true;
         }
 
+        /// <summary>
+        /// Internal class representing a site configuration with all necessary parameters
+        /// for creating an Nginx site configuration file.
+        /// </summary>
         private class SiteConfig
         {
+            /// <summary>
+            /// Domain name for the site configuration.
+            /// </summary>
             public string Domain { get; set; } = string.Empty;
+            
+            /// <summary>
+            /// Root directory path for the site.
+            /// </summary>
             public string Root { get; set; } = string.Empty;
+            
+            /// <summary>
+            /// PHP upstream configuration (IP:port).
+            /// </summary>
             public string PhpUpstream { get; set; } = string.Empty;
+            
+            /// <summary>
+            /// Nginx version for compatibility configuration.
+            /// </summary>
             public string NginxVersion { get; set; } = string.Empty;
         }
 
+        /// <summary>
+        /// Handles the install command for one or more components.
+        /// </summary>
+        /// <param name="args">Array of component names to install.</param>
+        /// <returns>Always returns 0.</returns>
         private static async Task<int> HandleInstallCommand(string[] args)
         {
             await InstallCommands(args);
             return 0;
         }
 
+        /// <summary>
+        /// Handles the uninstall command for one or more components.
+        /// </summary>
+        /// <param name="args">Array of component names or versions to uninstall.</param>
+        /// <returns>Always returns 0.</returns>
         private static int HandleUninstallCommand(string[] args)
         {
             UninstallCommands(args);
             return 0;
         }
 
+        /// <summary>
+        /// Handles the path command to manage Windows PATH environment variable.
+        /// Supports adding, removing, and listing DevStack paths.
+        /// </summary>
+        /// <param name="args">Subcommand and arguments: add, remove [paths...], list, or help.</param>
+        /// <returns>0 on success, 1 on error.</returns>
         private static int HandlePathCommand(string[] args)
         {
             if (pathManager == null)
@@ -741,6 +992,12 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the start command to start component services.
+        /// Can start all services with --all flag, or a specific component version.
+        /// </summary>
+        /// <param name="args">Arguments: "--all" to start all services, or component name followed by version.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleStartCommand(string[] args)
         {
             if (args.Length < 1)
@@ -783,6 +1040,12 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the stop command to stop running component services.
+        /// Can stop all services with --all flag, or a specific component version.
+        /// </summary>
+        /// <param name="args">Arguments: "--all" to stop all services, or component name followed by version.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleStopCommand(string[] args)
         {
             if (args.Length < 1)
@@ -825,6 +1088,13 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the restart command to restart running component services.
+        /// Stops the service, waits briefly, then starts it again.
+        /// Can restart all services with --all flag, or a specific component version.
+        /// </summary>
+        /// <param name="args">Arguments: "--all" to restart all services, or component name followed by version.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleRestartCommand(string[] args)
         {
             if (args.Length < 1)
@@ -879,6 +1149,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the alias command to create a command-line alias for a component version.
+        /// </summary>
+        /// <param name="args">Arguments: component name followed by version.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleAliasCommand(string[] args)
         {
             if (args.Length < 2)
@@ -891,6 +1166,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the self-update command to update DevStack itself via git pull.
+        /// Only works if DevStack is installed from a git repository.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleSelfUpdateCommand()
         {
             string repoDir = System.AppContext.BaseDirectory;
@@ -914,6 +1194,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the clean command to remove temporary files and logs.
+        /// Deletes logs directory, tmp directory, and the main devstack.log file.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleCleanCommand()
         {
             string logDir = Path.Combine(baseDir, "logs");
@@ -943,6 +1228,10 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the backup command to create a timestamped backup of configurations and logs.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleBackupCommand()
         {
             string backupDir = Path.Combine(baseDir, "backups", $"backup-{DateTime.Now:yyyyMMdd-HHmmss}");
@@ -967,6 +1256,10 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the logs command to display the last N lines of the devstack log file.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleLogsCommand()
         {
             string logFile = Path.Combine(System.AppContext.BaseDirectory, "devstack.log");
@@ -987,6 +1280,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the enable command to start a Windows service.
+        /// </summary>
+        /// <param name="args">Arguments: service name to enable.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleEnableCommand(string[] args)
         {
             if (args.Length < 1)
@@ -996,7 +1294,7 @@ namespace DevStackManager
             }
 
             string svc = args[0];
-#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416
             try
             {
                 var service = new ServiceController(svc);
@@ -1011,6 +1309,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the disable command to stop a Windows service.
+        /// </summary>
+        /// <param name="args">Arguments: service name to disable.</param>
+        /// <returns>Always returns 0.</returns>
         private static int HandleDisableCommand(string[] args)
         {
             if (args.Length < 1)
@@ -1020,7 +1323,7 @@ namespace DevStackManager
             }
 
             string svc = args[0];
-#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416
             try
             {
                 var service = new ServiceController(svc);
@@ -1035,6 +1338,10 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the config command to open the configurations directory in Windows Explorer.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleConfigCommand()
         {
             string configDir = Path.Combine(baseDir, "configs");
@@ -1050,6 +1357,12 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the reset command to uninstall and reinstall a component.
+        /// Useful for fixing broken installations.
+        /// </summary>
+        /// <param name="args">Arguments: component name to reset.</param>
+        /// <returns>0 on success, 1 if arguments are invalid.</returns>
         private static int HandleResetCommand(string[] args)
         {
             if (args.Length < 1)
@@ -1066,12 +1379,23 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the SSL command to generate SSL certificates for domains.
+        /// </summary>
+        /// <param name="args">Arguments: domain names for SSL certificate generation.</param>
+        /// <returns>Always returns 0.</returns>
         private static async Task<int> HandleSslCommand(string[] args)
         {
             await GenerateManager.GenerateSslCertificate(args);
             return 0;
         }
 
+        /// <summary>
+        /// Handles database management commands for MySQL, PostgreSQL, and MongoDB.
+        /// Supports list, create, and drop operations.
+        /// </summary>
+        /// <param name="args">Arguments: database type (mysql/pgsql/mongo), command (list/create/drop), and optional database name.</param>
+        /// <returns>0 on success, 1 if arguments are invalid or database is not found.</returns>
         private static int HandleDbCommand(string[] args)
         {
             if (args.Length < 2)
@@ -1179,9 +1503,14 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the service command to list all DevStack-related Windows services.
+        /// Displays service name, status, and display name in a formatted table.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleServiceCommand()
         {
-#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416
             try
             {
                 var services = ServiceController.GetServices()
@@ -1210,20 +1539,23 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the doctor command to perform system diagnostics.
+        /// Displays installed components, PATH environment variable entries, user information, and system details.
+        /// Synchronizes the process PATH with user PATH settings.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleDoctorCommand()
         {
             Console.WriteLine(LocalizationManager.GetString("cli.doctor.title"));
             ListManager.ListInstalledVersions();
 
-            // Forçar sincronização do PATH com as configurações do usuário
             RefreshProcessPathFromUser();
             WriteInfo(LocalizationManager.GetString("cli.doctor.path_synced"));
 
-            // Tabela PATH (agora mostra o PATH atual do processo + do usuário)
             var processPath = Environment.GetEnvironmentVariable("PATH") ?? "";
             var userPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User) ?? "";
             
-            // Combinar e remover duplicatas para mostrar o PATH efetivo
             var processPathList = processPath.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var userPathList = userPath.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var combinedPaths = processPathList.Concat(userPathList).Distinct().ToArray();
@@ -1236,14 +1568,13 @@ namespace DevStackManager
             Console.Write("| ");
             Console.ForegroundColor = ConsoleColor.Gray;
             
-            // Get the full header text and split it to highlight "DevStack"
             string fullHeaderText = LocalizationManager.GetString("cli.doctor.path_header");
             int devstackIndex = fullHeaderText.IndexOf("DevStack", StringComparison.OrdinalIgnoreCase);
             
             if (devstackIndex >= 0)
             {
                 string beforeDevstack = fullHeaderText.Substring(0, devstackIndex);
-                string afterDevstack = fullHeaderText.Substring(devstackIndex + 8); // 8 = "DevStack".Length
+                string afterDevstack = fullHeaderText.Substring(devstackIndex + 8);
                 
                 Console.Write(beforeDevstack);
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -1270,7 +1601,6 @@ namespace DevStackManager
                     Console.Write("| ");
                     Console.ResetColor();
                     
-                    // Destacar paths do DevStack
                     if (p.Contains("devstack", StringComparison.OrdinalIgnoreCase))
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -1291,7 +1621,6 @@ namespace DevStackManager
             Console.WriteLine(string.Concat(Enumerable.Repeat('¯', maxPathLen + 4)));
             Console.ResetColor();
 
-            // Tabela Usuário
             string user = Environment.UserName;
             int colUser = Math.Max(8, user.Length);
             string headerUser = string.Concat(Enumerable.Repeat('_', colUser + 4));
@@ -1312,7 +1641,6 @@ namespace DevStackManager
             Console.WriteLine(string.Concat(Enumerable.Repeat('¯', colUser + 4)));
             Console.ResetColor();
 
-            // Tabela Sistema
             string os = Environment.OSVersion.ToString();
             int colOS = Math.Max(8, os.Length);
             string headerOS = string.Concat(Enumerable.Repeat('_', colOS + 4));
@@ -1334,6 +1662,11 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the global command to add DevStack to the user's PATH environment variable.
+        /// This allows DevStack commands to be run from any directory.
+        /// </summary>
+        /// <returns>Always returns 0.</returns>
         private static int HandleGlobalCommand()
         {
             string devstackDir = System.AppContext.BaseDirectory;
@@ -1360,12 +1693,18 @@ namespace DevStackManager
             return 0;
         }
 
+        /// <summary>
+        /// Handles the language command to display or change the application language.
+        /// Without arguments, lists all available languages with the current one marked.
+        /// With a language code argument, changes to that language and saves the preference.
+        /// </summary>
+        /// <param name="args">Optional language code to switch to (e.g., "en_US", "pt_BR").</param>
+        /// <returns>0 on success, 1 if the specified language is not available.</returns>
         private static int HandleLanguageCommand(string[] args)
         {
             var localizationManager = DevStackShared.LocalizationManager.Instance 
                 ?? DevStackShared.LocalizationManager.Initialize(DevStackShared.ApplicationType.DevStack);
 
-            // Se não há argumentos, listar idiomas disponíveis e mostrar o atual
             if (args.Length == 0)
             {
                 var availableLanguages = localizationManager.GetAvailableLanguages();
@@ -1407,7 +1746,6 @@ namespace DevStackManager
                 return 0;
             }
 
-            // Se há argumentos, alterar o idioma
             string newLanguage = args[0];
             var availableLangs = localizationManager.GetAvailableLanguages();
 
@@ -1427,10 +1765,8 @@ namespace DevStackManager
 
             try
             {
-                // Aplicar o novo idioma
                 DevStackShared.LocalizationManager.ApplyLanguage(newLanguage);
 
-                // Salvar nas configurações
                 DevStackConfig.PersistSetting("language", newLanguage);
 
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -1455,8 +1791,9 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Sincroniza o PATH do processo atual com o PATH do usuário
-        /// Isso garante que mudanças no PATH do usuário sejam refletidas imediatamente
+        /// Synchronizes the current process's PATH environment variable with the user's PATH.
+        /// Combines machine PATH and user PATH in the Windows default order and updates the current process.
+        /// This ensures that changes to the user PATH are immediately reflected in the running process.
         /// </summary>
         private static void RefreshProcessPathFromUser()
         {
@@ -1466,12 +1803,10 @@ namespace DevStackManager
                 var machinePath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine) ?? "";
                 var processPath = Environment.GetEnvironmentVariable("PATH") ?? "";
                 
-                // Combinar Machine PATH + User PATH (ordem padrão do Windows)
                 var combinedPath = string.IsNullOrEmpty(machinePath) ? userPath : 
                                   string.IsNullOrEmpty(userPath) ? machinePath : 
                                   $"{machinePath};{userPath}";
                 
-                // Atualizar PATH do processo atual
                 Environment.SetEnvironmentVariable("PATH", combinedPath);
                 
                 Program.WriteLog($"PATH do processo sincronizado com PATH do usuário. Total de entradas: {combinedPath.Split(';').Length}");
@@ -1482,10 +1817,15 @@ namespace DevStackManager
             }
         }
 
-        // Helper methods that need to be implemented
+        /// <summary>
+        /// Gets the installation status for a specific component.
+        /// Returns installation state, message, and list of installed versions.
+        /// For service components, includes running/stopped status for each version.
+        /// </summary>
+        /// <param name="component">The component name to check status for.</param>
+        /// <returns>Tuple containing installation status, status message, and array of installed versions.</returns>
         private static (bool installed, string message, string[] versions) GetComponentStatus(string component)
         {
-            // Map component name to directory
             string? dir = component.ToLowerInvariant() switch
             {
                 "php" => phpDir,
@@ -1515,7 +1855,6 @@ namespace DevStackManager
             string[] versions;
             if (component.Equals("git", StringComparison.OrdinalIgnoreCase))
             {
-                // git: procurar subdiretórios git-*
                 versions = Directory.GetDirectories(dir, "git-*")
                     .Select(f => Path.GetFileName(f) ?? string.Empty)
                     .Where(f => !string.IsNullOrEmpty(f))
@@ -1534,7 +1873,6 @@ namespace DevStackManager
                 return (false, string.Empty, Array.Empty<string>());
             }
 
-            // Serviços monitorados pela aba Serviços
             var comp = Components.ComponentsFactory.GetComponent(component);
             if (comp != null && comp.IsService)
             {
@@ -1567,6 +1905,10 @@ namespace DevStackManager
             return (true, $"{component} instalado(s)", versions);
         }
 
+        /// <summary>
+        /// Gets installation status for all supported DevStack components.
+        /// </summary>
+        /// <returns>Dictionary mapping component names to their installation status tuples.</returns>
         private static Dictionary<string, (bool installed, string message, string[] versions)> GetAllComponentsStatus()
         {
             string[] components = new[]
@@ -1584,6 +1926,14 @@ namespace DevStackManager
             return results;
         }
 
+        /// <summary>
+        /// Searches for a file matching a pattern in a directory.
+        /// </summary>
+        /// <param name="directory">The directory to search in.</param>
+        /// <param name="pattern">File name pattern to match (supports wildcards).</param>
+        /// <param name="recursive">Whether to search subdirectories recursively.</param>
+        /// <param name="pathFilter">Optional path filter to further narrow results.</param>
+        /// <returns>The first matching file path, or null if not found.</returns>
         private static string? FindFile(string directory, string pattern, bool recursive, string? pathFilter = null)
         {
             try
@@ -1606,6 +1956,11 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Recursively copies a directory and all its contents to a destination directory.
+        /// </summary>
+        /// <param name="sourceDir">The source directory path to copy from.</param>
+        /// <param name="destinationDir">The destination directory path to copy to.</param>
         private static void CopyDirectory(string sourceDir, string destinationDir)
         {
             Directory.CreateDirectory(destinationDir);
@@ -1623,25 +1978,33 @@ namespace DevStackManager
             }
         }
         
+        /// <summary>
+        /// Installs one or more components using the InstallManager.
+        /// After successful installation, updates the PATH environment variable with component bin directories.
+        /// </summary>
+        /// <param name="args">Array of component names to install.</param>
         private static async Task InstallCommands(string[] args) 
         {
             await InstallManager.InstallCommands(args);
             
-            // Atualizar PATH após instalação bem-sucedida
             if (pathManager != null)
             {
                 pathManager.AddBinDirsToPath();
             }
         }
         
+        /// <summary>
+        /// Uninstalls one or more components or specific component versions.
+        /// Parses component-version strings in format "component-version" and extracts version information.
+        /// Supports explicit version targeting (e.g., "php-8.4.10") or component name with separate version argument.
+        /// </summary>
+        /// <param name="args">Array of component names or component-version strings to uninstall.</param>
         private static void UninstallCommands(string[] args) 
         { 
-            // Extrair os componentes e versões específicas dos argumentos
             var specificVersions = new List<string>();
             
             foreach (string arg in args)
             {
-                // Tentar extrair componente e versão
                 if (Regex.IsMatch(arg, @"^php-(.+)$"))
                 {
                     var version = Regex.Replace(arg, @"^php-", "");
@@ -1677,15 +2040,12 @@ namespace DevStackManager
                     var version = Regex.Replace(arg, @"^composer-", "");
                     specificVersions.Add($"composer:{version}");
                 }
-                // Para comandos sem versão específica, detectar se há argumentos adicionais
                 else
                 {
-                    // Para comandos como "uninstall php 8.4.10", o próximo argumento seria a versão
                     int currentIndex = Array.IndexOf(args, arg);
                     if (currentIndex >= 0 && currentIndex + 1 < args.Length)
                     {
                         string nextArg = args[currentIndex + 1];
-                        // Verificar se o próximo argumento parece uma versão
                         if (Regex.IsMatch(nextArg, @"^\d+\.\d+"))
                         {
                             string component = arg.ToLowerInvariant();

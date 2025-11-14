@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class NodeVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Node.js component.
+        /// </summary>
         public string ComponentName => "Node.js";
+        /// <summary>
+        /// Gets the unique identifier for the Node.js component.
+        /// </summary>
         public string ComponentId => "node";
         
+        /// <summary>
+        /// List of available Node.js versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("4.5.0", "https://nodejs.org/dist/v4.5.0/node-v4.5.0-win-x64.zip"),
@@ -546,20 +555,35 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("24.9.0", "https://nodejs.org/dist/v24.9.0/node-v24.9.0-win-x64.zip"),
             new VersionInfo("24.10.0", "https://nodejs.org/dist/v24.10.0/node-v24.10.0-win-x64.zip"),
             new VersionInfo("24.11.0", "https://nodejs.org/dist/v24.11.0/node-v24.11.0-win-x64.zip"),
+            new VersionInfo("24.11.1", "https://nodejs.org/dist/v24.11.1/node-v24.11.1-win-x64.zip"),
             new VersionInfo("25.0.0", "https://nodejs.org/dist/v25.0.0/node-v25.0.0-win-x64.zip"),
-            new VersionInfo("25.1.0", "https://nodejs.org/dist/v25.1.0/node-v25.1.0-win-x64.zip")
+            new VersionInfo("25.1.0", "https://nodejs.org/dist/v25.1.0/node-v25.1.0-win-x64.zip"),
+            new VersionInfo("25.2.0", "https://nodejs.org/dist/v25.2.0/node-v25.2.0-win-x64.zip")        
         };
         
+        /// <summary>
+        /// Gets the list of all available Node.js versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Node.js version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Node.js version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

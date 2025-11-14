@@ -14,128 +14,419 @@ using System.Windows.Threading;
 namespace DevStackShared
 {
     /// <summary>
-    /// Sistema avançado de temas e estilos para o DevStackManager
-    /// Contém as definições de cores, estilos, animações e helpers para criação de controles temáticos
-    /// Versão melhorada com suporte a múltiplos temas e animações fluidas
+    /// Advanced theme and style system for DevStackManager.
+    /// Provides color definitions, styles, animations, and helper methods for creating themed controls.
+    /// Supports multiple themes (Dark/Light/HighContrast) with smooth animations and modern UI components.
     /// </summary>
     public static class ThemeManager
     {
         #region UI Constants
-        // Animation Durations (milliseconds)
+        /// <summary>
+        /// Animation duration in milliseconds for button hover effects.
+        /// </summary>
         private const int ANIMATION_BUTTON_HOVER_MS = 200;
+        
+        /// <summary>
+        /// Animation duration in milliseconds for fade-in transitions.
+        /// </summary>
         private const int ANIMATION_FADE_IN_MS = 300;
+        
+        /// <summary>
+        /// Animation duration in milliseconds for fade-out transitions.
+        /// </summary>
         private const int ANIMATION_FADE_OUT_MS = 200;
+        
+        /// <summary>
+        /// Animation duration in milliseconds for slide-in transitions.
+        /// </summary>
         private const int ANIMATION_SLIDE_IN_MS = 400;
         
-        // Font Sizes
+        /// <summary>
+        /// Standard font size for regular text.
+        /// </summary>
         private const double FONT_SIZE_STANDARD = 14.0;
+        
+        /// <summary>
+        /// Font size for console output text.
+        /// </summary>
         private const double FONT_SIZE_CONSOLE = 13.0;
+        
+        /// <summary>
+        /// Font size for header text.
+        /// </summary>
         private const double FONT_SIZE_HEADER = 14.0;
+        
+        /// <summary>
+        /// Font size for table row text.
+        /// </summary>
         private const double FONT_SIZE_ROW = 14.0;
         
-        // Padding Values
+        /// <summary>
+        /// Standard horizontal padding for controls.
+        /// </summary>
         private const double PADDING_STANDARD_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Standard vertical padding for controls.
+        /// </summary>
         private const double PADDING_STANDARD_VERTICAL = 8;
+        
+        /// <summary>
+        /// Vertical padding for console text areas.
+        /// </summary>
         private const double PADDING_CONSOLE_VERTICAL = 8;
+        
+        /// <summary>
+        /// Horizontal padding for label controls.
+        /// </summary>
         private const double PADDING_LABEL_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Top vertical padding for label controls.
+        /// </summary>
         private const double PADDING_LABEL_VERTICAL_TOP = 4;
+        
+        /// <summary>
+        /// Bottom vertical padding for label controls.
+        /// </summary>
         private const double PADDING_LABEL_VERTICAL_BOTTOM = 4;
+        
+        /// <summary>
+        /// Horizontal padding for header elements.
+        /// </summary>
         private const double PADDING_HEADER_HORIZONTAL = 12;
+        
+        /// <summary>
+        /// Vertical padding for header elements.
+        /// </summary>
         private const double PADDING_HEADER_VERTICAL = 10;
+        
+        /// <summary>
+        /// Horizontal padding for combobox controls.
+        /// </summary>
         private const double PADDING_COMBOBOX_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Vertical padding for combobox controls.
+        /// </summary>
         private const double PADDING_COMBOBOX_VERTICAL = 8;
+        
+        /// <summary>
+        /// Horizontal padding for combobox items.
+        /// </summary>
         private const double PADDING_COMBOBOX_ITEM_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Vertical padding for combobox items.
+        /// </summary>
         private const double PADDING_COMBOBOX_ITEM_VERTICAL = 6;
+        
+        /// <summary>
+        /// Horizontal padding for checkbox controls.
+        /// </summary>
         private const double PADDING_CHECKBOX_HORIZONTAL = 12;
+        
+        /// <summary>
+        /// Vertical padding for checkbox controls.
+        /// </summary>
         private const double PADDING_CHECKBOX_VERTICAL = 8;
+        
+        /// <summary>
+        /// Horizontal padding for card components.
+        /// </summary>
         private const double PADDING_CARD_HORIZONTAL = 16;
+        
+        /// <summary>
+        /// Vertical padding for card components.
+        /// </summary>
+        /// <summary>
+        /// Vertical padding for card components.
+        /// </summary>
         private const double PADDING_CARD_VERTICAL = 12;
         
-        // Margins
+        /// <summary>
+        /// Horizontal margin for combobox content.
+        /// </summary>
         private const double MARGIN_COMBOBOX_CONTENT_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Top vertical margin for combobox content.
+        /// </summary>
         private const double MARGIN_COMBOBOX_CONTENT_VERTICAL_TOP = 5;
+        
+        /// <summary>
+        /// Bottom vertical margin for combobox content.
+        /// </summary>
         private const double MARGIN_COMBOBOX_CONTENT_VERTICAL_BOTTOM = 8;
+        
+        /// <summary>
+        /// Horizontal margin for message box content.
+        /// </summary>
         private const double MARGIN_MESSAGEBOX_CONTENT_HORIZONTAL = 55;
+        
+        /// <summary>
+        /// Top vertical margin for message box content.
+        /// </summary>
         private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_TOP = 20;
+        
+        /// <summary>
+        /// Right margin for message box content.
+        /// </summary>
         private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_RIGHT = 30;
+        
+        /// <summary>
+        /// Bottom vertical margin for message box content.
+        /// </summary>
+        /// <summary>
+        /// Bottom vertical margin for message box content.
+        /// </summary>
         private const double MARGIN_MESSAGEBOX_CONTENT_VERTICAL_BOTTOM = 10;
         
-        // Dimensions
+        /// <summary>
+        /// Minimum height for textbox controls in pixels.
+        /// </summary>
         private const double MIN_HEIGHT_TEXTBOX = 35;
+        
+        /// <summary>
+        /// Minimum height for combobox controls in pixels.
+        /// </summary>
         private const double MIN_HEIGHT_COMBOBOX = 35;
+        
+        /// <summary>
+        /// Minimum height for table rows in pixels.
+        /// </summary>
         private const double MIN_HEIGHT_ROW = 35;
+        
+        /// <summary>
+        /// Width of scrollbar controls in pixels.
+        /// </summary>
         private const double SCROLLBAR_WIDTH = 12;
+        
+        /// <summary>
+        /// Width of combobox dropdown button in pixels.
+        /// </summary>
         private const double COMBOBOX_DROPDOWN_WIDTH = 20;
+        
+        /// <summary>
+        /// Minimum width for button controls in pixels.
+        /// </summary>
         private const double MIN_BUTTON_WIDTH = 80;
+        
+        /// <summary>
+        /// Size of message box icon in pixels.
+        /// </summary>
         private const double MESSAGEBOX_ICON_SIZE = 500;
         
-        // Opacity Values
+        /// <summary>
+        /// Opacity value for disabled controls.
+        /// </summary>
         private const double OPACITY_DISABLED = 0.6;
+        
+        /// <summary>
+        /// Opacity value for shadow effects.
+        /// </summary>
         private const double OPACITY_SHADOW = 0.3;
+        
+        /// <summary>
+        /// Opacity value for scrollbar track background.
+        /// </summary>
         private const double OPACITY_SCROLLBAR_TRACK = 0.3;
         
-        // Effects
+        /// <summary>
+        /// Default radius for glow effects in pixels.
+        /// </summary>
         private const double GLOW_RADIUS_DEFAULT = 10;
+        
+        /// <summary>
+        /// Default opacity for glow effects.
+        /// </summary>
         private const double GLOW_OPACITY_DEFAULT = 0.8;
+        
+        /// <summary>
+        /// Default opacity for shadow effects.
+        /// </summary>
         private const double SHADOW_OPACITY_DEFAULT = 0.3;
         
-        // Color Adjustment
+        /// <summary>
+        /// Factor for darkening colors (0.0-1.0).
+        /// </summary>
         private const double COLOR_DARKEN_FACTOR = 0.3;
         
-        // Progress Bar
+        /// <summary>
+        /// Default initial value for progress bars.
+        /// </summary>
         private const double PROGRESS_BAR_DEFAULT_VALUE = 0;
+        
+        /// <summary>
+        /// Default maximum value for progress bars.
+        /// </summary>
         private const double PROGRESS_BAR_DEFAULT_MAXIMUM = 100;
         
-        // Render Transform
+        /// <summary>
+        /// Center point for render transformations (0.5 = 50%).
+        /// </summary>
         private const double RENDER_TRANSFORM_CENTER = 0.5;
         
-        // RGB Color Values - Dark Theme
+        /// <summary>
+        /// Red component for dark danger button hover color.
+        /// </summary>
+        /// <summary>
+        /// Red component for dark danger button hover color.
+        /// </summary>
         private const byte DARK_DANGER_HOVER_R = 200;
+        
+        /// <summary>
+        /// Green component for dark danger button hover color.
+        /// </summary>
         private const byte DARK_DANGER_HOVER_G = 35;
+        
+        /// <summary>
+        /// Blue component for dark danger button hover color.
+        /// </summary>
         private const byte DARK_DANGER_HOVER_B = 51;
         
+        /// <summary>
+        /// Red component for dark danger button pressed color.
+        /// </summary>
         private const byte DARK_DANGER_PRESSED_R = 180;
+        
+        /// <summary>
+        /// Green component for dark danger button pressed color.
+        /// </summary>
         private const byte DARK_DANGER_PRESSED_G = 25;
+        
+        /// <summary>
+        /// Blue component for dark danger button pressed color.
+        /// </summary>
         private const byte DARK_DANGER_PRESSED_B = 41;
         
+        /// <summary>
+        /// Red component for dark form background color.
+        /// </summary>
         private const byte DARK_FORM_BACKGROUND_R = 22;
+        
+        /// <summary>
+        /// Green component for dark form background color.
+        /// </summary>
         private const byte DARK_FORM_BACKGROUND_G = 27;
+        
+        /// <summary>
+        /// Blue component for dark form background color.
+        /// </summary>
         private const byte DARK_FORM_BACKGROUND_B = 34;
         
+        /// <summary>
+        /// Red component for dark control background color.
+        /// </summary>
         private const byte DARK_CONTROL_BACKGROUND_R = 32;
+        
+        /// <summary>
+        /// Green component for dark control background color.
+        /// </summary>
         private const byte DARK_CONTROL_BACKGROUND_G = 39;
+        
+        /// <summary>
+        /// Blue component for dark control background color.
+        /// </summary>
         private const byte DARK_CONTROL_BACKGROUND_B = 49;
         
+        /// <summary>
+        /// Red component for dark button hover color.
+        /// </summary>
         private const byte DARK_BUTTON_HOVER_R = 58;
+        
+        /// <summary>
+        /// Green component for dark button hover color.
+        /// </summary>
         private const byte DARK_BUTTON_HOVER_G = 150;
+        
+        /// <summary>
+        /// Blue component for dark button hover color.
+        /// </summary>
         private const byte DARK_BUTTON_HOVER_B = 255;
         
+        /// <summary>
+        /// Red component for dark button pressed color.
+        /// </summary>
         private const byte DARK_BUTTON_PRESSED_R = 25;
+        
+        /// <summary>
+        /// Green component for dark button pressed color.
+        /// </summary>
         private const byte DARK_BUTTON_PRESSED_G = 118;
+        
+        /// <summary>
+        /// Blue component for dark button pressed color.
+        /// </summary>
+        /// <summary>
+        /// Blue component for dark button pressed color.
+        /// </summary>
         private const byte DARK_BUTTON_PRESSED_B = 220;
         
+        /// <summary>
+        /// Red component for dark accent pressed color.
+        /// </summary>
         private const byte DARK_ACCENT_PRESSED_R = 40;
+        
+        /// <summary>
+        /// Green component for dark accent pressed color.
+        /// </summary>
         private const byte DARK_ACCENT_PRESSED_G = 175;
+        
+        /// <summary>
+        /// Blue component for dark accent pressed color.
+        /// </summary>
         private const byte DARK_ACCENT_PRESSED_B = 131;
         
+        /// <summary>
+        /// Red component for dark info color.
+        /// </summary>
         private const byte DARK_INFO_R = 58;
+        
+        /// <summary>
+        /// Green component for dark info color.
+        /// </summary>
         private const byte DARK_INFO_G = 150;
+        
+        /// <summary>
+        /// Blue component for dark info color.
+        /// </summary>
         private const byte DARK_INFO_B = 255;
         
-        // Alpha Values
+        /// <summary>
+        /// Alpha channel value for notification background transparency.
+        /// </summary>
         private const byte ALPHA_NOTIFICATION_BACKGROUND = 25;
+        
+        /// <summary>
+        /// Alpha channel value for selection overlay transparency.
+        /// </summary>
         private const byte ALPHA_SELECTION = 128;
+        
+        /// <summary>
+        /// Alpha channel value for dark overlay transparency.
+        /// </summary>
         private const byte ALPHA_OVERLAY_DARK = 180;
+        
+        /// <summary>
+        /// Alpha channel value for semi-transparent overlay.
+        /// </summary>
         private const byte ALPHA_OVERLAY_SEMI = 50;
         
-        // Gradient Angles
+        /// <summary>
+        /// Gradient angle in degrees for horizontal gradients.
+        /// </summary>
         private const double GRADIENT_ANGLE_HORIZONTAL = 90;
+        
+        /// <summary>
+        /// Gradient angle in degrees for diagonal gradients.
+        /// </summary>
         private const double GRADIENT_ANGLE_DIAGONAL = 45;
         #endregion
         
         #region Theme Classes
         /// <summary>
-        /// Enumeração dos temas disponíveis
+        /// Available theme types enumeration.
         /// </summary>
         public enum ThemeType
         {
@@ -145,129 +436,421 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cores do tema com suporte a múltiplos esquemas
+        /// Theme color palette supporting multiple color schemes.
         /// </summary>
         public class ThemeColors
         {
-            // Backgrounds principais
-            // Cores hardcoded utilizadas em controles
+            /// <summary>
+            /// Pure white color brush (hardcoded for control use).
+            /// </summary>
             public SolidColorBrush PureWhite { get; set; } = null!;
+            
+            /// <summary>
+            /// Pure black color brush (hardcoded for control use).
+            /// </summary>
             public SolidColorBrush PureBlack { get; set; } = null!;
+            
+            /// <summary>
+            /// Danger button hover state color.
+            /// </summary>
             public SolidColorBrush DangerHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Danger button pressed state color.
+            /// </summary>
             public SolidColorBrush DangerPressed { get; set; } = null!;
+            
+            /// <summary>
+            /// Warning button hover state color.
+            /// </summary>
             public SolidColorBrush WarningHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Warning button pressed state color.
+            /// </summary>
             public SolidColorBrush WarningPressed { get; set; } = null!;
+            
+            /// <summary>
+            /// Selection brush for text selection.
+            /// </summary>
             public SolidColorBrush SelectionBrush { get; set; } = null!;
+            
+            /// <summary>
+            /// White overlay color with transparency.
+            /// </summary>
             public SolidColorBrush OverlayWhite { get; set; } = null!;
+            
+            /// <summary>
+            /// Console text selection color.
+            /// </summary>
             public SolidColorBrush ConsoleSelectionBrush { get; set; } = null!;
+            
+            /// <summary>
+            /// Foreground color for selected rows.
+            /// </summary>
             public SolidColorBrush RowSelectedForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Main form background color.
+            /// </summary>
             public SolidColorBrush FormBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Primary text/foreground color.
+            /// </summary>
             public SolidColorBrush Foreground { get; set; } = null!;
+            
+            /// <summary>
+            /// Control background color.
+            /// </summary>
             public SolidColorBrush ControlBackground { get; set; } = null!;
 
-            // Backgrounds para notificações
+            /// <summary>
+            /// Success notification background color.
+            /// </summary>
             public SolidColorBrush SuccessBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Warning notification background color.
+            /// </summary>
             public SolidColorBrush WarningBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Danger notification background color.
+            /// </summary>
             public SolidColorBrush DangerBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Info notification background color.
+            /// </summary>
             public SolidColorBrush InfoBackground { get; set; } = null!;
 
-            // Botões
+            /// <summary>
+            /// Default button background color.
+            /// </summary>
             public SolidColorBrush ButtonBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Button text/foreground color.
+            /// </summary>
             public SolidColorBrush ButtonForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Button hover state color.
+            /// </summary>
             public SolidColorBrush ButtonHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Button pressed state color.
+            /// </summary>
             public SolidColorBrush ButtonPressed { get; set; } = null!;
+            
+            /// <summary>
+            /// Button disabled state color.
+            /// </summary>
             public SolidColorBrush ButtonDisabled { get; set; } = null!;
 
-            // Cores de destaque com gradientes
+            /// <summary>
+            /// Primary accent color for highlights.
+            /// </summary>
             public SolidColorBrush Accent { get; set; } = null!;
+            
+            /// <summary>
+            /// Accent color hover state.
+            /// </summary>
             public SolidColorBrush AccentHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Accent color pressed state.
+            /// </summary>
             public SolidColorBrush AccentPressed { get; set; } = null!;
+            
+            /// <summary>
+            /// Warning color for alerts.
+            /// </summary>
             public SolidColorBrush Warning { get; set; } = null!;
+            
+            /// <summary>
+            /// Danger color for errors and destructive actions.
+            /// </summary>
             public SolidColorBrush Danger { get; set; } = null!;
+            
+            /// <summary>
+            /// Success color for positive feedback.
+            /// </summary>
             public SolidColorBrush Success { get; set; } = null!;
+            
+            /// <summary>
+            /// Info color for informational messages.
+            /// </summary>
             public SolidColorBrush Info { get; set; } = null!;
 
-            // Grid e tabelas
+            /// <summary>
+            /// Grid/table background color.
+            /// </summary>
             public SolidColorBrush GridBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Grid text color.
+            /// </summary>
             public SolidColorBrush GridForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Grid header background color.
+            /// </summary>
             public SolidColorBrush GridHeaderBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Grid header text color.
+            /// </summary>
             public SolidColorBrush GridHeaderForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Alternating row background color in grids.
+            /// </summary>
             public SolidColorBrush GridAlternateRow { get; set; } = null!;
+            
+            /// <summary>
+            /// Selected row background color in grids.
+            /// </summary>
             public SolidColorBrush GridSelectedRow { get; set; } = null!;
+            
+            /// <summary>
+            /// Hover row background color in grids.
+            /// </summary>
             public SolidColorBrush GridHoverRow { get; set; } = null!;
 
-            // Status e navegação
+            /// <summary>
+            /// Status bar background color.
+            /// </summary>
             public SolidColorBrush StatusBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Status bar text color.
+            /// </summary>
             public SolidColorBrush StatusForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Sidebar/navigation background color.
+            /// </summary>
             public SolidColorBrush SidebarBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Sidebar selected item background color.
+            /// </summary>
             public SolidColorBrush SidebarSelected { get; set; } = null!;
+            
+            /// <summary>
+            /// Sidebar hover state background color.
+            /// </summary>
             public SolidColorBrush SidebarHover { get; set; } = null!;
 
-            // Bordas e separadores
+            /// <summary>
+            /// Default border color.
+            /// </summary>
             public SolidColorBrush Border { get; set; } = null!;
+            
+            /// <summary>
+            /// Border color on hover.
+            /// </summary>
             public SolidColorBrush BorderHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Border color when focused.
+            /// </summary>
             public SolidColorBrush BorderFocus { get; set; } = null!;
+            
+            /// <summary>
+            /// Border color for active/selected state.
+            /// </summary>
             public SolidColorBrush BorderActive { get; set; } = null!;
 
-            // Áreas de conteúdo
+            /// <summary>
+            /// Main content area background color.
+            /// </summary>
             public SolidColorBrush ContentBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Panel background color.
+            /// </summary>
             public SolidColorBrush PanelBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Console background color.
+            /// </summary>
             public SolidColorBrush ConsoleBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Console text color.
+            /// </summary>
             public SolidColorBrush ConsoleForeground { get; set; } = null!;
 
-            // Inputs com estados melhorados
+            /// <summary>
+            /// Input field background color.
+            /// </summary>
             public SolidColorBrush InputBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Input field text color.
+            /// </summary>
             public SolidColorBrush InputForeground { get; set; } = null!;
+            
+            /// <summary>
+            /// Input field border color.
+            /// </summary>
             public SolidColorBrush InputBorder { get; set; } = null!;
+            
+            /// <summary>
+            /// Input field border color when focused.
+            /// </summary>
             public SolidColorBrush InputFocusBorder { get; set; } = null!;
+            
+            /// <summary>
+            /// Input field border color on hover.
+            /// </summary>
             public SolidColorBrush InputHoverBorder { get; set; } = null!;
+            
+            /// <summary>
+            /// Dropdown menu background color.
+            /// </summary>
             public SolidColorBrush DropdownBackground { get; set; } = null!;
 
-            // Texto com hierarquia expandida
+            /// <summary>
+            /// Muted/secondary text color.
+            /// </summary>
             public SolidColorBrush TextMuted { get; set; } = null!;
+            
+            /// <summary>
+            /// Secondary text color (lighter than muted).
+            /// </summary>
             public SolidColorBrush TextSecondary { get; set; } = null!;
+            
+            /// <summary>
+            /// Disabled text color.
+            /// </summary>
             public SolidColorBrush TextDisabled { get; set; } = null!;
+            
+            /// <summary>
+            /// Link text color.
+            /// </summary>
             public SolidColorBrush TextLink { get; set; } = null!;
+            
+            /// <summary>
+            /// Link text color on hover.
+            /// </summary>
             public SolidColorBrush TextLinkHover { get; set; } = null!;
 
-            // Overlays e modais
+            /// <summary>
+            /// Overlay/modal background color.
+            /// </summary>
             public SolidColorBrush OverlayBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Tooltip background color.
+            /// </summary>
             public SolidColorBrush TooltipBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Tooltip text color.
+            /// </summary>
             public SolidColorBrush TooltipForeground { get; set; } = null!;
 
-            // Gradientes para efeitos modernos
+            /// <summary>
+            /// Button gradient brush for modern effects.
+            /// </summary>
             public LinearGradientBrush ButtonGradient { get; set; } = null!;
+            
+            /// <summary>
+            /// Accent gradient brush for modern effects.
+            /// </summary>
             public LinearGradientBrush AccentGradient { get; set; } = null!;
+            
+            /// <summary>
+            /// Header gradient brush for modern effects.
+            /// </summary>
             public LinearGradientBrush HeaderGradient { get; set; } = null!;
             
-            // Dashboard específico
+            /// <summary>
+            /// Dashboard card background color.
+            /// </summary>
             public SolidColorBrush DashboardCardBackground { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard card hover background color.
+            /// </summary>
             public SolidColorBrush DashboardCardHover { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard card default hover background color.
+            /// </summary>
             public SolidColorBrush DashboardCardHoverDefault { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard error text color.
+            /// </summary>
             public SolidColorBrush DashboardErrorText { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard muted text color.
+            /// </summary>
             public SolidColorBrush DashboardMutedText { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard accent blue color.
+            /// </summary>
             public SolidColorBrush DashboardAccentBlue { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard service status yellow color.
+            /// </summary>
             public SolidColorBrush DashboardServiceYellow { get; set; } = null!;
+            
+            /// <summary>
+            /// Dashboard footer background color.
+            /// </summary>
             public SolidColorBrush DashboardFooterBackground { get; set; } = null!;
         }
 
         /// <summary>
-        /// Configurações de animação para o tema
+        /// Animation settings for theme transitions and effects.
         /// </summary>
         public class ThemeAnimationSettings
         {
+            /// <summary>
+            /// Button hover animation duration.
+            /// </summary>
             public TimeSpan ButtonHoverDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_BUTTON_HOVER_MS);
+            
+            /// <summary>
+            /// Fade in animation duration.
+            /// </summary>
             public TimeSpan FadeInDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_FADE_IN_MS);
+            
+            /// <summary>
+            /// Fade out animation duration.
+            /// </summary>
             public TimeSpan FadeOutDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_FADE_OUT_MS);
+            
+            /// <summary>
+            /// Slide in animation duration.
+            /// </summary>
             public TimeSpan SlideInDuration { get; set; } = TimeSpan.FromMilliseconds(ANIMATION_SLIDE_IN_MS);
+            
+            /// <summary>
+            /// Standard easing function for smooth animations.
+            /// </summary>
             public IEasingFunction StandardEasing { get; set; } = new CubicEase { EasingMode = EasingMode.EaseOut };
+            
+            /// <summary>
+            /// Bounce easing function for playful animations.
+            /// </summary>
             public IEasingFunction BounceEasing { get; set; } = new BounceEase { EasingMode = EasingMode.EaseOut };
         }
         #endregion
 
         #region Theme Definition
         /// <summary>
-        /// Tema escuro moderno e otimizado
+        /// Modern optimized dark theme with comprehensive color palette.
         /// </summary>
         public static readonly ThemeColors DarkTheme = new()
         {
@@ -285,20 +868,17 @@ namespace DevStackShared
             Foreground = new SolidColorBrush(Color.FromRgb(235, 235, 235)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(DARK_CONTROL_BACKGROUND_R, DARK_CONTROL_BACKGROUND_G, DARK_CONTROL_BACKGROUND_B)),
 
-            // Notificações
             SuccessBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 56, 211, 159)),
             WarningBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 255, 196, 0)),
             DangerBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, 248, 81, 73)),
             InfoBackground = new SolidColorBrush(Color.FromArgb(ALPHA_NOTIFICATION_BACKGROUND, DARK_BUTTON_HOVER_R, DARK_BUTTON_HOVER_G, DARK_BUTTON_HOVER_B)),
 
-            // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             ButtonForeground = new SolidColorBrush(Colors.White),
             ButtonHover = new SolidColorBrush(Color.FromRgb(DARK_BUTTON_HOVER_R, DARK_BUTTON_HOVER_G, DARK_BUTTON_HOVER_B)),
             ButtonPressed = new SolidColorBrush(Color.FromRgb(DARK_BUTTON_PRESSED_R, DARK_BUTTON_PRESSED_G, DARK_BUTTON_PRESSED_B)),
             ButtonDisabled = new SolidColorBrush(Color.FromRgb(87, 96, 106)),
 
-            // Cores de destaque com estados expandidos
             Accent = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
             AccentHover = new SolidColorBrush(Color.FromRgb(46, 194, 145)),
             AccentPressed = new SolidColorBrush(Color.FromRgb(DARK_ACCENT_PRESSED_R, DARK_ACCENT_PRESSED_G, DARK_ACCENT_PRESSED_B)),
@@ -307,7 +887,6 @@ namespace DevStackShared
             Success = new SolidColorBrush(Color.FromRgb(56, 211, 159)),
             Info = new SolidColorBrush(Color.FromRgb(DARK_INFO_R, DARK_INFO_G, DARK_INFO_B)),
 
-            // Grid com excelente legibilidade e hover
             GridBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             GridForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             GridHeaderBackground = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
@@ -316,26 +895,22 @@ namespace DevStackShared
             GridSelectedRow = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             GridHoverRow = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
 
-            // Status e navegação
             StatusBackground = new SolidColorBrush(Color.FromRgb(22, 27, 34)),
             StatusForeground = new SolidColorBrush(Color.FromRgb(139, 148, 158)),
             SidebarBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
             SidebarSelected = new SolidColorBrush(Color.FromRgb(36, 46, 59)),
             SidebarHover = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
 
-            // Bordas expandidas
             Border = new SolidColorBrush(Color.FromRgb(48, 54, 61)),
             BorderHover = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
             BorderFocus = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
             BorderActive = new SolidColorBrush(Color.FromRgb(46, 194, 145)),
 
-            // Áreas de conteúdo
             ContentBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             PanelBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
             ConsoleBackground = new SolidColorBrush(Color.FromRgb(13, 17, 23)),
             ConsoleForeground = new SolidColorBrush(Color.FromRgb(201, 209, 217)),
 
-            // Inputs com estados melhorados
             InputBackground = new SolidColorBrush(Color.FromRgb(32, 39, 49)),
             InputForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
             InputBorder = new SolidColorBrush(Color.FromRgb(48, 54, 61)),
@@ -343,19 +918,16 @@ namespace DevStackShared
             InputHoverBorder = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
             DropdownBackground = new SolidColorBrush(Color.FromRgb(27, 32, 40)),
 
-            // Texto expandido
             TextMuted = new SolidColorBrush(Color.FromRgb(139, 148, 158)),
             TextSecondary = new SolidColorBrush(Color.FromRgb(166, 173, 186)),
             TextDisabled = new SolidColorBrush(Color.FromRgb(87, 96, 106)),
             TextLink = new SolidColorBrush(Color.FromRgb(58, 150, 255)),
             TextLinkHover = new SolidColorBrush(Color.FromRgb(33, 136, 255)),
 
-            // Overlays e tooltips
             OverlayBackground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
             TooltipBackground = new SolidColorBrush(Color.FromRgb(45, 55, 68)),
             TooltipForeground = new SolidColorBrush(Color.FromRgb(230, 237, 243)),
 
-            // Dashboard específico
             DashboardCardBackground = new SolidColorBrush(Color.FromRgb(55, 58, 64)),
             DashboardCardHover = new SolidColorBrush(Color.FromRgb(75, 85, 99)),
             DashboardCardHoverDefault = new SolidColorBrush(Color.FromRgb(65, 68, 74)),
@@ -365,7 +937,6 @@ namespace DevStackShared
             DashboardServiceYellow = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
             DashboardFooterBackground = new SolidColorBrush(Color.FromArgb(50, 75, 85, 99)),
 
-            // Gradientes modernos
             ButtonGradient = new LinearGradientBrush(
                 Color.FromRgb(33, 136, 255), 
                 Color.FromRgb(58, 150, 255), 
@@ -381,7 +952,7 @@ namespace DevStackShared
         };
 
         /// <summary>
-        /// Tema claro moderno (para futuras implementações)
+        /// Modern light theme (for future implementations).
         /// </summary>
         public static readonly ThemeColors LightTheme = new()
         {
@@ -399,20 +970,17 @@ namespace DevStackShared
             Foreground = new SolidColorBrush(Color.FromRgb(70, 70, 70)),
             ControlBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
 
-            // Notificações
             SuccessBackground = new SolidColorBrush(Color.FromArgb(25, 40, 167, 69)),
             WarningBackground = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)),
             DangerBackground = new SolidColorBrush(Color.FromArgb(25, 220, 53, 69)),
             InfoBackground = new SolidColorBrush(Color.FromArgb(25, 23, 162, 184)),
 
-            // Botões com gradientes e estados melhorados
             ButtonBackground = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             ButtonForeground = new SolidColorBrush(Colors.White),
             ButtonHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
             ButtonPressed = new SolidColorBrush(Color.FromRgb(0, 100, 200)),
             ButtonDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
 
-            // Cores de destaque com estados expandidos
             Accent = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
             AccentHover = new SolidColorBrush(Color.FromRgb(33, 136, 56)),
             AccentPressed = new SolidColorBrush(Color.FromRgb(25, 105, 43)),
@@ -421,7 +989,6 @@ namespace DevStackShared
             Success = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
             Info = new SolidColorBrush(Color.FromRgb(23, 162, 184)),
 
-            // Grid com excelente legibilidade e hover
             GridBackground = new SolidColorBrush(Colors.White),
             GridForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
             GridHeaderBackground = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
@@ -430,26 +997,22 @@ namespace DevStackShared
             GridSelectedRow = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             GridHoverRow = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
 
-            // Status e navegação
             StatusBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
             StatusForeground = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
             SidebarBackground = new SolidColorBrush(Color.FromRgb(243, 244, 246)),
             SidebarSelected = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
             SidebarHover = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
 
-            // Bordas expandidas
             Border = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
             BorderHover = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             BorderFocus = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             BorderActive = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
 
-            // Áreas de conteúdo
             ContentBackground = new SolidColorBrush(Colors.White),
             PanelBackground = new SolidColorBrush(Color.FromRgb(244, 245, 246)),
             ConsoleBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             ConsoleForeground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
 
-            // Inputs com estados melhorados
             InputBackground = new SolidColorBrush(Colors.White),
             InputForeground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
             InputBorder = new SolidColorBrush(Color.FromRgb(206, 212, 218)),
@@ -457,19 +1020,16 @@ namespace DevStackShared
             InputHoverBorder = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
             DropdownBackground = new SolidColorBrush(Colors.White),
 
-            // Texto expandido
             TextMuted = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
             TextSecondary = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
             TextDisabled = new SolidColorBrush(Color.FromRgb(173, 181, 189)),
             TextLink = new SolidColorBrush(Color.FromRgb(0, 123, 255)),
             TextLinkHover = new SolidColorBrush(Color.FromRgb(0, 110, 230)),
 
-            // Overlays e tooltips
             OverlayBackground = new SolidColorBrush(Color.FromArgb(128, 255, 255, 255)),
             TooltipBackground = new SolidColorBrush(Color.FromRgb(33, 37, 41)),
             TooltipForeground = new SolidColorBrush(Colors.White),
                 
-            // Dashboard específico
             DashboardCardBackground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
             DashboardCardHover = new SolidColorBrush(Color.FromRgb(228, 229, 230)),
             DashboardCardHoverDefault = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
@@ -479,7 +1039,6 @@ namespace DevStackShared
             DashboardServiceYellow = new SolidColorBrush(Color.FromRgb(255, 193, 7)),
             DashboardFooterBackground = new SolidColorBrush(Color.FromArgb(50, 108, 117, 125)),
 
-            // Gradientes modernos
             ButtonGradient = new LinearGradientBrush(
                 Color.FromRgb(0, 123, 255),
                 Color.FromRgb(0, 110, 230),
@@ -494,8 +1053,15 @@ namespace DevStackShared
                 90)
         };
 
-        // Tema atual e configurações
+        /// <summary>
+        /// Current theme type (Dark, Light, or HighContrast).
+        /// </summary>
         private static ThemeType _currentThemeType;
+        
+        /// <summary>
+        /// Gets or sets the current theme type.
+        /// Setting this property triggers the theme changed event.
+        /// </summary>
         public static ThemeType CurrentThemeType 
         { 
             get => _currentThemeType; 
@@ -507,8 +1073,9 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica o tema em tempo real, dispara evento e faz fallback se necessário
+        /// Applies a theme in real-time, fires change event, and provides fallback on error.
         /// </summary>
+        /// <param name="themeType">The theme type to apply.</param>
         public static void ApplyTheme(ThemeType themeType)
         {
             string logMessage = $"[ApplyTheme] Applying theme: {themeType}\n";
@@ -521,39 +1088,48 @@ namespace DevStackShared
                     OnThemeChanged?.Invoke();
                 }
                 System.Diagnostics.Debug.WriteLine(logMessage);
-                // Opcional: salvar log em arquivo
-                // AppendToLogFile(logMessage);
             }
             catch (Exception ex)
             {
                 logMessage += $"[ApplyTheme] Failed to apply theme: {ex.Message}\n";
                 System.Diagnostics.Debug.WriteLine(logMessage);
-                // Fallback para tema padrão
                 _currentThemeType = ThemeType.Dark;
                 OnThemeChanged?.Invoke();
             }
         }
 
+        /// <summary>
+        /// Gets the current theme colors based on CurrentThemeType.
+        /// Falls back to DarkTheme if the type is unrecognized.
+        /// </summary>
         public static ThemeColors CurrentTheme => CurrentThemeType switch
         {
             ThemeType.Dark => DarkTheme,
             ThemeType.Light => LightTheme,
-            ThemeType.HighContrast => DarkTheme, // Por enquanto usa o Dark
+            ThemeType.HighContrast => DarkTheme,
             _ => DarkTheme
         };
 
+        /// <summary>
+        /// Global animation settings for all theme animations.
+        /// </summary>
         public static readonly ThemeAnimationSettings AnimationSettings = new();
 
         /// <summary>
-        /// Evento disparado quando o tema é alterado
+        /// Event fired when the theme is changed.
+        /// Subscribe to this to update UI elements dynamically.
         /// </summary>
         public static event Action? OnThemeChanged;
         #endregion
 
         #region Animation Helpers
         /// <summary>
-        /// Cria uma animação de fade in para elementos
+        /// Creates a fade-in animation for UI elements.
         /// </summary>
+        /// <param name="element">The element to animate.</param>
+        /// <param name="from">Starting opacity value (default 0).</param>
+        /// <param name="to">Target opacity value (default 1).</param>
+        /// <param name="duration">Animation duration (uses AnimationSettings.FadeInDuration if null).</param>
         public static void AnimateFadeIn(UIElement element, double from = 0, double to = 1, TimeSpan? duration = null)
         {
             var fadeIn = new DoubleAnimation
@@ -568,8 +1144,13 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria uma animação de fade out para elementos
+        /// Creates a fade-out animation for UI elements.
         /// </summary>
+        /// <param name="element">The element to animate.</param>
+        /// <param name="from">Starting opacity value (default 1).</param>
+        /// <param name="to">Target opacity value (default 0).</param>
+        /// <param name="duration">Animation duration (uses AnimationSettings.FadeOutDuration if null).</param>
+        /// <param name="onCompleted">Optional callback when animation completes.</param>
         public static void AnimateFadeOut(UIElement element, double from = 1, double to = 0, TimeSpan? duration = null, EventHandler? onCompleted = null)
         {
             var fadeOut = new DoubleAnimation
@@ -587,8 +1168,12 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria uma animação de slide para elementos
+        /// Creates a slide-in animation for framework elements.
         /// </summary>
+        /// <param name="element">The element to animate.</param>
+        /// <param name="fromX">Starting horizontal position.</param>
+        /// <param name="toX">Target horizontal position.</param>
+        /// <param name="duration">Animation duration (uses AnimationSettings.SlideInDuration if null).</param>
         public static void AnimateSlideIn(FrameworkElement element, double fromX, double toX, TimeSpan? duration = null)
         {
             var transform = new TranslateTransform(fromX, 0);
@@ -606,8 +1191,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria uma animação de hover para botões
+        /// Creates a hover animation for buttons with scale effect.
         /// </summary>
+        /// <param name="button">The button to animate.</param>
+        /// <param name="isEntering">True for mouse enter (scale up), false for mouse leave (scale down).</param>
         public static void AnimateButtonHover(Button button, bool isEntering)
         {
             var scaleTransform = button.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
@@ -627,8 +1214,12 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica um efeito de glow nos elementos
+        /// Applies a glow effect to UI elements using DropShadowEffect.
         /// </summary>
+        /// <param name="element">The element to apply glow to.</param>
+        /// <param name="color">Glow color.</param>
+        /// <param name="radius">Blur radius for glow effect (default 10).</param>
+        /// <param name="opacity">Glow opacity (default 0.8).</param>
         public static void ApplyGlowEffect(UIElement element, Color color, double radius = GLOW_RADIUS_DEFAULT, double opacity = GLOW_OPACITY_DEFAULT)
         {
             var glow = new DropShadowEffect
@@ -642,16 +1233,20 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Remove todos os efeitos visuais de um elemento
+        /// Removes all visual effects from a UI element.
         /// </summary>
+        /// <param name="element">The element to clear effects from.</param>
         public static void RemoveEffects(UIElement element)
         {
             element.Effect = null;
         }
 
         /// <summary>
-        /// Escurece uma cor SolidColorBrush por uma porcentagem específica
+        /// Darkens a SolidColorBrush by a specific percentage.
         /// </summary>
+        /// <param name="brush">The brush to darken.</param>
+        /// <param name="percentage">Percentage to darken (0.0 to 1.0).</param>
+        /// <returns>New darkened SolidColorBrush.</returns>
         public static SolidColorBrush DarkenColor(SolidColorBrush brush, double percentage)
         {
             var color = brush.Color;
@@ -668,8 +1263,11 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Clareia uma cor SolidColorBrush por uma porcentagem específica
+        /// Lightens a SolidColorBrush by a specific percentage.
         /// </summary>
+        /// <param name="brush">The brush to lighten.</param>
+        /// <param name="percentage">Percentage to lighten (0.0 to 1.0).</param>
+        /// <returns>New lightened SolidColorBrush.</returns>
         public static SolidColorBrush LightenColor(SolidColorBrush brush, double percentage)
         {
             var color = brush.Color;
@@ -688,11 +1286,12 @@ namespace DevStackShared
 
         #region Advanced UI Helper Methods
         /// <summary>
-        /// Aplica o tema escuro a um DataGrid
+        /// Applies dark theme styling to a DataGrid with modern look and optimized performance.
+        /// Configures headers, rows, cells, alternating colors, hover effects, and selection styling.
         /// </summary>
+        /// <param name="dataGrid">The DataGrid to style.</param>
         public static void SetDataGridDarkTheme(DataGrid dataGrid)
         {
-            // Forçar as cores do tema escuro em todas as propriedades
             dataGrid.Background = CurrentTheme.GridBackground;
             dataGrid.Foreground = CurrentTheme.GridForeground;
             dataGrid.BorderBrush = CurrentTheme.Border;
@@ -706,16 +1305,12 @@ namespace DevStackShared
             dataGrid.SelectionMode = DataGridSelectionMode.Single;
             dataGrid.SelectionUnit = DataGridSelectionUnit.FullRow;
 
-            // Remover os cabeçalhos de linha (botões finos à esquerda)
             dataGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
 
-            // Remover qualquer estilo existente que possa interferir
             dataGrid.Style = null;
 
-            // Forçar recursos para garantir que cores padrão não sejam aplicadas
             dataGrid.Resources.Clear();
 
-            // Header styling with modern look - SEMPRE aplicar
             var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, CurrentTheme.GridHeaderBackground));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, CurrentTheme.GridHeaderForeground));
@@ -727,7 +1322,6 @@ namespace DevStackShared
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Left));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.VerticalContentAlignmentProperty, VerticalAlignment.Center));
 
-            // Forçar o template para garantir que não haja elementos visuais claros
             var headerTemplate = new ControlTemplate(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
             var border = new FrameworkElementFactory(typeof(Border));
             border.SetValue(Border.BackgroundProperty, CurrentTheme.GridHeaderBackground);
@@ -745,14 +1339,12 @@ namespace DevStackShared
 
             dataGrid.ColumnHeaderStyle = headerStyle;
 
-            // Row styling with hover and selection effects - SEMPRE aplicar
             var rowStyle = new Style(typeof(DataGridRow));
             rowStyle.Setters.Add(new Setter(DataGridRow.MinHeightProperty, MIN_HEIGHT_ROW));
             rowStyle.Setters.Add(new Setter(DataGridRow.FontSizeProperty, FONT_SIZE_ROW));
             rowStyle.Setters.Add(new Setter(DataGridRow.BackgroundProperty, CurrentTheme.GridBackground));
             rowStyle.Setters.Add(new Setter(DataGridRow.ForegroundProperty, CurrentTheme.GridForeground));
 
-            // Hover trigger
             var hoverTrigger = new Trigger
             {
                 Property = DataGridRow.IsMouseOverProperty,
@@ -760,7 +1352,6 @@ namespace DevStackShared
             };
             hoverTrigger.Setters.Add(new Setter(DataGridRow.BackgroundProperty, CurrentTheme.SidebarHover));
 
-            // Selection trigger
             var selectedTrigger = new Trigger
             {
                 Property = DataGridRow.IsSelectedProperty,
@@ -773,7 +1364,6 @@ namespace DevStackShared
             rowStyle.Triggers.Add(selectedTrigger);
             dataGrid.RowStyle = rowStyle;
 
-            // Cell styling for better padding - SEMPRE aplicar
             var cellStyle = new Style(typeof(DataGridCell));
             cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(8, 6, 8, 6)));
             cellStyle.Setters.Add(new Setter(DataGridCell.BorderThicknessProperty, new Thickness(0)));
@@ -781,7 +1371,6 @@ namespace DevStackShared
             cellStyle.Setters.Add(new Setter(DataGridCell.BackgroundProperty, Brushes.Transparent));
             cellStyle.Setters.Add(new Setter(DataGridCell.ForegroundProperty, CurrentTheme.GridForeground));
 
-            // Triggers para células selecionadas
             var cellSelectedTrigger = new Trigger
             {
                 Property = DataGridCell.IsSelectedProperty,
@@ -795,8 +1384,13 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um botão estilizado com tema e animações avançadas
+        /// Creates a styled button with theme-based colors, animations, and visual effects.
+        /// Supports multiple button styles (Primary, Secondary, Success, Danger, Warning, Info).
         /// </summary>
+        /// <param name="content">Button text content.</param>
+        /// <param name="clickHandler">Optional click event handler.</param>
+        /// <param name="style">Button style type (default Primary).</param>
+        /// <returns>Fully styled Button with animations and shadow effects.</returns>
         public static Button CreateStyledButton(string content, RoutedEventHandler? clickHandler = null, ButtonStyle style = ButtonStyle.Primary)
         {
             var button = new Button
@@ -807,7 +1401,6 @@ namespace DevStackShared
             if (clickHandler != null)
                 button.Click += clickHandler;
 
-            // Determinar cores baseado no estilo do botão
             SolidColorBrush backgroundColor, hoverColor, pressedColor, borderColor, borderHoverColor;
 
             switch (style)
@@ -847,7 +1440,7 @@ namespace DevStackShared
                     borderColor = DarkenColor(CurrentTheme.TextMuted, COLOR_DARKEN_FACTOR);
                     borderHoverColor = DarkenColor(CurrentTheme.TextSecondary, COLOR_DARKEN_FACTOR);
                     break;
-                default: // Primary
+                default:
                     backgroundColor = CurrentTheme.ButtonBackground;
                     hoverColor = CurrentTheme.ButtonHover;
                     pressedColor = CurrentTheme.ButtonPressed;
@@ -856,10 +1449,8 @@ namespace DevStackShared
                     break;
             }
 
-            // Criar estilo com template customizado
             var buttonStyle = new Style(typeof(Button));
 
-            // Propriedades base
             buttonStyle.Setters.Add(new Setter(Button.BackgroundProperty, backgroundColor));
             buttonStyle.Setters.Add(new Setter(Button.ForegroundProperty, CurrentTheme.ButtonForeground));
             buttonStyle.Setters.Add(new Setter(Button.BorderBrushProperty, borderColor));
@@ -869,7 +1460,6 @@ namespace DevStackShared
             buttonStyle.Setters.Add(new Setter(Button.FontSizeProperty, FONT_SIZE_STANDARD));
             buttonStyle.Setters.Add(new Setter(Button.CursorProperty, Cursors.Hand));
 
-            // Template melhorado com gradientes
             var buttonTemplate = new ControlTemplate(typeof(Button));
             var borderFactory = new FrameworkElementFactory(typeof(Border));
             borderFactory.Name = "ButtonBorder";
@@ -887,7 +1477,6 @@ namespace DevStackShared
             buttonTemplate.VisualTree = borderFactory;
             buttonStyle.Setters.Add(new Setter(Button.TemplateProperty, buttonTemplate));
 
-            // Triggers com animações
             var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(Button.BackgroundProperty, hoverColor));
             hoverTrigger.Setters.Add(new Setter(Button.BorderBrushProperty, borderHoverColor));
@@ -908,11 +1497,9 @@ namespace DevStackShared
 
             button.Style = buttonStyle;
 
-            // Adicionar eventos para animações
             button.MouseEnter += (s, e) => AnimateButtonHover(button, true);
             button.MouseLeave += (s, e) => AnimateButtonHover(button, false);
 
-            // Efeito de sombra sutil
             button.Effect = new DropShadowEffect
             {
                 BlurRadius = 6,
@@ -925,7 +1512,7 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Enum para estilos de botão
+        /// Button style enumeration for CreateStyledButton method.
         /// </summary>
         public enum ButtonStyle
         {
@@ -938,8 +1525,11 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um TextBox estilizado com tema escuro
+        /// Creates a styled TextBox with dark theme support.
+        /// Supports both regular and console modes with custom styling and focus effects.
         /// </summary>
+        /// <param name="isConsole">True for console-style TextBox with monospace font, false for regular input.</param>
+        /// <returns>Fully styled TextBox with custom scrollbar and focus effects.</returns>
         public static TextBox CreateStyledTextBox(bool isConsole = false)
         {
             var textBox = new TextBox
@@ -965,10 +1555,8 @@ namespace DevStackShared
                 textBox.SelectionBrush = CurrentTheme.SelectionBrush;
             }
 
-            // Create style for focus effects and modern scrollbar
             var textBoxStyle = new Style(typeof(TextBox));
 
-            // Template XAML para TextBox com scrollbar customizada
             var templateXaml = @"
                 <ControlTemplate TargetType='TextBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                     <Border Name='Border'
@@ -1044,7 +1632,6 @@ namespace DevStackShared
             }
             catch
             {
-                // Fallback - usar triggers básicos se XAML falhar
                 var focusTrigger = new Trigger
                 {
                     Property = TextBox.IsFocusedProperty,
@@ -1070,8 +1657,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um ComboBox estilizado com tema escuro
+        /// Creates a styled ComboBox with dark theme support.
+        /// Includes custom dropdown styling, hover effects, and automatic scroll-to-top on open.
         /// </summary>
+        /// <returns>Fully styled ComboBox with custom item containers and dropdown behavior.</returns>
         public static ComboBox CreateStyledComboBox()
         {
             var comboBox = new ComboBox
@@ -1085,10 +1674,8 @@ namespace DevStackShared
                 MinHeight = MIN_HEIGHT_COMBOBOX
             };
 
-            // Evento para rolar o dropdown para o início ao abrir
             comboBox.DropDownOpened += (s, e) =>
             {
-                // Tenta encontrar o ScrollViewer do dropdown
                 if (comboBox.Template != null)
                 {
                     comboBox.ApplyTemplate();
@@ -1104,7 +1691,6 @@ namespace DevStackShared
                 }
             };
 
-            // Helper para buscar ScrollViewer dentro do Border
             static ScrollViewer? FindScrollViewer(DependencyObject parent)
             {
                 for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
@@ -1119,10 +1705,8 @@ namespace DevStackShared
                 return null;
             }
 
-            // Create a simplified but effective style for dark theme
             var comboStyle = new Style(typeof(ComboBox));
 
-            // Basic styling - force dark colors
             comboStyle.Setters.Add(new Setter(ComboBox.BackgroundProperty, CurrentTheme.InputBackground));
             comboStyle.Setters.Add(new Setter(ComboBox.ForegroundProperty, CurrentTheme.InputForeground));
             comboStyle.Setters.Add(new Setter(ComboBox.BorderBrushProperty, CurrentTheme.InputBorder));
@@ -1131,7 +1715,6 @@ namespace DevStackShared
             comboStyle.Setters.Add(new Setter(ComboBox.FontSizeProperty, FONT_SIZE_STANDARD));
             comboStyle.Setters.Add(new Setter(ComboBox.MinHeightProperty, MIN_HEIGHT_COMBOBOX));
 
-            // Create simplified template using XAML string
             var templateXaml = @"
                 <ControlTemplate TargetType='ComboBox' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                     <Border Name='MainBorder' 
@@ -1225,7 +1808,6 @@ namespace DevStackShared
             }
             catch
             {
-                // Fallback to basic triggers if XAML parsing fails
                 var hoverTrigger = new Trigger { Property = ComboBox.IsMouseOverProperty, Value = true };
                 hoverTrigger.Setters.Add(new Setter(ComboBox.BorderBrushProperty, CurrentTheme.BorderHover));
                 comboStyle.Triggers.Add(hoverTrigger);
@@ -1243,7 +1825,6 @@ namespace DevStackShared
 
             comboBox.Style = comboStyle;
 
-            // Style the dropdown items for dark theme
             var itemStyle = new Style(typeof(ComboBoxItem));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, CurrentTheme.DropdownBackground));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, CurrentTheme.InputForeground));
@@ -1251,7 +1832,6 @@ namespace DevStackShared
             itemStyle.Setters.Add(new Setter(ComboBoxItem.BorderThicknessProperty, new Thickness(0)));
             itemStyle.Setters.Add(new Setter(ComboBoxItem.FontSizeProperty, FONT_SIZE_STANDARD));
 
-            // Hover trigger for items
             var itemHoverTrigger = new Trigger
             {
                 Property = ComboBoxItem.IsMouseOverProperty,
@@ -1260,7 +1840,6 @@ namespace DevStackShared
             itemHoverTrigger.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, CurrentTheme.SidebarHover));
             itemHoverTrigger.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, CurrentTheme.InputForeground));
 
-            // Selected trigger for items
             var itemSelectedTrigger = new Trigger
             {
                 Property = ComboBoxItem.IsSelectedProperty,
@@ -1269,7 +1848,6 @@ namespace DevStackShared
             itemSelectedTrigger.Setters.Add(new Setter(ComboBoxItem.BackgroundProperty, CurrentTheme.ButtonBackground));
             itemSelectedTrigger.Setters.Add(new Setter(ComboBoxItem.ForegroundProperty, new SolidColorBrush(Colors.White)));
 
-            // Highlighted trigger for items
             var itemHighlightedTrigger = new Trigger
             {
                 Property = ComboBoxItem.IsHighlightedProperty,
@@ -1284,7 +1862,6 @@ namespace DevStackShared
 
             comboBox.ItemContainerStyle = itemStyle;
 
-            // Override system colors to force dark theme
             comboBox.Resources.Clear();
             comboBox.Resources.Add(SystemColors.WindowBrushKey, CurrentTheme.DropdownBackground);
             comboBox.Resources.Add(SystemColors.ControlBrushKey, CurrentTheme.InputBackground);
@@ -1296,8 +1873,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um tooltip estilizado com tema escuro
+        /// Creates a styled ToolTip with dark theme support and rounded corners.
         /// </summary>
+        /// <param name="content">Tooltip text content.</param>
+        /// <returns>Styled ToolTip with custom appearance.</returns>
         public static ToolTip CreateStyledToolTip(string content)
         {
             var tooltip = new ToolTip
@@ -1312,7 +1891,6 @@ namespace DevStackShared
                 HasDropShadow = true
             };
 
-            // Estilo customizado para bordas arredondadas
             var style = new Style(typeof(ToolTip));
             var template = new ControlTemplate(typeof(ToolTip));
             
@@ -1334,20 +1912,23 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Adiciona um tooltip a qualquer elemento
+        /// Adds a styled tooltip to any framework element.
         /// </summary>
+        /// <param name="element">The element to attach tooltip to.</param>
+        /// <param name="content">Tooltip text content.</param>
         public static void AddToolTip(FrameworkElement element, string content)
         {
             element.ToolTip = CreateStyledToolTip(content);
         }
 
     /// <summary>
-    /// Cria uma barra de progresso estilizada
+    /// Creates a styled progress bar with smooth animations and customizable appearance.
     /// </summary>
-    /// <param name="value">Valor inicial.</param>
-    /// <param name="maximum">Valor máximo.</param>
-    /// <param name="isIndeterminate">Se true, o progresso é indeterminado.</param>
-    /// <param name="animateValueChanges">Se true (default), mudanças no Value serão animadas progressivamente em 1.2s.</param>
+    /// <param name="value">Initial progress value (default 0).</param>
+    /// <param name="maximum">Maximum progress value (default 100).</param>
+    /// <param name="isIndeterminate">True for indeterminate (animated) progress bar.</param>
+    /// <param name="animateValueChanges">True (default) to animate value changes smoothly over 1.2 seconds.</param>
+    /// <returns>Styled ProgressBar with custom indicator and optional animations.</returns>
     public static ProgressBar CreateStyledProgressBar(double value = PROGRESS_BAR_DEFAULT_VALUE, double maximum = PROGRESS_BAR_DEFAULT_MAXIMUM, bool isIndeterminate = false, bool animateValueChanges = true)
         {
             var progressBar = new ProgressBar
@@ -1361,7 +1942,6 @@ namespace DevStackShared
                 BorderThickness = new Thickness(0)
             };
 
-            // Template customizado usando XAML simplificado para garantir comportamento da esquerda para direita
             var style = new Style(typeof(ProgressBar));
             
             var templateXaml = @"
@@ -1388,7 +1968,6 @@ namespace DevStackShared
             }
             catch
             {
-                // Fallback: usar template WPF padrão com modificações mínimas
                 var template = new ControlTemplate(typeof(ProgressBar));
                 
                 var border = new FrameworkElementFactory(typeof(Border));
@@ -1416,9 +1995,6 @@ namespace DevStackShared
             
             progressBar.Style = style;
 
-            // Animação visual do indicador (evita recursão de ValueChanged)
-            // Sempre prepara handlers; respeita 'animateValueChanges' ao decidir animar ou setar direto
-            // Captura mudanças de valor antes do Loaded para animar a primeira alteração
             double? queuedValueBeforeLoaded = null;
             double initialValue = progressBar.Value;
             bool hasAnimatedInitialValue = false;
@@ -1433,7 +2009,6 @@ namespace DevStackShared
 
             progressBar.Loaded += (s, e) =>
             {
-                // Garante que o template esteja aplicado e peças nomeadas disponíveis
                 progressBar.ApplyTemplate();
                 var track = progressBar.Template.FindName("PART_Track", progressBar) as Border;
                 var indicator = progressBar.Template.FindName("PART_Indicator", progressBar) as Rectangle;
@@ -1441,7 +2016,6 @@ namespace DevStackShared
                 if (track == null || indicator == null)
                     return;
 
-                // Mantém uma animação pendente caso o track ainda não tenha tamanho definido
                 double? pendingValueForAnimation = null;
 
                 void UpdateIndicator(double v, bool animate)
@@ -1451,7 +2025,6 @@ namespace DevStackShared
 
                     if (track.ActualWidth <= 0)
                     {
-                        // Deferir até medição
                         if (animate)
                             pendingValueForAnimation = v;
                         return;
@@ -1470,7 +2043,6 @@ namespace DevStackShared
                         return;
                     }
 
-                    // Para animação, garantir que comece do valor atual
                     var currentWidth = double.IsNaN(indicator.Width) ? 0 : indicator.Width;
                     var widthAnim = new DoubleAnimation
                     {
@@ -1482,7 +2054,6 @@ namespace DevStackShared
                     indicator.BeginAnimation(FrameworkElement.WidthProperty, widthAnim, HandoffBehavior.SnapshotAndReplace);
                 }
 
-                // Ajusta ao iniciar: se houve mudança antes do Loaded, anima essa primeira mudança
                 if (queuedValueBeforeLoaded.HasValue && animateValueChanges)
                 {
                     UpdateIndicator(queuedValueBeforeLoaded.Value, true);
@@ -1491,11 +2062,9 @@ namespace DevStackShared
                 }
                 else
                 {
-                    // Define o valor inicial sem animação
                     UpdateIndicator(progressBar.Value, false);
                 }
 
-                // Garante animação da primeira mudança quando track só obtém tamanho após o Loaded
                 progressBar.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (track.ActualWidth > 0)
@@ -1508,7 +2077,6 @@ namespace DevStackShared
                     }
                 }), DispatcherPriority.Render);
 
-                // Recalcula em mudanças de tamanho do track
                 track.SizeChanged += (o, args) =>
                 {
                     if (pendingValueForAnimation.HasValue && animateValueChanges)
@@ -1522,7 +2090,6 @@ namespace DevStackShared
                     }
                 };
 
-                // Caso o container do ProgressBar dimensione após o Loaded
                 progressBar.SizeChanged += (o, args) =>
                 {
                     if (track.ActualWidth > 0)
@@ -1539,18 +2106,16 @@ namespace DevStackShared
                     }
                 };
 
-                // Anima a cada alteração de Value (inclusive diminuições)
                 progressBar.ValueChanged += (o, args) =>
                 {
                     if (progressBar.IsIndeterminate)
                         return;
                     
-                    // Se ainda não animou o valor inicial e esta é a primeira mudança significativa, anima
                     bool shouldAnimate = animateValueChanges;
                     if (!hasAnimatedInitialValue && Math.Abs(args.NewValue - initialValue) > 0.001)
                     {
                         hasAnimatedInitialValue = true;
-                        shouldAnimate = animateValueChanges; // Força animação na primeira mudança
+                        shouldAnimate = animateValueChanges;
                     }
                     
                     UpdateIndicator(args.NewValue, shouldAnimate);
@@ -1560,8 +2125,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um separador visual estilizado
+        /// Creates a styled visual separator (horizontal or vertical line).
         /// </summary>
+        /// <param name="orientation">Separator orientation (Horizontal or Vertical).</param>
+        /// <returns>Styled Separator with appropriate sizing and margins.</returns>
         public static Separator CreateStyledSeparator(Orientation orientation = Orientation.Horizontal)
         {
             var separator = new Separator
@@ -1585,8 +2152,12 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um painel de notificação moderno
+        /// Creates a modern notification panel with icon and styled appearance.
         /// </summary>
+        /// <param name="message">Notification message text.</param>
+        /// <param name="type">Notification type (Info, Success, Warning, Error).</param>
+        /// <param name="showIcon">True to show type-specific icon.</param>
+        /// <returns>Styled Border containing the notification UI with fade-in animation.</returns>
         public static Border CreateNotificationPanel(string message, NotificationType type = NotificationType.Info, bool showIcon = true)
         {
             var border = new Border
@@ -1596,7 +2167,6 @@ namespace DevStackShared
                 Margin = new Thickness(0, 4, 0, 4)
             };
 
-            // Definir cores baseado no tipo usando propriedades do tema
             switch (type)
             {
                 case NotificationType.Success:
@@ -1611,7 +2181,7 @@ namespace DevStackShared
                     border.Background = CurrentTheme.DangerBackground;
                     border.BorderBrush = CurrentTheme.Danger;
                     break;
-                default: // Info
+                default:
                     border.Background = CurrentTheme.InfoBackground;
                     border.BorderBrush = CurrentTheme.Info;
                     break;
@@ -1620,10 +2190,9 @@ namespace DevStackShared
             border.BorderThickness = new Thickness(1, 1, 1, 1);
 
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); // Para o ícone
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Para o texto
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Adicionar ícone se solicitado
             if (showIcon)
             {
                 var icon = new TextBlock
@@ -1657,7 +2226,6 @@ namespace DevStackShared
                 grid.Children.Add(icon);
             }
 
-            // Adicionar texto da mensagem
             var messageText = new TextBlock
             {
                 Text = message,
@@ -1676,14 +2244,13 @@ namespace DevStackShared
             grid.Children.Add(messageText);
             border.Child = grid;
 
-            // Animação de entrada
             AnimateFadeIn(border);
 
             return border;
         }
 
         /// <summary>
-        /// Enum para tipos de notificação
+        /// Notification type enumeration for CreateNotificationPanel method.
         /// </summary>
         public enum NotificationType
         {
@@ -1694,8 +2261,11 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um toggle switch estilizado
+        /// Creates a styled toggle switch checkbox with animated switch appearance.
         /// </summary>
+        /// <param name="content">Switch label text.</param>
+        /// <param name="isChecked">Initial checked state (default false).</param>
+        /// <returns>Styled CheckBox with toggle switch appearance and animations.</returns>
         public static CheckBox CreateStyledToggleSwitch(string content, bool isChecked = false)
         {
             var toggle = new CheckBox
@@ -1707,19 +2277,16 @@ namespace DevStackShared
                 Margin = new Thickness(0, 4, 0, 4)
             };
 
-            // Template customizado para aparência de switch
             var style = new Style(typeof(CheckBox));
             var template = new ControlTemplate(typeof(CheckBox));
 
             var grid = new FrameworkElementFactory(typeof(Grid));
             
-            // Adicionar definições de coluna
             var col1 = new FrameworkElementFactory(typeof(ColumnDefinition));
             col1.SetValue(ColumnDefinition.WidthProperty, GridLength.Auto);
             var col2 = new FrameworkElementFactory(typeof(ColumnDefinition));
             col2.SetValue(ColumnDefinition.WidthProperty, new GridLength(1, GridUnitType.Star));
 
-            // Switch track
             var track = new FrameworkElementFactory(typeof(Border));
             track.Name = "SwitchTrack";
             track.SetValue(Border.WidthProperty, 44.0);
@@ -1731,7 +2298,6 @@ namespace DevStackShared
             track.SetValue(Grid.ColumnProperty, 0);
             track.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 8, 0));
 
-            // Switch thumb
             var thumb = new FrameworkElementFactory(typeof(Ellipse));
             thumb.Name = "SwitchThumb";
             thumb.SetValue(Ellipse.WidthProperty, 18.0);
@@ -1741,13 +2307,11 @@ namespace DevStackShared
             thumb.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
             thumb.SetValue(FrameworkElement.MarginProperty, new Thickness(3, 0, 0, 0));
 
-            // Transform para animação
             var translateTransform = new FrameworkElementFactory(typeof(TranslateTransform));
             thumb.SetValue(UIElement.RenderTransformProperty, translateTransform);
 
             track.AppendChild(thumb);
 
-            // Content
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetValue(Grid.ColumnProperty, 1);
             contentPresenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
@@ -1756,7 +2320,6 @@ namespace DevStackShared
             grid.AppendChild(contentPresenter);
             template.VisualTree = grid;
 
-            // Triggers para animação
             var checkedTrigger = new Trigger { Property = CheckBox.IsCheckedProperty, Value = true };
             checkedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.Accent) { TargetName = "SwitchTrack" });
             checkedTrigger.Setters.Add(new Setter(TranslateTransform.XProperty, 20.0) { TargetName = "SwitchThumb" });
@@ -1774,8 +2337,14 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um Label estilizado com tema moderno
+        /// Creates a styled Label with theme-based typography.
+        /// Supports multiple label styles (Normal, Title, Subtitle, Muted, Secondary, Link).
         /// </summary>
+        /// <param name="content">Label text content.</param>
+        /// <param name="isTitle">Legacy parameter for title styling (deprecated, use style parameter).</param>
+        /// <param name="isMuted">Legacy parameter for muted styling (deprecated, use style parameter).</param>
+        /// <param name="style">Label style type (default Normal).</param>
+        /// <returns>Styled Label with appropriate typography.</returns>
         public static Label CreateStyledLabel(string content, bool isTitle = false, bool isMuted = false, LabelStyle style = LabelStyle.Normal)
         {
             var label = new Label
@@ -1783,7 +2352,6 @@ namespace DevStackShared
                 Content = content
             };
 
-            // Aplicar estilo baseado no parâmetro
             switch (style)
             {
                 case LabelStyle.Title:
@@ -1812,7 +2380,6 @@ namespace DevStackShared
                     label.Foreground = CurrentTheme.TextLink;
                     label.Cursor = Cursors.Hand;
                     
-                    // Adicionar efeito hover para links
                     label.MouseEnter += (s, e) => {
                         label.Foreground = CurrentTheme.TextLinkHover;
                     };
@@ -1820,14 +2387,13 @@ namespace DevStackShared
                         label.Foreground = CurrentTheme.TextLink;
                     };
                     break;
-                default: // Normal
+                default:
                     label.FontWeight = FontWeights.Normal;
                     label.FontSize = 14;
                     label.Foreground = CurrentTheme.Foreground;
                     break;
             }
 
-            // Manter retrocompatibilidade com parâmetros antigos
             if (isTitle)
             {
                 label.FontWeight = FontWeights.Bold;
@@ -1843,7 +2409,7 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Enum para estilos de label
+        /// Label style enumeration for CreateStyledLabel method.
         /// </summary>
         public enum LabelStyle
         {
@@ -1856,14 +2422,17 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Exibe uma MessageBox estilizada com tema escuro
+        /// Displays a styled message box with dark theme and custom appearance.
         /// </summary>
+        /// <param name="message">Message text to display.</param>
+        /// <param name="title">Dialog title (uses localized default if null).</param>
+        /// <param name="buttons">Button configuration (OK, OKCancel, YesNo, YesNoCancel).</param>
+        /// <param name="icon">Icon type to display (None, Information, Warning, Error, Question).</param>
+        /// <returns>MessageBoxResult indicating which button was clicked.</returns>
         public static MessageBoxResult CreateStyledMessageBox(string message, string? title = null, MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
         {
-            // Use localized default title if none provided
             title ??= LocalizationManager.Instance?.GetString("common.dialogs.default_title") ?? "Mensagem";
             
-            // Cria uma janela customizada para garantir tema escuro real
             var dialog = new Window
             {
                 Title = title,
@@ -1873,7 +2442,7 @@ namespace DevStackShared
                 ResizeMode = ResizeMode.NoResize,
                 WindowStyle = WindowStyle.None,
                 ShowInTaskbar = false,
-                Background = Brushes.Transparent, // Para permitir borda arredondada
+                Background = Brushes.Transparent,
                 AllowsTransparency = true,
                 Foreground = CurrentTheme.Foreground,
                 Owner = Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current?.MainWindow
@@ -1892,7 +2461,6 @@ namespace DevStackShared
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            // Mensagem
             var msg = new TextBlock
             {
                 Text = message,
@@ -1905,7 +2473,6 @@ namespace DevStackShared
             Grid.SetRow(msg, 0);
             grid.Children.Add(msg);
 
-            // Botões
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -1949,7 +2516,6 @@ namespace DevStackShared
             Grid.SetRow(buttonPanel, 1);
             grid.Children.Add(buttonPanel);
 
-            // Ícone
             if (icon != MessageBoxImage.None)
             {
                 var iconText = new TextBlock
@@ -1988,8 +2554,11 @@ namespace DevStackShared
 
         
         /// <summary>
-        /// Cria um CheckBox estilizado com tema escuro
+        /// Creates a styled CheckBox with dark theme support and modern appearance.
         /// </summary>
+        /// <param name="content">Checkbox label text.</param>
+        /// <param name="isBold">True to use bold font weight.</param>
+        /// <returns>Fully styled CheckBox with custom check mark and hover effects.</returns>
         public static CheckBox CreateStyledCheckBox(string content, bool isBold = false)
         {
             var checkBox = new CheckBox
@@ -2003,17 +2572,14 @@ namespace DevStackShared
                 FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal
             };
 
-            // ControlTemplate para customizar o visual do CheckBox
             var template = new ControlTemplate(typeof(CheckBox));
             var border = new FrameworkElementFactory(typeof(Border));
             border.Name = "Border";
 
-            // StackPanel para alinhar box e conteúdo
             var panel = new FrameworkElementFactory(typeof(StackPanel));
             panel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
             panel.SetValue(StackPanel.VerticalAlignmentProperty, VerticalAlignment.Center);
 
-            // Box do check
             var boxBorder = new FrameworkElementFactory(typeof(Border));
             boxBorder.Name = "CheckBoxBox";
             boxBorder.SetValue(Border.WidthProperty, 18.0);
@@ -2021,51 +2587,43 @@ namespace DevStackShared
             boxBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
             boxBorder.SetValue(Border.BorderThicknessProperty, new Thickness(1));
             boxBorder.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(CheckBox.BorderBrushProperty));
-            boxBorder.SetValue(Border.BackgroundProperty, Brushes.Transparent); // Sem background
+            boxBorder.SetValue(Border.BackgroundProperty, Brushes.Transparent);
             boxBorder.SetValue(Border.MarginProperty, new Thickness(0, 0, 8, 0));
             boxBorder.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Left);
             boxBorder.SetValue(Border.VerticalAlignmentProperty, VerticalAlignment.Center);
 
-            // Path do check (visível só quando IsChecked)
             var checkPath = new FrameworkElementFactory(typeof(Path));
             checkPath.Name = "CheckMark";
             checkPath.SetValue(Path.DataProperty, Geometry.Parse("M 3 7 L 6 12 L 13 5"));
             checkPath.SetValue(Path.StrokeThicknessProperty, 2.0);
-            checkPath.SetValue(Path.StrokeProperty, Brushes.White); // Branco para o check
+            checkPath.SetValue(Path.StrokeProperty, Brushes.White);
             checkPath.SetValue(Path.SnapsToDevicePixelsProperty, true);
             checkPath.SetValue(Path.StrokeEndLineCapProperty, PenLineCap.Round);
             checkPath.SetValue(Path.StrokeStartLineCapProperty, PenLineCap.Round);
             checkPath.SetValue(FrameworkElement.VisibilityProperty, Visibility.Collapsed);
 
-            // ContentPresenter para o texto
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
             contentPresenter.SetValue(ContentPresenter.RecognizesAccessKeyProperty, true);
 
-            // Monta a árvore
             boxBorder.AppendChild(checkPath);
             panel.AppendChild(boxBorder);
             panel.AppendChild(contentPresenter);
             border.AppendChild(panel);
             template.VisualTree = border;
 
-            // Triggers para hover, foco e check
-            // Hover: muda BorderBrush para BorderHover e Foreground para branco
             var hoverTrigger = new Trigger { Property = CheckBox.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.BorderHover, "CheckBoxBox"));
             hoverTrigger.Setters.Add(new Setter(Control.ForegroundProperty, Brushes.White));
 
-            // Foco: muda BorderBrush para InputFocusBorder
             var focusTrigger = new Trigger { Property = CheckBox.IsFocusedProperty, Value = true };
             focusTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.InputFocusBorder, "CheckBoxBox"));
 
-            // Checked: mostra o Path e deixa o box com cor de fundo
             var checkedTrigger = new Trigger { Property = CheckBox.IsCheckedProperty, Value = true };
             checkedTrigger.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Visible, "CheckMark"));
             checkedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.ButtonBackground, "CheckBoxBox"));
             checkedTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.ButtonBackground, "CheckBoxBox"));
 
-            // Disabled: reduz opacidade
             var disabledTrigger = new Trigger { Property = UIElement.IsEnabledProperty, Value = false };
             disabledTrigger.Setters.Add(new Setter(UIElement.OpacityProperty, 0.6));
 
@@ -2074,7 +2632,6 @@ namespace DevStackShared
             template.Triggers.Add(checkedTrigger);
             template.Triggers.Add(disabledTrigger);
 
-            // Estilo base
             var style = new Style(typeof(CheckBox));
             style.Setters.Add(new Setter(CheckBox.ForegroundProperty, CurrentTheme.InputForeground));
             style.Setters.Add(new Setter(CheckBox.BackgroundProperty, CurrentTheme.InputBackground));
@@ -2089,8 +2646,10 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica o tema escuro personalizado a um ListBox usado na barra lateral
+        /// Applies custom dark theme styling to a sidebar ListBox.
+        /// Configures background, hover effects, selection styling, and right border indicator.
         /// </summary>
+        /// <param name="listBox">The ListBox to style as sidebar.</param>
         public static void ApplySidebarListBoxTheme(ListBox listBox)
         {
             listBox.Background = CurrentTheme.SidebarBackground;
@@ -2099,10 +2658,8 @@ namespace DevStackShared
             listBox.BorderThickness = new Thickness(0);
             ScrollViewer.SetCanContentScroll(listBox, false);
 
-            // Create custom template para garantir controle total sobre o visual
             var itemTemplate = new ControlTemplate(typeof(ListBoxItem));
 
-            // Container principal (Border para background e borda direita)
             var mainBorder = new FrameworkElementFactory(typeof(Border));
             mainBorder.Name = "MainBorder";
             mainBorder.SetValue(Border.BackgroundProperty, Brushes.Transparent);
@@ -2111,7 +2668,6 @@ namespace DevStackShared
             mainBorder.SetValue(Border.PaddingProperty, new Thickness(15, 12, 15, 12));
             mainBorder.SetValue(Border.MarginProperty, new Thickness(4, 2, 4, 2));
 
-            // ContentPresenter para o conteúdo do item
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
             contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
@@ -2119,15 +2675,11 @@ namespace DevStackShared
             mainBorder.AppendChild(contentPresenter);
             itemTemplate.VisualTree = mainBorder;
 
-            // Triggers no template para garantir prioridade máxima
-
-            // 1. Hover trigger (baixa prioridade)
             var hoverTrigger = new Trigger { Property = ListBoxItem.IsMouseOverProperty, Value = true };
             hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.SidebarHover) { TargetName = "MainBorder" });
             hoverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.BorderHover) { TargetName = "MainBorder" });
             itemTemplate.Triggers.Add(hoverTrigger);
 
-            // 2. Selected trigger (MÁXIMA PRIORIDADE - deve ser o último)
             var selectedTrigger = new Trigger { Property = ListBoxItem.IsSelectedProperty, Value = true };
             selectedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CurrentTheme.SidebarSelected) { TargetName = "MainBorder" });
             selectedTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, CurrentTheme.BorderFocus) { TargetName = "MainBorder" });
@@ -2135,7 +2687,6 @@ namespace DevStackShared
             selectedTrigger.Setters.Add(new Setter(ListBoxItem.FontWeightProperty, FontWeights.SemiBold));
             itemTemplate.Triggers.Add(selectedTrigger);
 
-            // 3. Selected + Hover trigger (sobrescreve hover quando selecionado)
             var selectedHoverTrigger = new MultiTrigger();
             selectedHoverTrigger.Conditions.Add(new Condition(ListBoxItem.IsSelectedProperty, true));
             selectedHoverTrigger.Conditions.Add(new Condition(ListBoxItem.IsMouseOverProperty, true));
@@ -2145,7 +2696,6 @@ namespace DevStackShared
             selectedHoverTrigger.Setters.Add(new Setter(ListBoxItem.FontWeightProperty, FontWeights.SemiBold));
             itemTemplate.Triggers.Add(selectedHoverTrigger);
 
-            // Style com template customizado
             var itemStyle = new Style(typeof(ListBoxItem));
             itemStyle.Setters.Add(new Setter(ListBoxItem.TemplateProperty, itemTemplate));
             itemStyle.Setters.Add(new Setter(ListBoxItem.FontSizeProperty, 14.0));
@@ -2153,13 +2703,13 @@ namespace DevStackShared
             itemStyle.Setters.Add(new Setter(ListBoxItem.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
             itemStyle.Setters.Add(new Setter(ListBoxItem.VerticalContentAlignmentProperty, VerticalAlignment.Center));
 
-            // Aplicar o estilo
             listBox.ItemContainerStyle = itemStyle;
         }
         
         /// <summary>
-        /// Cria um overlay de loading com spinner centralizado
+        /// Creates a loading overlay with centered animated spinner.
         /// </summary>
+        /// <returns>Border containing semi-transparent overlay with spinner, initially collapsed.</returns>
         public static Border CreateLoadingOverlay()
         {
             double spinnerSize = 20;
@@ -2181,8 +2731,11 @@ namespace DevStackShared
         }
         
         /// <summary>
-        /// Cria um spinner animado circular, usado para overlays de loading (tamanho customizável)
+        /// Creates an animated circular spinner for loading indicators with customizable size.
         /// </summary>
+        /// <param name="width">Spinner width in pixels.</param>
+        /// <param name="height">Spinner height in pixels.</param>
+        /// <returns>Canvas containing animated spinner with rotating dots.</returns>
         public static UIElement CreateSpinner(double width, double height)
         {
             int dotCount = 11;
@@ -2237,20 +2790,22 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica o tema atual a uma janela e seus controles filhos
+        /// Applies the current theme to a window and all its child controls recursively.
         /// </summary>
+        /// <param name="window">The window to apply theme to.</param>
         public static void ApplyThemeToWindow(Window window)
         {
             window.Background = CurrentTheme.FormBackground;
             window.Foreground = CurrentTheme.Foreground;
             
-            // Aplicar tema a todos os controles filhos
             ApplyThemeToContainer(window);
         }
 
         /// <summary>
-        /// Aplica o tema recursivamente a todos os controles filhos de um container
+        /// Recursively applies the current theme to all child controls within a container.
+        /// Handles DataGrid, TextBox, ComboBox, and Label controls with appropriate styling.
         /// </summary>
+        /// <param name="container">The parent container to apply theme to.</param>
         public static void ApplyThemeToContainer(DependencyObject container)
         {
             var childrenCount = VisualTreeHelper.GetChildrenCount(container);
@@ -2258,7 +2813,6 @@ namespace DevStackShared
             {
                 var child = VisualTreeHelper.GetChild(container, i);
                 
-                // Aplicar tema baseado no tipo do controle
                 switch (child)
                 {
                     case DataGrid dataGrid:
@@ -2291,19 +2845,18 @@ namespace DevStackShared
                         break;
                 }
                 
-                // Aplicar recursivamente aos filhos
                 ApplyThemeToContainer(child);
             }
         }
 
         /// <summary>
-        /// Método utilitário para alterar o tema em tempo de execução
+        /// Switches the current theme at runtime and applies it to all open windows.
         /// </summary>
+        /// <param name="newTheme">The theme type to switch to.</param>
         public static void SwitchTheme(ThemeType newTheme)
         {
             CurrentThemeType = newTheme;
             
-            // Aplicar novo tema a todas as janelas abertas
             foreach (Window window in Application.Current.Windows)
             {
                 ApplyThemeToWindow(window);
@@ -2311,8 +2864,12 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um card container estilizado
+        /// Creates a styled card container with optional shadow effect.
         /// </summary>
+        /// <param name="content">The UI element to place inside the card.</param>
+        /// <param name="cornerRadius">Border corner radius in pixels (default 8).</param>
+        /// <param name="hasShadow">True to apply drop shadow effect (default true).</param>
+        /// <returns>Styled Border containing the content with card appearance.</returns>
         public static Border CreateStyledCard(UIElement content, double cornerRadius = 8, bool hasShadow = true)
         {
             var card = new Border
@@ -2340,8 +2897,11 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Cria um ScrollViewer com scrollbar customizada já aplicada
+        /// Creates a ScrollViewer with custom styled scrollbar already applied.
         /// </summary>
+        /// <param name="verticalVisibility">Vertical scrollbar visibility mode (default Auto).</param>
+        /// <param name="horizontalVisibility">Horizontal scrollbar visibility mode (default Auto).</param>
+        /// <returns>Styled ScrollViewer with custom dark theme scrollbars.</returns>
         public static ScrollViewer CreateStyledScrollViewer(ScrollBarVisibility verticalVisibility = ScrollBarVisibility.Auto, ScrollBarVisibility horizontalVisibility = ScrollBarVisibility.Auto)
         {
             var scrollViewer = new ScrollViewer
@@ -2356,14 +2916,14 @@ namespace DevStackShared
         }
 
         /// <summary>
-        /// Aplica scrollbar customizada a um ScrollViewer com tema escuro
+        /// Applies custom dark theme scrollbar to a ScrollViewer with overlay appearance.
+        /// Creates slim scrollbars that appear on top of content without taking layout space.
         /// </summary>
+        /// <param name="scrollViewer">The ScrollViewer to apply custom scrollbar to.</param>
         public static void ApplyCustomScrollbar(ScrollViewer scrollViewer)
         {
-            // Criar style customizado para o ScrollViewer
             var scrollViewerStyle = new Style(typeof(ScrollViewer));
             
-            // Template XAML para ScrollViewer com scrollbar customizada sobreposta
             var templateXaml = @"
                 <ControlTemplate TargetType='ScrollViewer' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                     <Grid>
@@ -2493,14 +3053,14 @@ namespace DevStackShared
             }
             catch
             {
-                // Fallback: aplicar apenas cores básicas se o XAML falhar
                 scrollViewer.Background = CurrentTheme.PanelBackground;
             }
         }
 
         /// <summary>
-        /// Retorna informações sobre o tema atual
+        /// Returns formatted information about the current theme.
         /// </summary>
+        /// <returns>Multi-line string with theme details (type, colors, dark mode status).</returns>
         public static string GetThemeInfo()
         {
             return $"Tema Atual: {CurrentThemeType}\n" +

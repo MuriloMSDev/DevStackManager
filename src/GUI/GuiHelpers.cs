@@ -4,13 +4,19 @@ using System.Windows.Media;
 namespace DevStackManager
 {
     /// <summary>
-    /// Utilitários e helpers gerais para a interface gráfica
+    /// General utility and helper methods for GUI operations.
+    /// Provides methods for navigating the WPF visual tree and finding controls.
     /// </summary>
     public static class GuiHelpers
     {
         /// <summary>
-        /// Encontra um controle filho por nome no visual tree
+        /// Finds a child control by name in the WPF visual tree.
+        /// Performs recursive depth-first search through the visual hierarchy.
         /// </summary>
+        /// <typeparam name="T">Type of control to find (must be DependencyObject).</typeparam>
+        /// <param name="parent">Parent control to start search from.</param>
+        /// <param name="childName">Name of the child control to find.</param>
+        /// <returns>Found control of type T, or null if not found.</returns>
         public static T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
         {
             if (parent == null) return null;
@@ -38,8 +44,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Encontra um controle visual filho no template
+        /// Finds a visual child control in the template hierarchy.
+        /// Searches for first occurrence of specified type in visual tree.
         /// </summary>
+        /// <typeparam name="T">Type of control to find (must be DependencyObject).</typeparam>
+        /// <param name="parent">Parent control to start search from.</param>
+        /// <returns>Found control of type T, or null if not found.</returns>
         public static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)

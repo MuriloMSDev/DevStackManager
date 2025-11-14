@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class DbeaverVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the DBeaver component.
+        /// </summary>
         public string ComponentName => "DBeaver";
+        /// <summary>
+        /// Gets the unique identifier for the DBeaver component.
+        /// </summary>
         public string ComponentId => "dbeaver";
         
+        /// <summary>
+        /// List of available DBeaver versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("3.5.9", "https://dbeaver.io/files/3.5.9/dbeaver-ce-3.5.9-win32.win32.x86_64.zip"),
@@ -184,16 +193,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("25.2.4", "https://dbeaver.io/files/25.2.4/dbeaver-ce-25.2.4-win32.win32.x86_64.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available DBeaver versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available DBeaver version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific DBeaver version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

@@ -9,75 +9,178 @@ using System.Windows.Media.Imaging;
 namespace DevStackManager
 {
     /// <summary>
-    /// Componente responsável pela navegação principal e layout da interface
+    /// Navigation component responsible for main interface layout and navigation.
+    /// Manages sidebar creation, navigation items, and section routing.
+    /// Provides navigation to Dashboard, Installed, Install, Uninstall, Services, Sites, Utilities, and Config sections.
     /// </summary>
     public static class GuiNavigation
     {
-        // UI Layout Constants
+        /// <summary>
+        /// Width of the sidebar in pixels.
+        /// </summary>
         private const double SIDEBAR_WIDTH = 250;
+        
+        /// <summary>
+        /// Content margin in pixels.
+        /// </summary>
         private const double CONTENT_MARGIN = 10;
         
-        // Icon and Title Constants
+        /// <summary>
+        /// Size of the main icon in pixels.
+        /// </summary>
         private const double ICON_SIZE = 50;
+        
+        /// <summary>
+        /// Font size for title text.
+        /// </summary>
         private const double TITLE_FONT_SIZE = 20;
+        
+        /// <summary>
+        /// Font size for navigation item icons.
+        /// </summary>
         private const double NAV_ICON_FONT_SIZE = 18;
+        
+        /// <summary>
+        /// Font size for navigation item titles.
+        /// </summary>
         private const double NAV_TITLE_FONT_SIZE = 14;
         
-        // Margin Constants
+        /// <summary>
+        /// Horizontal margin for title panel in pixels.
+        /// </summary>
         private const double TITLE_PANEL_MARGIN_HORIZONTAL = 5;
+        
+        /// <summary>
+        /// Top margin for title panel in pixels.
+        /// </summary>
         private const double TITLE_PANEL_MARGIN_TOP = 15;
+        
+        /// <summary>
+        /// Bottom margin for title panel in pixels.
+        /// </summary>
         private const double TITLE_PANEL_MARGIN_BOTTOM = 10;
+        
+        /// <summary>
+        /// Top margin for icon in pixels.
+        /// </summary>
         private const double ICON_MARGIN_TOP = 6;
+        
+        /// <summary>
+        /// Horizontal margin for separator in pixels.
+        /// </summary>
         private const double SEPARATOR_MARGIN_HORIZONTAL = 10;
+        
+        /// <summary>
+        /// Bottom margin for separator in pixels.
+        /// </summary>
         private const double SEPARATOR_MARGIN_BOTTOM = 10;
+        
+        /// <summary>
+        /// Margin for navigation list in pixels.
+        /// </summary>
         private const double NAV_LIST_MARGIN = 8;
+        
+        /// <summary>
+        /// Vertical margin for navigation list in pixels.
+        /// </summary>
         private const double NAV_LIST_MARGIN_VERTICAL = 5;
+        
+        /// <summary>
+        /// Right margin for navigation icon in pixels.
+        /// </summary>
         private const double NAV_ICON_MARGIN_RIGHT = 12;
         
-        // Separator Constants
+        /// <summary>
+        /// Height of separator in pixels.
+        /// </summary>
         private const double SEPARATOR_HEIGHT = 1;
         
-        // Border Constants
+        /// <summary>
+        /// Right border width for sidebar in pixels.
+        /// </summary>
         private const double SIDEBAR_BORDER_RIGHT = 1;
         
-        // Navigation Indices
+        /// <summary>
+        /// Navigation index for Dashboard tab.
+        /// </summary>
         private const int NAV_INDEX_DASHBOARD = 0;
+        
+        /// <summary>
+        /// Navigation index for Installed tab.
+        /// </summary>
         private const int NAV_INDEX_INSTALLED = 1;
+        
+        /// <summary>
+        /// Navigation index for Install tab.
+        /// </summary>
         private const int NAV_INDEX_INSTALL = 2;
+        
+        /// <summary>
+        /// Navigation index for Uninstall tab.
+        /// </summary>
         private const int NAV_INDEX_UNINSTALL = 3;
+        
+        /// <summary>
+        /// Navigation index for Services tab.
+        /// </summary>
         private const int NAV_INDEX_SERVICES = 4;
+        
+        /// <summary>
+        /// Navigation index for Sites tab.
+        /// </summary>
         private const int NAV_INDEX_SITES = 5;
+        
+        /// <summary>
+        /// Navigation index for Utilities tab.
+        /// </summary>
         private const int NAV_INDEX_UTILITIES = 6;
+        
+        /// <summary>
+        /// Navigation index for Config tab.
+        /// </summary>
         private const int NAV_INDEX_CONFIG = 7;
         
         /// <summary>
-        /// Classe para representar itens de navegação
+        /// Represents a navigation menu item with title, icon, and description.
+        /// Used to build the navigation sidebar menu.
         /// </summary>
         public class NavigationItem
         {
+            /// <summary>
+            /// Gets or sets the navigation item title displayed in the menu.
+            /// </summary>
             public string Title { get; set; } = "";
+            
+            /// <summary>
+            /// Gets or sets the emoji icon displayed next to the title.
+            /// </summary>
             public string Icon { get; set; } = "";
+            
+            /// <summary>
+            /// Gets or sets the item description (not currently displayed).
+            /// </summary>
             public string Description { get; set; } = "";
         }
 
         /// <summary>
-        /// Cria o conteúdo principal com sidebar
+        /// Creates the main content layout with sidebar navigation and content area.
+        /// Sets up two-column grid: sidebar (250px) and main content area (remaining space).
+        /// Automatically navigates to Dashboard on initial load.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for data binding.</param>
+        /// <param name="mainGrid">Grid container to add content to.</param>
         public static void CreateMainContent(DevStackGui mainWindow, Grid mainGrid)
         {
             var contentGrid = new Grid { Margin = new Thickness(0) };
             Grid.SetRow(contentGrid, 0);
 
-            // Definir colunas: Sidebar | Content
-            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(SIDEBAR_WIDTH) }); // Sidebar
-            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Content
+            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(SIDEBAR_WIDTH) });
+            contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Criar sidebar
             var sidebar = CreateSidebar(mainWindow);
             Grid.SetColumn(sidebar, 0);
             contentGrid.Children.Add(sidebar);
 
-            // Criar área de conteúdo principal
             mainWindow._mainContent = new ContentControl
             {
                 Margin = new Thickness(CONTENT_MARGIN)
@@ -85,15 +188,17 @@ namespace DevStackManager
             Grid.SetColumn(mainWindow._mainContent, 1);
             contentGrid.Children.Add(mainWindow._mainContent);
 
-            // Navegar para a primeira seção por padrão
             NavigateToSection(mainWindow, NAV_INDEX_DASHBOARD);
 
             mainGrid.Children.Add(contentGrid);
         }
 
         /// <summary>
-        /// Cria a sidebar com título, separador e navegação
+        /// Creates the sidebar with DevStack title, separator, and navigation menu.
+        /// Applies theme styling for background and borders.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for theme access.</param>
+        /// <returns>Border containing the complete sidebar.</returns>
         private static Border CreateSidebar(DevStackGui mainWindow)
         {
             var sidebar = new Border
@@ -108,18 +213,19 @@ namespace DevStackManager
                 Orientation = Orientation.Vertical
             };
 
-            // Título e ícone
             sidebarContainer.Children.Add(CreateSidebarTitleUnified(mainWindow));
-            // Separador
             sidebarContainer.Children.Add(CreateSeparatorUnified(mainWindow));
-            // Lista de navegação
             sidebarContainer.Children.Add(CreateNavigationListUnified(mainWindow));
 
             sidebar.Child = sidebarContainer;
             return sidebar;
         }
 
-        // Métodos unificados da sidebar
+        /// <summary>
+        /// Creates the sidebar title panel with DevStack icon and title text.
+        /// </summary>
+        /// <param name="mainWindow">The main window instance.</param>
+        /// <returns>A StackPanel containing the sidebar title elements.</returns>
         private static StackPanel CreateSidebarTitleUnified(DevStackGui mainWindow)
         {
             var titlePanel = new StackPanel
@@ -128,7 +234,6 @@ namespace DevStackManager
                 Margin = new Thickness(TITLE_PANEL_MARGIN_HORIZONTAL, TITLE_PANEL_MARGIN_TOP, TITLE_PANEL_MARGIN_HORIZONTAL, TITLE_PANEL_MARGIN_BOTTOM)
             };
 
-            // Ícone DevStack
             var iconImage = CreateDevStackIcon();
             if (iconImage != null)
             {
@@ -142,8 +247,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o ícone do DevStack
+        /// Creates the DevStack icon image from DevStack.ico file.
+        /// Returns null if icon file is not found or cannot be loaded.
         /// </summary>
+        /// <returns>Image control with DevStack icon, or null if loading fails.</returns>
         private static Image? CreateDevStackIcon()
         {
             var iconImage = new Image
@@ -169,8 +276,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o label do título da sidebar
+        /// Creates the sidebar title label with "DevStack" text.
+        /// Applies bold font and theme styling.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization.</param>
+        /// <returns>Styled label with sidebar title.</returns>
         private static Label CreateTitleLabel(DevStackGui mainWindow)
         {
             var sidebarTitleLabel = DevStackShared.ThemeManager.CreateStyledLabel(mainWindow.LocalizationManager.GetString("gui.sidebar.title"));
@@ -183,6 +293,11 @@ namespace DevStackManager
             return sidebarTitleLabel;
         }
 
+        /// <summary>
+        /// Creates a horizontal separator line for the sidebar.
+        /// </summary>
+        /// <param name="mainWindow">The main window instance.</param>
+        /// <returns>A Border element representing the separator.</returns>
         private static Border CreateSeparatorUnified(DevStackGui mainWindow)
         {
             return new Border
@@ -193,6 +308,11 @@ namespace DevStackManager
             };
         }
 
+        /// <summary>
+        /// Creates the navigation list box with all menu items.
+        /// </summary>
+        /// <param name="mainWindow">The main window instance.</param>
+        /// <returns>A ListBox containing all navigation items.</returns>
         private static ListBox CreateNavigationListUnified(DevStackGui mainWindow)
         {
             var navList = new ListBox
@@ -211,19 +331,20 @@ namespace DevStackManager
                 navList.Items.Add(listItem);
             }
 
-            // Bind da seleção
             var binding = new Binding("SelectedNavIndex") { Source = mainWindow };
             navList.SetBinding(ListBox.SelectedIndexProperty, binding);
 
-            // Apply theme to the navigation list
             DevStackShared.ThemeManager.ApplySidebarListBoxTheme(navList);
             navList.UpdateLayout();
             return navList;
         }
 
         /// <summary>
-        /// Cria a lista de itens de navegação
+        /// Creates the list of navigation menu items with localized titles.
+        /// Returns 8 items: Dashboard, Installed, Install, Uninstall, Services, Sites, Utilities, Config.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for localization access.</param>
+        /// <returns>List of NavigationItem objects with icons, titles, and descriptions.</returns>
         private static List<NavigationItem> CreateNavigationItems(DevStackGui mainWindow)
         {
             return new List<NavigationItem>
@@ -240,8 +361,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria um item de navegação individual
+        /// Creates a single navigation list item with icon and title.
+        /// Used to build each entry in the navigation menu.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for theme access.</param>
+        /// <param name="item">Navigation item data (icon, title).</param>
+        /// <returns>ListBoxItem with formatted navigation entry.</returns>
         private static ListBoxItem CreateNavigationListItem(DevStackGui mainWindow, NavigationItem item)
         {
             var listItem = new ListBoxItem();
@@ -260,8 +385,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o label do ícone de navegação
+        /// Creates the navigation icon label (emoji).
         /// </summary>
+        /// <param name="mainWindow">Main window instance for theme access.</param>
+        /// <param name="icon">Emoji icon string.</param>
+        /// <returns>Label with styled icon.</returns>
         private static Label CreateNavigationIconLabel(DevStackGui mainWindow, string icon)
         {
             return new Label
@@ -276,8 +404,11 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Cria o label do título de navegação
+        /// Creates the navigation title label.
         /// </summary>
+        /// <param name="mainWindow">Main window instance for theme access.</param>
+        /// <param name="title">Navigation item title text.</param>
+        /// <returns>Label with styled title.</returns>
         private static Label CreateNavigationTitleLabel(DevStackGui mainWindow, string title)
         {
             return new Label
@@ -294,8 +425,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Navega para uma seção específica baseada no índice
+        /// Navigates to a specific section based on index.
+        /// Routes to appropriate tab content (Dashboard, Install, Services, etc.).
+        /// Updates main content area with selected section.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
+        /// <param name="index">Navigation index (0=Dashboard, 1=Installed, 2=Install, 3=Uninstall, 4=Services, 5=Sites, 6=Utilities, 7=Config).</param>
         public static void NavigateToSection(DevStackGui mainWindow, int index)
         {
             if (mainWindow._mainContent == null) return;
@@ -333,16 +468,16 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Navega para o Dashboard
+        /// Navigates to Dashboard tab.
+        /// Renders dashboard immediately and loads data (installed components, services) in background.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
         private static void NavigateToDashboard(DevStackGui mainWindow)
         {
             if (mainWindow._mainContent == null) return;
             
-            // Dashboard - renderizar imediatamente e carregar dados em background
             mainWindow._mainContent.Content = GuiDashboardTab.CreateDashboardContent(mainWindow);
             
-            // Carregar dados em background
             _ = System.Threading.Tasks.Task.Run(async () =>
             {
                 try
@@ -361,13 +496,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Navega para a aba Instalados
+        /// Navigates to Installed Components tab.
+        /// Loads installed components data if not already loaded.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
         private static void NavigateToInstalled(DevStackGui mainWindow)
         {
             if (mainWindow._mainContent == null) return;
             
-            // Instalados - carregar dados se necessário
             if (mainWindow.InstalledComponents?.Count == 0)
             {
                 _ = mainWindow.LoadInstalledComponents();
@@ -376,13 +512,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Navega para a aba Instalar
+        /// Navigates to Install tab.
+        /// Loads available components and shortcut components if not already loaded.
         /// </summary>
+        /// <param name="mainWindow">Main window instance.</param>
         private static void NavigateToInstall(DevStackGui mainWindow)
         {
             if (mainWindow._mainContent == null) return;
             
-            // Instalar - carregar componentes disponíveis e componentes para shortcuts se necessário
             if (mainWindow.AvailableComponents?.Count == 0)
             {
                 _ = mainWindow.LoadAvailableComponents();

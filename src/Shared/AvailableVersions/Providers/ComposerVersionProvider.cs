@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class ComposerVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Composer component.
+        /// </summary>
         public string ComponentName => "Composer";
+        /// <summary>
+        /// Gets the unique identifier for the Composer component.
+        /// </summary>
         public string ComponentId => "composer";
         
+        /// <summary>
+        /// List of available Composer versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("1.0.0", "https://getcomposer.org/download/1.0.0/composer.phar"),
@@ -200,19 +209,34 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("2.8.9", "https://getcomposer.org/download/2.8.9/composer.phar"),
             new VersionInfo("2.8.10", "https://getcomposer.org/download/2.8.10/composer.phar"),
             new VersionInfo("2.8.11", "https://getcomposer.org/download/2.8.11/composer.phar"),
-            new VersionInfo("2.8.12", "https://getcomposer.org/download/2.8.12/composer.phar")
+            new VersionInfo("2.8.12", "https://getcomposer.org/download/2.8.12/composer.phar"),
+            new VersionInfo("2.9.0", "https://getcomposer.org/download/2.9.0/composer.phar"),
+            new VersionInfo("2.9.1", "https://getcomposer.org/download/2.9.1/composer.phar")        
         };
         
+        /// <summary>
+        /// Gets the list of all available Composer versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Composer version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Composer version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

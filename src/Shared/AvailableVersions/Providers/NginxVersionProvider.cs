@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class NginxVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Nginx component.
+        /// </summary>
         public string ComponentName => "Nginx";
+        /// <summary>
+        /// Gets the unique identifier for the Nginx component.
+        /// </summary>
         public string ComponentId => "nginx";
         
+        /// <summary>
+        /// List of available Nginx versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("0.7.52", "https://nginx.org/download/nginx-0.7.52.zip"),
@@ -330,16 +339,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("1.29.3", "https://nginx.org/download/nginx-1.29.3.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available Nginx versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Nginx version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Nginx version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

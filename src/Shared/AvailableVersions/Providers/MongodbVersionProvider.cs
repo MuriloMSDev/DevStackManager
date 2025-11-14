@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class MongodbVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the MongoDB component.
+        /// </summary>
         public string ComponentName => "MongoDB";
+        /// <summary>
+        /// Gets the unique identifier for the MongoDB component.
+        /// </summary>
         public string ComponentId => "mongodb";
         
+        /// <summary>
+        /// List of available MongoDB versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("4.3.3", "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.3.3.zip"),
@@ -161,16 +170,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("8.0.11", "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.11.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available MongoDB versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available MongoDB version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific MongoDB version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

@@ -9,18 +9,47 @@ using System.Text.Json;
 namespace DevStackManager
 {
     /// <summary>
-    /// Informações sobre um processo principal registrado
+    /// Information about a registered service main process.
+    /// Supports multiple main process IDs for services with worker processes.
     /// </summary>
     public class ServiceProcess
     {
-        public List<int> MainProcessIds { get; set; } = new(); // Lista de PIDs dos processos principais
+        /// <summary>
+        /// Gets or sets the list of main process IDs for this service.
+        /// Supports multiple worker processes for components with MaxWorkers > 1.
+        /// </summary>
+        public List<int> MainProcessIds { get; set; } = new();
+        
+        /// <summary>
+        /// Gets or sets the component name (e.g., "php", "nginx", "mysql").
+        /// </summary>
         public string Component { get; set; } = "";
+        
+        /// <summary>
+        /// Gets or sets the installed version string for this service instance.
+        /// </summary>
         public string Version { get; set; } = "";
+        
+        /// <summary>
+        /// Gets or sets the full path to the service executable file.
+        /// </summary>
         public string ExecutablePath { get; set; } = "";
+        
+        /// <summary>
+        /// Gets or sets the timestamp when the service was started.
+        /// </summary>
         public DateTime StartTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the unique identifier for this service instance (8-character short GUID).
+        /// </summary>
         public string UniqueId { get; set; } = "";
         
-        // Propriedade de compatibilidade (obsoleta)
+        /// <summary>
+        /// Gets or sets the primary main process ID.
+        /// Returns the first PID from MainProcessIds, or 0 if empty.
+        /// Setting this property replaces MainProcessIds with a single-element list.
+        /// </summary>
         public int MainProcessId 
         { 
             get => MainProcessIds.Count > 0 ? MainProcessIds[0] : 0;
@@ -29,31 +58,57 @@ namespace DevStackManager
     }
 
     /// <summary>
-    /// Registro simples e eficiente de processos principais dos serviços
+    /// Simple and efficient registry for tracking service main processes.
+    /// Manages process lifecycle, persistence, and cleanup for DevStack services.
     /// </summary>
     public static class ProcessRegistry
     {
+        /// <summary>
+        /// Concurrent dictionary storing registered services by component-version key.
+        /// </summary>
         private static readonly ConcurrentDictionary<string, ServiceProcess> _services = new();
+        
+        /// <summary>
+        /// File path for persisting service registry data.
+        /// </summary>
         private static readonly string _registryFile = Path.Combine(DevStackConfig.tmpDir, "devstack_services.json");
         
+        /// <summary>
+        /// Length of shortened GUID used for unique service identifiers.
+        /// </summary>
         private const int GUID_SHORT_LENGTH = 8;
 
         /// <summary>
-        /// Registra um processo principal de serviço
+        /// Registers a service main process.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="mainProcessId">Main process ID.</param>
+        /// <param name="executablePath">Full path to the service executable.</param>
         public static void RegisterService(string component, string version, int mainProcessId, string executablePath)
         {
             RegisterServiceInternal(component, version, new List<int> { mainProcessId }, executablePath);
         }
 
         /// <summary>
-        /// Registra múltiplos processos principais para um serviço (para componentes com MaxWorkers > 1)
+        /// Registers multiple main processes for a service (for components with MaxWorkers > 1).
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="mainProcessIds">List of main process IDs.</param>
+        /// <param name="executablePath">Full path to the service executable.</param>
         public static void RegisterServiceWithMultipleProcesses(string component, string version, List<int> mainProcessIds, string executablePath)
         {
             RegisterServiceInternal(component, version, mainProcessIds, executablePath);
         }
 
+        /// <summary>
+        /// Internal method to register a service with its process information.
+        /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="mainProcessIds">List of main process IDs.</param>
+        /// <param name="executablePath">Full path to the service executable.</param>
         private static void RegisterServiceInternal(string component, string version, List<int> mainProcessIds, string executablePath)
         {
             var key = GetServiceKey(component, version);
@@ -76,17 +131,24 @@ namespace DevStackManager
                 ? $"PID={mainProcessIds[0]}"
                 : $"PIDs=[{string.Join(", ", mainProcessIds)}]";
 
-            DevStackConfig.WriteLog($"Serviço registrado: {component}-{version} {pidsText} ID={uniqueId}");
+            DevStackConfig.WriteLog($"Service registered: {component}-{version} {pidsText} ID={uniqueId}");
         }
 
+        /// <summary>
+        /// Generates a short unique identifier (8 characters) for service tracking.
+        /// </summary>
+        /// <returns>Short GUID string.</returns>
         private static string GenerateUniqueId()
         {
             return Guid.NewGuid().ToString("N")[..GUID_SHORT_LENGTH];
         }
 
         /// <summary>
-        /// Adiciona um processo principal adicional para um serviço existente
+        /// Adds an additional main process for an existing service.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="processId">Process ID to add.</param>
         public static void AddMainProcess(string component, string version, int processId)
         {
             var key = GetServiceKey(component, version);
@@ -95,33 +157,36 @@ namespace DevStackManager
             {
                 if (!service.MainProcessIds.Contains(processId))
                 {
-                    // Verificar se o processo está realmente vivo antes de adicionar
                     if (IsProcessAlive(processId))
                     {
                         service.MainProcessIds.Add(processId);
                         SaveToFile();
-                        DevStackConfig.WriteLog($"Processo principal adicionado: {component}-{version} PID={processId}");
+                        DevStackConfig.WriteLog($"Main process added: {component}-{version} PID={processId}");
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Remove o registro de um serviço
+        /// Unregisters a service from the registry.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
         public static void UnregisterService(string component, string version)
         {
             var key = GetServiceKey(component, version);
             if (_services.TryRemove(key, out var service))
             {
                 SaveToFile();
-                DevStackConfig.WriteLog($"Serviço removido: {component}-{version} PID={service.MainProcessId}");
+                DevStackConfig.WriteLog($"Service removed: {component}-{version} PID={service.MainProcessId}");
             }
         }
 
         /// <summary>
-        /// Limpa PIDs duplicados e mortos de um serviço específico
+        /// Cleans up duplicate and dead PIDs for a specific service.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
         public static void CleanupServicePids(string component, string version)
         {
             var key = GetServiceKey(component, version);
@@ -130,7 +195,6 @@ namespace DevStackManager
             {
                 var originalCount = service.MainProcessIds.Count;
                 
-                // Manter apenas PIDs únicos e vivos
                 var cleanPids = service.MainProcessIds
                     .Distinct()
                     .Where(pid => IsProcessAlive(pid, service.ExecutablePath))
@@ -141,7 +205,7 @@ namespace DevStackManager
                     service.MainProcessIds = cleanPids;
                     SaveToFile();
                     
-                    DevStackConfig.WriteLog($"PIDs limpos para {component}-{version}: {originalCount} -> {cleanPids.Count} PIDs");
+                    DevStackConfig.WriteLog($"PIDs cleaned for {component}-{version}: {originalCount} -> {cleanPids.Count} PIDs");
                     
                     if (cleanPids.Count == 0)
                     {
@@ -152,22 +216,34 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Verifica se um serviço está ativo (pelo menos um processo principal existe)
+        /// Checks if a service is active (at least one main process exists).
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <returns>True if service has at least one alive process, false otherwise.</returns>
         public static bool IsServiceActive(string component, string version)
         {
             return UpdateServicePidsAndCheckActive(component, version);
         }
 
         /// <summary>
-        /// Obtém o PID do primeiro processo principal de um serviço (compatibilidade)
+        /// Gets the PID of the first main process of a service (compatibility method).
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <returns>First alive process ID, or null if none exist.</returns>
         public static int? GetMainProcessId(string component, string version)
         {
             var alivePids = GetAndUpdateAlivePids(component, version);
             return alivePids.Count > 0 ? alivePids[0] : null;
         }
 
+        /// <summary>
+        /// Updates service PIDs and checks if service is still active.
+        /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <returns>True if service is active, false if no alive processes found.</returns>
         private static bool UpdateServicePidsAndCheckActive(string component, string version)
         {
             var key = GetServiceKey(component, version);
@@ -189,6 +265,12 @@ namespace DevStackManager
             return false;
         }
 
+        /// <summary>
+        /// Gets alive PIDs for a service and updates the registry if needed.
+        /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <returns>List of alive process IDs.</returns>
         private static List<int> GetAndUpdateAlivePids(string component, string version)
         {
             var key = GetServiceKey(component, version);
@@ -210,6 +292,11 @@ namespace DevStackManager
             return new List<int>();
         }
 
+        /// <summary>
+        /// Gets the list of alive PIDs from a service process record.
+        /// </summary>
+        /// <param name="service">The service process record.</param>
+        /// <returns>List of alive process IDs.</returns>
         private static List<int> GetAlivePidsFromService(ServiceProcess service)
         {
             return service.MainProcessIds
@@ -217,6 +304,11 @@ namespace DevStackManager
                 .ToList();
         }
 
+        /// <summary>
+        /// Updates service PIDs in the registry if they have changed.
+        /// </summary>
+        /// <param name="service">The service process record.</param>
+        /// <param name="alivePids">List of currently alive PIDs.</param>
         private static void UpdateServicePidsIfChanged(ServiceProcess service, List<int> alivePids)
         {
             if (alivePids.Count != service.MainProcessIds.Count)
@@ -227,8 +319,12 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Obtém todos os PIDs dos processos principais de um serviço
+        /// Gets all PIDs of the main processes for a service, limited by maxWorkers if specified.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="maxWorkers">Optional maximum number of worker processes.</param>
+        /// <returns>List of alive process IDs.</returns>
         public static List<int> GetServicePids(string component, string version, int? maxWorkers)
         {
             var key = GetServiceKey(component, version);
@@ -252,6 +348,11 @@ namespace DevStackManager
             return limitedPids;
         }
 
+        /// <summary>
+        /// Gets cleaned list of alive PIDs, removing duplicates and dead processes.
+        /// </summary>
+        /// <param name="service">The service process record.</param>
+        /// <returns>Cleaned list of alive process IDs.</returns>
         private static List<int> GetCleanedAlivePids(ServiceProcess service)
         {
             return service.MainProcessIds
@@ -260,6 +361,12 @@ namespace DevStackManager
                 .ToList();
         }
 
+        /// <summary>
+        /// Applies the maximum workers limit to a list of PIDs.
+        /// </summary>
+        /// <param name="pids">List of process IDs.</param>
+        /// <param name="maxWorkers">Optional maximum number of workers.</param>
+        /// <returns>Limited list of process IDs.</returns>
         private static List<int> ApplyMaxWorkersLimit(List<int> pids, int? maxWorkers)
         {
             if (maxWorkers.HasValue && maxWorkers.Value > 0)
@@ -269,6 +376,14 @@ namespace DevStackManager
             return pids;
         }
 
+        /// <summary>
+        /// Updates service PIDs in the registry if they have changed from the tracked list.
+        /// </summary>
+        /// <param name="service">The service process record.</param>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="alivePids">List of all alive PIDs.</param>
+        /// <param name="limitedPids">List of PIDs after applying worker limit.</param>
         private static void UpdateServicePidsIfNeeded(
             ServiceProcess service,
             string component,
@@ -281,13 +396,14 @@ namespace DevStackManager
             {
                 service.MainProcessIds = alivePids;
                 SaveToFile();
-                DevStackConfig.WriteLog($"PIDs atualizados para {component}-{version}: {string.Join(", ", limitedPids)}");
+                DevStackConfig.WriteLog($"PIDs updated for {component}-{version}: {string.Join(", ", limitedPids)}");
             }
         }
 
         /// <summary>
-        /// Lista todos os serviços registrados ativos
+        /// Lists all registered active services.
         /// </summary>
+        /// <returns>List of active service processes.</returns>
         public static List<ServiceProcess> GetActiveServices()
         {
             var activeServices = new List<ServiceProcess>();
@@ -312,6 +428,10 @@ namespace DevStackManager
             return activeServices;
         }
 
+        /// <summary>
+        /// Removes dead services from the registry based on provided service keys.
+        /// </summary>
+        /// <param name="deadServiceKeys">List of service keys to remove.</param>
         private static void RemoveDeadServices(List<string> deadServiceKeys)
         {
             if (deadServiceKeys.Count == 0) return;
@@ -325,8 +445,14 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Descobrir e atualizar automaticamente todos os processos principais de um serviço
+        /// Discovers and updates all main processes for a service automatically.
+        /// Scans running processes matching the service pattern and updates the registry.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <param name="servicePattern">Service executable filename pattern.</param>
+        /// <param name="toolDir">Tool installation directory.</param>
+        /// <param name="maxWorkers">Optional maximum number of worker processes.</param>
         public static void DiscoverAndUpdateMainProcesses(string component, string version, string servicePattern, string toolDir, int? maxWorkers)
         {
             var key = GetServiceKey(component, version);
@@ -359,19 +485,14 @@ namespace DevStackManager
                     finally { proc.Dispose(); }
                 }
 
-                // Limpar PIDs mortos primeiro
                 var alivePids = service.MainProcessIds.Where(pid => IsProcessAlive(pid, service.ExecutablePath)).ToList();
                 
-                // Encontrar novos PIDs que não estão na lista atual
                 var newPids = foundPids.Where(pid => !alivePids.Contains(pid)).ToList();
                 
-                // Atualizar apenas se houver mudanças
                 if (alivePids.Count != service.MainProcessIds.Count || newPids.Count > 0)
                 {
-                    // Combinar PIDs vivos existentes + novos PIDs descobertos
                     var allValidPids = alivePids.Concat(newPids).Distinct().ToList();
                     
-                    // Aplicar limitação de MaxWorkers se especificado
                     if (maxWorkers.HasValue && maxWorkers.Value > 0)
                     {
                         allValidPids = allValidPids.Take(maxWorkers.Value).ToList();
@@ -382,23 +503,23 @@ namespace DevStackManager
                     
                     if (newPids.Count > 0)
                     {
-                        DevStackConfig.WriteLog($"Processos principais descobertos para {component}-{version}: {string.Join(", ", newPids)}");
+                        DevStackConfig.WriteLog($"Main processes discovered for {component}-{version}: {string.Join(", ", newPids)}");
                     }
                     
                     if (alivePids.Count != service.MainProcessIds.Count)
                     {
-                        DevStackConfig.WriteLog($"PIDs limpos para {component}-{version}. PIDs ativos: {string.Join(", ", allValidPids)}");
+                        DevStackConfig.WriteLog($"PIDs cleaned for {component}-{version}. Active PIDs: {string.Join(", ", allValidPids)}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                DevStackConfig.WriteLog($"Erro ao descobrir processos principais para {component}-{version}: {ex.Message}");
+                DevStackConfig.WriteLog($"Error discovering main processes for {component}-{version}: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Carrega os serviços do arquivo
+        /// Loads services from the registry file.
         /// </summary>
         public static void LoadFromFile()
         {
@@ -417,19 +538,18 @@ namespace DevStackManager
                             _services[kvp.Key] = kvp.Value;
                         }
                         
-                        // Limpar PIDs mortos após carregar
                         CleanupAllServices();
                     }
                 }
             }
             catch (Exception ex)
             {
-                DevStackConfig.WriteLog($"Erro ao carregar serviços: {ex.Message}");
+                DevStackConfig.WriteLog($"Error loading services: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Limpa PIDs duplicados e mortos de todos os serviços registrados
+        /// Cleans up duplicate and dead PIDs for all registered services.
         /// </summary>
         public static void CleanupAllServices()
         {
@@ -459,6 +579,12 @@ namespace DevStackManager
             }
         }
 
+        /// <summary>
+        /// Cleans dead PIDs from a service and determines if service should be removed.
+        /// </summary>
+        /// <param name="service">The service to clean.</param>
+        /// <param name="key">The service key.</param>
+        /// <returns>Tuple indicating if service should be removed and if changes were made.</returns>
         private static (bool shouldRemove, bool hasChanges) CleanServicePids(ServiceProcess service, string key)
         {
             var originalCount = service.MainProcessIds.Count;
@@ -476,26 +602,30 @@ namespace DevStackManager
             if (cleanPids.Count != originalCount)
             {
                 service.MainProcessIds = cleanPids;
-                DevStackConfig.WriteLog($"PIDs limpos para {service.Component}-{service.Version}: {originalCount} -> {cleanPids.Count}");
+                DevStackConfig.WriteLog($"PIDs cleaned for {service.Component}-{service.Version}: {originalCount} -> {cleanPids.Count}");
                 return (shouldRemove: false, hasChanges: true);
             }
 
             return (shouldRemove: false, hasChanges: false);
         }
 
+        /// <summary>
+        /// Removes multiple services from the registry by their keys.
+        /// </summary>
+        /// <param name="serviceKeys">List of service keys to remove.</param>
         private static void RemoveServices(List<string> serviceKeys)
         {
             foreach (var key in serviceKeys)
             {
                 if (_services.TryRemove(key, out var removedService))
                 {
-                    DevStackConfig.WriteLog($"Serviço removido (sem processos vivos): {removedService.Component}-{removedService.Version}");
+                    DevStackConfig.WriteLog($"Service removed (no alive processes): {removedService.Component}-{removedService.Version}");
                 }
             }
         }
 
         /// <summary>
-        /// Salva os serviços no arquivo
+        /// Saves services to the registry file.
         /// </summary>
         private static void SaveToFile()
         {
@@ -514,21 +644,27 @@ namespace DevStackManager
             }
             catch (Exception ex)
             {
-                DevStackConfig.WriteLog($"Erro ao salvar serviços: {ex.Message}");
+                DevStackConfig.WriteLog($"Error saving services: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Gera chave única para o serviço
+        /// Generates a unique key for a service based on component and version.
         /// </summary>
+        /// <param name="component">Component name.</param>
+        /// <param name="version">Component version.</param>
+        /// <returns>Service key string.</returns>
         private static string GetServiceKey(string component, string version)
         {
             return $"{component.ToLowerInvariant()}-{version}";
         }
 
         /// <summary>
-        /// Verifica se um processo está vivo e é o esperado
+        /// Checks if a process is alive and matches the expected executable path.
         /// </summary>
+        /// <param name="processId">Process ID to check.</param>
+        /// <param name="expectedPath">Expected executable path.</param>
+        /// <returns>True if process is alive and path matches, false otherwise.</returns>
         private static bool IsProcessAlive(int processId, string expectedPath)
         {
             try
@@ -550,8 +686,10 @@ namespace DevStackManager
         }
 
         /// <summary>
-        /// Verifica se um processo está vivo (sem verificar caminho)
+        /// Checks if a process is alive (without verifying path).
         /// </summary>
+        /// <param name="processId">Process ID to check.</param>
+        /// <returns>True if process is alive, false otherwise.</returns>
         private static bool IsProcessAlive(int processId)
         {
             try

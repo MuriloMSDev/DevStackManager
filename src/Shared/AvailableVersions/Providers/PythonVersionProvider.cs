@@ -9,9 +9,18 @@ namespace DevStackShared.AvailableVersions.Providers
     /// </summary>
     public class PythonVersionProvider : IVersionProvider
     {
+        /// <summary>
+        /// Gets the display name of the Python component.
+        /// </summary>
         public string ComponentName => "Python";
+        /// <summary>
+        /// Gets the unique identifier for the Python component.
+        /// </summary>
         public string ComponentId => "python";
         
+        /// <summary>
+        /// List of available Python versions with download URLs.
+        /// </summary>
         private static readonly List<VersionInfo> _versions = new List<VersionInfo>
         {
             new VersionInfo("3.5.0", "https://www.python.org/ftp/python/3.5.0/python-3.5.0-embed-amd64.zip"),
@@ -103,16 +112,29 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("3.13.5", "https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.zip")
         };
         
+        /// <summary>
+        /// Gets the list of all available Python versions.
+        /// </summary>
+        /// <returns>List of available version information.</returns>
         public List<VersionInfo> GetAvailableVersions()
         {
             return new List<VersionInfo>(_versions);
         }
         
+        /// <summary>
+        /// Gets the latest available Python version.
+        /// </summary>
+        /// <returns>Latest version information or null if no versions available.</returns>
         public VersionInfo? GetLatestVersion()
         {
             return _versions.LastOrDefault();
         }
         
+        /// <summary>
+        /// Gets a specific Python version by version string.
+        /// </summary>
+        /// <param name="version">The version string to find.</param>
+        /// <returns>Version information or null if not found.</returns>
         public VersionInfo? GetVersion(string version)
         {
             return _versions.FirstOrDefault(v => v.Version == version);

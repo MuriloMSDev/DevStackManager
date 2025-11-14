@@ -2,11 +2,25 @@ using System.Collections.Generic;
 
 namespace DevStackShared.Localization
 {
+    /// <summary>
+    /// German (Germany) language provider for DevStack localization.
+    /// </summary>
     public class de_DE : ILanguageProvider
     {
+        /// <summary>
+        /// Gets the language code identifier (de_DE).
+        /// </summary>
         public string LanguageCode => "de_DE";
+        
+        /// <summary>
+        /// Gets the display name of the language.
+        /// </summary>
         public string LanguageName => "Deutsch";
 
+        /// <summary>
+        /// Gets common translations used across all DevStack applications.
+        /// </summary>
+        /// <returns>Dictionary containing common translation strings.</returns>
         public Dictionary<string, object> GetCommonTranslations()
         {
             return new Dictionary<string, object>
@@ -47,6 +61,10 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets shared translations used by CLI, GUI, and utilities.
+        /// </summary>
+        /// <returns>Dictionary containing shared translation strings.</returns>
         public Dictionary<string, object> GetSharedTranslations()
         {
             return new Dictionary<string, object>
@@ -87,6 +105,10 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets translations specific to the DevStack GUI application.
+        /// </summary>
+        /// <returns>Dictionary containing GUI-specific translation strings.</returns>
         public Dictionary<string, object> GetGuiTranslations()
         {
             return new Dictionary<string, object>
@@ -805,6 +827,10 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets translations specific to the DevStack installer application.
+        /// </summary>
+        /// <returns>Dictionary containing installer-specific translation strings.</returns>
         public Dictionary<string, object> GetInstallerTranslations()
         {
             return new Dictionary<string, object>
@@ -937,6 +963,10 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets translations specific to the DevStack uninstaller application.
+        /// </summary>
+        /// <returns>Dictionary containing uninstaller-specific translation strings.</returns>
         public Dictionary<string, object> GetUninstallerTranslations()
         {
             return new Dictionary<string, object>
@@ -1096,6 +1126,10 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets translations specific to the DevStack CLI application.
+        /// </summary>
+        /// <returns>Dictionary containing CLI-specific translation strings.</returns>
         public Dictionary<string, object> GetCliTranslations()
         {
             return new Dictionary<string, object>
@@ -1312,11 +1346,14 @@ namespace DevStackShared.Localization
             };
         }
 
+        /// <summary>
+        /// Gets all translations combined (common, shared, GUI, installer, uninstaller, and CLI).
+        /// </summary>
+        /// <returns>Dictionary containing all translation strings merged together.</returns>
         public Dictionary<string, object> GetAllTranslations()
         {
             var all = new Dictionary<string, object>();
             
-            // Adicionar todas as seções
             all["common"] = GetCommonTranslations();
             all["shared"] = GetSharedTranslations();
             all["gui"] = GetGuiTranslations();
