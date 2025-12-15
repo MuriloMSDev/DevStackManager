@@ -59,6 +59,12 @@ namespace DevStackManager.Components
         public override string? CreateBinShortcut => "node-{version}.exe";
 
         /// <summary>
+        /// Gets the list of child components bundled with Node.js.
+        /// </summary>
+        /// <returns>List containing "npm" as Node.js includes NPM package manager.</returns>
+        public override List<string> GetChildComponents() => new List<string> { "npm" };
+
+        /// <summary>
         /// Executes post-installation configuration for Node.js.
         /// Creates versioned shortcuts for npm and npx commands.
         /// </summary>

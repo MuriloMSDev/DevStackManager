@@ -982,7 +982,14 @@ namespace DevStackManager
                 
                 DevStackConfig.WriteLog($"LoadShortcutComponents: InstalledComponents.Count = {InstalledComponents.Count}");
 
-                var installedComponents = InstalledComponents.Where(c => c.Installed).ToList();
+                // Filter out child components (npm, pgadmin) - only show parent/standalone components
+                var installedComponents = InstalledComponents
+                    .Where(c => c.Installed)
+                    .Where(c => {
+                        var component = Components.ComponentsFactory.GetComponent(c.Name);
+                        return component?.GetParentComponent() == null; // Only include components without parents
+                    })
+                    .ToList();
                 DevStackConfig.WriteLog($"LoadShortcutComponents: Installed components = {installedComponents.Count}");
                 
                 var shortcutComponents = new List<string>();
@@ -1107,7 +1114,14 @@ namespace DevStackManager
                 
                 componentCombo.Items.Clear();
                 
-                var installedComponents = InstalledComponents.Where(c => c.Installed).ToList();
+                // Filter out child components (npm, pgadmin) - only show parent/standalone components
+                var installedComponents = InstalledComponents
+                    .Where(c => c.Installed)
+                    .Where(c => {
+                        var component = DevStackManager.Components.ComponentsFactory.GetComponent(c.Name);
+                        return component?.GetParentComponent() == null; // Only include components without parents
+                    })
+                    .ToList();
                 
                 if (installedComponents.Any())
                 {

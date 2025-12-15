@@ -109,5 +109,19 @@ namespace DevStackManager.Components
         /// <param name="localizationManager">The localization manager for string translation.</param>
         /// <returns>The formatted service description string.</returns>
         string GetServiceDescription(string version, DevStackShared.LocalizationManager localizationManager);
+        
+        /// <summary>
+        /// Gets the list of child component names that are bundled with this component.
+        /// For example, Node.js includes NPM, PostgreSQL includes PgAdmin.
+        /// </summary>
+        /// <returns>List of child component names, or empty list if no children.</returns>
+        List<string> GetChildComponents();
+        
+        /// <summary>
+        /// Gets the parent component name if this is a child component.
+        /// For example, NPM returns "node", PgAdmin returns "pgsql".
+        /// </summary>
+        /// <returns>Parent component name, or null if this is not a child component.</returns>
+        string? GetParentComponent();
     }
 }

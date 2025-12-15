@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -392,7 +392,7 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("8.3.24", "https://windows.php.net/downloads/releases/archives/php-8.3.24-Win32-vs16-x64.zip"),
             new VersionInfo("8.3.25", "https://windows.php.net/downloads/releases/archives/php-8.3.25-Win32-vs16-x64.zip"),
             new VersionInfo("8.3.26", "https://windows.php.net/downloads/releases/archives/php-8.3.26-Win32-vs16-x64.zip"),
-            new VersionInfo("8.3.27", "https://windows.php.net/downloads/releases/php-8.3.27-Win32-vs16-x64.zip"),
+            new VersionInfo("8.3.28", "https://windows.php.net/downloads/releases/php-8.3.28-Win32-vs16-x64.zip"),
             new VersionInfo("8.4.0", "https://windows.php.net/downloads/releases/archives/php-8.4.0-Win32-vs17-x64.zip"),
             new VersionInfo("8.4.1", "https://windows.php.net/downloads/releases/archives/php-8.4.1-Win32-vs17-x64.zip"),
             new VersionInfo("8.4.2", "https://windows.php.net/downloads/releases/archives/php-8.4.2-Win32-vs17-x64.zip"),
@@ -407,7 +407,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("8.4.11", "https://windows.php.net/downloads/releases/archives/php-8.4.11-Win32-vs17-x64.zip"),
             new VersionInfo("8.4.12", "https://windows.php.net/downloads/releases/archives/php-8.4.12-Win32-vs17-x64.zip"),
             new VersionInfo("8.4.13", "https://windows.php.net/downloads/releases/archives/php-8.4.13-Win32-vs17-x64.zip"),
-            new VersionInfo("8.4.14", "https://windows.php.net/downloads/releases/php-8.4.14-Win32-vs17-x64.zip")
+            new VersionInfo("8.4.15", "https://windows.php.net/downloads/releases/php-8.4.15-Win32-vs17-x64.zip"),
+            new VersionInfo("8.5.0", "https://windows.php.net/downloads/releases/php-8.5.0-Win32-vs17-x64.zip")        
         };
         
         /// <summary>

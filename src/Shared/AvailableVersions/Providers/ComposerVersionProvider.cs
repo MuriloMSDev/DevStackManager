@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -211,7 +211,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("2.8.11", "https://getcomposer.org/download/2.8.11/composer.phar"),
             new VersionInfo("2.8.12", "https://getcomposer.org/download/2.8.12/composer.phar"),
             new VersionInfo("2.9.0", "https://getcomposer.org/download/2.9.0/composer.phar"),
-            new VersionInfo("2.9.1", "https://getcomposer.org/download/2.9.1/composer.phar")        
+            new VersionInfo("2.9.1", "https://getcomposer.org/download/2.9.1/composer.phar"),
+            new VersionInfo("2.9.2", "https://getcomposer.org/download/2.9.2/composer.phar")                
         };
         
         /// <summary>

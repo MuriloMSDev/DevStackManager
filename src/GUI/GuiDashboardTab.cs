@@ -1510,15 +1510,43 @@ namespace DevStackManager
                     }
 
                     string baseToolDir = !string.IsNullOrEmpty(comp.ToolDir) ? comp.ToolDir! : System.IO.Path.Combine(DevStackConfig.baseDir, comp.Name);
-                    string subDir = (comp is DevStackManager.Components.ComponentBase cb && !string.IsNullOrEmpty(cb.SubDirectory)) ? cb.SubDirectory! : $"{comp.Name}-{version}";
+                    
+                    // Get SubDirectory from component, handling both null and empty strings
+                    string subDir;
+                    if (comp is DevStackManager.Components.ComponentBase cb && cb.SubDirectory != null && cb.SubDirectory.Length > 0)
+                    {
+                        subDir = cb.SubDirectory;
+                    }
+                    else if (comp is DevStackManager.Components.ComponentBase cb2 && cb2.SubDirectory != null && cb2.SubDirectory.Length == 0)
+                    {
+                        // SubDirectory is explicitly set to empty string - component doesn't use subdirectories
+                        subDir = "";
+                    }
+                    else
+                    {
+                        // Check if this is a child component - use parent component name for subdirectory
+                        var parentComponent = comp.GetParentComponent();
+                        var effectiveComponentName = !string.IsNullOrEmpty(parentComponent) ? parentComponent : comp.Name;
+                        
+                        // For PgAdmin, map display version to PostgreSQL version for path resolution
+                        var versionForPath = version;
+                        if (comp.Name == "pgadmin" && comp is DevStackManager.Components.PgAdminComponent pgAdminComp)
+                        {
+                            versionForPath = pgAdminComp.GetPgsqlVersionForPgAdmin(version);
+                        }
+                        
+                        subDir = $"{effectiveComponentName}-{versionForPath}";
+                    }
+                    
                     string installDir;
 
                     if (!string.IsNullOrEmpty(comp.ExecutableFolder))
                     {
                         if (System.IO.Path.IsPathRooted(comp.ExecutableFolder))
                         {
+                            // For absolute paths, check if subDir is empty to avoid creating unnecessary subdirectories
                             var toolDirArg = comp.ExecutableFolder!;
-                            installDir = System.IO.Path.Combine(toolDirArg, subDir);
+                            installDir = string.IsNullOrEmpty(subDir) ? toolDirArg : System.IO.Path.Combine(toolDirArg, subDir);
                         }
                         else
                         {
@@ -1532,7 +1560,11 @@ namespace DevStackManager
 
                     if (System.IO.Directory.Exists(installDir))
                     {
+                        // Search for executable files (.exe and .cmd)
                         var exeFiles = System.IO.Directory.GetFiles(installDir, "*.exe", System.IO.SearchOption.TopDirectoryOnly);
+                        var cmdFiles = System.IO.Directory.GetFiles(installDir, "*.cmd", System.IO.SearchOption.TopDirectoryOnly);
+                        var allExecutables = exeFiles.Concat(cmdFiles).ToArray();
+                        
                         string? exePath = null;
                         if (!string.IsNullOrEmpty(comp.ExecutablePattern))
                         {
@@ -1543,9 +1575,9 @@ namespace DevStackManager
                                 exePath = patternPath;
                             }
                         }
-                        if (exePath == null && exeFiles.Length > 0)
+                        if (exePath == null && allExecutables.Length > 0)
                         {
-                            exePath = exeFiles[0];
+                            exePath = allExecutables[0];
                         }
                         if (exePath != null && comp.IsExecutable)
                         {

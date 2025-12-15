@@ -40,5 +40,11 @@ namespace DevStackManager.Components
         /// Value is 3 to account for 1 postmaster process + 2-3 backend worker processes.
         /// </summary>
         public override int? MaxWorkers => 3;
+
+        /// <summary>
+        /// Gets the list of child components bundled with PostgreSQL.
+        /// </summary>
+        /// <returns>List containing "pgadmin" as PostgreSQL includes PgAdmin management tool.</returns>
+        public override List<string> GetChildComponents() => new List<string> { "pgadmin" };
     }
 }

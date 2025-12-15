@@ -18,24 +18,17 @@ namespace DevStackManager
         /// <summary>
         /// Gets comprehensive installation information for all configured components.
         /// Includes installation status, executability, and installed versions for each component.
+        /// Also includes child components (e.g., NPM for Node.js, PgAdmin for PostgreSQL).
         /// </summary>
         /// <returns>InstallationData object containing status and component information for all tools.</returns>
         public static InstallationData GetInstalledVersions()
         {
             var result = new List<ComponentInfo>();
+            var processedComponents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var name in DevStackConfig.components)
             {
-                var comp = Components.ComponentsFactory.GetComponent(name);
-                var installedVersions = comp?.ListInstalled() ?? new List<string>();
-                var item = new ComponentInfo
-                {
-                    Name = name,
-                    Installed = installedVersions.Count > 0,
-                    IsExecutable = comp?.IsExecutable ?? false,
-                    Versions = installedVersions
-                };
-                result.Add(item);
+                AddComponentAndChildren(name, result, processedComponents);
             }
 
             return new InstallationData
@@ -44,6 +37,45 @@ namespace DevStackManager
                 Message = "",
                 Components = result
             };
+        }
+
+        /// <summary>
+        /// Adds a component and its children to the result list.
+        /// </summary>
+        /// <param name="name">Component name to add.</param>
+        /// <param name="result">Result list to add components to.</param>
+        /// <param name="processedComponents">Set of already processed component names to avoid duplicates.</param>
+        private static void AddComponentAndChildren(string name, List<ComponentInfo> result, HashSet<string> processedComponents)
+        {
+            if (processedComponents.Contains(name))
+            {
+                return;
+            }
+
+            var comp = Components.ComponentsFactory.GetComponent(name);
+            if (comp == null)
+            {
+                return;
+            }
+
+            processedComponents.Add(name);
+
+            var installedVersions = comp.ListInstalled();
+            var item = new ComponentInfo
+            {
+                Name = name,
+                Installed = installedVersions.Count > 0,
+                IsExecutable = comp.IsExecutable,
+                Versions = installedVersions
+            };
+            result.Add(item);
+
+            // Add child components
+            var childComponents = comp.GetChildComponents();
+            foreach (var childName in childComponents)
+            {
+                AddComponentAndChildren(childName, result, processedComponents);
+            }
         }
 
         /// <summary>

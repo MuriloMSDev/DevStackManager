@@ -240,6 +240,20 @@ namespace DevStackManager.Components
         public virtual int? MaxWorkers => null;
 
         /// <summary>
+        /// Gets the list of child component names that are bundled with this component.
+        /// Default is empty list. Override for components that have bundled child components.
+        /// </summary>
+        /// <returns>List of child component names, or empty list if no children.</returns>
+        public virtual List<string> GetChildComponents() => new List<string>();
+
+        /// <summary>
+        /// Gets the parent component name if this is a child component.
+        /// Default is null. Override for child components (e.g., NPM returns "node", PgAdmin returns "pgsql").
+        /// </summary>
+        /// <returns>Parent component name, or null if this is not a child component.</returns>
+        public virtual string? GetParentComponent() => null;
+
+        /// <summary>
         /// Gets the localized service type string for this component (e.g., "Web Server", "Database").
         /// </summary>
         /// <param name="localizationManager">The localization manager for string translation.</param>

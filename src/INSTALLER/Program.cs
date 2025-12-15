@@ -461,6 +461,8 @@ namespace DevStackInstaller
         /// Indicates whether to launch DevStack after installation completes.
         /// </summary>
         private bool launchAfterInstall = true;
+        private Task? versionsFetchTask = null;
+        private CancellationTokenSource versionsCts = new();
         
         /// <summary>
         /// Text box for entering installation path.
@@ -1534,6 +1536,8 @@ namespace DevStackInstaller
                 case InstallerStep.ReadyToInstall:
                     if (currentStep == InstallerStep.ReadyToInstall)
                     {
+                        try { if (!string.IsNullOrWhiteSpace(installationPath) && !Directory.Exists(installationPath)) Directory.CreateDirectory(installationPath); } catch { }
+                        StartVersionsFetch();
                         currentStep = InstallerStep.Installing;
                         UpdateStepContent();
                         await PerformInstallation();
@@ -2013,14 +2017,10 @@ namespace DevStackInstaller
                 installStatusText.Content = localization.GetString("installer.installing.compiling_projects");
                 AddInstallationLog(localization.GetString("installer.log_messages.compiling"));
                 await CompileProjects(tempSourceDir, dotnetTempDir, installationPath);
-                installProgressBar.Value = 85;
+                installProgressBar.Value = 80;
                 AddInstallationLog(localization.GetString("installer.log_messages.compilation_complete"));
-
-                try
-                {
-                    DevStackConfig.PersistSetting("language", localization.CurrentLanguage, installationPath);
-                }
-                catch { /* silent to not break installation */ }
+                try { DevStackConfig.PersistSetting("language", localization.CurrentLanguage, installationPath); } catch { }
+                installProgressBar.Value = 82;
 
                 installStatusText.Content = localization.GetString("installer.installing.registering");
                 AddInstallationLog(localization.GetString("installer.log_messages.registering"));
@@ -2049,6 +2049,17 @@ namespace DevStackInstaller
                     AddInstallationLog(localization.GetString("installer.log_messages.adding_path"));
                     AddToSystemPath(installationPath);
                     installProgressBar.Value = 99;
+                }
+
+                if (versionsFetchTask != null && !versionsFetchTask.IsCompleted)
+                {
+                    installStatusText.Content = "Buscando versões dos componentes...";
+                    AddInstallationLog("Aguardando conclusão da busca de versões (versions.json)...");
+                    try { await versionsFetchTask; } catch (Exception ex) { AddInstallationLog($"Warning: versão fetch falhou: {ex.Message}"); }
+                }
+                else if (versionsFetchTask != null && versionsFetchTask.IsCompletedSuccessfully)
+                {
+                    AddInstallationLog("Busca de versões concluída antecipadamente.");
                 }
 
                 installStatusText.Content = localization.GetString("installer.installing.completed");
@@ -2113,6 +2124,31 @@ namespace DevStackInstaller
                         AddInstallationLog($"Warning: Could not delete .NET SDK temporary files: {ex.Message}");
                     }
                 }
+            }
+        }
+
+        private void StartVersionsFetch()
+        {
+            if (versionsFetchTask != null) return;
+            try
+            {
+                AddInstallationLog("Iniciando busca de versões dos componentes...");
+                versionsFetchTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await VersionManager.UpdateAllAsync(installationPath, versionsCts.Token);
+                        AddInstallationLog("versions.json gerado com sucesso.");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddInstallationLog($"Falha ao gerar versions.json: {ex.Message}");
+                    }
+                }, versionsCts.Token);
+            }
+            catch (Exception ex)
+            {
+                AddInstallationLog($"Não foi possível iniciar busca de versões: {ex.Message}");
             }
         }
 

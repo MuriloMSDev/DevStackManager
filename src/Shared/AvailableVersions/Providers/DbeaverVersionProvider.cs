@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -190,7 +190,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("25.2.1", "https://dbeaver.io/files/25.2.1/dbeaver-ce-25.2.1-win32.win32.x86_64.zip"),
             new VersionInfo("25.2.2", "https://dbeaver.io/files/25.2.2/dbeaver-ce-25.2.2-win32.win32.x86_64.zip"),
             new VersionInfo("25.2.3", "https://dbeaver.io/files/25.2.3/dbeaver-ce-25.2.3-win32.win32.x86_64.zip"),
-            new VersionInfo("25.2.4", "https://dbeaver.io/files/25.2.4/dbeaver-ce-25.2.4-win32.win32.x86_64.zip")
+            new VersionInfo("25.2.4", "https://dbeaver.io/files/25.2.4/dbeaver-ce-25.2.4-win32.win32.x86_64.zip"),
+            new VersionInfo("25.2.5", "https://dbeaver.io/files/25.2.5/dbeaver-ce-25.2.5-win32.win32.x86_64.zip")        
         };
         
         /// <summary>

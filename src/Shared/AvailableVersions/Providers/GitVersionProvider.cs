@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -116,7 +116,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("2.50.1", "https://github.com/git-for-windows/git/releases/download/v2.50.1.windows.1/MinGit-2.50.1-64-bit.zip"),
             new VersionInfo("2.51.0", "https://github.com/git-for-windows/git/releases/download/v2.51.0.windows.1/MinGit-2.51.0-64-bit.zip"),
             new VersionInfo("2.51.1", "https://github.com/git-for-windows/git/releases/download/v2.51.1.windows.1/MinGit-2.51.1-64-bit.zip"),
-            new VersionInfo("2.51.2", "https://github.com/git-for-windows/git/releases/download/v2.51.2.windows.1/MinGit-2.51.2-64-bit.zip")
+            new VersionInfo("2.51.2", "https://github.com/git-for-windows/git/releases/download/v2.51.2.windows.1/MinGit-2.51.2-64-bit.zip"),
+            new VersionInfo("2.52.0", "https://github.com/git-for-windows/git/releases/download/v2.52.0.windows.1/MinGit-2.52.0-64-bit.zip")        
         };
         
         /// <summary>

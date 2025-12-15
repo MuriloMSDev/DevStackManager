@@ -46,6 +46,7 @@
     <Compile Include="..\Shared\DevStackConfig.cs" Link="DevStackConfig.cs" />
     <Compile Include="..\Shared\PathManager.cs" Link="PathManager.cs" />
     <Compile Include="..\Shared\ThemeManager.cs" Link="ThemeManager.cs" />
+    <Compile Include="..\Shared\VersionManager.cs" Link="VersionManager.cs" />
     <Compile Include="..\Shared\Localization\*.cs" />
     <Compile Include="..\Shared\AvailableVersions\Models\*.cs" />
     <Compile Include="..\Shared\AvailableVersions\Providers\*.cs" />

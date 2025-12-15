@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -485,6 +485,7 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("20.19.3", "https://nodejs.org/dist/v20.19.3/node-v20.19.3-win-x64.zip"),
             new VersionInfo("20.19.4", "https://nodejs.org/dist/v20.19.4/node-v20.19.4-win-x64.zip"),
             new VersionInfo("20.19.5", "https://nodejs.org/dist/v20.19.5/node-v20.19.5-win-x64.zip"),
+            new VersionInfo("20.19.6", "https://nodejs.org/dist/v20.19.6/node-v20.19.6-win-x64.zip"),
             new VersionInfo("21.0.0", "https://nodejs.org/dist/v21.0.0/node-v21.0.0-win-x64.zip"),
             new VersionInfo("21.1.0", "https://nodejs.org/dist/v21.1.0/node-v21.1.0-win-x64.zip"),
             new VersionInfo("21.2.0", "https://nodejs.org/dist/v21.2.0/node-v21.2.0-win-x64.zip"),
@@ -558,7 +559,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("24.11.1", "https://nodejs.org/dist/v24.11.1/node-v24.11.1-win-x64.zip"),
             new VersionInfo("25.0.0", "https://nodejs.org/dist/v25.0.0/node-v25.0.0-win-x64.zip"),
             new VersionInfo("25.1.0", "https://nodejs.org/dist/v25.1.0/node-v25.1.0-win-x64.zip"),
-            new VersionInfo("25.2.0", "https://nodejs.org/dist/v25.2.0/node-v25.2.0-win-x64.zip")        
+            new VersionInfo("25.2.0", "https://nodejs.org/dist/v25.2.0/node-v25.2.0-win-x64.zip"),
+            new VersionInfo("25.2.1", "https://nodejs.org/dist/v25.2.1/node-v25.2.1-win-x64.zip")                
         };
         
         /// <summary>

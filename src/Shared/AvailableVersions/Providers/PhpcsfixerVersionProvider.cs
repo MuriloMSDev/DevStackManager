@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DevStackShared.AvailableVersions.Models;
 
@@ -324,7 +324,8 @@ namespace DevStackShared.AvailableVersions.Providers
             new VersionInfo("3.88.2", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.88.2/php-cs-fixer.phar"),
             new VersionInfo("3.89.0", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.89.0/php-cs-fixer.phar"),
             new VersionInfo("3.89.1", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.89.1/php-cs-fixer.phar"),
-            new VersionInfo("3.89.2", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.89.2/php-cs-fixer.phar")        
+            new VersionInfo("3.89.2", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.89.2/php-cs-fixer.phar"),
+            new VersionInfo("3.90.0", "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.90.0/php-cs-fixer.phar")                
         };
         
         /// <summary>
